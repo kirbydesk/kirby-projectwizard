@@ -17,40 +17,45 @@ $blocks = ProjectConfig::detectBlocks();
 $blockViews = [];
 $blockMenuEntries = [];
 
-$blockLabelFn = function(string $plugin, string $blockType): string {
+// Read block labels directly from plugin i18n files
+$blockLabel = function(string $plugin, string $blockType): string {
 	$fallback = ucfirst(preg_replace('/^pw/', '', $blockType));
 	$fallback = preg_replace('/([a-z])([A-Z])/', '$1 $2', $fallback);
-	$label = t($plugin . '.name', $fallback);
-	return is_string($label) ? $label : $fallback;
+
+	$i18nFile = kirby()->root('plugins') . '/' . $plugin . '/src/i18n/en.php';
+	if (file_exists($i18nFile)) {
+		$translations = require $i18nFile;
+		$key = $plugin . '.name';
+		if (isset($translations[$key])) {
+			return $translations[$key];
+		}
+	}
+	return $fallback;
 };
 
 foreach ($blocks as $blockType => $info) {
 	$plugin = $info['plugin'];
+	$label  = $blockLabel($plugin, $blockType);
 
 	// View inside projectwizard area
 	$blockViews[] = [
 		'pattern' => 'projectwizard/block/' . $blockType,
-		'action'  => function() use ($blockType, $plugin, $blockLabelFn) {
-			$label = $blockLabelFn($plugin, $blockType);
-			return [
-				'component' => 'pw-wizard-overview',
-				'title'     => $label,
-				'breadcrumb' => [
-					['label' => $label, 'link' => 'projectwizard/block/' . $blockType],
-				],
-				'props'     => [
-					'blockType' => $blockType,
-				],
-			];
-		},
+		'action'  => fn() => [
+			'component' => 'pw-wizard-overview',
+			'title'     => $label,
+			'breadcrumb' => [
+				['label' => $label, 'link' => 'projectwizard/block/' . $blockType],
+			],
+			'props'     => [
+				'blockType' => $blockType,
+			],
+		],
 	];
 
-	// Sidebar menu entry — use closure for label so translations are resolved at render time
+	// Sidebar menu entry
 	$slug = strtolower($blockType);
 	$blockMenuEntries['pw-block-' . $slug] = [
-		'label' => function() use ($plugin, $blockType, $blockLabelFn) {
-			return $blockLabelFn($plugin, $blockType);
-		},
+		'label' => $label,
 		'icon'  => $info['icon'] ?? 'box',
 		'menu'  => true,
 		'link'  => 'projectwizard/block/' . $blockType,
