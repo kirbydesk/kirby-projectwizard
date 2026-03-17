@@ -1,7 +1,7 @@
 <template>
   <k-panel-inside class="pw-wizard">
     <k-header>
-      Project Wizard
+      {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
     </k-header>
 
     <div v-if="loading" class="pw-wizard-loading">Loading...</div>
