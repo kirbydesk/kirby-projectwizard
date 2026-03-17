@@ -108,34 +108,24 @@
 
           <div v-if="blockConfigs[block.blockType]" class="pw-wizard-block-sections">
 
-            <!-- ===== Tabs ===== -->
-            <fieldset class="pw-wizard-fieldgroup">
-              <h3 class="pw-wizard-fieldgroup-title">Tabs</h3>
-              <div class="pw-wizard-toggle-row">
-                <label
-                  v-for="(val, key) in getDefault(block.blockType, 'settings.tabs') || {}"
-                  :key="key"
-                  class="pw-wizard-toggle"
-                  :class="{ 'is-overridden': hasOverride(block.blockType, 'settings.tabs.' + key) }"
-                >
-                  <input
-                    type="checkbox"
-                    :checked="getVal(block.blockType, 'settings.tabs.' + key, val)"
-                    @change="setVal(block.blockType, 'settings.tabs.' + key, $event.target.checked)"
-                  />
-                  <span>{{ key }}</span>
-                </label>
-              </div>
-            </fieldset>
+            <!-- Block tab navigation -->
+            <nav class="pw-wizard-global-tabs">
+              <button
+                v-for="tab in getBlockTabs(block.blockType)"
+                :key="tab"
+                class="pw-wizard-global-tab"
+                :class="{ 'is-active': getBlockActiveTab(block.blockType) === tab }"
+                @click="setBlockActiveTab(block.blockType, tab)"
+              >
+                {{ tab }}
+              </button>
+            </nav>
 
-            <!-- ===== Content Fields (unified: settings + defaults) ===== -->
-            <fieldset
-              v-if="getContentFields(block.blockType).length"
-              class="pw-wizard-fieldgroup"
-            >
-              <h3 class="pw-wizard-fieldgroup-title">Content Fields</h3>
+            <!-- ===== Content Tab ===== -->
+            <div v-if="getBlockActiveTab(block.blockType) === 'content'" class="pw-wizard-tab-content">
 
-              <div class="pw-wizard-unified-fields">
+              <!-- Content Fields -->
+              <div v-if="getContentFields(block.blockType).length" class="pw-wizard-unified-fields">
                 <div
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
@@ -145,7 +135,6 @@
                     <span class="pw-wizard-unified-field-name">{{ field.key }}</span>
                   </div>
 
-                  <!-- Field has properties with options -->
                   <div v-if="field.properties.length" class="pw-wizard-unified-props">
                     <div
                       v-for="prop in field.properties"
@@ -181,7 +170,6 @@
                     </div>
                   </div>
 
-                  <!-- Simple boolean field -->
                   <div v-else class="pw-wizard-unified-simple">
                     <label class="pw-wizard-toggle">
                       <input
@@ -194,16 +182,75 @@
                   </div>
                 </div>
               </div>
-            </fieldset>
 
-            <!-- ===== Other categories (layout, style, effects, settings) ===== -->
-            <fieldset
+              <!-- Editor config belongs to content tab -->
+              <fieldset
+                v-if="getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length"
+                class="pw-wizard-fieldgroup"
+                style="margin-top: var(--spacing-6)"
+              >
+                <h3 class="pw-wizard-fieldgroup-title">Editor</h3>
+                <div class="pw-wizard-category-fields">
+                  <div
+                    v-for="(val, key) in getDefault(block.blockType, 'editor')"
+                    :key="key"
+                    class="k-field pw-wizard-k-field pw-wizard-k-field-row"
+                    :class="{ 'is-overridden': hasOverride(block.blockType, 'editor.' + key) }"
+                  >
+                    <header class="k-field-header">
+                      <label class="k-label k-field-label">
+                        <span class="k-label-text">{{ key }}</span>
+                      </label>
+                    </header>
+                    <div class="pw-wizard-category-field-value">
+                      <template v-if="Array.isArray(val)">
+                        <div class="k-input" data-type="text">
+                          <span class="k-input-element">
+                            <input
+                              type="text"
+                              class="k-text-input"
+                              :placeholder="val.join(', ')"
+                              :value="getOverrideOnly(block.blockType, 'editor.' + key) !== undefined ? getOverrideOnly(block.blockType, 'editor.' + key).join(', ') : ''"
+                              @input="setEditorArray(block.blockType, key, $event.target.value, val)"
+                            />
+                          </span>
+                        </div>
+                        <footer class="k-field-footer">
+                          <div class="k-help k-field-help k-text">
+                            Default: <strong>{{ val.join(', ') || '(none)' }}</strong>
+                          </div>
+                        </footer>
+                      </template>
+                      <template v-else-if="isObject(val)">
+                        <div class="pw-wizard-toggle-row">
+                          <label
+                            v-for="(subVal, subKey) in val"
+                            :key="subKey"
+                            class="pw-wizard-toggle"
+                          >
+                            <input
+                              v-if="typeof subVal === 'boolean'"
+                              type="checkbox"
+                              :checked="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
+                              @change="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event.target.checked)"
+                            />
+                            <span>{{ subKey }}</span>
+                          </label>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+
+            <!-- ===== Category Tabs (layout, style, effects, grid, settings) ===== -->
+            <div
               v-for="cat in getCategories(block.blockType)"
               :key="cat.key"
-              class="pw-wizard-fieldgroup"
+              v-show="getBlockActiveTab(block.blockType) === cat.key"
+              class="pw-wizard-tab-content"
             >
-              <h3 class="pw-wizard-fieldgroup-title">{{ cat.key }}</h3>
-
               <div class="pw-wizard-category-fields">
                 <div
                   v-for="field in cat.fields"
@@ -227,7 +274,6 @@
                   </header>
 
                   <div class="pw-wizard-category-field-value">
-                    <!-- Select from options -->
                     <template v-if="field.options && field.options.length">
                       <div class="k-input" data-type="select">
                         <span class="k-input-element">
@@ -250,7 +296,6 @@
                         </div>
                       </footer>
                     </template>
-                    <!-- Boolean default -->
                     <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'">
                       <label class="pw-wizard-toggle-inline">
                         <input
@@ -260,7 +305,6 @@
                         />
                       </label>
                     </template>
-                    <!-- Number default -->
                     <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'number'">
                       <div class="k-input" data-type="number">
                         <span class="k-input-element">
@@ -279,7 +323,6 @@
                         </div>
                       </footer>
                     </template>
-                    <!-- String default -->
                     <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'string'">
                       <div class="k-input" data-type="text">
                         <span class="k-input-element">
@@ -301,68 +344,7 @@
                   </div>
                 </div>
               </div>
-            </fieldset>
-
-            <!-- ===== Editor ===== -->
-            <fieldset
-              v-if="getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length"
-              class="pw-wizard-fieldgroup"
-            >
-              <h3 class="pw-wizard-fieldgroup-title">Editor</h3>
-              <div class="pw-wizard-category-fields">
-                <div
-                  v-for="(val, key) in getDefault(block.blockType, 'editor')"
-                  :key="key"
-                  class="k-field pw-wizard-k-field pw-wizard-k-field-row"
-                  :class="{ 'is-overridden': hasOverride(block.blockType, 'editor.' + key) }"
-                >
-                  <header class="k-field-header">
-                    <label class="k-label k-field-label">
-                      <span class="k-label-text">{{ key }}</span>
-                    </label>
-                  </header>
-                  <div class="pw-wizard-category-field-value">
-                    <!-- Array (marks, nodes, headings) -->
-                    <template v-if="Array.isArray(val)">
-                      <div class="k-input" data-type="text">
-                        <span class="k-input-element">
-                          <input
-                            type="text"
-                            class="k-text-input"
-                            :placeholder="val.join(', ')"
-                            :value="getOverrideOnly(block.blockType, 'editor.' + key) !== undefined ? getOverrideOnly(block.blockType, 'editor.' + key).join(', ') : ''"
-                            @input="setEditorArray(block.blockType, key, $event.target.value, val)"
-                          />
-                        </span>
-                      </div>
-                      <footer class="k-field-footer">
-                        <div class="k-help k-field-help k-text">
-                          Default: <strong>{{ val.join(', ') || '(none)' }}</strong>
-                        </div>
-                      </footer>
-                    </template>
-                    <!-- Object (toolbar) -->
-                    <template v-else-if="isObject(val)">
-                      <div class="pw-wizard-toggle-row">
-                        <label
-                          v-for="(subVal, subKey) in val"
-                          :key="subKey"
-                          class="pw-wizard-toggle"
-                        >
-                          <input
-                            v-if="typeof subVal === 'boolean'"
-                            type="checkbox"
-                            :checked="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
-                            @change="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event.target.checked)"
-                          />
-                          <span>{{ subKey }}</span>
-                        </label>
-                      </div>
-                    </template>
-                  </div>
-                </div>
-              </div>
-            </fieldset>
+            </div>
 
           </div>
         </div>
@@ -395,6 +377,7 @@ export default {
       globalDirty: false,
       blockConfigs: {},
       blockOverrides: {},
+      blockActiveTabs: {},
     };
   },
   watch: {
@@ -429,6 +412,33 @@ export default {
 
     blockLabel(blockType) {
       return blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
+    },
+
+    /**
+     * Get available tabs for a block: always "content" first, then from settings.tabs.
+     */
+    getBlockTabs(blockType) {
+      const tabs = ['content'];
+      const settingsTabs = this.getDefault(blockType, 'settings.tabs') || {};
+      for (const key of Object.keys(settingsTabs)) {
+        if (!tabs.includes(key)) tabs.push(key);
+      }
+      // Add categories that have defaults but no settings tab entry
+      for (const cat of ['layout', 'style', 'effects', 'grid', 'settings']) {
+        const defaults = this.getDefault(blockType, 'defaults.' + cat);
+        if (defaults && Object.keys(defaults).length && !tabs.includes(cat)) {
+          tabs.push(cat);
+        }
+      }
+      return tabs;
+    },
+
+    getBlockActiveTab(blockType) {
+      return this.blockActiveTabs[blockType] || 'content';
+    },
+
+    setBlockActiveTab(blockType, tab) {
+      this.$set(this.blockActiveTabs, blockType, tab);
     },
 
     /**
@@ -682,7 +692,8 @@ export default {
   border-bottom-color: var(--color-black);
 }
 
-.pw-wizard-global-content {
+.pw-wizard-global-content,
+.pw-wizard-tab-content {
   min-height: 200px;
 }
 
