@@ -8,29 +8,62 @@
 
     <div v-else class="pw-wizard-content">
 
-        <!-- ==================== Global Tab ==================== -->
+        <!-- ==================== Global Settings ==================== -->
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
           <h2 class="pw-wizard-panel-title">Global Settings</h2>
 
-          <fieldset class="pw-wizard-fieldgroup">
-            <h3 class="pw-wizard-fieldgroup-title">Active Blocks</h3>
-            <p class="pw-wizard-hint">Select which blocks are available in the content editor.</p>
-            <div class="pw-wizard-checklist">
-              <label
-                v-for="block in blocks"
-                :key="block.blockType"
-                class="pw-wizard-check"
-              >
-                <input
-                  type="checkbox"
-                  :checked="block.active"
-                  @change="toggleBlock(block.blockType, $event.target.checked)"
-                />
-                <span class="pw-wizard-check-label">{{ blockLabel(block.blockType) }}</span>
-                <span class="pw-wizard-check-meta">{{ block.plugin }}</span>
-              </label>
-            </div>
-          </fieldset>
+          <!-- Kirby-style tab navigation -->
+          <nav class="pw-wizard-global-tabs">
+            <button
+              v-for="tab in globalTabs"
+              :key="tab.key"
+              class="pw-wizard-global-tab"
+              :class="{ 'is-active': globalActiveTab === tab.key }"
+              @click="globalActiveTab = tab.key"
+            >
+              {{ tab.label }}
+            </button>
+          </nav>
+
+          <!-- Colors -->
+          <div v-if="globalActiveTab === 'colors'" class="pw-wizard-global-content">
+            <p class="pw-wizard-hint">Color themes and scheme configuration.</p>
+          </div>
+
+          <!-- Elements -->
+          <div v-if="globalActiveTab === 'elements'" class="pw-wizard-global-content">
+            <p class="pw-wizard-hint">Global element settings (buttons, links, icons, etc.).</p>
+
+            <fieldset class="pw-wizard-fieldgroup">
+              <h3 class="pw-wizard-fieldgroup-title">Active Blocks</h3>
+              <p class="pw-wizard-hint">Select which blocks are available in the content editor.</p>
+              <div class="pw-wizard-checklist">
+                <label
+                  v-for="block in blocks"
+                  :key="block.blockType"
+                  class="pw-wizard-check"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="block.active"
+                    @change="toggleBlock(block.blockType, $event.target.checked)"
+                  />
+                  <span class="pw-wizard-check-label">{{ blockLabel(block.blockType) }}</span>
+                  <span class="pw-wizard-check-meta">{{ block.plugin }}</span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Header -->
+          <div v-if="globalActiveTab === 'header'" class="pw-wizard-global-content">
+            <p class="pw-wizard-hint">Header and navigation configuration.</p>
+          </div>
+
+          <!-- Footer -->
+          <div v-if="globalActiveTab === 'footer'" class="pw-wizard-global-content">
+            <p class="pw-wizard-hint">Footer configuration.</p>
+          </div>
 
           <div class="pw-wizard-toolbar">
             <k-button
@@ -352,6 +385,13 @@ export default {
       blocks: [],
       activeBlocks: [],
       activeTab: 'global',
+      globalActiveTab: 'colors',
+      globalTabs: [
+        { key: 'colors', label: 'Colors' },
+        { key: 'elements', label: 'Elements' },
+        { key: 'header', label: 'Header' },
+        { key: 'footer', label: 'Footer' },
+      ],
       globalDirty: false,
       blockConfigs: {},
       blockOverrides: {},
@@ -610,6 +650,40 @@ export default {
 /* Content */
 .pw-wizard-content {
   margin-top: var(--spacing-6);
+}
+
+/* Global tabs (Kirby-style) */
+.pw-wizard-global-tabs {
+  display: flex;
+  gap: var(--spacing-1);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-6);
+}
+
+.pw-wizard-global-tab {
+  padding: var(--spacing-2) var(--spacing-4);
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-dimmed);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.1s, border-color 0.1s;
+}
+
+.pw-wizard-global-tab:hover {
+  color: var(--color-text);
+}
+
+.pw-wizard-global-tab.is-active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-black);
+}
+
+.pw-wizard-global-content {
+  min-height: 200px;
 }
 
 .pw-wizard-panel { min-width: 0; }
