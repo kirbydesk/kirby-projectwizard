@@ -2,7 +2,7 @@
   <k-panel-inside class="pw-wizard">
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
-      <template #buttons>
+      <template v-if="isDirty" #buttons>
         <k-button
           text="Cancel"
           icon="cancel"
