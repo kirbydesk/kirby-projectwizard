@@ -3,7 +3,7 @@
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
       <template #right>
-        <k-button-group v-if="isDirty">
+        <k-button-group>
           <k-button
             text="Cancel"
             icon="cancel"
