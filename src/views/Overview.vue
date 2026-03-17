@@ -6,14 +6,14 @@
         <k-button
           text="Cancel"
           icon="undo"
-          variant="dimmed"
+          theme="notice"
           size="xs"
           @click="discardChanges"
         />
         <k-button
           text="Save"
           icon="check"
-          theme="positive"
+          theme="notice"
           variant="filled"
           size="xs"
           @click="saveCurrentView"
