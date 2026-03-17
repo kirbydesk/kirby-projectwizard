@@ -639,7 +639,7 @@ export default {
 
 <style>
 .pw-wizard {
-  padding: var(--spacing-6);
+  /* match native Kirby panel page spacing */
 }
 
 .pw-wizard-loading {
@@ -650,7 +650,6 @@ export default {
 
 /* Content */
 .pw-wizard-content {
-  margin-top: var(--spacing-6);
 }
 
 /* Global tabs (Kirby-style) */
@@ -695,24 +694,11 @@ export default {
   justify-content: space-between;
   margin-bottom: var(--spacing-6);
 }
-.pw-wizard-panel-title { font-size: var(--text-lg); font-weight: 600; }
 .pw-wizard-panel-meta { font-size: var(--text-xs); color: var(--color-text-dimmed); font-weight: 400; margin-left: var(--spacing-3); }
 .pw-wizard-hint { font-size: var(--text-sm); color: var(--color-text-dimmed); margin-bottom: var(--spacing-4); }
 
 /* Fieldgroups */
 .pw-wizard-fieldgroup {
-  border: 1px solid var(--color-border);
-  border-radius: var(--rounded-lg);
-  padding: var(--spacing-5);
-  margin-bottom: var(--spacing-4);
-}
-
-.pw-wizard-fieldgroup-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dimmed);
   margin-bottom: var(--spacing-4);
 }
 
