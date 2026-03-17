@@ -27,6 +27,9 @@ foreach ($blocks as $blockType => $info) {
 		'action'  => fn() => [
 			'component' => 'pw-wizard-overview',
 			'title'     => $label,
+			'breadcrumb' => [
+				['label' => $label, 'link' => 'projectwizard/block/' . $blockType],
+			],
 			'props'     => [
 				'blockType' => $blockType,
 			],
