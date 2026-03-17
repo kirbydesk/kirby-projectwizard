@@ -624,8 +624,15 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
-      const changed = JSON.stringify(this.blockOverrides[blockType] || {}) !== JSON.stringify(this.originalOverrides[blockType] || {});
-      this.$set(this.dirtyTabs, blockType, changed);
+      this.$set(this.dirtyTabs, blockType, true);
+      // Check if state actually differs from original, clear dirty if not
+      this.$nextTick(() => {
+        const current = JSON.stringify(this.blockOverrides[blockType] || {});
+        const original = JSON.stringify(this.originalOverrides[blockType] || {});
+        if (current === original) {
+          this.$set(this.dirtyTabs, blockType, false);
+        }
+      });
     },
 
     getDefault(blockType, path) {
