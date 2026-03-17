@@ -17,30 +17,40 @@ $blocks = ProjectConfig::detectBlocks();
 $blockViews = [];
 $blockMenuEntries = [];
 
+$blockLabelFn = function(string $plugin, string $blockType): string {
+	$fallback = ucfirst(preg_replace('/^pw/', '', $blockType));
+	$fallback = preg_replace('/([a-z])([A-Z])/', '$1 $2', $fallback);
+	$label = t($plugin . '.name', $fallback);
+	return is_string($label) ? $label : $fallback;
+};
+
 foreach ($blocks as $blockType => $info) {
-	$translationKey = $info['plugin'] . '.name';
-	$label = t($translationKey, ucfirst(preg_replace('/^pw/', '', $blockType)));
-	$label = is_string($label) ? $label : ucfirst(preg_replace('/^pw/', '', $blockType));
+	$plugin = $info['plugin'];
 
 	// View inside projectwizard area
 	$blockViews[] = [
 		'pattern' => 'projectwizard/block/' . $blockType,
-		'action'  => fn() => [
-			'component' => 'pw-wizard-overview',
-			'title'     => $label,
-			'breadcrumb' => [
-				['label' => $label, 'link' => 'projectwizard/block/' . $blockType],
-			],
-			'props'     => [
-				'blockType' => $blockType,
-			],
-		],
+		'action'  => function() use ($blockType, $plugin, $blockLabelFn) {
+			$label = $blockLabelFn($plugin, $blockType);
+			return [
+				'component' => 'pw-wizard-overview',
+				'title'     => $label,
+				'breadcrumb' => [
+					['label' => $label, 'link' => 'projectwizard/block/' . $blockType],
+				],
+				'props'     => [
+					'blockType' => $blockType,
+				],
+			];
+		},
 	];
 
-	// Sidebar menu entry — collected in order, added after projectwizard
+	// Sidebar menu entry — use closure for label so translations are resolved at render time
 	$slug = strtolower($blockType);
 	$blockMenuEntries['pw-block-' . $slug] = [
-		'label' => $label,
+		'label' => function() use ($plugin, $blockType, $blockLabelFn) {
+			return $blockLabelFn($plugin, $blockType);
+		},
 		'icon'  => $info['icon'] ?? 'box',
 		'menu'  => true,
 		'link'  => 'projectwizard/block/' . $blockType,
