@@ -432,8 +432,8 @@ export default {
      * Toggle a content field on/off.
      */
     toggleField(blockType, field, enabled) {
+      console.log('toggleField', blockType, field.key, enabled);
       if (enabled) {
-        // Remove the false override, restore to plugin default
         this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + field.key);
       } else {
         this.setVal(blockType, 'settings.fields.content.' + field.key, false);
@@ -603,6 +603,7 @@ export default {
       return this.nested(this.blockOverrides[blockType] || {}, path);
     },
     setVal(blockType, path, value) {
+      console.log('setVal', blockType, path, value);
       if (!this.blockOverrides[blockType]) this.$set(this.blockOverrides, blockType, {});
       this.setNested(this.blockOverrides[blockType], path, value);
       this.markDirty(blockType);
