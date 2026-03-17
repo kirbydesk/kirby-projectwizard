@@ -329,9 +329,10 @@ export default {
         for (const block of this.blocks) {
           const config = await this.$api.get('projectwizard/block/' + block.blockType);
           this.$set(this.blockConfigs, block.blockType, config);
-          this.$set(this.blockOverrides, block.blockType, JSON.parse(JSON.stringify(config.overrides || {})));
-          this.$set(this.originalOverrides, block.blockType, JSON.parse(JSON.stringify(config.overrides || {})));
-          this.$set(this.snapshots, block.blockType, JSON.stringify(config.overrides || {}));
+          const overrides = (config.overrides && !Array.isArray(config.overrides)) ? config.overrides : {};
+          this.$set(this.blockOverrides, block.blockType, JSON.parse(JSON.stringify(overrides)));
+          this.$set(this.originalOverrides, block.blockType, JSON.parse(JSON.stringify(overrides)));
+          this.$set(this.snapshots, block.blockType, JSON.stringify(overrides));
         }
 
         this.loading = false;
@@ -432,7 +433,6 @@ export default {
      * Toggle a content field on/off.
      */
     toggleField(blockType, field, enabled) {
-      console.log('toggleField', blockType, field.key, enabled);
       if (enabled) {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + field.key);
       } else {
@@ -603,8 +603,7 @@ export default {
       return this.nested(this.blockOverrides[blockType] || {}, path);
     },
     setVal(blockType, path, value) {
-      console.log('setVal', blockType, path, value);
-      if (!this.blockOverrides[blockType]) this.$set(this.blockOverrides, blockType, {});
+      if (!this.blockOverrides[blockType] || Array.isArray(this.blockOverrides[blockType])) this.$set(this.blockOverrides, blockType, {});
       this.setNested(this.blockOverrides[blockType], path, value);
       this.markDirty(blockType);
     },
@@ -628,12 +627,10 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
-      const current = JSON.stringify(JSON.parse(JSON.stringify(this.blockOverrides[blockType] || {})));
+      const obj = Array.isArray(this.blockOverrides[blockType]) ? {} : (this.blockOverrides[blockType] || {});
+      const current = JSON.stringify(obj);
       const snapshot = this.snapshots[blockType] || '{}';
-      const dirty = current !== snapshot;
-      console.log('markDirty', blockType, 'dirty:', dirty, 'current:', current, 'snapshot:', snapshot);
-      this.$set(this.dirtyTabs, blockType, dirty);
-      console.log('dirtyTabs:', JSON.stringify(this.dirtyTabs), 'activeTab:', this.activeTab);
+      this.$set(this.dirtyTabs, blockType, current !== snapshot);
     },
 
     getDefault(blockType, path) {
