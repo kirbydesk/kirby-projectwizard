@@ -2,23 +2,21 @@
   <k-panel-inside class="pw-wizard">
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
-      <template #right>
-        <k-button-group>
-          <k-button
-            text="Cancel"
-            icon="cancel"
-            size="sm"
-            @click="discardChanges"
-          />
-          <k-button
-            text="Save"
-            icon="check"
-            theme="positive"
-            variant="filled"
-            size="sm"
-            @click="saveCurrentView"
-          />
-        </k-button-group>
+      <template #buttons>
+        <k-button
+          text="Cancel"
+          icon="cancel"
+          size="sm"
+          @click="discardChanges"
+        />
+        <k-button
+          text="Save"
+          icon="check"
+          theme="positive"
+          variant="filled"
+          size="sm"
+          @click="saveCurrentView"
+        />
       </template>
     </k-header>
 
