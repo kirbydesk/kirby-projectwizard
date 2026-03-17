@@ -357,12 +357,16 @@ export default {
       blockOverrides: {},
     };
   },
+  watch: {
+    blockType: {
+      immediate: true,
+      handler(val) {
+        this.activeTab = val || 'global';
+      },
+    },
+  },
   async created() {
     await this.load();
-    // If opened via sidebar block link, activate that tab
-    if (this.blockType) {
-      this.activeTab = this.blockType;
-    }
   },
   methods: {
     async load() {
