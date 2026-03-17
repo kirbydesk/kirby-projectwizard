@@ -5,8 +5,9 @@
       <template v-if="dirty" #buttons>
         <k-button
           text="Cancel"
-          icon="cancel"
-          size="sm"
+          icon="undo"
+          variant="dimmed"
+          size="xs"
           @click="discardChanges"
         />
         <k-button
@@ -14,7 +15,7 @@
           icon="check"
           theme="positive"
           variant="filled"
-          size="sm"
+          size="xs"
           @click="saveCurrentView"
         />
       </template>
