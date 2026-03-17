@@ -130,55 +130,62 @@
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
                   class="pw-wizard-unified-field"
+                  :class="{ 'is-disabled': !isFieldEnabled(block.blockType, field) }"
                 >
+                  <!-- Field enable/disable checkbox -->
                   <div class="pw-wizard-unified-field-header">
-                    <span class="pw-wizard-unified-field-name">{{ field.key }}</span>
+                    <label class="pw-wizard-field-enable">
+                      <input
+                        type="checkbox"
+                        :checked="isFieldEnabled(block.blockType, field)"
+                        @change="toggleField(block.blockType, field, $event.target.checked)"
+                      />
+                      <span class="pw-wizard-unified-field-name">{{ field.key }}</span>
+                    </label>
                   </div>
 
-                  <div v-if="field.properties.length" class="pw-wizard-unified-props">
+                  <!-- Properties (only when field is enabled) -->
+                  <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" class="pw-wizard-unified-props">
                     <div
                       v-for="prop in field.properties"
                       :key="prop.key"
-                      class="k-field pw-wizard-k-field"
-                      :class="{ 'is-overridden': hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key) }"
+                      class="pw-wizard-prop-group"
                     >
-                      <header class="k-field-header">
-                        <label class="k-label k-field-label">
-                          <span class="k-label-text">{{ prop.key }}</span>
-                        </label>
-                      </header>
-                      <div class="k-input" data-type="select">
-                        <span class="k-input-element">
-                          <select
-                            class="k-select-input"
-                            :value="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
-                            @change="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event.target.value, prop.pluginDefault)"
-                          >
-                            <option
-                              v-for="opt in prop.options"
-                              :key="opt"
-                              :value="opt"
-                            >{{ opt }}</option>
-                          </select>
-                        </span>
-                      </div>
-                      <footer class="k-field-footer">
-                        <div class="k-help k-field-help k-text">
-                          Allowed: {{ prop.options.join(', ') }} &mdash; Default: <strong>{{ prop.pluginDefault }}</strong>
-                        </div>
-                      </footer>
-                    </div>
-                  </div>
+                      <div class="pw-wizard-prop-label">{{ prop.key }}</div>
 
-                  <div v-else class="pw-wizard-unified-simple">
-                    <label class="pw-wizard-toggle">
-                      <input
-                        type="checkbox"
-                        :checked="getVal(block.blockType, 'settings.fields.content.' + field.key, field.enabled)"
-                        @change="setVal(block.blockType, 'settings.fields.content.' + field.key, $event.target.checked)"
-                      />
-                      <span>{{ field.enabled ? 'Enabled' : 'Disabled' }}</span>
-                    </label>
+                      <!-- Multiselect: which values are allowed -->
+                      <div class="pw-wizard-prop-multiselect">
+                        <label
+                          v-for="opt in prop.allOptions"
+                          :key="opt"
+                          class="pw-wizard-chip-check"
+                          :class="{ 'is-active': getActiveOptions(block.blockType, field.key, prop.key, prop).includes(opt) }"
+                        >
+                          <input
+                            type="checkbox"
+                            :checked="getActiveOptions(block.blockType, field.key, prop.key, prop).includes(opt)"
+                            @change="toggleOption(block.blockType, field.key, prop.key, prop, opt, $event.target.checked)"
+                          />
+                          <span>{{ opt }}</span>
+                        </label>
+                      </div>
+
+                      <!-- Default select: from the allowed values -->
+                      <div class="pw-wizard-prop-default">
+                        <span class="pw-wizard-prop-default-label">Default:</span>
+                        <select
+                          class="pw-wizard-prop-default-select"
+                          :value="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                          @change="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event.target.value, prop.pluginDefault)"
+                        >
+                          <option
+                            v-for="opt in getActiveOptions(block.blockType, field.key, prop.key, prop)"
+                            :key="opt"
+                            :value="opt"
+                          >{{ opt }}</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -455,15 +462,19 @@ export default {
 
         if (this.isObject(settingVal)) {
           for (const [propKey, propOptions] of Object.entries(settingVal)) {
-            const options = Array.isArray(propOptions) ? propOptions : [];
+            const allOptions = Array.isArray(propOptions) ? propOptions : [];
             let pluginDefault = '';
             if (this.isObject(defaultVal)) {
-              // Try exact key, then try without trailing 's' (sizes → size)
               pluginDefault = defaultVal[propKey] !== undefined
                 ? defaultVal[propKey]
                 : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
             }
-            field.properties.push({ key: propKey, options, pluginDefault: String(pluginDefault) });
+            field.properties.push({
+              key: propKey,
+              allOptions,        // all possible values from the plugin
+              options: allOptions, // currently allowed (may be overridden)
+              pluginDefault: String(pluginDefault),
+            });
           }
         } else if (typeof settingVal === 'boolean') {
           field.enabled = settingVal;
@@ -473,6 +484,71 @@ export default {
       }
 
       return fields;
+    },
+
+    /**
+     * Check if a content field is enabled.
+     */
+    isFieldEnabled(blockType, field) {
+      // Check override first
+      const override = this.getOverrideOnly(blockType, 'settings.fields.content.' + field.key);
+      if (override === false) return false;
+      if (override === true || this.isObject(override)) return true;
+      // Fall back to plugin default
+      return field.enabled !== false;
+    },
+
+    /**
+     * Toggle a content field on/off.
+     */
+    toggleField(blockType, field, enabled) {
+      if (enabled) {
+        // Remove the false override, restore to plugin default
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + field.key);
+      } else {
+        this.setVal(blockType, 'settings.fields.content.' + field.key, false);
+      }
+      this.markDirty(blockType);
+    },
+
+    /**
+     * Get currently active (allowed) options for a property.
+     */
+    getActiveOptions(blockType, fieldKey, propKey, prop) {
+      const override = this.getOverrideOnly(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey);
+      if (Array.isArray(override)) return override;
+      return prop.allOptions;
+    },
+
+    /**
+     * Toggle a single option value in the allowed list.
+     */
+    toggleOption(blockType, fieldKey, propKey, prop, opt, checked) {
+      const current = [...this.getActiveOptions(blockType, fieldKey, propKey, prop)];
+      let updated;
+      if (checked) {
+        // Add in original order
+        updated = prop.allOptions.filter(o => current.includes(o) || o === opt);
+      } else {
+        updated = current.filter(o => o !== opt);
+        // Don't allow empty
+        if (updated.length === 0) return;
+      }
+
+      // If same as plugin default, remove override
+      if (JSON.stringify(updated) === JSON.stringify(prop.allOptions)) {
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey + '.' + propKey);
+      } else {
+        this.setVal(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey, updated);
+      }
+
+      // If current default is no longer in allowed list, reset it
+      const currentDefault = this.getVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, prop.pluginDefault);
+      if (!updated.includes(currentDefault) && updated.length) {
+        this.setVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, updated[0]);
+      }
+
+      this.markDirty(blockType);
     },
 
     /**
@@ -751,13 +827,101 @@ export default {
 }
 .pw-wizard-unified-field-header { margin-bottom: var(--spacing-3); }
 .pw-wizard-unified-field-name { font-weight: 600; font-size: var(--text-sm); text-transform: capitalize; }
-.pw-wizard-unified-props {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--spacing-4);
-  padding-left: var(--spacing-2);
+
+.pw-wizard-field-enable {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  cursor: pointer;
 }
-.pw-wizard-unified-simple { padding-left: var(--spacing-2); }
+
+.pw-wizard-unified-field.is-disabled {
+  opacity: 0.4;
+}
+
+.pw-wizard-unified-field.is-disabled .pw-wizard-unified-field-name {
+  text-decoration: line-through;
+}
+
+.pw-wizard-unified-props {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  padding-left: var(--spacing-6);
+}
+
+.pw-wizard-prop-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.pw-wizard-prop-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--color-text-dimmed);
+}
+
+.pw-wizard-prop-multiselect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.pw-wizard-chip-check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  background: var(--color-white);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.pw-wizard-chip-check input { display: none; }
+
+.pw-wizard-chip-check:hover {
+  border-color: var(--color-gray-400);
+}
+
+.pw-wizard-chip-check.is-active {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+.pw-wizard-prop-default {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.pw-wizard-prop-default-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+  font-weight: 500;
+}
+
+.pw-wizard-prop-default-select {
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  background: var(--color-white);
+}
+
+.pw-wizard-prop-default-select:focus {
+  outline: none;
+  border-color: var(--color-focus);
+}
+
+.pw-wizard-unified-simple { padding-left: var(--spacing-6); }
 
 /* Kirby-native field overrides */
 .pw-wizard-k-field {
