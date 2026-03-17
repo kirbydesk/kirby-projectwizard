@@ -338,6 +338,12 @@ export default {
     },
 
     blockLabel(blockType) {
+      // Find plugin name for translation key
+      const block = this.blocks.find(b => b.blockType === blockType);
+      if (block) {
+        const translated = this.$t(block.plugin + '.name');
+        if (translated && translated !== block.plugin + '.name') return translated;
+      }
       const name = blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
       return name.charAt(0).toUpperCase() + name.slice(1);
     },

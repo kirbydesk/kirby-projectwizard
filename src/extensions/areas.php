@@ -18,8 +18,9 @@ $blockViews = [];
 $blockMenuEntries = [];
 
 foreach ($blocks as $blockType => $info) {
-	$label = ucfirst(preg_replace('/^pw/', '', $blockType));
-	$label = preg_replace('/([a-z])([A-Z])/', '$1 $2', $label);
+	$translationKey = $info['plugin'] . '.name';
+	$label = t($translationKey, ucfirst(preg_replace('/^pw/', '', $blockType)));
+	$label = is_string($label) ? $label : ucfirst(preg_replace('/^pw/', '', $blockType));
 
 	// View inside projectwizard area
 	$blockViews[] = [
