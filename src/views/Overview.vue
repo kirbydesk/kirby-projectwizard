@@ -2,6 +2,24 @@
   <k-panel-inside class="pw-wizard">
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
+      <template #right>
+        <k-button-group v-if="isDirty">
+          <k-button
+            text="Cancel"
+            icon="cancel"
+            size="sm"
+            @click="discardChanges"
+          />
+          <k-button
+            text="Save"
+            icon="check"
+            theme="positive"
+            variant="filled"
+            size="sm"
+            @click="saveCurrentView"
+          />
+        </k-button-group>
+      </template>
     </k-header>
 
     <div v-if="loading" class="pw-wizard-loading">Loading...</div>
@@ -65,16 +83,6 @@
             <p class="pw-wizard-hint">Footer configuration.</p>
           </div>
 
-          <div class="pw-wizard-toolbar">
-            <k-button
-              text="Save"
-              theme="positive"
-              variant="filled"
-              size="sm"
-              :disabled="!globalDirty"
-              @click="saveGlobal"
-            />
-          </div>
         </div>
 
         <!-- ==================== Block Tabs ==================== -->
@@ -84,27 +92,6 @@
           v-show="activeTab === block.blockType"
           class="pw-wizard-panel"
         >
-          <div class="pw-wizard-panel-header">
-            <h2 class="pw-wizard-panel-title">
-              {{ blockLabel(block.blockType) }}
-              <span class="pw-wizard-panel-meta">{{ block.plugin }}</span>
-            </h2>
-            <k-button-group>
-              <k-button
-                text="Reset"
-                size="sm"
-                :disabled="!blockConfigs[block.blockType]?.hasOverrides"
-                @click="resetBlock(block.blockType)"
-              />
-              <k-button
-                text="Save"
-                theme="positive"
-                variant="filled"
-                size="sm"
-                @click="saveBlock(block.blockType)"
-              />
-            </k-button-group>
-          </div>
 
           <div v-if="blockConfigs[block.blockType]" class="pw-wizard-block-sections">
 
@@ -304,6 +291,8 @@ export default {
       globalDirty: false,
       blockConfigs: {},
       blockOverrides: {},
+      originalOverrides: {},
+      originalActiveBlocks: [],
       blockActiveTabs: {},
     };
   },
@@ -313,6 +302,15 @@ export default {
       handler(val) {
         this.activeTab = val || 'global';
       },
+    },
+  },
+  computed: {
+    isDirty() {
+      if (this.activeTab === 'global') {
+        return JSON.stringify(this.activeBlocks) !== JSON.stringify(this.originalActiveBlocks);
+      }
+      const bt = this.activeTab;
+      return JSON.stringify(this.blockOverrides[bt] || {}) !== JSON.stringify(this.originalOverrides[bt] || {});
     },
   },
   async created() {
@@ -325,10 +323,13 @@ export default {
         this.blocks = res.blocks || [];
         this.activeBlocks = res.activeBlocks || [];
 
+        this.originalActiveBlocks = [...this.activeBlocks];
+
         for (const block of this.blocks) {
           const config = await this.$api.get('projectwizard/block/' + block.blockType);
           this.$set(this.blockConfigs, block.blockType, config);
           this.$set(this.blockOverrides, block.blockType, JSON.parse(JSON.stringify(config.overrides || {})));
+          this.$set(this.originalOverrides, block.blockType, JSON.parse(JSON.stringify(config.overrides || {})));
         }
 
         this.loading = false;
@@ -533,10 +534,31 @@ export default {
     async saveGlobal() {
       try {
         await this.$api.post('projectwizard/blocks/active', { blocks: this.activeBlocks });
-        this.globalDirty = false;
+        this.originalActiveBlocks = [...this.activeBlocks];
         this.$panel.notification.success('Active blocks saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save');
+      }
+    },
+
+    async saveCurrentView() {
+      if (this.activeTab === 'global') {
+        await this.saveGlobal();
+      } else {
+        await this.saveBlock(this.activeTab);
+      }
+    },
+
+    discardChanges() {
+      if (this.activeTab === 'global') {
+        this.activeBlocks = [...this.originalActiveBlocks];
+        // Restore block active states
+        for (const block of this.blocks) {
+          block.active = this.activeBlocks.includes(block.blockType);
+        }
+      } else {
+        const bt = this.activeTab;
+        this.$set(this.blockOverrides, bt, JSON.parse(JSON.stringify(this.originalOverrides[bt] || {})));
       }
     },
 
@@ -621,6 +643,7 @@ export default {
         );
         this.$set(this.blockConfigs, blockType, res);
         this.$set(this.blockOverrides, blockType, JSON.parse(JSON.stringify(res.overrides || {})));
+        this.$set(this.originalOverrides, blockType, JSON.parse(JSON.stringify(res.overrides || {})));
         const block = this.blocks.find(b => b.blockType === blockType);
         if (block) block.customized = Object.keys(res.overrides || {}).length > 0;
         this.$panel.notification.success(this.blockLabel(blockType) + ' saved');
@@ -633,6 +656,7 @@ export default {
         const res = await this.$api.post('projectwizard/block/' + blockType + '/reset');
         this.$set(this.blockConfigs, blockType, res);
         this.$set(this.blockOverrides, blockType, {});
+        this.$set(this.originalOverrides, blockType, {});
         const block = this.blocks.find(b => b.blockType === blockType);
         if (block) block.customized = false;
         this.$panel.notification.success(this.blockLabel(blockType) + ' reset to defaults');
@@ -755,7 +779,5 @@ export default {
   grid-column: span 8;
 }
 
-/* Toolbar */
-.pw-wizard-toolbar { margin-top: var(--spacing-6); display: flex; justify-content: flex-end; }
 .pw-wizard-block-sections { display: flex; flex-direction: column; }
 </style>
