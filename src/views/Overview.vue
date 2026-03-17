@@ -2,7 +2,7 @@
   <k-panel-inside class="pw-wizard">
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
-      <template v-if="isDirty" #buttons>
+      <template v-if="dirty" #buttons>
         <k-button
           text="Cancel"
           icon="cancel"
@@ -292,7 +292,7 @@ export default {
       originalOverrides: {},
       originalActiveBlocks: [],
       blockActiveTabs: {},
-      changeCounter: 0,
+      dirty: false,
     };
   },
   watch: {
@@ -301,17 +301,6 @@ export default {
       handler(val) {
         this.activeTab = val || 'global';
       },
-    },
-  },
-  computed: {
-    isDirty() {
-      // changeCounter forces re-evaluation on every mutation
-      void this.changeCounter;
-      if (this.activeTab === 'global') {
-        return JSON.stringify(this.activeBlocks) !== JSON.stringify(this.originalActiveBlocks);
-      }
-      const bt = this.activeTab;
-      return JSON.stringify(this.blockOverrides[bt] || {}) !== JSON.stringify(this.originalOverrides[bt] || {});
     },
   },
   async created() {
@@ -530,12 +519,13 @@ export default {
       } else {
         this.activeBlocks = this.activeBlocks.filter(b => b !== blockType);
       }
-      this.changeCounter++;
+      this.dirty = true;
     },
     async saveGlobal() {
       try {
         await this.$api.post('projectwizard/blocks/active', { blocks: this.activeBlocks });
         this.originalActiveBlocks = [...this.activeBlocks];
+        this.dirty = false;
         this.$panel.notification.success('Active blocks saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save');
@@ -553,7 +543,6 @@ export default {
     discardChanges() {
       if (this.activeTab === 'global') {
         this.activeBlocks = [...this.originalActiveBlocks];
-        // Restore block active states
         for (const block of this.blocks) {
           block.active = this.activeBlocks.includes(block.blockType);
         }
@@ -561,6 +550,7 @@ export default {
         const bt = this.activeTab;
         this.$set(this.blockOverrides, bt, JSON.parse(JSON.stringify(this.originalOverrides[bt] || {})));
       }
+      this.dirty = false;
     },
 
     // --- Nested helpers ---
@@ -624,7 +614,7 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
-      this.changeCounter++;
+      this.dirty = true;
     },
 
     getDefault(blockType, path) {
@@ -648,6 +638,7 @@ export default {
         this.$set(this.originalOverrides, blockType, JSON.parse(JSON.stringify(res.overrides || {})));
         const block = this.blocks.find(b => b.blockType === blockType);
         if (block) block.customized = Object.keys(res.overrides || {}).length > 0;
+        this.dirty = false;
         this.$panel.notification.success(this.blockLabel(blockType) + ' saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save');
