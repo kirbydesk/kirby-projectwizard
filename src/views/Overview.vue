@@ -338,7 +338,8 @@ export default {
     },
 
     blockLabel(blockType) {
-      return blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
+      const name = blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
+      return name.charAt(0).toUpperCase() + name.slice(1);
     },
 
     /**
