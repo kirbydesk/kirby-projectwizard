@@ -176,9 +176,14 @@ class ProjectConfig
 		return $merged;
 	}
 
+	private static function configDir(): string
+	{
+		return kirby()->root('site') . '/config/projectwizard';
+	}
+
 	private static function storagePath(): string
 	{
-		return kirby()->root('content') . '/_projectwizard/projectwizard.json';
+		return self::configDir() . '/blocks.json';
 	}
 
 	private static function readJson(string $path): array
