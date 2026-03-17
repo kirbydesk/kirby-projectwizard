@@ -25,8 +25,19 @@ class ProjectConfig
 			}
 			if (!$blockType) continue;
 
-			$blocks[$blockType] = [
+			// Extract icon from blueprints.php
+		$icon = 'box';
+		$bpFile = $dir . '/src/extensions/blueprints.php';
+		if (file_exists($bpFile)) {
+			$bpContent = file_get_contents($bpFile);
+			if (preg_match("/'icon'\s*=>\s*'([^']+)'/", $bpContent, $iconMatch)) {
+				$icon = $iconMatch[1];
+			}
+		}
+
+		$blocks[$blockType] = [
 				'plugin'   => basename($dir),
+				'icon'     => $icon,
 				'settings' => self::readJson($configDir . '/settings.json'),
 				'defaults' => self::readJson($configDir . '/defaults.json'),
 				'editor'   => self::readJson($configDir . '/editor.json'),

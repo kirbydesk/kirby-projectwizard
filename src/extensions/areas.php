@@ -40,7 +40,7 @@ foreach ($blocks as $blockType => $info) {
 
 	$areas['pw-block-' . $slug] = [
 		'label' => $label,
-		'icon'  => 'box',
+		'icon'  => $info['icon'] ?? 'box',
 		'menu'  => true,
 		'link'  => 'projectwizard/block/' . $blockType,
 		'views' => [
