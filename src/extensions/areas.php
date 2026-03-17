@@ -24,7 +24,7 @@ $blockLabel = function(string $plugin, string $blockType): string {
 
 	$i18nFile = kirby()->root('plugins') . '/' . $plugin . '/src/i18n/en.php';
 	if (file_exists($i18nFile)) {
-		$translations = require $i18nFile;
+		$translations = include $i18nFile;
 		$key = $plugin . '.name';
 		if (isset($translations[$key])) {
 			return $translations[$key];
