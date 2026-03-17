@@ -15,30 +15,27 @@ $areas['pw-divider'] = [
 // Detect blocks for views + menu entries
 $blocks = ProjectConfig::detectBlocks();
 $blockViews = [];
+$blockMenuEntries = [];
 
 foreach ($blocks as $blockType => $info) {
 	$label = ucfirst(preg_replace('/^pw/', '', $blockType));
 	$label = preg_replace('/([a-z])([A-Z])/', '$1 $2', $label);
 
-	// Add view to projectwizard area
+	// View inside projectwizard area
 	$blockViews[] = [
 		'pattern' => 'projectwizard/block/' . $blockType,
 		'action'  => fn() => [
 			'component' => 'pw-wizard-overview',
 			'title'     => $label,
-			'breadcrumb' => [
-				['label' => 'Project Wizard', 'link' => 'projectwizard'],
-				['label' => $label],
-			],
 			'props'     => [
 				'blockType' => $blockType,
 			],
 		],
 	];
 
-	// Sidebar menu entry (links into the projectwizard area)
+	// Sidebar menu entry — collected in order, added after projectwizard
 	$slug = strtolower($blockType);
-	$areas['pw-block-' . $slug] = [
+	$blockMenuEntries['pw-block-' . $slug] = [
 		'label' => $label,
 		'icon'  => $info['icon'] ?? 'box',
 		'menu'  => true,
@@ -67,5 +64,10 @@ $areas['projectwizard'] = [
 		$blockViews
 	),
 ];
+
+// Add block menu entries after projectwizard (preserves order)
+foreach ($blockMenuEntries as $key => $entry) {
+	$areas[$key] = $entry;
+}
 
 return $areas;
