@@ -15,16 +15,6 @@ return [
 					'props'     => [],
 				],
 			],
-			[
-				'pattern' => 'projectwizard/block/(:any)',
-				'action'  => fn(string $blockType) => [
-					'component' => 'pw-wizard-block-editor',
-					'title'     => 'Block: ' . $blockType,
-					'props'     => [
-						'blockType' => $blockType,
-					],
-				],
-			],
 		],
 	],
 ];
