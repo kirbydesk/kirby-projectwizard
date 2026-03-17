@@ -528,7 +528,8 @@ export default {
       } else {
         this.activeBlocks = this.activeBlocks.filter(b => b !== blockType);
       }
-      this.$set(this.dirtyTabs, 'global', true);
+      const changed = JSON.stringify(this.activeBlocks) !== JSON.stringify(this.originalActiveBlocks);
+      this.$set(this.dirtyTabs, 'global', changed);
     },
     async saveGlobal() {
       try {
@@ -623,7 +624,8 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
-      this.$set(this.dirtyTabs, blockType, true);
+      const changed = JSON.stringify(this.blockOverrides[blockType] || {}) !== JSON.stringify(this.originalOverrides[blockType] || {});
+      this.$set(this.dirtyTabs, blockType, changed);
     },
 
     getDefault(blockType, path) {
