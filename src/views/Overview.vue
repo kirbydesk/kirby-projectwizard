@@ -433,8 +433,15 @@ export default {
      * Toggle a content field on/off.
      */
     toggleField(blockType, field, enabled) {
+      if (!this.blockOverrides[blockType] || Array.isArray(this.blockOverrides[blockType])) {
+        this.$set(this.blockOverrides, blockType, {});
+      }
       if (enabled) {
-        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + field.key);
+        this.deleteNested(this.blockOverrides[blockType], 'settings.fields.content.' + field.key);
+        // Clean up empty parent objects
+        this.cleanEmpty(this.blockOverrides[blockType], 'settings.fields.content');
+        this.cleanEmpty(this.blockOverrides[blockType], 'settings.fields');
+        this.cleanEmpty(this.blockOverrides[blockType], 'settings');
       } else {
         this.setVal(blockType, 'settings.fields.content.' + field.key, false);
       }
@@ -582,6 +589,12 @@ export default {
       }
       this.$set(cur, keys[keys.length - 1], value);
     },
+    cleanEmpty(obj, path) {
+      const val = this.nested(obj, path);
+      if (val && typeof val === 'object' && Object.keys(val).length === 0) {
+        this.deleteNested(obj, path);
+      }
+    },
     deleteNested(obj, path) {
       const keys = path.split('.');
       let cur = obj;
@@ -608,10 +621,12 @@ export default {
       this.markDirty(blockType);
     },
     setValOrClear(blockType, path, value, placeholder) {
+      if (!this.blockOverrides[blockType] || Array.isArray(this.blockOverrides[blockType])) {
+        this.$set(this.blockOverrides, blockType, {});
+      }
       if (value === '' || value === placeholder) {
-        this.deleteNested(this.blockOverrides[blockType] || {}, path);
+        this.deleteNested(this.blockOverrides[blockType], path);
       } else {
-        if (!this.blockOverrides[blockType]) this.$set(this.blockOverrides, blockType, {});
         this.setNested(this.blockOverrides[blockType], path, value);
       }
       this.markDirty(blockType);
