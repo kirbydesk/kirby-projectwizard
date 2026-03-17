@@ -12,50 +12,60 @@ $areas['pw-divider'] = [
 	'disabled' => true,
 ];
 
-// Global settings
-$areas['projectwizard'] = [
-	'label' => 'Project Wizard',
-	'icon'  => 'wand',
-	'menu'  => true,
-	'views' => [
-		[
-			'pattern' => 'projectwizard',
-			'action'  => fn() => [
-				'component' => 'pw-wizard-overview',
-				'title'     => 'Project Wizard',
-				'props'     => [
-					'blockType' => null,
-				],
-			],
-		],
-	],
-];
-
-// Dynamic block entries
+// Detect blocks for views + menu entries
 $blocks = ProjectConfig::detectBlocks();
+$blockViews = [];
+
 foreach ($blocks as $blockType => $info) {
 	$label = ucfirst(preg_replace('/^pw/', '', $blockType));
 	$label = preg_replace('/([a-z])([A-Z])/', '$1 $2', $label);
-	$slug  = strtolower($blockType);
 
+	// Add view to projectwizard area
+	$blockViews[] = [
+		'pattern' => 'projectwizard/block/' . $blockType,
+		'action'  => fn() => [
+			'component' => 'pw-wizard-overview',
+			'title'     => $label,
+			'breadcrumb' => [
+				['label' => 'Project Wizard', 'link' => 'projectwizard'],
+				['label' => $label],
+			],
+			'props'     => [
+				'blockType' => $blockType,
+			],
+		],
+	];
+
+	// Sidebar menu entry (links into the projectwizard area)
+	$slug = strtolower($blockType);
 	$areas['pw-block-' . $slug] = [
 		'label' => $label,
 		'icon'  => $info['icon'] ?? 'box',
 		'menu'  => true,
 		'link'  => 'projectwizard/block/' . $blockType,
-		'views' => [
+	];
+}
+
+// Main projectwizard area with all views
+$areas['projectwizard'] = [
+	'label' => 'Project Wizard',
+	'icon'  => 'wand',
+	'menu'  => true,
+	'views' => array_merge(
+		[
 			[
-				'pattern' => 'projectwizard/block/' . $blockType,
+				'pattern' => 'projectwizard',
 				'action'  => fn() => [
 					'component' => 'pw-wizard-overview',
-					'title'     => $label,
+					'title'     => 'Project Wizard',
 					'props'     => [
-						'blockType' => $blockType,
+						'blockType' => null,
 					],
 				],
 			],
 		],
-	];
-}
+		$blockViews
+	),
+];
 
 return $areas;
