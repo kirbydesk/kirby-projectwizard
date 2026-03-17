@@ -302,6 +302,7 @@ export default {
       originalActiveBlocks: [],
       blockActiveTabs: {},
       dirtyTabs: {},
+      snapshots: {},
     };
   },
   watch: {
@@ -323,12 +324,14 @@ export default {
         this.activeBlocks = res.activeBlocks || [];
 
         this.originalActiveBlocks = [...this.activeBlocks];
+        this.$set(this.snapshots, 'global', JSON.stringify(this.activeBlocks));
 
         for (const block of this.blocks) {
           const config = await this.$api.get('projectwizard/block/' + block.blockType);
           this.$set(this.blockConfigs, block.blockType, config);
           this.$set(this.blockOverrides, block.blockType, JSON.parse(JSON.stringify(config.overrides || {})));
           this.$set(this.originalOverrides, block.blockType, JSON.parse(JSON.stringify(config.overrides || {})));
+          this.$set(this.snapshots, block.blockType, JSON.stringify(config.overrides || {}));
         }
 
         this.loading = false;
@@ -528,13 +531,13 @@ export default {
       } else {
         this.activeBlocks = this.activeBlocks.filter(b => b !== blockType);
       }
-      const changed = JSON.stringify(this.activeBlocks) !== JSON.stringify(this.originalActiveBlocks);
-      this.$set(this.dirtyTabs, 'global', changed);
+      this.$set(this.dirtyTabs, 'global', JSON.stringify(this.activeBlocks) !== this.snapshots['global']);
     },
     async saveGlobal() {
       try {
         await this.$api.post('projectwizard/blocks/active', { blocks: this.activeBlocks });
         this.originalActiveBlocks = [...this.activeBlocks];
+        this.$set(this.snapshots, 'global', JSON.stringify(this.activeBlocks));
         this.$set(this.dirtyTabs, 'global', false);
         this.$panel.notification.success('Active blocks saved');
       } catch (e) {
@@ -624,15 +627,10 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
-      this.$set(this.dirtyTabs, blockType, true);
-      // Check if state actually differs from original, clear dirty if not
-      this.$nextTick(() => {
-        const current = JSON.stringify(this.blockOverrides[blockType] || {});
-        const original = JSON.stringify(this.originalOverrides[blockType] || {});
-        if (current === original) {
-          this.$set(this.dirtyTabs, blockType, false);
-        }
-      });
+      // Deep clone + stringify to get current state independent of Vue reactivity
+      const current = JSON.stringify(JSON.parse(JSON.stringify(this.blockOverrides[blockType] || {})));
+      const snapshot = this.snapshots[blockType] || '{}';
+      this.$set(this.dirtyTabs, blockType, current !== snapshot);
     },
 
     getDefault(blockType, path) {
@@ -656,7 +654,8 @@ export default {
         this.$set(this.originalOverrides, blockType, JSON.parse(JSON.stringify(res.overrides || {})));
         const block = this.blocks.find(b => b.blockType === blockType);
         if (block) block.customized = Object.keys(res.overrides || {}).length > 0;
-        this.$set(this.dirtyTabs, this.activeTab, false);
+        this.$set(this.snapshots, blockType, JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, blockType, false);
         this.$panel.notification.success(this.blockLabel(blockType) + ' saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save');
@@ -668,6 +667,8 @@ export default {
         this.$set(this.blockConfigs, blockType, res);
         this.$set(this.blockOverrides, blockType, {});
         this.$set(this.originalOverrides, blockType, {});
+        this.$set(this.snapshots, blockType, '{}');
+        this.$set(this.dirtyTabs, blockType, false);
         const block = this.blocks.find(b => b.blockType === blockType);
         if (block) block.customized = false;
         this.$panel.notification.success(this.blockLabel(blockType) + ' reset to defaults');
