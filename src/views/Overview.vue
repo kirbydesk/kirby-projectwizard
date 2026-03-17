@@ -294,6 +294,7 @@ export default {
       originalOverrides: {},
       originalActiveBlocks: [],
       blockActiveTabs: {},
+      changeCounter: 0,
     };
   },
   watch: {
@@ -306,6 +307,8 @@ export default {
   },
   computed: {
     isDirty() {
+      // changeCounter forces re-evaluation on every mutation
+      void this.changeCounter;
       if (this.activeTab === 'global') {
         return JSON.stringify(this.activeBlocks) !== JSON.stringify(this.originalActiveBlocks);
       }
@@ -529,7 +532,7 @@ export default {
       } else {
         this.activeBlocks = this.activeBlocks.filter(b => b !== blockType);
       }
-      this.globalDirty = true;
+      this.changeCounter++;
     },
     async saveGlobal() {
       try {
@@ -623,6 +626,7 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
+      this.changeCounter++;
     },
 
     getDefault(blockType, path) {
