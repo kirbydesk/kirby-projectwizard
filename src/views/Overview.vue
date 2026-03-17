@@ -139,33 +139,43 @@
                     <span class="pw-wizard-unified-field-name">{{ field.key }}</span>
                   </div>
 
-                  <!-- Field has properties with options (align, level, sizes, mode) -->
+                  <!-- Field has properties with options -->
                   <div v-if="field.properties.length" class="pw-wizard-unified-props">
                     <div
                       v-for="prop in field.properties"
                       :key="prop.key"
-                      class="pw-wizard-unified-prop"
+                      class="k-field pw-wizard-k-field"
                       :class="{ 'is-overridden': hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key) }"
                     >
-                      <span class="pw-wizard-unified-prop-label">{{ prop.key }}</span>
-                      <div class="pw-wizard-option-chips">
-                        <button
-                          v-for="opt in prop.options"
-                          :key="opt"
-                          class="pw-wizard-chip"
-                          :class="{
-                            'is-default': opt === prop.pluginDefault,
-                            'is-selected': opt === getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)
-                          }"
-                          @click="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, opt, prop.pluginDefault)"
-                        >
-                          {{ opt }}
-                        </button>
+                      <header class="k-field-header">
+                        <label class="k-label k-field-label">
+                          <span class="k-label-text">{{ prop.key }}</span>
+                        </label>
+                      </header>
+                      <div class="k-input" data-type="select">
+                        <span class="k-input-element">
+                          <select
+                            class="k-select-input"
+                            :value="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                            @change="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event.target.value, prop.pluginDefault)"
+                          >
+                            <option
+                              v-for="opt in prop.options"
+                              :key="opt"
+                              :value="opt"
+                            >{{ opt }}</option>
+                          </select>
+                        </span>
                       </div>
+                      <footer class="k-field-footer">
+                        <div class="k-help k-field-help k-text">
+                          Allowed: {{ prop.options.join(', ') }} &mdash; Default: <strong>{{ prop.pluginDefault }}</strong>
+                        </div>
+                      </footer>
                     </div>
                   </div>
 
-                  <!-- Simple boolean field (no properties, just on/off) -->
+                  <!-- Simple boolean field -->
                   <div v-else class="pw-wizard-unified-simple">
                     <label class="pw-wizard-toggle">
                       <input
@@ -192,61 +202,96 @@
                 <div
                   v-for="field in cat.fields"
                   :key="field.key"
-                  class="pw-wizard-category-field"
-                  :class="{ 'is-overridden': hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key) }"
+                  class="k-field pw-wizard-k-field pw-wizard-k-field-row"
+                  :class="{ 'is-overridden': hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key) || hasOverride(block.blockType, field.settingKey) }"
                 >
-                  <div class="pw-wizard-category-field-left">
-                    <label class="pw-wizard-toggle" v-if="field.settingKey">
-                      <input
-                        type="checkbox"
-                        :checked="getVal(block.blockType, field.settingKey, field.settingValue)"
-                        @change="setVal(block.blockType, field.settingKey, $event.target.checked)"
-                      />
+                  <header class="k-field-header">
+                    <label class="k-label k-field-label">
+                      <span class="k-label-text">
+                        <label v-if="field.settingKey" class="pw-wizard-toggle-inline">
+                          <input
+                            type="checkbox"
+                            :checked="getVal(block.blockType, field.settingKey, field.settingValue)"
+                            @change="setVal(block.blockType, field.settingKey, $event.target.checked)"
+                          />
+                        </label>
+                        {{ field.key }}
+                      </span>
                     </label>
-                    <span class="pw-wizard-category-field-name">{{ field.key }}</span>
-                  </div>
-                  <div class="pw-wizard-category-field-right">
+                  </header>
+
+                  <div class="pw-wizard-category-field-value">
+                    <!-- Select from options -->
+                    <template v-if="field.options && field.options.length">
+                      <div class="k-input" data-type="select">
+                        <span class="k-input-element">
+                          <select
+                            class="k-select-input"
+                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                            @change="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
+                          >
+                            <option
+                              v-for="opt in field.options"
+                              :key="opt"
+                              :value="opt"
+                            >{{ opt }}</option>
+                          </select>
+                        </span>
+                      </div>
+                      <footer class="k-field-footer">
+                        <div class="k-help k-field-help k-text">
+                          Default: <strong>{{ field.defaultValue }}</strong>
+                        </div>
+                      </footer>
+                    </template>
                     <!-- Boolean default -->
-                    <label v-if="typeof field.defaultValue === 'boolean'" class="pw-wizard-toggle-sm">
-                      <input
-                        type="checkbox"
-                        :checked="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                        @change="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.checked)"
-                      />
-                    </label>
+                    <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'">
+                      <label class="pw-wizard-toggle-inline">
+                        <input
+                          type="checkbox"
+                          :checked="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                          @change="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.checked)"
+                        />
+                      </label>
+                    </template>
                     <!-- Number default -->
-                    <input
-                      v-else-if="typeof field.defaultValue === 'number'"
-                      type="number"
-                      class="pw-wizard-input pw-wizard-input-sm"
-                      :placeholder="String(field.defaultValue)"
-                      :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
-                      @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value !== '' ? Number($event.target.value) : '', String(field.defaultValue))"
-                    />
-                    <!-- String with options (e.g. theme: ["default","variant",...]) -->
-                    <div v-else-if="field.options && field.options.length" class="pw-wizard-option-chips">
-                      <button
-                        v-for="opt in field.options"
-                        :key="opt"
-                        class="pw-wizard-chip pw-wizard-chip-sm"
-                        :class="{
-                          'is-default': opt === field.defaultValue,
-                          'is-selected': opt === getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)
-                        }"
-                        @click="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, opt, field.defaultValue)"
-                      >
-                        {{ opt }}
-                      </button>
-                    </div>
+                    <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'number'">
+                      <div class="k-input" data-type="number">
+                        <span class="k-input-element">
+                          <input
+                            type="number"
+                            class="k-text-input"
+                            :placeholder="String(field.defaultValue)"
+                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
+                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value !== '' ? Number($event.target.value) : '', String(field.defaultValue))"
+                          />
+                        </span>
+                      </div>
+                      <footer class="k-field-footer">
+                        <div class="k-help k-field-help k-text">
+                          Default: <strong>{{ field.defaultValue }}</strong>
+                        </div>
+                      </footer>
+                    </template>
                     <!-- String default -->
-                    <input
-                      v-else-if="typeof field.defaultValue === 'string'"
-                      type="text"
-                      class="pw-wizard-input pw-wizard-input-sm"
-                      :placeholder="field.defaultValue"
-                      :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
-                      @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
-                    />
+                    <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'string'">
+                      <div class="k-input" data-type="text">
+                        <span class="k-input-element">
+                          <input
+                            type="text"
+                            class="k-text-input"
+                            :placeholder="field.defaultValue"
+                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
+                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
+                          />
+                        </span>
+                      </div>
+                      <footer class="k-field-footer">
+                        <div class="k-help k-field-help k-text">
+                          Default: <strong>{{ field.defaultValue }}</strong>
+                        </div>
+                      </footer>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -262,36 +307,52 @@
                 <div
                   v-for="(val, key) in getDefault(block.blockType, 'editor')"
                   :key="key"
-                  class="pw-wizard-category-field"
+                  class="k-field pw-wizard-k-field pw-wizard-k-field-row"
                   :class="{ 'is-overridden': hasOverride(block.blockType, 'editor.' + key) }"
                 >
-                  <span class="pw-wizard-category-field-name">{{ key }}</span>
-                  <div class="pw-wizard-category-field-right">
+                  <header class="k-field-header">
+                    <label class="k-label k-field-label">
+                      <span class="k-label-text">{{ key }}</span>
+                    </label>
+                  </header>
+                  <div class="pw-wizard-category-field-value">
                     <!-- Array (marks, nodes, headings) -->
-                    <input
-                      v-if="Array.isArray(val)"
-                      type="text"
-                      class="pw-wizard-input"
-                      :placeholder="val.join(', ')"
-                      :value="getOverrideOnly(block.blockType, 'editor.' + key) !== undefined ? getOverrideOnly(block.blockType, 'editor.' + key).join(', ') : ''"
-                      @input="setEditorArray(block.blockType, key, $event.target.value, val)"
-                    />
+                    <template v-if="Array.isArray(val)">
+                      <div class="k-input" data-type="text">
+                        <span class="k-input-element">
+                          <input
+                            type="text"
+                            class="k-text-input"
+                            :placeholder="val.join(', ')"
+                            :value="getOverrideOnly(block.blockType, 'editor.' + key) !== undefined ? getOverrideOnly(block.blockType, 'editor.' + key).join(', ') : ''"
+                            @input="setEditorArray(block.blockType, key, $event.target.value, val)"
+                          />
+                        </span>
+                      </div>
+                      <footer class="k-field-footer">
+                        <div class="k-help k-field-help k-text">
+                          Default: <strong>{{ val.join(', ') || '(none)' }}</strong>
+                        </div>
+                      </footer>
+                    </template>
                     <!-- Object (toolbar) -->
-                    <div v-else-if="isObject(val)" class="pw-wizard-toggle-row">
-                      <label
-                        v-for="(subVal, subKey) in val"
-                        :key="subKey"
-                        class="pw-wizard-toggle"
-                      >
-                        <input
-                          v-if="typeof subVal === 'boolean'"
-                          type="checkbox"
-                          :checked="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
-                          @change="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event.target.checked)"
-                        />
-                        <span>{{ subKey }}</span>
-                      </label>
-                    </div>
+                    <template v-else-if="isObject(val)">
+                      <div class="pw-wizard-toggle-row">
+                        <label
+                          v-for="(subVal, subKey) in val"
+                          :key="subKey"
+                          class="pw-wizard-toggle"
+                        >
+                          <input
+                            v-if="typeof subVal === 'boolean'"
+                            type="checkbox"
+                            :checked="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
+                            @change="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event.target.checked)"
+                          />
+                          <span>{{ subKey }}</span>
+                        </label>
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -346,7 +407,6 @@ export default {
 
     /**
      * Build unified content fields: merge settings.fields.content with defaults.content.
-     * Returns array of { key, enabled, properties: [{ key, options, pluginDefault }] }
      */
     getContentFields(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
@@ -358,12 +418,11 @@ export default {
         const field = { key, enabled: true, properties: [] };
 
         if (this.isObject(settingVal)) {
-          // Setting is an object with sub-options: { align: [...], level: [...], sizes: [...] }
           for (const [propKey, propOptions] of Object.entries(settingVal)) {
             const options = Array.isArray(propOptions) ? propOptions : [];
-            // Find matching default — try propKey directly, or map "sizes" → "size"
             let pluginDefault = '';
             if (this.isObject(defaultVal)) {
+              // Try exact key, then try without trailing 's' (sizes → size)
               pluginDefault = defaultVal[propKey] !== undefined
                 ? defaultVal[propKey]
                 : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
@@ -381,8 +440,7 @@ export default {
     },
 
     /**
-     * Build category fields: merge settings.fields.{cat} with defaults.{cat}.
-     * Returns array of categories, each with fields that have setting toggle + default value.
+     * Build category fields: merge settings + defaults per category.
      */
     getCategories(blockType) {
       const cats = [];
@@ -390,7 +448,6 @@ export default {
         const settingsFields = this.getDefault(blockType, 'settings.fields.' + catKey) || {};
         const defaultsFields = this.getDefault(blockType, 'defaults.' + catKey) || {};
 
-        // Collect all field keys from both sources
         const allKeys = new Set([...Object.keys(settingsFields), ...Object.keys(defaultsFields)]);
         if (allKeys.size === 0) continue;
 
@@ -407,7 +464,6 @@ export default {
             options: null,
           };
 
-          // If setting value is an array of strings, those are the selectable options
           if (Array.isArray(settingVal) && settingVal.every(v => typeof v === 'string')) {
             field.options = settingVal;
           }
@@ -421,8 +477,7 @@ export default {
     },
 
     selectOption(blockType, path, value, pluginDefault) {
-      if (value === pluginDefault) {
-        // Clicking the plugin default removes the override
+      if (value === pluginDefault || value === String(pluginDefault)) {
         this.deleteNested(this.blockOverrides[blockType] || {}, path);
       } else {
         this.setVal(blockType, path, value);
@@ -596,61 +651,30 @@ export default {
   position: relative;
 }
 
-.pw-wizard-tab:hover {
-  background: var(--color-gray-100);
-}
-
-.pw-wizard-tab.is-active {
-  background: var(--color-black);
-  color: var(--color-white);
-  font-weight: 500;
-}
-
-.pw-wizard-tab.is-inactive {
-  opacity: 0.4;
-}
-
+.pw-wizard-tab:hover { background: var(--color-gray-100); }
+.pw-wizard-tab.is-active { background: var(--color-black); color: var(--color-white); font-weight: 500; }
+.pw-wizard-tab.is-inactive { opacity: 0.4; }
 .pw-wizard-tab.is-customized::after {
   content: '';
   position: absolute;
-  top: 50%;
-  right: var(--spacing-2);
+  top: 50%; right: var(--spacing-2);
   transform: translateY(-50%);
-  width: 6px;
-  height: 6px;
+  width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--color-notice-600);
 }
 
 /* Panel */
-.pw-wizard-panel {
-  min-width: 0;
-}
-
+.pw-wizard-panel { min-width: 0; }
 .pw-wizard-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--spacing-6);
 }
-
-.pw-wizard-panel-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
-}
-
-.pw-wizard-panel-meta {
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-  font-weight: 400;
-  margin-left: var(--spacing-3);
-}
-
-.pw-wizard-hint {
-  font-size: var(--text-sm);
-  color: var(--color-text-dimmed);
-  margin-bottom: var(--spacing-4);
-}
+.pw-wizard-panel-title { font-size: var(--text-lg); font-weight: 600; }
+.pw-wizard-panel-meta { font-size: var(--text-xs); color: var(--color-text-dimmed); font-weight: 400; margin-left: var(--spacing-3); }
+.pw-wizard-hint { font-size: var(--text-sm); color: var(--color-text-dimmed); margin-bottom: var(--spacing-4); }
 
 /* Fieldgroups */
 .pw-wizard-fieldgroup {
@@ -670,214 +694,61 @@ export default {
 }
 
 /* Toggle row */
-.pw-wizard-toggle-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-2);
-}
-
+.pw-wizard-toggle-row { display: flex; flex-wrap: wrap; gap: var(--spacing-2); }
 .pw-wizard-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
+  display: flex; align-items: center; gap: var(--spacing-2);
   padding: var(--spacing-1) var(--spacing-3);
-  background: var(--color-gray-100);
-  border-radius: var(--rounded);
-  font-size: var(--text-sm);
-  cursor: pointer;
+  background: var(--color-gray-100); border-radius: var(--rounded);
+  font-size: var(--text-sm); cursor: pointer;
 }
-
-.pw-wizard-toggle:hover {
-  background: var(--color-gray-200);
-}
-
-.pw-wizard-toggle.is-overridden {
-  background: var(--color-notice-100);
-}
-
-.pw-wizard-toggle-sm {
-  cursor: pointer;
-}
+.pw-wizard-toggle:hover { background: var(--color-gray-200); }
+.pw-wizard-toggle.is-overridden { background: var(--color-notice-100); }
+.pw-wizard-toggle-inline { cursor: pointer; display: inline-flex; align-items: center; gap: var(--spacing-2); }
 
 /* Checklist */
-.pw-wizard-checklist {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
+.pw-wizard-checklist { display: flex; flex-direction: column; gap: var(--spacing-1); }
+.pw-wizard-check { display: flex; align-items: center; gap: var(--spacing-3); padding: var(--spacing-2) var(--spacing-3); border-radius: var(--rounded); cursor: pointer; }
+.pw-wizard-check:hover { background: var(--color-gray-100); }
+.pw-wizard-check-label { font-size: var(--text-sm); font-weight: 500; }
+.pw-wizard-check-meta { font-size: var(--text-xs); color: var(--color-text-dimmed); margin-left: auto; }
 
-.pw-wizard-check {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--rounded);
-  cursor: pointer;
-}
-
-.pw-wizard-check:hover {
-  background: var(--color-gray-100);
-}
-
-.pw-wizard-check-label {
-  font-size: var(--text-sm);
-  font-weight: 500;
-}
-
-.pw-wizard-check-meta {
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-  margin-left: auto;
-}
-
-/* ===== Unified Content Fields ===== */
-.pw-wizard-unified-fields {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4);
-}
-
+/* Unified Content Fields */
+.pw-wizard-unified-fields { display: flex; flex-direction: column; gap: var(--spacing-4); }
 .pw-wizard-unified-field {
-  background: var(--color-gray-50);
-  border-radius: var(--rounded-lg);
-  padding: var(--spacing-4);
+  background: var(--color-gray-50); border-radius: var(--rounded-lg); padding: var(--spacing-4);
 }
-
-.pw-wizard-unified-field-header {
-  margin-bottom: var(--spacing-3);
-}
-
-.pw-wizard-unified-field-name {
-  font-weight: 600;
-  font-size: var(--text-sm);
-  text-transform: capitalize;
-}
-
+.pw-wizard-unified-field-header { margin-bottom: var(--spacing-3); }
+.pw-wizard-unified-field-name { font-weight: 600; font-size: var(--text-sm); text-transform: capitalize; }
 .pw-wizard-unified-props {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.pw-wizard-unified-prop {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  padding-left: var(--spacing-2);
-  border-left: 2px solid transparent;
-}
-
-.pw-wizard-unified-prop.is-overridden {
-  border-left-color: var(--color-notice-600);
-}
-
-.pw-wizard-unified-prop-label {
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-  font-weight: 500;
-  min-width: 60px;
-  text-transform: capitalize;
-}
-
-.pw-wizard-unified-simple {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-4);
   padding-left: var(--spacing-2);
 }
+.pw-wizard-unified-simple { padding-left: var(--spacing-2); }
 
-/* Option chips */
-.pw-wizard-option-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
+/* Kirby-native field overrides */
+.pw-wizard-k-field {
+  padding: 0;
 }
 
-.pw-wizard-chip {
+.pw-wizard-k-field .k-field-header { margin-bottom: var(--spacing-1); }
+.pw-wizard-k-field .k-label-text { font-size: var(--text-xs); text-transform: capitalize; }
+.pw-wizard-k-field .k-field-footer { margin-top: var(--spacing-1); }
+.pw-wizard-k-field .k-field-help { font-size: 11px; }
+
+.pw-wizard-k-field .k-select-input {
+  width: 100%;
   padding: var(--spacing-1) var(--spacing-2);
   border: 1px solid var(--color-border);
   border-radius: var(--rounded);
-  background: var(--color-white);
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  cursor: pointer;
-  transition: all 0.1s;
-  color: var(--color-text);
-}
-
-.pw-wizard-chip:hover {
-  border-color: var(--color-gray-400);
-}
-
-.pw-wizard-chip.is-default {
-  border-style: dashed;
-  border-color: var(--color-gray-400);
-}
-
-.pw-wizard-chip.is-selected {
-  background: var(--color-black);
-  color: var(--color-white);
-  border-color: var(--color-black);
-}
-
-.pw-wizard-chip.is-default.is-selected {
-  background: var(--color-gray-700);
-  border-color: var(--color-gray-700);
-  border-style: solid;
-}
-
-.pw-wizard-chip-sm {
-  padding: 1px var(--spacing-1);
-  font-size: 11px;
-}
-
-/* ===== Category Fields (layout, style, etc.) ===== */
-.pw-wizard-category-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.pw-wizard-category-field {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-3);
-  padding: var(--spacing-2) var(--spacing-3);
-  background: var(--color-gray-50);
-  border-left: 2px solid transparent;
-}
-
-.pw-wizard-category-field:first-child {
-  border-radius: var(--rounded) var(--rounded) 0 0;
-}
-
-.pw-wizard-category-field:last-child {
-  border-radius: 0 0 var(--rounded) var(--rounded);
-}
-
-.pw-wizard-category-field.is-overridden {
-  border-left-color: var(--color-notice-600);
-}
-
-.pw-wizard-category-field-left {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-}
-
-.pw-wizard-category-field-name {
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-family: var(--font-mono);
+  background: var(--color-white);
+  appearance: auto;
 }
 
-.pw-wizard-category-field-right {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  max-width: 400px;
-  justify-content: flex-end;
-}
-
-/* Inputs */
-.pw-wizard-input {
+.pw-wizard-k-field .k-text-input {
   width: 100%;
   padding: var(--spacing-1) var(--spacing-2);
   border: 1px solid var(--color-border);
@@ -887,30 +758,52 @@ export default {
   background: var(--color-white);
 }
 
-.pw-wizard-input:focus {
+.pw-wizard-k-field .k-text-input:focus,
+.pw-wizard-k-field .k-select-input:focus {
   outline: none;
   border-color: var(--color-focus);
   box-shadow: 0 0 0 2px var(--color-focus-outline);
 }
 
-.pw-wizard-input::placeholder {
+.pw-wizard-k-field .k-text-input::placeholder {
   color: var(--color-text-dimmed);
   font-style: italic;
 }
 
-.pw-wizard-input-sm {
-  max-width: 180px;
+.pw-wizard-k-field.is-overridden {
+  border-left: 2px solid var(--color-notice-600);
+  padding-left: var(--spacing-2);
 }
 
-/* Toolbar */
-.pw-wizard-toolbar {
-  margin-top: var(--spacing-6);
-  display: flex;
-  justify-content: flex-end;
+/* Category fields (row layout) */
+.pw-wizard-k-field-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: var(--spacing-2);
+  align-items: start;
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--color-gray-50);
+  border-radius: 0;
 }
 
-.pw-wizard-block-sections {
+.pw-wizard-k-field-row:first-child { border-radius: var(--rounded) var(--rounded) 0 0; }
+.pw-wizard-k-field-row:last-child { border-radius: 0 0 var(--rounded) var(--rounded); }
+
+.pw-wizard-k-field-row .k-field-header { margin-bottom: 0; padding-top: var(--spacing-1); }
+.pw-wizard-k-field-row .k-label-text { font-size: var(--text-sm); font-weight: 500; text-transform: none; }
+
+.pw-wizard-category-field-value {
   display: flex;
   flex-direction: column;
 }
+
+.pw-wizard-category-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* Toolbar */
+.pw-wizard-toolbar { margin-top: var(--spacing-6); display: flex; justify-content: flex-end; }
+.pw-wizard-block-sections { display: flex; flex-direction: column; }
 </style>
