@@ -368,6 +368,12 @@
 
 <script>
 export default {
+  props: {
+    blockType: {
+      type: String,
+      default: null,
+    },
+  },
   data() {
     return {
       loading: true,
@@ -381,6 +387,10 @@ export default {
   },
   async created() {
     await this.load();
+    // If opened via sidebar block link, activate that tab
+    if (this.blockType) {
+      this.activeTab = this.blockType;
+    }
   },
   methods: {
     async load() {
