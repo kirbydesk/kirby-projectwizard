@@ -128,42 +128,62 @@
               <div v-if="getContentFields(block.blockType).length" class="pw-wizard-fields">
                 <template v-for="field in getContentFields(block.blockType)">
 
-                  <!-- Field enable/disable toggle -->
-                  <k-toggle-field
-                    :key="field.key + '-toggle'"
-                    :label="field.key"
-                    :value="isFieldEnabled(block.blockType, field)"
-                    :text="['disabled', 'enabled']"
-                    @input="toggleField(block.blockType, field, $event)"
-                  />
+                  <!-- Row per property: toggle 1/3 | checkboxes 1/3 | default 1/3 -->
+                  <template v-if="field.properties.length">
+                    <template v-for="(prop, propIndex) in field.properties">
 
-                  <!-- Properties (only when field is enabled) -->
-                  <template v-if="isFieldEnabled(block.blockType, field) && field.properties.length">
-                    <template v-for="prop in field.properties">
+                      <k-toggle-field
+                        :key="field.key + '-' + prop.key + '-toggle'"
+                        :label="propIndex === 0 ? field.key : ''"
+                        :value="isFieldEnabled(block.blockType, field)"
+                        :text="['off', 'on']"
+                        width="1/3"
+                        @input="toggleField(block.blockType, field, $event)"
+                      />
 
-                      <!-- Allowed values (checkboxes) -->
                       <k-checkboxes-field
+                        v-if="isFieldEnabled(block.blockType, field)"
                         :key="field.key + '-' + prop.key + '-options'"
-                        :label="field.key + ' › ' + prop.key"
-                        :help="'Select which ' + prop.key + ' options are available'"
+                        :label="prop.key"
                         :value="getActiveOptions(block.blockType, field.key, prop.key, prop)"
                         :options="prop.allOptions.map(o => ({ value: o, text: o }))"
-                        width="1/2"
+                        width="1/3"
                         @input="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
                       />
 
-                      <!-- Default value (select) -->
                       <k-select-field
+                        v-if="isFieldEnabled(block.blockType, field)"
                         :key="field.key + '-' + prop.key + '-default'"
-                        :label="field.key + ' › ' + prop.key + ' default'"
+                        label="Default"
                         :help="'Plugin default: ' + prop.pluginDefault"
                         :value="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
                         :options="getActiveOptions(block.blockType, field.key, prop.key, prop).map(o => ({ value: o, text: o }))"
-                        width="1/2"
+                        width="1/3"
                         @input="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
                       />
 
+                      <!-- Placeholder cells when disabled -->
+                      <k-info-field
+                        v-if="!isFieldEnabled(block.blockType, field)"
+                        :key="field.key + '-' + prop.key + '-disabled'"
+                        text="Field disabled"
+                        theme="none"
+                        width="2/3"
+                      />
+
                     </template>
+                  </template>
+
+                  <!-- Simple field without properties (just toggle) -->
+                  <template v-else>
+                    <k-toggle-field
+                      :key="field.key + '-toggle'"
+                      :label="field.key"
+                      :value="isFieldEnabled(block.blockType, field)"
+                      :text="['off', 'on']"
+                      width="1/3"
+                      @input="toggleField(block.blockType, field, $event)"
+                    />
                   </template>
 
                 </template>
@@ -715,11 +735,11 @@ export default {
 .pw-wizard-check-label { font-size: var(--text-sm); font-weight: 500; }
 .pw-wizard-check-meta { font-size: var(--text-xs); color: var(--color-text-dimmed); margin-left: auto; }
 
-/* Native Kirby fields layout */
+/* Native Kirby fields grid layout */
 .pw-wizard-fields {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: var(--spacing-6);
+  gap: var(--spacing-3) var(--spacing-6);
 }
 
 .pw-wizard-fields > * {
@@ -728,6 +748,18 @@ export default {
 
 .pw-wizard-fields > [style*="--width:1/2"] {
   grid-column: span 6;
+}
+
+.pw-wizard-fields > [style*="--width:1/3"] {
+  grid-column: span 4;
+}
+
+.pw-wizard-fields > [style*="--width:1/4"] {
+  grid-column: span 3;
+}
+
+.pw-wizard-fields > [style*="--width:2/3"] {
+  grid-column: span 8;
 }
 
 /* Toolbar */
