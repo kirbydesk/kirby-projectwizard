@@ -6,34 +6,7 @@
 
     <div v-if="loading" class="pw-wizard-loading">Loading...</div>
 
-    <div v-else class="pw-wizard-layout">
-
-      <!-- Tab Navigation -->
-      <nav class="pw-wizard-tabs">
-        <button
-          class="pw-wizard-tab"
-          :class="{ 'is-active': activeTab === 'global' }"
-          @click="activeTab = 'global'"
-        >
-          Global
-        </button>
-        <button
-          v-for="block in blocks"
-          :key="block.blockType"
-          class="pw-wizard-tab"
-          :class="{
-            'is-active': activeTab === block.blockType,
-            'is-customized': block.customized,
-            'is-inactive': !block.active
-          }"
-          @click="activeTab = block.blockType"
-        >
-          {{ blockLabel(block.blockType) }}
-        </button>
-      </nav>
-
-      <!-- Tab Content -->
-      <div class="pw-wizard-content">
+    <div v-else class="pw-wizard-content">
 
         <!-- ==================== Global Tab ==================== -->
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
@@ -361,7 +334,6 @@
           </div>
         </div>
 
-      </div>
     </div>
   </k-panel-inside>
 </template>
@@ -631,51 +603,11 @@ export default {
   color: var(--color-text-dimmed);
 }
 
-/* Layout */
-.pw-wizard-layout {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: var(--spacing-6);
+/* Content */
+.pw-wizard-content {
   margin-top: var(--spacing-6);
 }
 
-/* Sidebar tabs */
-.pw-wizard-tabs {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  position: sticky;
-  top: var(--spacing-6);
-  align-self: start;
-}
-
-.pw-wizard-tab {
-  padding: var(--spacing-2) var(--spacing-3);
-  border: none;
-  background: var(--color-background);
-  text-align: left;
-  font-size: var(--text-sm);
-  cursor: pointer;
-  border-radius: var(--rounded);
-  transition: background 0.1s;
-  color: var(--color-text);
-  position: relative;
-}
-
-.pw-wizard-tab:hover { background: var(--color-gray-100); }
-.pw-wizard-tab.is-active { background: var(--color-black); color: var(--color-white); font-weight: 500; }
-.pw-wizard-tab.is-inactive { opacity: 0.4; }
-.pw-wizard-tab.is-customized::after {
-  content: '';
-  position: absolute;
-  top: 50%; right: var(--spacing-2);
-  transform: translateY(-50%);
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--color-notice-600);
-}
-
-/* Panel */
 .pw-wizard-panel { min-width: 0; }
 .pw-wizard-panel-header {
   display: flex;
