@@ -2,7 +2,7 @@
   <k-panel-inside class="pw-wizard">
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
-      <template v-if="dirty" #buttons>
+      <template v-if="dirtyTabs[activeTab]" #buttons>
         <div class="k-form-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
@@ -301,7 +301,7 @@ export default {
       originalOverrides: {},
       originalActiveBlocks: [],
       blockActiveTabs: {},
-      dirty: false,
+      dirtyTabs: {},
     };
   },
   watch: {
@@ -528,13 +528,13 @@ export default {
       } else {
         this.activeBlocks = this.activeBlocks.filter(b => b !== blockType);
       }
-      this.dirty = true;
+      this.$set(this.dirtyTabs, 'global', true);
     },
     async saveGlobal() {
       try {
         await this.$api.post('projectwizard/blocks/active', { blocks: this.activeBlocks });
         this.originalActiveBlocks = [...this.activeBlocks];
-        this.dirty = false;
+        this.$set(this.dirtyTabs, 'global', false);
         this.$panel.notification.success('Active blocks saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save');
@@ -559,7 +559,7 @@ export default {
         const bt = this.activeTab;
         this.$set(this.blockOverrides, bt, JSON.parse(JSON.stringify(this.originalOverrides[bt] || {})));
       }
-      this.dirty = false;
+      this.$set(this.dirtyTabs, this.activeTab, false);
     },
 
     // --- Nested helpers ---
@@ -623,7 +623,7 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
-      this.dirty = true;
+      this.$set(this.dirtyTabs, blockType, true);
     },
 
     getDefault(blockType, path) {
@@ -647,7 +647,7 @@ export default {
         this.$set(this.originalOverrides, blockType, JSON.parse(JSON.stringify(res.overrides || {})));
         const block = this.blocks.find(b => b.blockType === blockType);
         if (block) block.customized = Object.keys(res.overrides || {}).length > 0;
-        this.dirty = false;
+        this.$set(this.dirtyTabs, this.activeTab, false);
         this.$panel.notification.success(this.blockLabel(blockType) + ' saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save');
