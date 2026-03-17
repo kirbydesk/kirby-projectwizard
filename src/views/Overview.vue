@@ -3,21 +3,29 @@
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
       <template v-if="dirty" #buttons>
-        <k-button
-          text="Cancel"
-          icon="undo"
-          theme="notice"
-          size="xs"
-          @click="discardChanges"
-        />
-        <k-button
-          text="Save"
-          icon="check"
-          theme="notice"
-          variant="filled"
-          size="xs"
-          @click="saveCurrentView"
-        />
+        <div class="k-form-controls">
+          <div data-layout="collapsed" class="k-button-group">
+            <k-button
+              text="Discard"
+              icon="undo"
+              theme="notice"
+              variant="filled"
+              size="sm"
+              responsive="true"
+              class="k-form-controls-button"
+              @click="discardChanges"
+            />
+            <k-button
+              text="Save"
+              icon="check"
+              theme="notice"
+              variant="filled"
+              size="sm"
+              class="k-form-controls-button"
+              @click="saveCurrentView"
+            />
+          </div>
+        </div>
       </template>
     </k-header>
 
