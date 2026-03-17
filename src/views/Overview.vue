@@ -203,7 +203,7 @@
                   v-for="field in cat.fields"
                   :key="field.key"
                   class="k-field pw-wizard-k-field pw-wizard-k-field-row"
-                  :class="{ 'is-overridden': hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key) || hasOverride(block.blockType, field.settingKey) }"
+                  :class="{ 'is-overridden': hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key) || (field.settingKey && hasOverride(block.blockType, field.settingKey)) }"
                 >
                   <header class="k-field-header">
                     <label class="k-label k-field-label">
@@ -508,6 +508,7 @@ export default {
 
     // --- Nested helpers ---
     nested(obj, path) {
+      if (!path) return undefined;
       return path.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
     },
     setNested(obj, path, value) {
