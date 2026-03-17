@@ -1,0 +1,27 @@
+{
+	"name": "kirbydesk/kirby-projectwizard",
+	"version": "0.1.0",
+	"description": "Project Wizard for Kirby CMS — installation, configuration & update tool",
+	"type": "kirby-plugin",
+	"keywords": [
+		"kirby",
+		"kirby-plugin",
+		"projectwizard"
+	],
+	"license": "proprietary",
+	"homepage": "https://github.com/kirbydesk/kirby-projectwizard",
+	"authors": [
+		{
+			"name": "Christian Fickinger",
+			"email": "hello@kirbydesk.com",
+			"homepage": "https://kirbydesk.com"
+		}
+	],
+	"extra": {
+		"installer-name": "kirby-projectwizard"
+	},
+	"require": {
+		"getkirby/composer-installer": "^1.2",
+		"kirbydesk/kirby-pagewizard": "^1.0"
+	}
+}
