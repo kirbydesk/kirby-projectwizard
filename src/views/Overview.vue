@@ -627,10 +627,12 @@ export default {
     markDirty(blockType) {
       const config = this.blockConfigs[blockType];
       if (config) config.hasOverrides = Object.keys(this.blockOverrides[blockType] || {}).length > 0;
-      // Deep clone + stringify to get current state independent of Vue reactivity
       const current = JSON.stringify(JSON.parse(JSON.stringify(this.blockOverrides[blockType] || {})));
       const snapshot = this.snapshots[blockType] || '{}';
-      this.$set(this.dirtyTabs, blockType, current !== snapshot);
+      const dirty = current !== snapshot;
+      console.log('markDirty', blockType, 'dirty:', dirty, 'current:', current, 'snapshot:', snapshot);
+      this.$set(this.dirtyTabs, blockType, dirty);
+      console.log('dirtyTabs:', JSON.stringify(this.dirtyTabs), 'activeTab:', this.activeTab);
     },
 
     getDefault(blockType, path) {
