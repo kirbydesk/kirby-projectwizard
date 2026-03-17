@@ -8,12 +8,11 @@ return [
 			'pattern' => 'projectwizard/blocks',
 			'action'  => function () {
 				$detected  = ProjectConfig::detectBlocks();
-				$overrides = ProjectConfig::loadOverrides();
-				$activeBlocks = $overrides['blocks'] ?? [];
+				$activeBlocks = ProjectConfig::activeBlocks();
 
 				$blocks = [];
 				foreach ($detected as $blockType => $info) {
-					$blockOverrides = $overrides['kirbyblocks'][$blockType] ?? [];
+					$blockOverrides = ProjectConfig::loadBlockOverrides($blockType);
 					$blocks[] = [
 						'blockType'  => $blockType,
 						'plugin'     => $info['plugin'],

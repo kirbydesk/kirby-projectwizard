@@ -26,16 +26,16 @@ class ProjectConfig
 			if (!$blockType) continue;
 
 			// Extract icon from blueprints.php
-		$icon = 'box';
-		$bpFile = $dir . '/src/extensions/blueprints.php';
-		if (file_exists($bpFile)) {
-			$bpContent = file_get_contents($bpFile);
-			if (preg_match("/'icon'\s*=>\s*'([^']+)'/", $bpContent, $iconMatch)) {
-				$icon = $iconMatch[1];
+			$icon = 'box';
+			$bpFile = $dir . '/src/extensions/blueprints.php';
+			if (file_exists($bpFile)) {
+				$bpContent = file_get_contents($bpFile);
+				if (preg_match("/'icon'\s*=>\s*'([^']+)'/", $bpContent, $iconMatch)) {
+					$icon = $iconMatch[1];
+				}
 			}
-		}
 
-		$blocks[$blockType] = [
+			$blocks[$blockType] = [
 				'plugin'   => basename($dir),
 				'icon'     => $icon,
 				'settings' => self::readJson($configDir . '/settings.json'),
@@ -48,25 +48,34 @@ class ProjectConfig
 	}
 
 	/**
-	 * Get full stored config (the format that replaces pagewizard.php).
+	 * Load overrides for a single block from its own JSON file.
 	 */
-	public static function loadOverrides(): array
+	public static function loadBlockOverrides(string $blockType): array
 	{
-		$path = self::storagePath();
+		$path = self::blockPath($blockType);
 		if (!file_exists($path)) return [];
 		$data = json_decode(file_get_contents($path), true);
 		return is_array($data) ? $data : [];
 	}
 
 	/**
-	 * Save the full config.
+	 * Save overrides for a single block to its own JSON file.
 	 */
-	public static function saveOverrides(array $data): void
+	public static function saveBlockOverrides(string $blockType, array $config): void
 	{
-		$path = self::storagePath();
-		$dir = dirname($path);
+		$dir = self::blocksDir();
 		if (!is_dir($dir)) mkdir($dir, 0755, true);
-		file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+		if (empty($config)) {
+			// Remove file if no overrides
+			$path = self::blockPath($blockType);
+			if (file_exists($path)) unlink($path);
+		} else {
+			file_put_contents(
+				self::blockPath($blockType),
+				json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+			);
+		}
 	}
 
 	/**
@@ -75,7 +84,6 @@ class ProjectConfig
 	public static function blockConfig(string $blockType): array
 	{
 		$detected = self::detectBlocks();
-		$overrides = self::loadOverrides();
 
 		$pluginDefaults = $detected[$blockType] ?? [
 			'plugin'   => null,
@@ -84,7 +92,7 @@ class ProjectConfig
 			'editor'   => [],
 		];
 
-		$blockOverrides = $overrides['kirbyblocks'][$blockType] ?? [];
+		$blockOverrides = self::loadBlockOverrides($blockType);
 
 		return [
 			'blockType' => $blockType,
@@ -104,10 +112,7 @@ class ProjectConfig
 	 */
 	public static function saveBlockConfig(string $blockType, array $config): void
 	{
-		$data = self::loadOverrides();
-		if (!isset($data['kirbyblocks'])) $data['kirbyblocks'] = [];
-		$data['kirbyblocks'][$blockType] = $config;
-		self::saveOverrides($data);
+		self::saveBlockOverrides($blockType, $config);
 	}
 
 	/**
@@ -115,9 +120,7 @@ class ProjectConfig
 	 */
 	public static function resetBlockConfig(string $blockType): void
 	{
-		$data = self::loadOverrides();
-		unset($data['kirbyblocks'][$blockType]);
-		self::saveOverrides($data);
+		self::saveBlockOverrides($blockType, []);
 	}
 
 	/**
@@ -125,22 +128,46 @@ class ProjectConfig
 	 */
 	public static function activeBlocks(?array $blocks = null): array
 	{
+		$path = self::configDir() . '/blocks.json';
 		if ($blocks !== null) {
-			$data = self::loadOverrides();
-			$data['blocks'] = $blocks;
-			self::saveOverrides($data);
+			$dir = self::configDir();
+			if (!is_dir($dir)) mkdir($dir, 0755, true);
+			file_put_contents($path, json_encode(
+				['blocks' => $blocks],
+				JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+			));
 		}
-		$data = self::loadOverrides();
+		if (!file_exists($path)) return [];
+		$data = json_decode(file_get_contents($path), true);
 		return $data['blocks'] ?? [];
 	}
 
 	/**
 	 * Return the full config in the format config.php expects
 	 * (identical to what pagewizard.php used to return).
+	 * Assembles from blocks.json + individual block files.
 	 */
 	public static function mergedConfig(): array
 	{
-		return self::loadOverrides();
+		$config = [];
+
+		// Active blocks list
+		$config['blocks'] = self::activeBlocks();
+
+		// Per-block overrides
+		$config['kirbyblocks'] = [];
+		$blocksDir = self::blocksDir();
+		if (is_dir($blocksDir)) {
+			foreach (glob($blocksDir . '/*.json') as $file) {
+				$blockType = basename($file, '.json');
+				$data = json_decode(file_get_contents($file), true);
+				if (is_array($data) && !empty($data)) {
+					$config['kirbyblocks'][$blockType] = $data;
+				}
+			}
+		}
+
+		return $config;
 	}
 
 	/**
@@ -150,19 +177,16 @@ class ProjectConfig
 	{
 		$merged = [];
 
-		// Settings (tabs + fields)
 		$merged['settings'] = self::deepMerge(
 			$pluginDefaults['settings'] ?? [],
 			$overrides['settings'] ?? []
 		);
 
-		// Defaults
 		$merged['defaults'] = self::deepMerge(
 			$pluginDefaults['defaults'] ?? [],
 			$overrides['defaults'] ?? []
 		);
 
-		// Editor
 		$merged['editor'] = self::deepMerge(
 			$pluginDefaults['editor'] ?? [],
 			$overrides['editor'] ?? []
@@ -192,9 +216,14 @@ class ProjectConfig
 		return kirby()->root('site') . '/config/projectwizard';
 	}
 
-	private static function storagePath(): string
+	private static function blocksDir(): string
 	{
-		return self::configDir() . '/blocks.json';
+		return self::configDir() . '/blocks';
+	}
+
+	private static function blockPath(string $blockType): string
+	{
+		return self::blocksDir() . '/' . $blockType . '.json';
 	}
 
 	private static function readJson(string $path): array
