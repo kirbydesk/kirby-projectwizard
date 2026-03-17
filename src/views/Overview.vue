@@ -125,108 +125,76 @@
             <div v-if="getBlockActiveTab(block.blockType) === 'content'" class="pw-wizard-tab-content">
 
               <!-- Content Fields -->
-              <div v-if="getContentFields(block.blockType).length" class="pw-wizard-unified-fields">
-                <div
-                  v-for="field in getContentFields(block.blockType)"
-                  :key="field.key"
-                  class="pw-wizard-unified-field"
-                  :class="{ 'is-disabled': !isFieldEnabled(block.blockType, field) }"
-                >
-                  <!-- Field enable/disable -->
-                  <div class="pw-wizard-unified-field-header">
-                    <span class="pw-wizard-unified-field-name">{{ field.key }}</span>
-                    <k-toggle-input
-                      :value="isFieldEnabled(block.blockType, field)"
-                      @input="toggleField(block.blockType, field, $event)"
-                    />
-                  </div>
+              <div v-if="getContentFields(block.blockType).length" class="pw-wizard-fields">
+                <template v-for="field in getContentFields(block.blockType)">
+
+                  <!-- Field enable/disable toggle -->
+                  <k-toggle-field
+                    :key="field.key + '-toggle'"
+                    :label="field.key"
+                    :value="isFieldEnabled(block.blockType, field)"
+                    :text="['disabled', 'enabled']"
+                    @input="toggleField(block.blockType, field, $event)"
+                  />
 
                   <!-- Properties (only when field is enabled) -->
-                  <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" class="pw-wizard-unified-props">
-                    <div
-                      v-for="prop in field.properties"
-                      :key="prop.key"
-                      class="pw-wizard-prop-group"
-                    >
-                      <!-- Allowed values -->
-                      <k-checkboxes-input
+                  <template v-if="isFieldEnabled(block.blockType, field) && field.properties.length">
+                    <template v-for="prop in field.properties">
+
+                      <!-- Allowed values (checkboxes) -->
+                      <k-checkboxes-field
+                        :key="field.key + '-' + prop.key + '-options'"
+                        :label="field.key + ' › ' + prop.key"
+                        :help="'Select which ' + prop.key + ' options are available'"
                         :value="getActiveOptions(block.blockType, field.key, prop.key, prop)"
                         :options="prop.allOptions.map(o => ({ value: o, text: o }))"
-                        :label="prop.key"
+                        width="1/2"
                         @input="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
                       />
 
-                      <!-- Default value -->
-                      <k-select-input
+                      <!-- Default value (select) -->
+                      <k-select-field
+                        :key="field.key + '-' + prop.key + '-default'"
+                        :label="field.key + ' › ' + prop.key + ' default'"
+                        :help="'Plugin default: ' + prop.pluginDefault"
                         :value="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
                         :options="getActiveOptions(block.blockType, field.key, prop.key, prop).map(o => ({ value: o, text: o }))"
-                        :placeholder="'Default: ' + prop.pluginDefault"
+                        width="1/2"
                         @input="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
                       />
-                    </div>
-                  </div>
-                </div>
+
+                    </template>
+                  </template>
+
+                </template>
               </div>
 
-              <!-- Editor config belongs to content tab -->
-              <fieldset
-                v-if="getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length"
-                class="pw-wizard-fieldgroup"
-                style="margin-top: var(--spacing-6)"
-              >
-                <h3 class="pw-wizard-fieldgroup-title">Editor</h3>
-                <div class="pw-wizard-category-fields">
-                  <div
-                    v-for="(val, key) in getDefault(block.blockType, 'editor')"
-                    :key="key"
-                    class="k-field pw-wizard-k-field pw-wizard-k-field-row"
-                    :class="{ 'is-overridden': hasOverride(block.blockType, 'editor.' + key) }"
-                  >
-                    <header class="k-field-header">
-                      <label class="k-label k-field-label">
-                        <span class="k-label-text">{{ key }}</span>
-                      </label>
-                    </header>
-                    <div class="pw-wizard-category-field-value">
-                      <template v-if="Array.isArray(val)">
-                        <div class="k-input" data-type="text">
-                          <span class="k-input-element">
-                            <input
-                              type="text"
-                              class="k-text-input"
-                              :placeholder="val.join(', ')"
-                              :value="getOverrideOnly(block.blockType, 'editor.' + key) !== undefined ? getOverrideOnly(block.blockType, 'editor.' + key).join(', ') : ''"
-                              @input="setEditorArray(block.blockType, key, $event.target.value, val)"
-                            />
-                          </span>
-                        </div>
-                        <footer class="k-field-footer">
-                          <div class="k-help k-field-help k-text">
-                            Default: <strong>{{ val.join(', ') || '(none)' }}</strong>
-                          </div>
-                        </footer>
-                      </template>
-                      <template v-else-if="isObject(val)">
-                        <div class="pw-wizard-toggle-row">
-                          <label
-                            v-for="(subVal, subKey) in val"
-                            :key="subKey"
-                            class="pw-wizard-toggle"
-                          >
-                            <input
-                              v-if="typeof subVal === 'boolean'"
-                              type="checkbox"
-                              :checked="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
-                              @change="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event.target.checked)"
-                            />
-                            <span>{{ subKey }}</span>
-                          </label>
-                        </div>
-                      </template>
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
+              <!-- Editor config -->
+              <template v-if="getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length">
+                <k-line-field />
+                <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
+                  <k-tags-field
+                    v-if="Array.isArray(val)"
+                    :key="'editor-' + key"
+                    :label="'Editor: ' + key"
+                    :help="'Plugin default: ' + (val.join(', ') || '(none)')"
+                    :value="getOverrideOnly(block.blockType, 'editor.' + key) || val"
+                    accept="all"
+                    @input="setEditorArrayFromTags(block.blockType, key, $event, val)"
+                  />
+                  <template v-else-if="isObject(val)">
+                    <k-toggle-field
+                      v-for="(subVal, subKey) in val"
+                      v-if="typeof subVal === 'boolean'"
+                      :key="'editor-' + key + '-' + subKey"
+                      :label="'Editor: ' + key + ' › ' + subKey"
+                      :value="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
+                      :text="['off', 'on']"
+                      @input="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event)"
+                    />
+                  </template>
+                </template>
+              </template>
             </div>
 
             <!-- ===== Category Tabs (layout, style, effects, grid, settings) ===== -->
@@ -236,98 +204,52 @@
               v-show="getBlockActiveTab(block.blockType) === cat.key"
               class="pw-wizard-tab-content"
             >
-              <div class="pw-wizard-category-fields">
-                <div
-                  v-for="field in cat.fields"
-                  :key="field.key"
-                  class="k-field pw-wizard-k-field pw-wizard-k-field-row"
-                  :class="{ 'is-overridden': hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key) || (field.settingKey && hasOverride(block.blockType, field.settingKey)) }"
-                >
-                  <header class="k-field-header">
-                    <label class="k-label k-field-label">
-                      <span class="k-label-text">
-                        <label v-if="field.settingKey" class="pw-wizard-toggle-inline">
-                          <input
-                            type="checkbox"
-                            :checked="getVal(block.blockType, field.settingKey, field.settingValue)"
-                            @change="setVal(block.blockType, field.settingKey, $event.target.checked)"
-                          />
-                        </label>
-                        {{ field.key }}
-                      </span>
-                    </label>
-                  </header>
+              <div class="pw-wizard-fields">
+                <template v-for="field in cat.fields">
 
-                  <div class="pw-wizard-category-field-value">
-                    <template v-if="field.options && field.options.length">
-                      <div class="k-input" data-type="select">
-                        <span class="k-input-element">
-                          <select
-                            class="k-select-input"
-                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                            @change="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
-                          >
-                            <option
-                              v-for="opt in field.options"
-                              :key="opt"
-                              :value="opt"
-                            >{{ opt }}</option>
-                          </select>
-                        </span>
-                      </div>
-                      <footer class="k-field-footer">
-                        <div class="k-help k-field-help k-text">
-                          Default: <strong>{{ field.defaultValue }}</strong>
-                        </div>
-                      </footer>
-                    </template>
-                    <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'">
-                      <label class="pw-wizard-toggle-inline">
-                        <input
-                          type="checkbox"
-                          :checked="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                          @change="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.checked)"
-                        />
-                      </label>
-                    </template>
-                    <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'number'">
-                      <div class="k-input" data-type="number">
-                        <span class="k-input-element">
-                          <input
-                            type="number"
-                            class="k-text-input"
-                            :placeholder="String(field.defaultValue)"
-                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
-                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value !== '' ? Number($event.target.value) : '', String(field.defaultValue))"
-                          />
-                        </span>
-                      </div>
-                      <footer class="k-field-footer">
-                        <div class="k-help k-field-help k-text">
-                          Default: <strong>{{ field.defaultValue }}</strong>
-                        </div>
-                      </footer>
-                    </template>
-                    <template v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'string'">
-                      <div class="k-input" data-type="text">
-                        <span class="k-input-element">
-                          <input
-                            type="text"
-                            class="k-text-input"
-                            :placeholder="field.defaultValue"
-                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
-                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
-                          />
-                        </span>
-                      </div>
-                      <footer class="k-field-footer">
-                        <div class="k-help k-field-help k-text">
-                          Default: <strong>{{ field.defaultValue }}</strong>
-                        </div>
-                      </footer>
-                    </template>
-                  </div>
-                </div>
+                  <!-- Select from options -->
+                  <k-select-field
+                    v-if="field.options && field.options.length"
+                    :key="field.key"
+                    :label="field.key"
+                    :help="'Plugin default: ' + field.defaultValue"
+                    :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                    :options="field.options.map(o => ({ value: o, text: o }))"
+                    @input="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event, field.defaultValue)"
+                  />
+
+                  <!-- Boolean -->
+                  <k-toggle-field
+                    v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'"
+                    :key="field.key"
+                    :label="field.key"
+                    :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                    :text="['off', 'on']"
+                    @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
+                  />
+
+                  <!-- Number -->
+                  <k-number-field
+                    v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'number'"
+                    :key="field.key"
+                    :label="field.key"
+                    :help="'Plugin default: ' + field.defaultValue"
+                    :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                    @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
+                  />
+
+                  <!-- String -->
+                  <k-text-field
+                    v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'string'"
+                    :key="field.key"
+                    :label="field.key"
+                    :help="'Plugin default: ' + field.defaultValue"
+                    :placeholder="field.defaultValue"
+                    :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key) || ''"
+                    @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event, field.defaultValue)"
+                  />
+
+                </template>
               </div>
             </div>
 
@@ -641,8 +563,8 @@ export default {
       }
       this.markDirty(blockType);
     },
-    setEditorArray(blockType, key, value, defaultVal) {
-      const arr = value.split(',').map(s => s.trim()).filter(Boolean);
+    setEditorArrayFromTags(blockType, key, value, defaultVal) {
+      const arr = Array.isArray(value) ? value.map(v => v.value || v) : [];
       if (arr.length === 0 || JSON.stringify(arr) === JSON.stringify(defaultVal)) {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'editor.' + key);
       } else {
@@ -793,117 +715,19 @@ export default {
 .pw-wizard-check-label { font-size: var(--text-sm); font-weight: 500; }
 .pw-wizard-check-meta { font-size: var(--text-xs); color: var(--color-text-dimmed); margin-left: auto; }
 
-/* Unified Content Fields */
-.pw-wizard-unified-fields { display: flex; flex-direction: column; gap: var(--spacing-4); }
-.pw-wizard-unified-field {
-  background: var(--color-gray-50); border-radius: var(--rounded-lg); padding: var(--spacing-4);
-}
-.pw-wizard-unified-field-header { margin-bottom: var(--spacing-3); }
-.pw-wizard-unified-field-name { font-weight: 600; font-size: var(--text-sm); text-transform: capitalize; }
-
-.pw-wizard-unified-field.is-disabled {
-  opacity: 0.4;
-}
-
-.pw-wizard-unified-field.is-disabled .pw-wizard-unified-field-name {
-  text-decoration: line-through;
-}
-
-.pw-wizard-unified-field-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pw-wizard-unified-props {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-6);
-  padding: var(--spacing-4) 0 0 var(--spacing-4);
-}
-
-.pw-wizard-prop-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.pw-wizard-unified-simple { padding-left: var(--spacing-4); }
-
-/* Kirby-native field overrides */
-.pw-wizard-k-field {
-  padding: 0;
-}
-
-.pw-wizard-k-field .k-field-header { margin-bottom: var(--spacing-1); }
-.pw-wizard-k-field .k-label-text { font-size: var(--text-xs); text-transform: capitalize; }
-.pw-wizard-k-field .k-field-footer { margin-top: var(--spacing-1); }
-.pw-wizard-k-field .k-field-help { font-size: 11px; }
-
-.pw-wizard-k-field .k-select-input {
-  width: 100%;
-  padding: var(--spacing-1) var(--spacing-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--rounded);
-  font-size: var(--text-sm);
-  font-family: var(--font-mono);
-  background: var(--color-white);
-  appearance: auto;
-}
-
-.pw-wizard-k-field .k-text-input {
-  width: 100%;
-  padding: var(--spacing-1) var(--spacing-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--rounded);
-  font-size: var(--text-sm);
-  font-family: var(--font-mono);
-  background: var(--color-white);
-}
-
-.pw-wizard-k-field .k-text-input:focus,
-.pw-wizard-k-field .k-select-input:focus {
-  outline: none;
-  border-color: var(--color-focus);
-  box-shadow: 0 0 0 2px var(--color-focus-outline);
-}
-
-.pw-wizard-k-field .k-text-input::placeholder {
-  color: var(--color-text-dimmed);
-  font-style: italic;
-}
-
-.pw-wizard-k-field.is-overridden {
-  border-left: 2px solid var(--color-notice-600);
-  padding-left: var(--spacing-2);
-}
-
-/* Category fields (row layout) */
-.pw-wizard-k-field-row {
+/* Native Kirby fields layout */
+.pw-wizard-fields {
   display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: var(--spacing-2);
-  align-items: start;
-  padding: var(--spacing-2) var(--spacing-3);
-  background: var(--color-gray-50);
-  border-radius: 0;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--spacing-6);
 }
 
-.pw-wizard-k-field-row:first-child { border-radius: var(--rounded) var(--rounded) 0 0; }
-.pw-wizard-k-field-row:last-child { border-radius: 0 0 var(--rounded) var(--rounded); }
-
-.pw-wizard-k-field-row .k-field-header { margin-bottom: 0; padding-top: var(--spacing-1); }
-.pw-wizard-k-field-row .k-label-text { font-size: var(--text-sm); font-weight: 500; text-transform: none; }
-
-.pw-wizard-category-field-value {
-  display: flex;
-  flex-direction: column;
+.pw-wizard-fields > * {
+  grid-column: span 12;
 }
 
-.pw-wizard-category-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+.pw-wizard-fields > [style*="--width:1/2"] {
+  grid-column: span 6;
 }
 
 /* Toolbar */
