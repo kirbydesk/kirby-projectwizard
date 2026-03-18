@@ -123,16 +123,22 @@
                 <div
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
-                  class="pw-content-field"
+                  class="k-field k-text-field pw-content-field"
                 >
-                  <!-- Input field with field name -->
+                  <!-- Label -->
+                  <header class="k-field-header">
+                    <label class="k-label k-field-label">
+                      <span class="k-label-text">{{ field.key }}</span>
+                    </label>
+                  </header>
+
+                  <!-- Input field with field name as placeholder -->
                   <div class="k-input" data-type="text">
                     <span class="k-input-element">
                       <input
                         type="text"
                         class="k-string-input k-text-input"
-                        :value="field.key"
-                        readonly
+                        :placeholder="field.key + ' ...'"
                       />
                     </span>
                   </div>
@@ -695,9 +701,8 @@ export default {
   margin-bottom: var(--spacing-2);
 }
 
-.pw-content-field .k-text-input {
+.pw-content-field .k-label-text {
   text-transform: capitalize;
-  font-weight: 500;
 }
 
 .pw-field-rows {
