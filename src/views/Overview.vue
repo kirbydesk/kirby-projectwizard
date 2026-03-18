@@ -365,7 +365,7 @@
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('prw.field.' + field.key) }}</label>
+                          <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
                         </div>
                         <div class="pw-field-row-options">
                           <k-toggles-input
@@ -385,7 +385,7 @@
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('prw.field.' + field.key) || field.key }}</label>
+                          <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
                         </div>
                         <div class="pw-field-row-options pw-toggle-group">
                           <k-toggle-input
@@ -404,7 +404,7 @@
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('prw.field.' + field.key) }}</label>
+                          <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
                         </div>
                         <div class="pw-field-row-options">
                           <!-- Boolean: toggle -->
@@ -992,6 +992,17 @@ export default {
       const pwT = this.$t(pwKey);
       if (pwT && pwT !== pwKey) return pwT;
       return val;
+    },
+
+    categoryFieldLabel(key) {
+      // Try prw.field.*, then pw.field.*.label, then fallback
+      const prwKey = 'prw.field.' + key;
+      const prwT = this.$t(prwKey);
+      if (prwT && prwT !== prwKey) return prwT;
+      const pwKey = 'pw.field.' + key + '.label';
+      const pwT = this.$t(pwKey);
+      if (pwT && pwT !== pwKey) return pwT;
+      return key;
     },
 
     selectOption(blockType, path, value, pluginDefault) {
