@@ -43,6 +43,8 @@
 	'prw.field.padding-left' => 'Padding Left',
 	'prw.field.padding-right' => 'Padding Right',
 	'prw.field.radius' => 'Radius',
+	'prw.field.horizontal-content-position' => 'Horizontal Position',
+	'prw.field.vertical-content-position' => 'Vertical Position',
 
 	/* -------------- Style fields --------------*/
 	'prw.property.theme' => 'Theme',
