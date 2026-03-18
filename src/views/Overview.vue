@@ -149,14 +149,13 @@
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
-                        </div>
-                        <div class="pw-field-row-options">
-                          <k-toggle-input
-                            :value="isFieldEnabled(block.blockType, field)"
-                            :text="[$t('prw.option.off'), $t('prw.option.on')]"
-                            @input="toggleField(block.blockType, field, $event)"
+                          <input
+                            type="checkbox"
+                            class="pw-field-row-check"
+                            :checked="isFieldEnabled(block.blockType, field)"
+                            @change="toggleField(block.blockType, field, $event.target.checked)"
                           />
+                          <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
                         </div>
                       </span>
                     </div>
@@ -193,14 +192,13 @@
                   <div class="k-input" data-type="text">
                     <span class="k-input-element pw-field-row-inner">
                       <div class="pw-field-row-label-col">
-                        <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
-                      </div>
-                      <div class="pw-field-row-options">
-                        <k-toggle-input
-                          :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
-                          :text="[$t('prw.option.off'), $t('prw.option.on')]"
-                          @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
+                        <input
+                          type="checkbox"
+                          class="pw-field-row-check"
+                          :checked="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
+                          @change="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event.target.checked)"
                         />
+                        <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
                       </div>
                     </span>
                   </div>
