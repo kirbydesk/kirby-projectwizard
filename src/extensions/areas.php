@@ -14,8 +14,6 @@ $areas['pw-divider'] = [
 
 // Detect blocks for views + menu entries
 $blocks = ProjectConfig::detectBlocks();
-$blockViews = [];
-$blockMenuEntries = [];
 
 // Read block labels directly from plugin i18n files
 $blockLabel = function(string $plugin, string $blockType): string {
@@ -32,60 +30,52 @@ $blockLabel = function(string $plugin, string $blockType): string {
 	return $fallback;
 };
 
-foreach ($blocks as $blockType => $info) {
-	$plugin = $info['plugin'];
-	$label  = $blockLabel($plugin, $blockType);
-
-	// View inside projectwizard area
-	$blockViews[] = [
-		'pattern' => 'projectwizard/block/' . $blockType,
-		'action'  => fn() => [
-			'component' => 'pw-wizard-overview',
-			'title'     => $label,
-			'breadcrumb' => [
-				['label' => $label, 'link' => 'projectwizard/block/' . $blockType],
-			],
-			'props'     => [
-				'blockType' => $blockType,
-			],
-		],
-	];
-
-	// Sidebar menu entry
-	$slug = strtolower($blockType);
-	$blockMenuEntries['pw-block-' . $slug] = [
-		'label' => $label,
-		'icon'  => $info['icon'] ?? 'box',
-		'menu'  => true,
-		'link'  => 'projectwizard/block/' . $blockType,
-	];
-}
-
-// Main projectwizard area with all views
+// Main projectwizard area (global settings only)
 $areas['projectwizard'] = [
 	'label' => 'Project Wizard',
 	'icon'  => 'wand',
 	'menu'  => true,
-	'views' => array_merge(
+	'views' => [
 		[
+			'pattern' => 'projectwizard',
+			'action'  => fn() => [
+				'component' => 'pw-wizard-overview',
+				'title'     => 'Project Wizard',
+				'props'     => [
+					'blockType' => null,
+				],
+			],
+		],
+	],
+];
+
+// Block areas — each with its own view so Kirby highlights the active menu entry
+foreach ($blocks as $blockType => $info) {
+	$plugin = $info['plugin'];
+	$label  = $blockLabel($plugin, $blockType);
+	$slug   = strtolower($blockType);
+
+	$areas['pw-block-' . $slug] = [
+		'label' => $label,
+		'icon'  => $info['icon'] ?? 'box',
+		'menu'  => true,
+		'link'  => 'projectwizard/block/' . $blockType,
+		'views' => [
 			[
-				'pattern' => 'projectwizard',
+				'pattern' => 'projectwizard/block/' . $blockType,
 				'action'  => fn() => [
 					'component' => 'pw-wizard-overview',
-					'title'     => 'Project Wizard',
+					'title'     => $label,
+					'breadcrumb' => [
+						['label' => $label, 'link' => 'projectwizard/block/' . $blockType],
+					],
 					'props'     => [
-						'blockType' => null,
+						'blockType' => $blockType,
 					],
 				],
 			],
 		],
-		$blockViews
-	),
-];
-
-// Add block menu entries after projectwizard (preserves order)
-foreach ($blockMenuEntries as $key => $entry) {
-	$areas[$key] = $entry;
+	];
 }
 
 return $areas;
