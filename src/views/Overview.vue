@@ -128,12 +128,13 @@
                   <!-- Label with enable checkbox -->
                   <header class="k-field-header" style="display: flex; align-items: center; overflow: visible;">
                     <input
+                      :id="'pw-field-' + block.blockType + '-' + field.key"
                       type="checkbox"
                       :checked="isFieldEnabled(block.blockType, field)"
                       class="pw-field-enable-check"
                       @change="toggleField(block.blockType, field, $event.target.checked)"
                     />
-                    <label class="k-label k-field-label" style="flex: 1 1 0%;">
+                    <label class="k-label k-field-label" :for="'pw-field-' + block.blockType + '-' + field.key" style="flex: 1 1 0%; cursor: pointer;">
                       <span class="k-label-text">{{ fieldLabel(field.key) }}</span>
                     </label>
                   </header>
