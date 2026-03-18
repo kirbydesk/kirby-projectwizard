@@ -938,8 +938,8 @@ export default {
               key,
               type: 'toggles',
               defaultValue: defaultVal,
-              required: false,
-              reset: true,
+              required: key.startsWith('vertical-') && key.endsWith('-position'),
+              reset: !(key.startsWith('vertical-') && key.endsWith('-position')),
               options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
             });
             continue;
