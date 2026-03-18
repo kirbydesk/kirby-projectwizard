@@ -948,6 +948,10 @@ export default {
   margin-bottom: var(--spacing-6);
 }
 
+.pw-wizard-section .k-headline-field {
+  margin-bottom: var(--spacing-3);
+}
+
 .pw-content-field .k-toggle-field > .k-input,
 .pw-content-field .k-toggle-field > .k-input:focus-within {
   background: none !important;
