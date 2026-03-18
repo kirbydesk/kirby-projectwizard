@@ -905,6 +905,17 @@ export default {
   padding-left: var(--spacing-2);
 }
 
+/* Toggles styling to match badge look */
+.pw-field-row-options .k-toggles-input ul {
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pw-field-row-options .k-toggles-input label {
+  border-radius: 999px;
+  padding: 0 var(--spacing-2);
+}
+
 .pw-field-row-options.pw-toggle-group {
   column-gap: var(--spacing-10);
 }
