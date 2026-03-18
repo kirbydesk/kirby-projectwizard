@@ -961,11 +961,13 @@ export default {
   flex-direction: column;
 }
 
-.pw-content-field {
-  margin-bottom: var(--spacing-6);
+.pw-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
 }
 
-.pw-content-field:last-child {
+.pw-content-field {
   margin-bottom: 0;
 }
 
