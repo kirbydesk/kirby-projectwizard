@@ -59,6 +59,15 @@ export default {
       localActive: [...(this.activeOptions || [])],
     };
   },
+  watch: {
+    modified(val) {
+      if (!val) {
+        this.touched = false;
+        this.localDefault = null;
+        this.localActive = [...(this.activeOptions || [])];
+      }
+    },
+  },
   methods: {
     toggleActive(checked) {
       this.active = checked;
