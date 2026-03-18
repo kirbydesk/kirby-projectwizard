@@ -18,7 +18,7 @@
         type="button"
         class="pw-field-row-option"
         :class="{
-          'is-active': activeOptions.includes(opt),
+          'is-active': localActive.includes(opt),
           'is-default': opt === localDefault,
           'is-plugin-default': opt === pluginDefault && !touched && !modified,
         }"
@@ -47,6 +47,7 @@ export default {
       active: this.enabled,
       touched: false,
       localDefault: null,
+      localActive: [...(this.activeOptions || [])],
     };
   },
   methods: {
@@ -68,20 +69,21 @@ export default {
     },
     handleClick(opt) {
       if (!this.touched) {
-        // First click in unmodified state: select only this value (grey badge), keep current default
         this.touched = true;
+        this.localActive = [opt];
         this.$emit('update:options', [opt]);
         return;
       }
 
-      const isActive = this.activeOptions.includes(opt);
+      const isActive = this.localActive.includes(opt);
       const isLocalDefault = opt === this.localDefault;
 
       if (!isActive) {
         // Aus → Grau
         const updated = this.allOptions.filter(
-          o => this.activeOptions.includes(o) || o === opt
+          o => this.localActive.includes(o) || o === opt
         );
+        this.localActive = updated;
         this.$emit('update:options', updated);
       } else if (isActive && !isLocalDefault) {
         // Grau → Blau
@@ -90,7 +92,8 @@ export default {
       } else if (isActive && isLocalDefault) {
         // Blau → Aus
         this.localDefault = null;
-        const updated = this.activeOptions.filter(o => o !== opt);
+        const updated = this.localActive.filter(o => o !== opt);
+        this.localActive = updated;
         this.$emit('update:options', updated);
       }
     },
