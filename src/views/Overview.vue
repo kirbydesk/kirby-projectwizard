@@ -370,6 +370,7 @@ export default {
     isWriterAvailable(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
       const editor = settings['editor'];
+      console.log('isWriterAvailable', blockType, 'editor:', editor);
       if (!editor || !this.isObject(editor)) return false;
       const modeOptions = editor['mode'];
       if (!Array.isArray(modeOptions)) return false;
