@@ -149,10 +149,6 @@
                     </span>
                   </div>
 
-                  <!-- Help text -->
-                  <footer v-if="fieldHelp(field.key)" class="k-field-footer">
-                    <div class="k-help k-field-help k-text" v-html="fieldHelp(field.key)"></div>
-                  </footer>
 
                   <!-- Property rows below the input -->
                   <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" class="pw-field-rows">

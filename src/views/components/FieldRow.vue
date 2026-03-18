@@ -10,7 +10,7 @@
         @change="$emit('toggle', $event.target.checked)"
       />
     </label>
-    <span class="pw-field-row-label">{{ label }}</span>
+    <span class="pw-field-row-label">{{ propertyLabel(label) }}</span>
     <div v-if="enabled" class="pw-field-row-options">
       <button
         v-for="opt in allOptions"
@@ -42,6 +42,15 @@ export default {
     modified: { type: Boolean, default: false },
   },
   methods: {
+    propertyLabel(key) {
+      const labels = {
+        align: 'Alignment',
+        level: 'Level',
+        sizes: 'Sizes',
+        mode: 'Mode',
+      };
+      return labels[key] || key.charAt(0).toUpperCase() + key.slice(1);
+    },
     optionLabel(opt) {
       const key = 'pw.option.' + opt;
       const translated = this.$t(key);
