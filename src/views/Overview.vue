@@ -709,8 +709,8 @@ export default {
 }
 
 .pw-content-field .k-toggle-input {
-  background: none;
-  box-shadow: none;
+  background: none !important;
+  box-shadow: none !important;
 }
 
 .pw-content-field .k-label-text {
