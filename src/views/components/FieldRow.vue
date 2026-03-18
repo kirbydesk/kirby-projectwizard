@@ -78,15 +78,20 @@ export default {
     },
     handleClick(opt) {
       if (this.noDefault) {
-        // Two-state: aus ↔ grau
-        this.touched = true;
-        const isActive = this.localActive.includes(opt);
-        if (isActive) {
-          this.localActive = this.localActive.filter(o => o !== opt);
+        if (!this.touched) {
+          // First click: select only this value
+          this.touched = true;
+          this.localActive = [opt];
         } else {
-          this.localActive = this.allOptions.filter(
-            o => this.localActive.includes(o) || o === opt
-          );
+          // Subsequent clicks: toggle aus ↔ grau
+          const isActive = this.localActive.includes(opt);
+          if (isActive) {
+            this.localActive = this.localActive.filter(o => o !== opt);
+          } else {
+            this.localActive = this.allOptions.filter(
+              o => this.localActive.includes(o) || o === opt
+            );
+          }
         }
         this.$emit('update:options', this.localActive);
         return;
