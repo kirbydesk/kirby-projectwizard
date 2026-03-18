@@ -118,6 +118,7 @@
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
                   class="k-field k-text-field pw-content-field"
+                  data-object="content-field"
                 >
                   <!-- Label with enable checkbox -->
                   <k-toggle-field
@@ -151,6 +152,7 @@
               <div
                 v-if="getEditorField(block.blockType) || getEditorConfigRows(block.blockType).length"
                 class="k-field k-text-field pw-content-field"
+                data-object="content-field"
               >
                 <k-toggle-field
                   :label="false"
@@ -961,7 +963,7 @@ export default {
   flex-direction: column;
 }
 
-.pw-content-field {
+[data-object="content-field"] {
   margin-bottom: var(--spacing-2);
 }
 
@@ -1075,7 +1077,7 @@ export default {
   flex-direction: column;
 }
 
-.pw-content-field .pw-field-rows {
+[data-object="content-field"] .pw-field-rows {
   padding-bottom: var(--spacing-4);
   margin-top: -4px;
 }
