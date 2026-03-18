@@ -959,7 +959,6 @@ export default {
 .pw-field-block {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
 }
 
 .pw-content-field {
