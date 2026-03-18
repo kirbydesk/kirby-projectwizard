@@ -145,9 +145,16 @@
                   data-object="content-field"
                 >
                   <label class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
+                  <k-toggle-field
+                    v-if="!getColumnBlocks(block.blockType)"
+                    :label="false"
+                    :value="isFieldEnabled(block.blockType, field)"
+                    :text="false"
+                    @input="toggleField(block.blockType, field, $event)"
+                  />
 
                   <!-- Property rows -->
-                  <div v-if="field.properties.length" class="pw-field-rows">
+                  <div v-show="!getColumnBlocks(block.blockType) ? isFieldEnabled(block.blockType, field) : true" v-if="field.properties.length" class="pw-field-rows">
                     <pw-field-row
                       v-for="prop in field.properties"
                       :key="field.key + '-' + prop.key"
@@ -173,8 +180,14 @@
                 data-object="content-field"
               >
                 <label class="pw-column-field-label">{{ fieldLabel('editor') }}</label>
+                <k-toggle-field
+                  :label="false"
+                  :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
+                  :text="false"
+                  @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
+                />
 
-                <div class="pw-field-rows">
+                <div v-show="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })" class="pw-field-rows">
                   <!-- Editor content settings (mode, align, sizes) as FieldRows -->
                   <template v-if="getEditorField(block.blockType)">
                     <pw-field-row
