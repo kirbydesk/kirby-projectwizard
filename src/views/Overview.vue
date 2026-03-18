@@ -962,7 +962,11 @@ export default {
 }
 
 .pw-content-field {
-  margin-bottom: var(--spacing-2);
+  margin-bottom: var(--spacing-6);
+}
+
+.pw-content-field:last-child {
+  margin-bottom: 0;
 }
 
 .pw-wizard-section {
@@ -1073,11 +1077,6 @@ export default {
 .pw-field-rows {
   display: flex;
   flex-direction: column;
-  padding-bottom: var(--spacing-6);
-}
-
-.pw-content-field:last-child .pw-field-rows {
-  padding-bottom: 0;
 }
 
 
