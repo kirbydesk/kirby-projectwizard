@@ -651,7 +651,6 @@ export default {
               label: subLabel,
               defaultValue: defaultsFields[key] !== undefined ? defaultsFields[key] : 'large',
               options: [
-                { value: '', text: 'None' },
                 { value: 'small', text: 'Small' },
                 { value: 'large', text: 'Large' },
               ],
