@@ -43,13 +43,9 @@ export default {
   },
   methods: {
     propertyLabel(key) {
-      const labels = {
-        align: 'Alignment',
-        level: 'Level',
-        sizes: 'Sizes',
-        mode: 'Mode',
-      };
-      return labels[key] || key.charAt(0).toUpperCase() + key.slice(1);
+      const tKey = 'pw.property.' + key;
+      const translated = this.$t(tKey);
+      return (translated && translated !== tKey) ? translated : key.charAt(0).toUpperCase() + key.slice(1);
     },
     optionLabel(opt) {
       const key = 'pw.option.' + opt;
