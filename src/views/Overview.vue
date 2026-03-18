@@ -788,11 +788,12 @@ export default {
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
       } else {
         this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
-      }
-      // Reset default if no longer in allowed list
-      const currentDefault = this.getVal(blockType, 'defaults.' + catKey + '.' + fieldKey, field.pluginDefault);
-      if (!ordered.includes(currentDefault) && ordered.length) {
-        this.setVal(blockType, 'defaults.' + catKey + '.' + fieldKey, ordered[0]);
+
+        // Reset default if no longer in allowed list
+        const currentDefault = this.getVal(blockType, 'defaults.' + catKey + '.' + fieldKey, field.pluginDefault);
+        if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
+          this.setVal(blockType, 'defaults.' + catKey + '.' + fieldKey, ordered[0]);
+        }
       }
       this.markDirty(blockType);
     },
@@ -826,12 +827,12 @@ export default {
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
       } else {
         this.setVal(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey, ordered);
-      }
 
-      // If current default is no longer in allowed list, reset it
-      const currentDefault = this.getVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, prop.pluginDefault);
-      if (!ordered.includes(currentDefault) && ordered.length) {
-        this.setVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, ordered[0]);
+        // If current default is no longer in allowed list, reset it
+        const currentDefault = this.getVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, prop.pluginDefault);
+        if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
+          this.setVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, ordered[0]);
+        }
       }
 
       this.markDirty(blockType);
