@@ -98,7 +98,7 @@ export default {
   align-items: center;
   padding: var(--spacing-2) 0;
   padding-left: 5px;
-  min-height: 32px;
+  height: 36px;
 }
 
 .pw-field-row.is-disabled {
