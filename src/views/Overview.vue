@@ -1073,7 +1073,6 @@ export default {
 .pw-field-rows {
   display: flex;
   flex-direction: column;
-  padding-bottom: var(--spacing-6);
 }
 
 
