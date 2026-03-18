@@ -820,6 +820,10 @@ export default {
   margin-bottom: 0;
 }
 
+.pw-wizard-tab-content .k-headline-field {
+  padding-bottom: var(--spacing-8);
+}
+
 .pw-content-field .k-toggle-field > .k-input,
 .pw-content-field .k-toggle-field > .k-input:focus-within {
   background: none !important;
