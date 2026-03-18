@@ -29,15 +29,8 @@
       </template>
     </k-header>
 
-    <div v-if="loading" class="pw-wizard-loading">Loading...</div>
-
-    <div v-else class="pw-wizard-content">
-
-        <!-- ==================== Global Settings ==================== -->
-        <div v-if="activeTab === 'global'" class="pw-wizard-panel">
-
-          <!-- Kirby-native tab navigation -->
-          <nav class="k-tabs k-model-tabs">
+    <!-- Kirby-native tab navigation (global view) -->
+    <nav v-if="!loading && activeTab === 'global'" class="k-tabs k-model-tabs">
             <k-button
               :text="$t('prw.tab.elements')"
               icon="dashboard"
@@ -78,7 +71,38 @@
               data-variant="dimmed"
               @click="globalActiveTab = 'footer'"
             />
-          </nav>
+    </nav>
+
+    <!-- Kirby-native tab navigation (block views) -->
+    <nav v-if="!loading && activeTab !== 'global'" class="k-tabs k-model-tabs">
+      <k-button
+        :text="$t('prw.tab.settings')"
+        icon="settings"
+        class="k-tabs-button"
+        :aria-current="blockViewTab === 'settings' ? 'true' : null"
+        data-has-icon="true"
+        data-has-text="true"
+        data-variant="dimmed"
+        @click="blockViewTab = 'settings'"
+      />
+      <k-button
+        :text="$t('prw.tab.colors')"
+        icon="palette"
+        class="k-tabs-button"
+        :aria-current="blockViewTab === 'colors' ? 'true' : null"
+        data-has-icon="true"
+        data-has-text="true"
+        data-variant="dimmed"
+        @click="blockViewTab = 'colors'"
+      />
+    </nav>
+
+    <div v-if="loading" class="pw-wizard-loading">Loading...</div>
+
+    <div v-else class="pw-wizard-content">
+
+        <!-- ==================== Global Settings ==================== -->
+        <div v-if="activeTab === 'global'" class="pw-wizard-panel">
 
           <!-- Elements -->
           <div v-show="globalActiveTab === 'elements'" class="pw-wizard-global-content">
@@ -127,30 +151,6 @@
           v-show="activeTab === block.blockType"
           class="pw-wizard-panel"
         >
-
-          <!-- Kirby-native tab navigation -->
-          <nav class="k-tabs k-model-tabs">
-            <k-button
-              :text="$t('prw.tab.settings')"
-              icon="settings"
-              class="k-tabs-button"
-              :aria-current="blockViewTab === 'settings' ? 'true' : null"
-              data-has-icon="true"
-              data-has-text="true"
-              data-variant="dimmed"
-              @click="blockViewTab = 'settings'"
-            />
-            <k-button
-              :text="$t('prw.tab.colors')"
-              icon="palette"
-              class="k-tabs-button"
-              :aria-current="blockViewTab === 'colors' ? 'true' : null"
-              data-has-icon="true"
-              data-has-text="true"
-              data-variant="dimmed"
-              @click="blockViewTab = 'colors'"
-            />
-          </nav>
 
           <!-- Settings tab -->
           <div v-show="blockViewTab === 'settings'" v-if="blockConfigs[block.blockType]" class="pw-wizard-block-sections">
