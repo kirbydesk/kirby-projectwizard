@@ -836,7 +836,7 @@ export default {
 }
 
 .pw-field-row-toggle-spacer {
-  width: 13px;
+  width: 18px;
   flex-shrink: 0;
 }
 
