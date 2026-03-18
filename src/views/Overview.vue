@@ -930,7 +930,7 @@ export default {
             continue;
           }
 
-          // Array fields rendered as toggles (distribution, vertical position)
+          // Array fields rendered as toggles
           if (Array.isArray(settingsFields[key]) && settingsFields[key].length > 0) {
             const opts = settingsFields[key];
             const defaultVal = defaultsFields[key] !== undefined ? defaultsFields[key] : opts[0];
@@ -938,8 +938,8 @@ export default {
               key,
               type: 'toggles',
               defaultValue: defaultVal,
-              required: key.startsWith('vertical-') && key.endsWith('-position'),
-              reset: !(key.startsWith('vertical-') && key.endsWith('-position')),
+              required: false,
+              reset: true,
               options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
             });
             continue;
