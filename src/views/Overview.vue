@@ -106,6 +106,7 @@
             <div class="pw-wizard-tab-content">
 
               <!-- Content Fields -->
+              <section class="pw-wizard-section">
               <k-headline-field :label="$t('pw.headline.content')" />
               <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
                 <div
@@ -212,11 +213,13 @@
               </div>
             </div>
 
+            </section>
+
             <!-- ===== Categories (layout, style, effects, grid, settings) ===== -->
-            <div
+            <section
               v-for="cat in getCategories(block.blockType)"
               :key="cat.key"
-              class="pw-wizard-tab-content"
+              class="pw-wizard-section"
             >
               <k-headline-field :label="$t('pw.headline.' + cat.key)" />
               <div class="pw-field-block">
@@ -326,7 +329,7 @@
                   </div>
                 </template>
               </div>
-            </div>
+            </section>
 
           </div>
         </div>
@@ -941,8 +944,8 @@ export default {
   margin-bottom: 0;
 }
 
-.pw-wizard-tab-content .k-headline-field {
-  padding-bottom: var(--spacing-8);
+.pw-wizard-section {
+  margin-bottom: var(--spacing-6);
 }
 
 .pw-content-field .k-toggle-field > .k-input,
