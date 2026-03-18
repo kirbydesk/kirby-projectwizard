@@ -54,7 +54,7 @@ export default {
   data() {
     return {
       active: this.enabled,
-      touched: false,
+      touched: this.modified,
       localDefault: null,
       localActive: [...(this.activeOptions || [])],
     };
