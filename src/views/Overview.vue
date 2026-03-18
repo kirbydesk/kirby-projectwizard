@@ -870,8 +870,7 @@ export default {
   padding-left: var(--spacing-2);
 }
 
-.pw-toggle-group {
-  display: flex;
+.pw-field-row-options.pw-toggle-group {
   column-gap: var(--spacing-10);
 }
 
