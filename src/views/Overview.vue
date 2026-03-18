@@ -1012,13 +1012,6 @@ export default {
 }
 
 
-.pw-content-field .k-toggle-field > .k-input,
-.pw-content-field .k-toggle-field > .k-input:focus-within {
-  background: none !important;
-  box-shadow: none !important;
-  border: none !important;
-  outline: none !important;
-}
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
