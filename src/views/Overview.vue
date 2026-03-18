@@ -369,7 +369,9 @@ export default {
       const modeOptions = JSON.parse(JSON.stringify(editor['mode'] || []));
       if (!modeOptions.includes('writer')) return [];
 
-      const editorConfig = JSON.parse(JSON.stringify(this.getDefault(blockType, 'editor') || {}));
+      const raw = this.getDefault(blockType, 'editor');
+      const editorConfig = JSON.parse(JSON.stringify(raw || {}));
+      console.log('getEditorConfigRows', blockType, 'raw:', raw, 'cloned:', editorConfig, 'entries:', Object.entries(editorConfig));
       const rows = [];
       for (const [key, val] of Object.entries(editorConfig)) {
         if (Array.isArray(val) && val.length > 0) {
