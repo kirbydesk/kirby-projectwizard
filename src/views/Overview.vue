@@ -373,9 +373,9 @@ export default {
       if (!editor) return false;
       const modeOptions = editor['mode'];
       if (!modeOptions) return false;
-      // Handle Vue 2 reactive arrays
-      const modes = Array.isArray(modeOptions) ? modeOptions : Object.values(modeOptions);
-      return modes.includes('writer');
+      const modes = JSON.parse(JSON.stringify(modeOptions));
+      console.log('isWriterAvailable', blockType, 'modes:', modes, 'isArray:', Array.isArray(modes), 'includes writer:', Array.isArray(modes) && modes.includes('writer'));
+      return Array.isArray(modes) && modes.includes('writer');
     },
     getEditorField(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
