@@ -81,14 +81,20 @@ export default {
     handleClick(opt) {
       if (this.noDefault) {
         if (!this.touched) {
-          // First click: select only this value
           this.touched = true;
           this.localActive = [opt];
         } else {
-          // Subsequent clicks: toggle aus ↔ grau
           const isActive = this.localActive.includes(opt);
           if (isActive) {
-            this.localActive = this.localActive.filter(o => o !== opt);
+            const updated = this.localActive.filter(o => o !== opt);
+            if (updated.length === 0) {
+              // All deselected → reset to defaults
+              this.touched = false;
+              this.localActive = [...this.allOptions];
+              this.$emit('update:options', this.allOptions);
+              return;
+            }
+            this.localActive = updated;
           } else {
             this.localActive = this.allOptions.filter(
               o => this.localActive.includes(o) || o === opt
@@ -124,6 +130,13 @@ export default {
         // Blau → Aus
         this.localDefault = null;
         const updated = this.localActive.filter(o => o !== opt);
+        if (updated.length === 0) {
+          // All deselected → reset to defaults
+          this.touched = false;
+          this.localActive = [...this.allOptions];
+          this.$emit('update:options', this.allOptions);
+          return;
+        }
         this.localActive = updated;
         this.$emit('update:options', updated);
       }
