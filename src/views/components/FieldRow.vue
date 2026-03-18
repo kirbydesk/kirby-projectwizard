@@ -152,7 +152,7 @@ export default {
 
 <style>
 .pw-field-row {
-  padding: 0;
+  padding: var(--spacing-1) 0;
 }
 
 [data-object="content-field"] .pw-field-row {
