@@ -356,6 +356,7 @@
                     :plugin-default="field.pluginDefault"
                     :enabled="true"
                     :modified="hasOverride(block.blockType, 'settings.fields.' + cat.key + '.' + field.key) || hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
+                    :no-checkbox="true"
                     @update:options="setCategoryOptions(block.blockType, cat.key, field.key, field, $event)"
                     @update:default="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event, field.pluginDefault)"
                   />
