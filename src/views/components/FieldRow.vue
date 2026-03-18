@@ -153,6 +153,7 @@ export default {
 <style>
 .pw-field-row {
   padding: var(--spacing-1) 0;
+  margin-bottom: var(--spacing-2);
 }
 
 .pw-field-row-inner {
