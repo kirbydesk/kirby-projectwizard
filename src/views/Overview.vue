@@ -188,7 +188,7 @@
                   <template v-if="isWriterAvailable(block.blockType)">
                   <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
                     <pw-field-row
-                      v-if="Array.isArray(val) && val.length > 0"
+                      v-if="val && val.length > 0 && typeof val !== 'string'"
                       :key="'editor-' + key"
                       :uid="block.blockType + '-editor-' + key"
                       :label="key"
@@ -374,7 +374,6 @@ export default {
       const modeOptions = editor['mode'];
       if (!modeOptions) return false;
       const modes = JSON.parse(JSON.stringify(modeOptions));
-      console.log('isWriterAvailable', blockType, 'modes:', modes, 'isArray:', Array.isArray(modes), 'includes writer:', Array.isArray(modes) && modes.includes('writer'));
       return Array.isArray(modes) && modes.includes('writer');
     },
     getEditorField(blockType) {
