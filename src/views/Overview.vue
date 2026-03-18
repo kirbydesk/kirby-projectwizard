@@ -151,10 +151,9 @@
                         <div class="pw-field-row-label-col">
                           <k-toggle-input
                             :value="isFieldEnabled(block.blockType, field)"
-                            :text="[$t('prw.option.disabled'), $t('prw.option.enabled')]"
+                            :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
                             @input="toggleField(block.blockType, field, $event)"
                           />
-                          <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
                         </div>
                       </span>
                     </div>
@@ -193,10 +192,9 @@
                       <div class="pw-field-row-label-col">
                         <k-toggle-input
                           :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
-                          :text="[$t('prw.option.disabled'), $t('prw.option.enabled')]"
+                          :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
                           @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
                         />
-                        <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
                       </div>
                     </span>
                   </div>

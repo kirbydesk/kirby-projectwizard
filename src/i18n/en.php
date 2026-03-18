@@ -11,11 +11,8 @@
 	'prw.property.marks' => 'Marks',
 	'prw.property.nodes' => 'Nodes',
 	'prw.property.headings' => 'Headings',
-	'prw.property.status' => 'Enabled',
 
 	/* -------------- Options --------------*/
-	'prw.option.enabled' => 'Enabled',
-	'prw.option.disabled' => 'Disabled',
 	'prw.option.h1' => 'H1',
 	'prw.option.h2' => 'H2',
 	'prw.option.h3' => 'H3',
