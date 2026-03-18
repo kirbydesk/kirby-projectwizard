@@ -219,51 +219,56 @@
               class="pw-wizard-tab-content"
             >
               <k-headline-field :label="$t('pw.headline.' + cat.key)" />
-              <div class="pw-wizard-fields">
+              <div class="pw-field-block">
                 <template v-for="field in cat.fields">
-
-                  <!-- Select from options -->
-                  <k-select-field
-                    v-if="field.options && field.options.length"
-                    :key="field.key"
-                    :label="field.key"
-                    :help="'Plugin default: ' + field.defaultValue"
-                    :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                    :options="field.options.map(o => ({ value: o, text: o }))"
-                    @input="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event, field.defaultValue)"
-                  />
-
-                  <!-- Boolean -->
-                  <k-toggle-field
-                    v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'"
-                    :key="field.key"
-                    :label="field.key"
-                    :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                    :text="['off', 'on']"
-                    @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
-                  />
-
-                  <!-- Number -->
-                  <k-number-field
-                    v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'number'"
-                    :key="field.key"
-                    :label="field.key"
-                    :help="'Plugin default: ' + field.defaultValue"
-                    :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                    @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
-                  />
-
-                  <!-- String -->
-                  <k-text-field
-                    v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'string'"
-                    :key="field.key"
-                    :label="field.key"
-                    :help="'Plugin default: ' + field.defaultValue"
-                    :placeholder="field.defaultValue"
-                    :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key) || ''"
-                    @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event, field.defaultValue)"
-                  />
-
+                  <div :key="field.key" class="pw-field-row">
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <label class="pw-field-row-label">{{ $t('pw.field.' + field.key) || field.key }}</label>
+                        </div>
+                        <div class="pw-field-row-options">
+                          <!-- Boolean: toggle -->
+                          <k-toggle-input
+                            v-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'"
+                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                            @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
+                          />
+                          <!-- String with options: select -->
+                          <select
+                            v-else-if="field.options && field.options.length"
+                            class="pw-category-select"
+                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                            @change="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
+                          >
+                            <option
+                              v-for="opt in field.options"
+                              :key="opt"
+                              :value="opt"
+                            >{{ opt }}</option>
+                          </select>
+                          <!-- String: text input -->
+                          <input
+                            v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'string'"
+                            type="text"
+                            class="pw-category-input"
+                            :placeholder="field.defaultValue"
+                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key) || ''"
+                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
+                          />
+                          <!-- Number: number input -->
+                          <input
+                            v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'number'"
+                            type="number"
+                            class="pw-category-input"
+                            :placeholder="String(field.defaultValue)"
+                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
+                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value !== '' ? Number($event.target.value) : '', String(field.defaultValue))"
+                          />
+                        </div>
+                      </span>
+                    </div>
+                  </div>
                 </template>
               </div>
             </div>
@@ -821,6 +826,27 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
+}
+
+.pw-category-select,
+.pw-category-input {
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  background: var(--color-white);
+}
+
+.pw-category-select:focus,
+.pw-category-input:focus {
+  outline: none;
+  border-color: var(--color-focus);
+}
+
+.pw-category-input::placeholder {
+  color: var(--color-text-dimmed);
+  font-style: italic;
 }
 
 
