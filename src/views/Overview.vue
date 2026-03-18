@@ -221,6 +221,21 @@
               <k-headline-field :label="$t('pw.headline.' + cat.key)" />
               <div class="pw-field-block">
                 <template v-for="field in cat.fields">
+                  <!-- FieldRow (e.g. theme with options + click logic) -->
+                  <pw-field-row
+                    v-if="field.type === 'fieldrow'"
+                    :key="field.key"
+                    :uid="block.blockType + '-' + cat.key + '-' + field.key"
+                    :label="field.key"
+                    :all-options="field.allOptions"
+                    :active-options="getCategoryActiveOptions(block.blockType, cat.key, field.key, field)"
+                    :current-default="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.pluginDefault)"
+                    :plugin-default="field.pluginDefault"
+                    :enabled="true"
+                    :modified="hasOverride(block.blockType, 'settings.fields.' + cat.key + '.' + field.key) || hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
+                    @update:options="setCategoryOptions(block.blockType, cat.key, field.key, field, $event)"
+                    @update:default="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event, field.pluginDefault)"
+                  />
                   <!-- Toggles field (e.g. padding-top with small/large) -->
                   <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row">
                     <div class="k-input" data-type="text">
@@ -573,6 +588,31 @@ export default {
     /**
      * Get currently active (allowed) options for a property.
      */
+    getCategoryActiveOptions(blockType, catKey, fieldKey, field) {
+      const override = this.getOverrideOnly(blockType, 'settings.fields.' + catKey + '.' + fieldKey);
+      const arr = JSON.parse(JSON.stringify(override || []));
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+      return field.allOptions;
+    },
+
+    setCategoryOptions(blockType, catKey, fieldKey, field, values) {
+      const ordered = field.allOptions.filter(o => values.includes(o));
+      if (JSON.stringify(ordered) === JSON.stringify(field.allOptions)) {
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
+      } else {
+        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
+      }
+      // Reset default if no longer in allowed list
+      const currentDefault = this.getVal(blockType, 'defaults.' + catKey + '.' + fieldKey, field.pluginDefault);
+      if (!ordered.includes(currentDefault) && ordered.length) {
+        this.setVal(blockType, 'defaults.' + catKey + '.' + fieldKey, ordered[0]);
+      }
+      this.markDirty(blockType);
+    },
+
     getActiveOptions(blockType, fieldKey, propKey, prop) {
       const override = this.getOverrideOnly(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey);
       if (Array.isArray(override)) return override;
@@ -656,6 +696,19 @@ export default {
           const settingVal = settingsFields[key];
           const defaultVal = defaultsFields[key];
 
+          // Fields with string options → FieldRow with click logic
+          const settingArr = JSON.parse(JSON.stringify(settingVal || []));
+          if (Array.isArray(settingArr) && settingArr.length > 0 && settingArr.every(v => typeof v === 'string')) {
+            fields.push({
+              key,
+              type: 'fieldrow',
+              allOptions: settingArr,
+              pluginDefault: typeof defaultVal === 'string' ? defaultVal : settingArr[0],
+              defaultValue: defaultVal,
+            });
+            continue;
+          }
+
           const field = {
             key,
             type: 'single',
@@ -664,10 +717,6 @@ export default {
             defaultValue: defaultVal !== undefined ? defaultVal : null,
             options: null,
           };
-
-          if (Array.isArray(settingVal) && settingVal.every(v => typeof v === 'string')) {
-            field.options = settingVal;
-          }
 
           fields.push(field);
         }
