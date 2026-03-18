@@ -100,7 +100,7 @@ export default {
   font-size: var(--text-sm);
   font-weight: 500;
   min-width: 100px;
-  margin-left: 8px;
+  margin-left: 10px;
 }
 
 .pw-field-row-options {
