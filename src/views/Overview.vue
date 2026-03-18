@@ -708,9 +708,10 @@ export default {
   margin-bottom: var(--spacing-2);
 }
 
-.pw-content-field .k-toggle-input {
+.pw-content-field .k-toggle-field > .k-input {
   background: none !important;
   box-shadow: none !important;
+  border: none !important;
 }
 
 .pw-content-field .k-label-text {
