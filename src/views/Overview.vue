@@ -129,7 +129,7 @@
                   <k-toggle-field
                     :label="fieldLabel(field.key)"
                     :value="isFieldEnabled(block.blockType, field)"
-                    :text="['off', 'on']"
+                    :text="fieldLabel(field.key)"
                     @input="toggleField(block.blockType, field, $event)"
                   />
 
