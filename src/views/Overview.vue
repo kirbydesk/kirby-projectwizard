@@ -919,6 +919,10 @@ export default {
   min-height: 0;
 }
 
+.pw-field-row-options .k-toggles-input input:focus:not(:checked) + label {
+  background: none !important;
+}
+
 .pw-field-row-options .k-toggles-input ul {
   height: 22px;
 }
