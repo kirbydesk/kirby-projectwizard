@@ -113,9 +113,33 @@
               </button>
               <transition name="pw-slide">
               <div v-show="isSectionOpen(block.blockType, 'content')" class="pw-section-content">
+
+              <!-- Column blocks (first, controls which fields are visible) -->
+              <div v-if="getColumnBlocks(block.blockType)" class="pw-field-block">
+                <div class="k-field k-text-field pw-content-field" data-object="content-field">
+                  <div class="pw-field-rows">
+                    <pw-field-row
+                      :uid="block.blockType + '-column-blocks'"
+                      :label="$t('prw.headline.columnBlocks')"
+                      :all-options="getColumnBlocks(block.blockType)"
+                      :active-options="getActiveColumnBlocks(block.blockType)"
+                      current-default=""
+                      plugin-default=""
+                      :enabled="true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.column-blocks')"
+                      :no-default="true"
+                      :no-checkbox="true"
+                      @update:options="setColumnBlocks(block.blockType, $event, getColumnBlocks(block.blockType))"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Content fields (filtered by active column-blocks if present) -->
               <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
                 <div
                   v-for="field in getContentFields(block.blockType)"
+                  v-show="isColumnBlockField(block.blockType, field.key)"
                   :key="field.key"
                   class="k-field k-text-field pw-content-field"
                   data-object="content-field"
@@ -249,30 +273,6 @@
                       :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
                       @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
                       @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Column blocks -->
-            <div v-if="getColumnBlocks(block.blockType)" class="pw-item-section">
-              <h3 class="pw-item-headline">{{ $t('prw.headline.columnBlocks') }}</h3>
-              <div class="pw-field-block">
-                <div class="k-field k-text-field pw-content-field" data-object="content-field">
-                  <div class="pw-field-rows">
-                    <pw-field-row
-                      :uid="block.blockType + '-column-blocks'"
-                      :label="$t('prw.headline.columnBlocks')"
-                      :all-options="getColumnBlocks(block.blockType)"
-                      :active-options="getActiveColumnBlocks(block.blockType)"
-                      current-default=""
-                      plugin-default=""
-                      :enabled="true"
-                      :modified="hasOverride(block.blockType, 'settings.fields.content.column-blocks')"
-                      :no-default="true"
-                      :no-checkbox="true"
-                      @update:options="setColumnBlocks(block.blockType, $event, getColumnBlocks(block.blockType))"
                     />
                   </div>
                 </div>
@@ -551,6 +551,13 @@ export default {
       const override = this.getOverrideOnly(blockType, 'settings.fields.content.column-blocks');
       if (Array.isArray(override) && override.length) return override;
       return this.getColumnBlocks(blockType) || [];
+    },
+
+    isColumnBlockField(blockType, fieldKey) {
+      const columnBlocks = this.getColumnBlocks(blockType);
+      if (!columnBlocks) return true; // no column-blocks → show all fields
+      const active = this.getActiveColumnBlocks(blockType);
+      return active.some(cb => cb.replace('multicolumn', '') === fieldKey);
     },
 
     setColumnBlocks(blockType, values, allBlocks) {
