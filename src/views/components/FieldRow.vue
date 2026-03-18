@@ -88,13 +88,22 @@ export default {
       return (translated && translated !== tKey) ? translated : key;
     },
     optionLabel(opt) {
-      // Try prw.option.* first, then pw.option.* (pagewizard), then raw value
+      // Try prw.option.* first, then pw.option.* (pagewizard)
       const prwKey = 'prw.option.' + opt;
       const prwTranslated = this.$t(prwKey);
       if (prwTranslated && prwTranslated !== prwKey) return prwTranslated;
       const pwKey = 'pw.option.' + opt;
       const pwTranslated = this.$t(pwKey);
       if (pwTranslated && pwTranslated !== pwKey) return pwTranslated;
+      // Try kirbyblock plugin sub-block keys (e.g. multicolumnheadline → kirbyblock-multicolumn.sub.headline)
+      const prefixes = ['multicolumn'];
+      for (const prefix of prefixes) {
+        if (opt.startsWith(prefix)) {
+          const subKey = 'kirbyblock-' + prefix + '.sub.' + opt.slice(prefix.length);
+          const subTranslated = this.$t(subKey);
+          if (subTranslated && subTranslated !== subKey) return subTranslated;
+        }
+      }
       return opt;
     },
     handleClick(opt) {

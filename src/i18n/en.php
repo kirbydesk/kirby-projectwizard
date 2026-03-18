@@ -30,12 +30,6 @@
 
 	/* -------------- Column Blocks --------------*/
 	'prw.headline.columnBlocks' => 'Allowed Blocks',
-	'prw.option.multicolumnheadline' => 'Headline',
-	'prw.option.multicolumntagline' => 'Tagline',
-	'prw.option.multicolumntext' => 'Text',
-	'prw.option.multicolumnquote' => 'Quote',
-	'prw.option.multicolumnmedia' => 'Media',
-	'prw.option.multicolumnbutton' => 'Button',
 
 	/* -------------- Layout fields --------------*/
 	'prw.field.padding-top' => 'Padding Top',
