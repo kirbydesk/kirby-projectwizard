@@ -267,7 +267,7 @@
                   class="k-field k-text-field pw-content-field"
                   data-object="content-field"
                 >
-                  <label class="pw-column-field-label">Item: {{ fieldLabel(field.displayKey) }}</label>
+                  <label class="pw-column-field-label">{{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}</label>
                   <div class="pw-field-row">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">

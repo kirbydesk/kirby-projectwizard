@@ -2,6 +2,7 @@
 
 	/* -------------- Labels --------------*/
 	'prw.wizard.title' => 'Project Wizard',
+	'prw.label.item' => 'Item',
 
 	/* -------------- Properties --------------*/
 	'prw.property.align' => 'Alignment',
