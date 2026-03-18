@@ -3,14 +3,14 @@
     class="pw-field-row"
     :class="{ 'is-disabled': !enabled, 'is-modified': modified }"
   >
-    <label class="pw-field-row-check">
-      <input
-        type="checkbox"
-        :checked="enabled"
-        @change="$emit('toggle', $event.target.checked)"
-      />
-    </label>
-    <span class="pw-field-row-label">{{ propertyLabel(label) }}</span>
+    <input
+      :id="'pw-prop-' + label"
+      type="checkbox"
+      class="pw-field-row-check"
+      :checked="enabled"
+      @change="$emit('toggle', $event.target.checked)"
+    />
+    <label class="pw-field-row-label" :for="'pw-prop-' + label">{{ propertyLabel(label) }}</label>
     <div v-if="enabled" class="pw-field-row-options">
       <button
         v-for="opt in allOptions"
@@ -90,12 +90,9 @@ export default {
 }
 
 .pw-field-row-check {
+  accent-color: var(--color-black);
   cursor: pointer;
   flex-shrink: 0;
-}
-
-.pw-field-row-check input {
-  accent-color: var(--color-black);
 }
 
 .pw-field-row-label {
@@ -103,6 +100,7 @@ export default {
   font-weight: 500;
   min-width: 100px;
   margin-left: 10px;
+  cursor: pointer;
 }
 
 .pw-field-row-options {
