@@ -708,6 +708,11 @@ export default {
   margin-bottom: var(--spacing-2);
 }
 
+.pw-content-field .k-toggle-input {
+  background: none;
+  box-shadow: none;
+}
+
 .pw-content-field .k-label-text {
   text-transform: capitalize;
 }
