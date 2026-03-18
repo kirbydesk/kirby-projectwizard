@@ -220,7 +220,7 @@
               </div>
             </div>
             <!-- Item fields -->
-            <template v-if="getItemFields(block.blockType).length">
+            <div v-if="getItemFields(block.blockType).length" class="pw-item-section">
               <h3 class="pw-item-headline">Items</h3>
               <div class="pw-field-block">
                 <div
@@ -254,7 +254,7 @@
                   </div>
                 </div>
               </div>
-            </template>
+            </div>
 
             </div>
             </transition>
@@ -481,7 +481,6 @@ export default {
       const rawDefaults = this.getDefault(blockType, 'defaults.content');
       const settings = rawSettings ? JSON.parse(JSON.stringify(rawSettings)) : {};
       const defaults = rawDefaults ? JSON.parse(JSON.stringify(rawDefaults)) : {};
-      console.log('getItemFields', blockType, 'keys:', Object.keys(settings), 'item-keys:', Object.keys(settings).filter(k => k.startsWith('item-')));
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
