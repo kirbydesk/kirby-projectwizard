@@ -934,13 +934,12 @@ export default {
           if (Array.isArray(settingsFields[key]) && settingsFields[key].length > 0) {
             const opts = settingsFields[key];
             const defaultVal = defaultsFields[key] !== undefined ? defaultsFields[key] : opts[0];
-            const isEmpty = defaultVal === '' || defaultVal === null || defaultVal === undefined;
             fields.push({
               key,
               type: 'toggles',
               defaultValue: defaultVal,
-              required: !isEmpty,
-              reset: isEmpty,
+              required: false,
+              reset: true,
               options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
             });
             continue;
