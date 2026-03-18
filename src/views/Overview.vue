@@ -119,68 +119,39 @@
             <div v-if="getBlockActiveTab(block.blockType) === 'content'" class="pw-wizard-tab-content">
 
               <!-- Content Fields -->
-              <div v-if="getContentFields(block.blockType).length" class="pw-wizard-fields">
-                <template v-for="field in getContentFields(block.blockType)">
-
-                  <!-- Row per property: toggle 1/3 | checkboxes 1/3 | default 1/3 -->
-                  <template v-if="field.properties.length">
-                    <template v-for="(prop, propIndex) in field.properties">
-
-                      <k-toggle-field
-                        :key="field.key + '-' + prop.key + '-toggle'"
-                        :label="propIndex === 0 ? field.key : ''"
-                        :value="isFieldEnabled(block.blockType, field)"
-                        :text="['off', 'on']"
-                        width="1/3"
-                        @input="toggleField(block.blockType, field, $event)"
+              <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
+                <div
+                  v-for="field in getContentFields(block.blockType)"
+                  :key="field.key"
+                  class="pw-field-group"
+                >
+                  <div class="pw-field-group-header">
+                    <label class="pw-field-group-check">
+                      <input
+                        type="checkbox"
+                        :checked="isFieldEnabled(block.blockType, field)"
+                        @change="toggleField(block.blockType, field, $event.target.checked)"
                       />
+                    </label>
+                    <span class="pw-field-group-title">{{ field.key }}</span>
+                  </div>
 
-                      <k-checkboxes-field
-                        v-if="isFieldEnabled(block.blockType, field)"
-                        :key="field.key + '-' + prop.key + '-options'"
-                        :label="prop.key"
-                        :value="getActiveOptions(block.blockType, field.key, prop.key, prop)"
-                        :options="prop.allOptions.map(o => ({ value: o, text: o }))"
-                        width="1/3"
-                        @input="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
-                      />
-
-                      <k-select-field
-                        v-if="isFieldEnabled(block.blockType, field)"
-                        :key="field.key + '-' + prop.key + '-default'"
-                        label="Default"
-                        :help="'Plugin default: ' + prop.pluginDefault"
-                        :value="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
-                        :options="getActiveOptions(block.blockType, field.key, prop.key, prop).map(o => ({ value: o, text: o }))"
-                        width="1/3"
-                        @input="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
-                      />
-
-                      <!-- Placeholder cells when disabled -->
-                      <k-info-field
-                        v-if="!isFieldEnabled(block.blockType, field)"
-                        :key="field.key + '-' + prop.key + '-disabled'"
-                        text="Field disabled"
-                        theme="none"
-                        width="2/3"
-                      />
-
-                    </template>
-                  </template>
-
-                  <!-- Simple field without properties (just toggle) -->
-                  <template v-else>
-                    <k-toggle-field
-                      :key="field.key + '-toggle'"
-                      :label="field.key"
-                      :value="isFieldEnabled(block.blockType, field)"
-                      :text="['off', 'on']"
-                      width="1/3"
-                      @input="toggleField(block.blockType, field, $event)"
+                  <template v-if="isFieldEnabled(block.blockType, field) && field.properties.length">
+                    <pw-field-row
+                      v-for="prop in field.properties"
+                      :key="field.key + '-' + prop.key"
+                      :label="prop.key"
+                      :all-options="prop.allOptions"
+                      :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
+                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                      :plugin-default="prop.pluginDefault"
+                      :enabled="true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                      @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
+                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
                     />
                   </template>
-
-                </template>
+                </div>
               </div>
 
               <!-- Editor config -->
@@ -708,6 +679,43 @@ export default {
 
 /* Content */
 .pw-wizard-content {
+}
+
+/* Field block (content fields container) */
+.pw-field-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.pw-field-group {
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-3) 0;
+}
+
+.pw-field-group:last-child {
+  border-bottom: none;
+}
+
+.pw-field-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-1) var(--spacing-3);
+}
+
+.pw-field-group-check {
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pw-field-group-check input {
+  accent-color: var(--color-black);
+}
+
+.pw-field-group-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 /* Global tabs (Kirby-style) */
