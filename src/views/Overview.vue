@@ -155,7 +155,7 @@
 
               <!-- Editor config (content settings + editor.json merged) -->
               <div
-                v-if="getEditorField(block.blockType) || (getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length)"
+                v-if="getEditorField(block.blockType) || getEditorConfigRows(block.blockType).length"
                 class="k-field k-text-field pw-content-field"
               >
                 <k-toggle-field
@@ -371,7 +371,6 @@ export default {
 
       const raw = this.getDefault(blockType, 'editor');
       const editorConfig = JSON.parse(JSON.stringify(raw || {}));
-      console.log('getEditorConfigRows', blockType, 'raw:', raw, 'cloned:', editorConfig, 'entries:', Object.entries(editorConfig));
       const rows = [];
       for (const [key, val] of Object.entries(editorConfig)) {
         if (Array.isArray(val) && val.length > 0) {
