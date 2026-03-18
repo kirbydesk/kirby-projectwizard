@@ -621,6 +621,9 @@ export default {
         const grouped = {};
 
         for (const key of allKeys) {
+          // Skip parent toggle keys (handled by their sub-fields)
+          if (key === 'padding' || key === 'radius') continue;
+
           // Group radius-* fields
           if (key.startsWith('radius-')) {
             if (!grouped['radius']) {
