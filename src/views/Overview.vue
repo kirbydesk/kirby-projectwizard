@@ -207,7 +207,7 @@
                     >
                       <div class="k-input" data-type="text">
                         <span class="k-input-element pw-field-row-inner">
-                          <label class="pw-field-row-label pw-field-row-label-no-check">{{ row.label }}</label>
+                          <label class="pw-field-row-label">{{ row.label }}</label>
                           <div class="pw-field-row-options">
                             <k-toggle-input
                               :value="getVal(block.blockType, 'editor.' + row.path, row.value)"
@@ -829,9 +829,6 @@ export default {
   padding-left: var(--spacing-2);
 }
 
-.pw-field-row-label-no-check {
-  grid-column: 1 / 3;
-}
 
 .pw-content-field .k-label-text {
   text-transform: capitalize;
