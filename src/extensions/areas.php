@@ -68,7 +68,6 @@ foreach ($blocks as $blockType => $info) {
 					'title'     => $label,
 					'breadcrumb' => [
 						['label' => 'Project Wizard', 'link' => 'projectwizard'],
-						['label' => $label],
 					],
 					'props'     => [
 						'blockType' => $blockType,
