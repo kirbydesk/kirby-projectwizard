@@ -68,13 +68,7 @@ export default {
       }
     },
     activeOptions(newVal) {
-      // Sync local state when parent updates options (e.g. after override cleanup)
-      const newArr = [...(newVal || [])];
-      if (JSON.stringify(newArr) === JSON.stringify(this.allOptions)) {
-        this.touched = false;
-        this.localDefault = null;
-      }
-      this.localActive = newArr;
+      this.localActive = [...(newVal || [])];
     },
   },
   methods: {
