@@ -219,6 +219,43 @@
                 </div>
               </div>
             </div>
+            <!-- Item fields -->
+            <template v-if="getItemFields(block.blockType).length">
+              <h3 class="pw-item-headline">Items</h3>
+              <div class="pw-field-block">
+                <div
+                  v-for="field in getItemFields(block.blockType)"
+                  :key="field.key"
+                  class="k-field k-text-field pw-content-field"
+                  data-object="content-field"
+                >
+                  <k-toggle-field
+                    :label="false"
+                    :value="isFieldEnabled(block.blockType, field)"
+                    :text="fieldLabel(field.displayKey)"
+                    @input="toggleField(block.blockType, field, $event)"
+                  />
+
+                  <div v-show="isFieldEnabled(block.blockType, field)" v-if="field.properties.length" class="pw-field-rows">
+                    <pw-field-row
+                      v-for="prop in field.properties"
+                      :key="field.key + '-' + prop.key"
+                      :uid="block.blockType + '-' + field.key + '-' + prop.key"
+                      :label="prop.key"
+                      :all-options="prop.allOptions"
+                      :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
+                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                      :plugin-default="prop.pluginDefault"
+                      :enabled="true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                      @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
+                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </template>
+
             </div>
             </transition>
 
@@ -436,6 +473,48 @@ export default {
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : null;
     },
+    /**
+     * Build item fields: same as content fields but only item-* keys.
+     */
+    getItemFields(blockType) {
+      const settings = this.getDefault(blockType, 'settings.fields.content') || {};
+      const defaults = this.getDefault(blockType, 'defaults.content') || {};
+      const fields = [];
+
+      for (const [key, settingVal] of Object.entries(settings)) {
+        if (!key.startsWith('item-')) continue;
+
+        const displayKey = key.replace(/^item-/, '');
+        const defaultVal = defaults[key] || {};
+        const field = { key, displayKey, enabled: true, properties: [] };
+
+        if (this.isObject(settingVal)) {
+          for (const [propKey, propOptions] of Object.entries(settingVal)) {
+            const allOptions = Array.isArray(propOptions) ? propOptions : [];
+            if (allOptions.length === 0) continue;
+            let pluginDefault = '';
+            if (this.isObject(defaultVal)) {
+              pluginDefault = defaultVal[propKey] !== undefined
+                ? defaultVal[propKey]
+                : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
+            }
+            field.properties.push({
+              key: propKey,
+              allOptions,
+              options: allOptions,
+              pluginDefault: String(pluginDefault),
+            });
+          }
+        } else if (typeof settingVal === 'boolean') {
+          field.enabled = settingVal;
+        }
+
+        fields.push(field);
+      }
+
+      return fields;
+    },
+
     setEditorContentOptions(blockType, propKey, prop, values) {
       this.setActiveOptions(blockType, 'editor', propKey, prop, values);
       if (propKey === 'mode') {
@@ -543,8 +622,8 @@ export default {
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
-        // Skip editor — handled separately in editor config block
-        if (key === 'editor') continue;
+        // Skip editor and item-* — handled separately
+        if (key === 'editor' || key.startsWith('item-')) continue;
 
         const defaultVal = defaults[key] || {};
         const field = { key, enabled: true, properties: [] };
@@ -1075,6 +1154,16 @@ export default {
 .pw-field-rows {
   display: flex;
   flex-direction: column;
+}
+
+.pw-item-headline {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-dimmed);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--spacing-4);
+  margin-bottom: var(--spacing-3);
 }
 
 [data-object="content-field"] .pw-field-rows {
