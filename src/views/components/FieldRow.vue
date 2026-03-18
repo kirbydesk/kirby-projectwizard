@@ -139,9 +139,10 @@ export default {
   color: var(--color-text);
 }
 
-/* Unmodified state: default is underlined */
+/* Unmodified state: default is underlined, dimmed */
 .pw-field-row-option.is-plugin-default {
   text-decoration: underline;
+  color: var(--color-text-dimmed);
 }
 
 /* Modified state: active options get grey chip */
