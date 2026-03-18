@@ -107,8 +107,11 @@
 
               <!-- Content Fields -->
               <section class="pw-wizard-section">
-              <k-headline-field :label="$t('pw.headline.content')" />
-              <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
+              <button class="pw-section-toggle" @click="toggleSection(block.blockType, 'content')">
+                <k-icon :type="isSectionOpen(block.blockType, 'content') ? 'angle-down' : 'angle-right'" />
+                <span>{{ $t('pw.headline.content') }}</span>
+              </button>
+              <div v-show="isSectionOpen(block.blockType, 'content')" v-if="getContentFields(block.blockType).length" class="pw-field-block">
                 <div
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
@@ -221,8 +224,11 @@
               :key="cat.key"
               class="pw-wizard-section"
             >
-              <k-headline-field :label="$t('pw.headline.' + cat.key)" />
-              <div class="pw-field-block">
+              <button class="pw-section-toggle" @click="toggleSection(block.blockType, cat.key)">
+                <k-icon :type="isSectionOpen(block.blockType, cat.key) ? 'angle-down' : 'angle-right'" />
+                <span>{{ $t('pw.headline.' + cat.key) }}</span>
+              </button>
+              <div v-show="isSectionOpen(block.blockType, cat.key)" class="pw-field-block">
                 <template v-for="field in cat.fields">
                   <!-- FieldRow (e.g. theme with options + click logic) -->
                   <pw-field-row
@@ -365,6 +371,7 @@ export default {
       originalOverrides: {},
       originalActiveBlocks: [],
       blockActiveTabs: {},
+      sectionState: {},
       dirtyTabs: {},
       snapshots: {},
       writerActive: {},
@@ -507,6 +514,14 @@ export default {
       return this.blockActiveTabs[blockType] || 'content';
     },
 
+    toggleSection(blockType, sectionKey) {
+      const key = blockType + '-' + sectionKey;
+      this.$set(this.sectionState, key, !this.isSectionOpen(blockType, sectionKey));
+    },
+    isSectionOpen(blockType, sectionKey) {
+      const key = blockType + '-' + sectionKey;
+      return this.sectionState[key] !== false;
+    },
     setBlockActiveTab(blockType, tab) {
       this.$set(this.blockActiveTabs, blockType, tab);
     },
@@ -948,8 +963,27 @@ export default {
   margin-bottom: var(--spacing-6);
 }
 
-.pw-wizard-section .k-headline-field {
+.pw-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
   margin-bottom: var(--spacing-3);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.pw-section-toggle:hover {
+  color: var(--color-text-dimmed);
+}
+
+.pw-section-toggle .k-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .pw-content-field .k-toggle-field > .k-input,
