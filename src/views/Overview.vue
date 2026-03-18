@@ -477,8 +477,10 @@ export default {
      * Build item fields: same as content fields but only item-* keys.
      */
     getItemFields(blockType) {
-      const settings = this.getDefault(blockType, 'settings.fields.content') || {};
-      const defaults = this.getDefault(blockType, 'defaults.content') || {};
+      const rawSettings = this.getDefault(blockType, 'settings.fields.content');
+      const rawDefaults = this.getDefault(blockType, 'defaults.content');
+      const settings = rawSettings ? JSON.parse(JSON.stringify(rawSettings)) : {};
+      const defaults = rawDefaults ? JSON.parse(JSON.stringify(rawDefaults)) : {};
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
@@ -488,7 +490,7 @@ export default {
         const defaultVal = defaults[key] || {};
         const field = { key, displayKey, enabled: true, properties: [] };
 
-        if (this.isObject(settingVal)) {
+        if (settingVal && typeof settingVal === 'object' && !Array.isArray(settingVal)) {
           for (const [propKey, propOptions] of Object.entries(settingVal)) {
             const allOptions = Array.isArray(propOptions) ? propOptions : [];
             if (allOptions.length === 0) continue;
