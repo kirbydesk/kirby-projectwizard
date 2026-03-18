@@ -100,7 +100,32 @@
           class="pw-wizard-panel"
         >
 
-          <div v-if="blockConfigs[block.blockType]" class="pw-wizard-block-sections">
+          <!-- Kirby-native tab navigation -->
+          <nav class="k-tabs k-model-tabs">
+            <k-button
+              :text="$t('prw.tab.settings')"
+              icon="settings"
+              class="k-tabs-button"
+              :aria-current="blockViewTab === 'settings' ? 'true' : null"
+              data-has-icon="true"
+              data-has-text="true"
+              data-variant="dimmed"
+              @click="blockViewTab = 'settings'"
+            />
+            <k-button
+              :text="$t('prw.tab.colors')"
+              icon="palette"
+              class="k-tabs-button"
+              :aria-current="blockViewTab === 'colors' ? 'true' : null"
+              data-has-icon="true"
+              data-has-text="true"
+              data-variant="dimmed"
+              @click="blockViewTab = 'colors'"
+            />
+          </nav>
+
+          <!-- Settings tab -->
+          <div v-show="blockViewTab === 'settings'" v-if="blockConfigs[block.blockType]" class="pw-wizard-block-sections">
 
             <!-- ===== Content ===== -->
             <div class="pw-wizard-tab-content">
@@ -424,6 +449,12 @@
             </section>
 
           </div>
+
+          <!-- Colors tab (dummy) -->
+          <div v-show="blockViewTab === 'colors'" class="pw-wizard-block-sections">
+            <p class="pw-wizard-hint">Color configuration coming soon.</p>
+          </div>
+
         </div>
 
     </div>
@@ -461,6 +492,7 @@ export default {
       dirtyTabs: {},
       snapshots: {},
       writerActive: {},
+      blockViewTab: 'settings',
     };
   },
   watch: {

@@ -3,6 +3,8 @@
 	/* -------------- Labels --------------*/
 	'prw.wizard.title' => 'Project Wizard',
 	'prw.label.item' => 'Item',
+	'prw.tab.settings' => 'Settings',
+	'prw.tab.colors' => 'Colors',
 
 	/* -------------- Properties --------------*/
 	'prw.property.align' => 'Alignment',
