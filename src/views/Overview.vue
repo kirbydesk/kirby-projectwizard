@@ -372,8 +372,8 @@
                             :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
                             :options="field.options"
                             :grow="false"
-                            :reset="true"
-                            :required="false"
+                            :reset="field.reset !== false"
+                            :required="field.required === true"
                             @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
                           />
                         </div>
@@ -934,10 +934,13 @@ export default {
           if (Array.isArray(settingsFields[key]) && settingsFields[key].length > 0) {
             const opts = settingsFields[key];
             const defaultVal = defaultsFields[key] !== undefined ? defaultsFields[key] : opts[0];
+            const isEmpty = defaultVal === '' || defaultVal === null || defaultVal === undefined;
             fields.push({
               key,
               type: 'toggles',
               defaultValue: defaultVal,
+              required: !isEmpty,
+              reset: isEmpty,
               options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
             });
             continue;
