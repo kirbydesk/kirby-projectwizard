@@ -135,15 +135,17 @@ export default {
         this.$emit('update:default', opt);
       } else if (isActive && isLocalDefault) {
         // Blau → Aus
-        this.localDefault = null;
         const updated = this.localActive.filter(o => o !== opt);
         if (updated.length === 0) {
           // All deselected → reset to defaults
           this.touched = false;
+          this.localDefault = null;
           this.localActive = [...this.allOptions];
+          this.$emit('update:default', this.pluginDefault);
           this.$emit('update:options', this.allOptions);
           return;
         }
+        this.localDefault = null;
         this.localActive = updated;
         this.$emit('update:options', updated);
       }

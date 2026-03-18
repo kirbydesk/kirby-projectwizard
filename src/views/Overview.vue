@@ -783,6 +783,9 @@ export default {
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'defaults.' + catKey + '.' + fieldKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.' + catKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
       } else {
         this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
       }
@@ -810,9 +813,13 @@ export default {
       // Keep original order
       const ordered = prop.allOptions.filter(o => updated.includes(o));
 
-      // If same as plugin default, remove override
+      // If same as plugin default, remove both settings and defaults overrides
       if (JSON.stringify(ordered) === JSON.stringify(prop.allOptions)) {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey + '.' + propKey);
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'defaults.content.' + fieldKey + '.' + propKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content.' + fieldKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
       } else {
         this.setVal(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey, ordered);
       }
@@ -1247,7 +1254,7 @@ export default {
      margin-top: 1px;
 
     .pw-field-row div.k-input {
-      background-color: var(--color-gray-150);
+      /***background-color: var(--color-gray-150);***/
     }
   }
 }
