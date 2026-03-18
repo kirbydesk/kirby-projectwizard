@@ -29,10 +29,13 @@
 	'prw.option.orderedList' => 'Ordered List',
 
 	/* -------------- Layout fields --------------*/
+	'prw.field.vertical-padding' => 'Vertical Padding',
 	'prw.field.horizontal-padding' => 'Horizontal Padding',
 	'prw.field.radius' => 'Radius',
 
 	/* -------------- Padding options --------------*/
+	'prw.option.top' => 'Top',
+	'prw.option.bottom' => 'Bottom',
 	'prw.option.left' => 'Left',
 	'prw.option.right' => 'Right',
 
