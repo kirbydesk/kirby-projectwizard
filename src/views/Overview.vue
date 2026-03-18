@@ -929,25 +929,6 @@ export default {
             continue;
           }
 
-          // Content position fields as select
-          if (key === 'horizontal-content-position') {
-            fields.push({
-              key,
-              type: 'single',
-              defaultValue: defaultsFields[key] || 'left',
-              options: ['left', 'center', 'right'],
-            });
-            continue;
-          }
-          if (key === 'vertical-content-position') {
-            fields.push({
-              key,
-              type: 'single',
-              defaultValue: defaultsFields[key] || 'middle',
-              options: ['top', 'middle', 'bottom'],
-            });
-            continue;
-          }
 
           const settingVal = settingsFields[key];
           const defaultVal = defaultsFields[key];
