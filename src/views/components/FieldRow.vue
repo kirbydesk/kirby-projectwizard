@@ -78,20 +78,18 @@ export default {
       const isDefault = opt === this.currentDefault;
 
       if (!isActive) {
-        // Not active → activate (add to allowed, keep original order)
+        // Aus → Grau: activate (add to allowed)
         const updated = this.allOptions.filter(
           o => this.activeOptions.includes(o) || o === opt
         );
         this.$emit('update:options', updated);
-      } else if (isActive && !isDefault) {
-        // Active but not default → make default (blue badge)
+      } else if (isActive && !(isDefault && this.defaultSet)) {
+        // Grau → Blau: make default
         this.defaultSet = true;
         this.$emit('update:default', opt);
       } else if (isActive && isDefault && this.defaultSet) {
-        // Blue badge clicked → revert to grey badge (remove default, keep active)
+        // Blau → Aus: deactivate
         this.defaultSet = false;
-      } else if (isActive && isDefault && !this.defaultSet) {
-        // Grey default clicked → deactivate (but not if it's the last one)
         const updated = this.activeOptions.filter(o => o !== opt);
         if (updated.length === 0) return;
         this.$emit('update:options', updated);
