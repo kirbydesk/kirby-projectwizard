@@ -119,6 +119,7 @@
             <div v-if="getBlockActiveTab(block.blockType) === 'content'" class="pw-wizard-tab-content">
 
               <!-- Content Fields -->
+              <k-headline-field label="Content" />
               <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
                 <div
                   v-for="field in getContentFields(block.blockType)"
