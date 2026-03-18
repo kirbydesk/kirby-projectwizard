@@ -64,6 +64,11 @@
 	'prw.property.theme' => 'Theme',
 	'prw.field.theme' => 'Theme',
 
+	'prw.option.default' => 'Default',
+	'prw.option.variant' => 'Variant',
+	'prw.option.variant2' => 'Variant 2',
+	'prw.option.custom' => 'Custom',
+
 	/* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
 	'prw.option.top-right' => 'Top Right',
