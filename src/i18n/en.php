@@ -28,6 +28,15 @@
 	'prw.option.bulletList' => 'Bullet List',
 	'prw.option.orderedList' => 'Ordered List',
 
+	/* -------------- Column Blocks --------------*/
+	'prw.headline.columnBlocks' => 'Column Blocks',
+	'prw.option.multicolumnheadline' => 'Headline',
+	'prw.option.multicolumntagline' => 'Tagline',
+	'prw.option.multicolumntext' => 'Text',
+	'prw.option.multicolumnquote' => 'Quote',
+	'prw.option.multicolumnmedia' => 'Media',
+	'prw.option.multicolumnbutton' => 'Button',
+
 	/* -------------- Layout fields --------------*/
 	'prw.field.padding-top' => 'Padding Top',
 	'prw.field.padding-bottom' => 'Padding Bottom',

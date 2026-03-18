@@ -254,6 +254,27 @@
                 </div>
               </div>
             </div>
+
+            <!-- Column blocks -->
+            <div v-if="getColumnBlocks(block.blockType)" class="pw-item-section">
+              <h3 class="pw-item-headline">{{ $t('prw.headline.columnBlocks') }}</h3>
+              <div class="pw-field-block">
+                <div class="k-field k-text-field pw-content-field" data-object="content-field">
+                  <pw-field-row
+                    :uid="block.blockType + '-column-blocks'"
+                    label="column-blocks"
+                    :all-options="getColumnBlocks(block.blockType)"
+                    :active-options="getActiveColumnBlocks(block.blockType)"
+                    current-default=""
+                    plugin-default=""
+                    :enabled="true"
+                    :modified="hasOverride(block.blockType, 'settings.fields.content.column-blocks')"
+                    :no-default="true"
+                    @update:options="setColumnBlocks(block.blockType, $event, getColumnBlocks(block.blockType))"
+                  />
+                </div>
+              </div>
+            </div>
             </div>
             </transition>
 
@@ -517,6 +538,31 @@ export default {
       return fields;
     },
 
+    getColumnBlocks(blockType) {
+      const settings = this.getDefault(blockType, 'settings.fields.content') || {};
+      const val = settings['column-blocks'];
+      return Array.isArray(val) && val.length ? val : null;
+    },
+
+    getActiveColumnBlocks(blockType) {
+      const override = this.getOverrideOnly(blockType, 'settings.fields.content.column-blocks');
+      if (Array.isArray(override) && override.length) return override;
+      return this.getColumnBlocks(blockType) || [];
+    },
+
+    setColumnBlocks(blockType, values, allBlocks) {
+      const ordered = allBlocks.filter(b => values.includes(b));
+      if (JSON.stringify(ordered) === JSON.stringify(allBlocks)) {
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.column-blocks');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
+      } else {
+        this.setVal(blockType, 'settings.fields.content.column-blocks', ordered);
+      }
+      this.markDirty(blockType);
+    },
+
     setEditorContentOptions(blockType, propKey, prop, values) {
       this.setActiveOptions(blockType, 'editor', propKey, prop, values);
       if (propKey === 'mode') {
@@ -626,8 +672,8 @@ export default {
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
-        // Skip editor and item-* — handled separately
-        if (key === 'editor' || key.startsWith('item-')) continue;
+        // Skip editor, item-*, and column-blocks — handled separately
+        if (key === 'editor' || key === 'column-blocks' || key.startsWith('item-')) continue;
 
         const defaultVal = defaults[key] || {};
         const field = { key, enabled: true, properties: [] };
@@ -1172,9 +1218,14 @@ export default {
   margin-bottom: var(--spacing-3);
 }
 
-[data-object="content-field"] .pw-field-rows {
-  padding-bottom: var(--spacing-4);
-  margin-top: 1px;
+[data-object="content-field"] {
+  .pw-field-rows {
+     margin-top: 1px;
+
+    .pw-field-row div.k-input {
+      background-color: var(--color-gray-150);
+    }
+  } 
 }
 
 
