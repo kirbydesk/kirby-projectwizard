@@ -31,70 +31,46 @@
 
     <!-- Kirby-native tab navigation (global view) -->
     <nav v-if="!loading && activeTab === 'global'" class="k-tabs k-model-tabs">
-            <k-button
-              :text="$t('prw.tab.elements')"
-              icon="dashboard"
-              class="k-tabs-button"
-              :aria-current="globalActiveTab === 'elements' ? 'true' : null"
-              data-has-icon="true"
-              data-has-text="true"
-              data-variant="dimmed"
-              @click="globalActiveTab = 'elements'"
-            />
-            <k-button
-              :text="$t('prw.tab.colors')"
-              icon="palette"
-              class="k-tabs-button"
-              :aria-current="globalActiveTab === 'colors' ? 'true' : null"
-              data-has-icon="true"
-              data-has-text="true"
-              data-variant="dimmed"
-              @click="globalActiveTab = 'colors'"
-            />
-            <k-button
-              :text="$t('prw.tab.header')"
-              icon="header"
-              class="k-tabs-button"
-              :aria-current="globalActiveTab === 'header' ? 'true' : null"
-              data-has-icon="true"
-              data-has-text="true"
-              data-variant="dimmed"
-              @click="globalActiveTab = 'header'"
-            />
-            <k-button
-              :text="$t('prw.tab.footer')"
-              icon="footer"
-              class="k-tabs-button"
-              :aria-current="globalActiveTab === 'footer' ? 'true' : null"
-              data-has-icon="true"
-              data-has-text="true"
-              data-variant="dimmed"
-              @click="globalActiveTab = 'footer'"
-            />
+      <button
+        v-for="tab in [
+          { key: 'elements', icon: 'dashboard' },
+          { key: 'colors', icon: 'palette' },
+          { key: 'header', icon: 'header' },
+          { key: 'footer', icon: 'footer' },
+        ]"
+        :key="tab.key"
+        type="button"
+        class="k-tabs-button k-button"
+        :aria-current="globalActiveTab === tab.key ? 'true' : null"
+        data-has-icon="true"
+        data-has-text="true"
+        data-variant="dimmed"
+        @click="globalActiveTab = tab.key"
+      >
+        <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
+        <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+      </button>
     </nav>
 
     <!-- Kirby-native tab navigation (block views) -->
     <nav v-if="!loading && activeTab !== 'global'" class="k-tabs k-model-tabs">
-      <k-button
-        :text="$t('prw.tab.settings')"
-        icon="settings"
-        class="k-tabs-button"
-        :aria-current="blockViewTab === 'settings' ? 'true' : null"
+      <button
+        v-for="tab in [
+          { key: 'settings', icon: 'settings' },
+          { key: 'colors', icon: 'palette' },
+        ]"
+        :key="tab.key"
+        type="button"
+        class="k-tabs-button k-button"
+        :aria-current="blockViewTab === tab.key ? 'true' : null"
         data-has-icon="true"
         data-has-text="true"
         data-variant="dimmed"
-        @click="blockViewTab = 'settings'"
-      />
-      <k-button
-        :text="$t('prw.tab.colors')"
-        icon="palette"
-        class="k-tabs-button"
-        :aria-current="blockViewTab === 'colors' ? 'true' : null"
-        data-has-icon="true"
-        data-has-text="true"
-        data-variant="dimmed"
-        @click="blockViewTab = 'colors'"
-      />
+        @click="blockViewTab = tab.key"
+      >
+        <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
+        <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+      </button>
     </nav>
 
     <div v-if="loading" class="pw-wizard-loading">Loading...</div>
