@@ -184,7 +184,8 @@
                     />
                   </template>
 
-                  <!-- Editor config (marks, nodes, headings, toolbar) -->
+                  <!-- Editor config (marks, nodes, headings, toolbar) — only if writer mode available -->
+                  <template v-if="isWriterAvailable(block.blockType)">
                   <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
                     <pw-field-row
                       v-if="Array.isArray(val) && val.length > 0"
@@ -215,6 +216,7 @@
                         />
                       </div>
                     </template>
+                  </template>
                   </template>
                 </div>
               </div>
@@ -364,6 +366,14 @@ export default {
       const tKey = 'pw.field.' + key + '.help';
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : null;
+    },
+    isWriterAvailable(blockType) {
+      const settings = this.getDefault(blockType, 'settings.fields.content') || {};
+      const editor = settings['editor'];
+      if (!editor || !this.isObject(editor)) return false;
+      const modeOptions = editor['mode'];
+      if (!Array.isArray(modeOptions)) return false;
+      return modeOptions.includes('writer');
     },
     getEditorField(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
