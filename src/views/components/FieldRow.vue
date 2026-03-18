@@ -7,11 +7,11 @@
       :id="'pw-prop-' + uid"
       type="checkbox"
       class="pw-field-row-check"
-      :checked="enabled"
-      @change="$emit('toggle', $event.target.checked)"
+      :checked="active"
+      @change="toggleActive($event.target.checked)"
     />
     <label class="pw-field-row-label" :for="'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
-    <div v-if="enabled" class="pw-field-row-options">
+    <div v-if="active" class="pw-field-row-options">
       <button
         v-for="opt in allOptions"
         :key="opt"
@@ -42,7 +42,22 @@ export default {
     enabled: { type: Boolean, default: true },
     modified: { type: Boolean, default: false },
   },
+  data() {
+    return {
+      active: this.enabled,
+    };
+  },
   methods: {
+    toggleActive(checked) {
+      this.active = checked;
+      if (!checked) {
+        // Deactivated — emit empty options to remove from settings
+        this.$emit('update:options', []);
+      } else {
+        // Reactivated — restore all options
+        this.$emit('update:options', this.allOptions);
+      }
+    },
     propertyLabel(key) {
       return this.$t('pw.property.' + key);
     },
