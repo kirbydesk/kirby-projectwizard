@@ -3,29 +3,33 @@
     class="pw-field-row"
     :class="{ 'is-disabled': !enabled, 'is-modified': modified || touched }"
   >
-    <input
-      :id="'pw-prop-' + uid"
-      type="checkbox"
-      class="pw-field-row-check"
-      :checked="active"
-      @change="toggleActive($event.target.checked)"
-    />
-    <label class="pw-field-row-label" :for="'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
-    <div v-if="active" class="pw-field-row-options">
-      <button
-        v-for="opt in allOptions"
-        :key="opt"
-        type="button"
-        class="pw-field-row-option"
-        :class="{
-          'is-active': localActive.includes(opt),
-          'is-default': opt === localDefault,
-          'is-plugin-default': opt === pluginDefault && !touched && !modified,
-        }"
-        @click="handleClick(opt)"
-      >
-        {{ optionLabel(opt) }}
-      </button>
+    <div class="k-input" data-type="text">
+      <span class="k-input-element pw-field-row-inner">
+        <input
+          :id="'pw-prop-' + uid"
+          type="checkbox"
+          class="pw-field-row-check"
+          :checked="active"
+          @change="toggleActive($event.target.checked)"
+        />
+        <label class="pw-field-row-label" :for="'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
+        <div v-if="active" class="pw-field-row-options">
+          <button
+            v-for="opt in allOptions"
+            :key="opt"
+            type="button"
+            class="pw-field-row-option"
+            :class="{
+              'is-active': localActive.includes(opt),
+              'is-default': opt === localDefault,
+              'is-plugin-default': opt === pluginDefault && !touched && !modified,
+            }"
+            @click="handleClick(opt)"
+          >
+            {{ optionLabel(opt) }}
+          </button>
+        </div>
+      </span>
     </div>
   </div>
 </template>
@@ -103,11 +107,12 @@ export default {
 
 <style>
 .pw-field-row {
+  padding: var(--spacing-1) 0;
+}
+
+.pw-field-row-inner {
   display: flex;
   align-items: center;
-  padding: var(--spacing-2) 0;
-  padding-left: 5px;
-  height: 36px;
 }
 
 .pw-field-row.is-disabled {
@@ -118,6 +123,7 @@ export default {
   accent-color: var(--color-black);
   cursor: pointer;
   flex-shrink: 0;
+  margin-left: 5px;
 }
 
 .pw-field-row-label {
