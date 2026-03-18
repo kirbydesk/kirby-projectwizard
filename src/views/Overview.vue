@@ -259,7 +259,6 @@
               </div>
             <!-- Item fields -->
             <div v-if="getItemFields(block.blockType).length" class="pw-item-section">
-              <h3 class="pw-item-headline">Items</h3>
               <div class="pw-field-block">
                 <div
                   v-for="field in getItemFields(block.blockType)"
