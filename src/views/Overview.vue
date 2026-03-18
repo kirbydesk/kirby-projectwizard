@@ -123,45 +123,36 @@
                 <div
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
-                  class="k-field k-text-field"
+                  class="pw-content-field"
                 >
-                  <header class="k-field-header" style="display: flex; align-items: center; overflow: visible;">
-                    <label class="k-label k-field-label" style="flex: 1 1 0%;">
-                      <span class="k-label-text">
-                        <label class="pw-field-group-check">
-                          <input
-                            type="checkbox"
-                            :checked="isFieldEnabled(block.blockType, field)"
-                            @change="toggleField(block.blockType, field, $event.target.checked)"
-                          />
-                        </label>
-                        {{ field.key }}
-                      </span>
-                    </label>
-                  </header>
-
-                  <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" data-type="text" class="k-input">
-                    <span class="k-input-element pw-field-rows">
-                      <pw-field-row
-                        v-for="prop in field.properties"
-                        :key="field.key + '-' + prop.key"
-                        :label="prop.key"
-                        :all-options="prop.allOptions"
-                        :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
-                        :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
-                        :plugin-default="prop.pluginDefault"
-                        :enabled="true"
-                        :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
-                        @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
-                        @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
+                  <!-- Input field with field name -->
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element">
+                      <input
+                        type="text"
+                        class="k-string-input k-text-input"
+                        :value="field.key"
+                        readonly
                       />
                     </span>
                   </div>
 
-                  <div v-if="!isFieldEnabled(block.blockType, field)" data-type="text" class="k-input">
-                    <span class="k-input-element">
-                      <span class="pw-field-disabled-text">Field disabled</span>
-                    </span>
+                  <!-- Property rows below the input -->
+                  <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" class="pw-field-rows">
+                    <pw-field-row
+                      v-for="prop in field.properties"
+                      :key="field.key + '-' + prop.key"
+                      :label="prop.key"
+                      :all-options="prop.allOptions"
+                      :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
+                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                      :plugin-default="prop.pluginDefault"
+                      :enabled="isFieldEnabled(block.blockType, field)"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                      @toggle="toggleField(block.blockType, field, $event)"
+                      @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
+                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
+                    />
                   </div>
                 </div>
               </div>
@@ -700,26 +691,19 @@ export default {
   gap: var(--spacing-6);
 }
 
-.pw-field-group-check {
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-right: var(--spacing-2);
+.pw-content-field {
+  margin-bottom: var(--spacing-2);
 }
 
-.pw-field-group-check input {
-  accent-color: var(--color-black);
+.pw-content-field .k-text-input {
+  text-transform: capitalize;
+  font-weight: 500;
 }
 
 .pw-field-rows {
   display: flex;
   flex-direction: column;
-}
-
-.pw-field-disabled-text {
-  color: var(--color-text-dimmed);
-  font-size: var(--text-sm);
-  font-style: italic;
-  padding: var(--spacing-2) 0;
+  padding: var(--spacing-1) 0;
 }
 
 /* Global tabs (Kirby-style) */

@@ -109,6 +109,7 @@ export default {
   flex-wrap: wrap;
 }
 
+/* Option: plain text by default */
 .pw-field-row-option {
   padding: var(--spacing-1) var(--spacing-2);
   border: none;
@@ -119,40 +120,36 @@ export default {
   cursor: pointer;
   border-radius: var(--rounded);
   transition: all 0.15s;
-  text-decoration: none;
 }
 
-/* Not active (not in allowed list) */
+/* Not active — dimmed */
 .pw-field-row-option:not(.is-active) {
   color: var(--color-text-dimmed);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
-/* Active (in allowed list) */
+/* Active — normal text, no background */
 .pw-field-row-option.is-active {
-  background: var(--color-gray-200);
   color: var(--color-text);
 }
 
-/* Default value — underlined in unmodified state */
+/* Unmodified state: default is underlined */
 .pw-field-row-option.is-plugin-default {
   text-decoration: underline;
-  background: none;
 }
 
-/* Explicitly set default (modified state) — blue chip */
-.pw-field-row-option.is-default.is-active {
+/* Modified state: active options get grey chip */
+.pw-field-row.is-modified .pw-field-row-option.is-active {
+  background: var(--color-gray-200);
+}
+
+/* Modified state: default gets blue chip */
+.pw-field-row.is-modified .pw-field-row-option.is-default.is-active {
   background: var(--color-blue-600);
   color: var(--color-white);
 }
 
-/* Unmodified default — just underlined, no background */
-.pw-field-row-option.is-plugin-default.is-default {
-  background: none;
-  color: var(--color-text);
-  text-decoration: underline;
-}
-
+/* Hover */
 .pw-field-row-option:hover {
   opacity: 1;
 }
