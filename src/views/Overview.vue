@@ -112,7 +112,8 @@
                 <k-icon :type="isSectionOpen(block.blockType, 'content') ? 'angle-down' : 'angle-right'" />
               </button>
               <transition name="pw-slide">
-              <div v-show="isSectionOpen(block.blockType, 'content')" v-if="getContentFields(block.blockType).length" class="pw-field-block">
+              <div v-show="isSectionOpen(block.blockType, 'content')" class="pw-section-content">
+              <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
                 <div
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
@@ -215,6 +216,7 @@
                   </template>
                 </div>
               </div>
+            </div>
             </div>
             </transition>
 
