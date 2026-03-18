@@ -723,7 +723,7 @@ export default {
 .pw-field-rows {
   display: flex;
   flex-direction: column;
-  padding-bottom: var(--spacing-3);
+  padding-bottom: var(--spacing-6);
 }
 
 /* Global tabs (Kirby-style) */
