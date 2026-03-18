@@ -816,6 +816,10 @@ export default {
       // If same as plugin default, remove both settings and defaults overrides
       if (JSON.stringify(ordered) === JSON.stringify(prop.allOptions)) {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey + '.' + propKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
         this.deleteNested(this.blockOverrides[blockType] || {}, 'defaults.content.' + fieldKey + '.' + propKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content');
@@ -922,6 +926,11 @@ export default {
     selectOption(blockType, path, value, pluginDefault) {
       if (value === pluginDefault || value === String(pluginDefault)) {
         this.deleteNested(this.blockOverrides[blockType] || {}, path);
+        // Clean up empty parent objects
+        const parts = path.split('.');
+        for (let i = parts.length - 1; i > 0; i--) {
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, parts.slice(0, i).join('.'));
+        }
       } else {
         this.setVal(blockType, path, value);
       }
