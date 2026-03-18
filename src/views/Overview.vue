@@ -1276,7 +1276,7 @@ export default {
 
 [data-object="content-field"] {
   .pw-field-rows {
-     margin-top: 1px;
+
 
     .pw-field-row div.k-input {
       /***background-color: var(--color-gray-150);***/
