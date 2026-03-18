@@ -697,8 +697,8 @@ export default {
           const defaultVal = defaultsFields[key];
 
           // Fields with string options → FieldRow with click logic
-          const settingArr = JSON.parse(JSON.stringify(settingVal || []));
-          if (Array.isArray(settingArr) && settingArr.length > 0 && settingArr.every(v => typeof v === 'string')) {
+          const settingArr = settingVal ? JSON.parse(JSON.stringify(settingVal)) : null;
+          if (settingArr && Array.isArray(settingArr) && settingArr.length > 0 && settingArr.every(v => typeof v === 'string')) {
             fields.push({
               key,
               type: 'fieldrow',
@@ -709,13 +709,13 @@ export default {
             continue;
           }
 
+          // Skip if already handled as fieldrow
+          if (settingArr && typeof settingArr !== 'boolean') continue;
+
           const field = {
             key,
             type: 'single',
-            settingKey: settingVal !== undefined ? 'settings.fields.' + catKey + '.' + key : null,
-            settingValue: settingVal === true || (typeof settingVal === 'string' || Array.isArray(settingVal)),
             defaultValue: defaultVal !== undefined ? defaultVal : null,
-            options: null,
           };
 
           fields.push(field);

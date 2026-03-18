@@ -35,6 +35,9 @@
 	'prw.field.padding-right' => 'Padding Right',
 	'prw.field.radius' => 'Radius',
 
+	/* -------------- Style fields --------------*/
+	'prw.property.theme' => 'Theme',
+
 	/* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
 	'prw.option.top-right' => 'Top Right',

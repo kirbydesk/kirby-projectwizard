@@ -74,9 +74,14 @@ export default {
       return (translated && translated !== tKey) ? translated : key;
     },
     optionLabel(opt) {
-      const tKey = 'prw.option.' + opt;
-      const translated = this.$t(tKey);
-      return (translated && translated !== tKey) ? translated : opt;
+      // Try prw.option.* first, then pw.option.* (pagewizard), then raw value
+      const prwKey = 'prw.option.' + opt;
+      const prwTranslated = this.$t(prwKey);
+      if (prwTranslated && prwTranslated !== prwKey) return prwTranslated;
+      const pwKey = 'pw.option.' + opt;
+      const pwTranslated = this.$t(pwKey);
+      if (pwTranslated && pwTranslated !== pwKey) return pwTranslated;
+      return opt;
     },
     handleClick(opt) {
       if (this.noDefault) {
