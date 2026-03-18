@@ -1,7 +1,7 @@
 <template>
   <div
     class="pw-field-row"
-    :class="{ 'is-disabled': !enabled, 'is-modified': modified }"
+    :class="{ 'is-disabled': !enabled, 'is-modified': modified || touched }"
   >
     <input
       :id="'pw-prop-' + uid"
@@ -45,6 +45,7 @@ export default {
   data() {
     return {
       active: this.enabled,
+      touched: false,
     };
   },
   methods: {
@@ -65,6 +66,7 @@ export default {
       return this.$t('pw.option.' + opt);
     },
     handleClick(opt) {
+      this.touched = true;
       const isActive = this.activeOptions.includes(opt);
       const isDefault = opt === this.currentDefault;
 
@@ -155,15 +157,23 @@ export default {
   color: var(--color-text-dimmed);
 }
 
-/* Modified state: active options get grey chip */
+/* Modified state: active options get grey pilled badge */
 .pw-field-row.is-modified .pw-field-row-option.is-active {
   background: var(--color-gray-200);
+  color: var(--color-text);
+  border-radius: 999px;
 }
 
-/* Modified state: default gets blue chip */
+/* Modified state: not active — lower opacity */
+.pw-field-row.is-modified .pw-field-row-option:not(.is-active) {
+  opacity: 0.25;
+}
+
+/* Modified state: default gets blue pilled badge */
 .pw-field-row.is-modified .pw-field-row-option.is-default.is-active {
   background: var(--color-blue-600);
   color: var(--color-white);
+  border-radius: 999px;
 }
 
 /* Hover */
