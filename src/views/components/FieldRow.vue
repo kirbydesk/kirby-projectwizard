@@ -14,7 +14,7 @@
             :checked="active"
             @change="toggleActive($event.target.checked)"
           />
-          <label class="pw-field-row-label" :for="noCheckbox ? null : 'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
+          <label class="pw-field-row-label" :for="noCheckbox ? null : 'pw-prop-' + uid">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
         </div>
         <div v-if="active" class="pw-field-row-options">
           <button
@@ -50,6 +50,7 @@ export default {
     modified: { type: Boolean, default: false },
     noDefault: { type: Boolean, default: false },
     noCheckbox: { type: Boolean, default: false },
+    required: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -265,6 +266,12 @@ export default {
   background: var(--color-blue-600);
   color: var(--color-white);
   border-radius: 999px;
+}
+
+/* Required indicator */
+.pw-field-required {
+  color: var(--color-negative-600);
+  margin-left: 2px;
 }
 
 /* Hover */

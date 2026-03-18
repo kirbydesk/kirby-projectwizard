@@ -196,12 +196,13 @@
                       :label="prop.key"
                       :all-options="prop.allOptions"
                       :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
-                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                      :current-default="getVal(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
                       :plugin-default="prop.pluginDefault"
                       :enabled="true"
-                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                      :required="prop.required === true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key)"
                       @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
-                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
+                      @update:default="selectOption(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
                     />
                   </div>
                 </div>
@@ -237,12 +238,12 @@
                       :label="prop.key"
                       :all-options="prop.allOptions"
                       :active-options="getActiveOptions(block.blockType, 'editor', prop.key, prop)"
-                      :current-default="getVal(block.blockType, 'defaults.content.editor.' + prop.key, prop.pluginDefault)"
+                      :current-default="getVal(block.blockType, 'settings.fields.content.editor.' + prop.key + '.default', prop.pluginDefault)"
                       :plugin-default="prop.pluginDefault"
                       :enabled="true"
-                      :modified="hasOverride(block.blockType, 'settings.fields.content.editor.' + prop.key) || hasOverride(block.blockType, 'defaults.content.editor.' + prop.key)"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.editor.' + prop.key)"
                       @update:options="setEditorContentOptions(block.blockType, prop.key, prop, $event)"
-                      @update:default="selectOption(block.blockType, 'defaults.content.editor.' + prop.key, $event, prop.pluginDefault)"
+                      @update:default="selectOption(block.blockType, 'settings.fields.content.editor.' + prop.key + '.default', $event, prop.pluginDefault)"
                     />
                   </template>
 
@@ -315,12 +316,13 @@
                       :label="prop.key"
                       :all-options="prop.allOptions"
                       :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
-                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                      :current-default="getVal(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
                       :plugin-default="prop.pluginDefault"
                       :enabled="true"
-                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                      :required="prop.required === true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key)"
                       @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
-                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
+                      @update:default="selectOption(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
                     />
                   </div>
                 </div>
@@ -352,13 +354,14 @@
                     :label="field.key"
                     :all-options="field.allOptions"
                     :active-options="getCategoryActiveOptions(block.blockType, cat.key, field.key, field)"
-                    :current-default="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.pluginDefault)"
+                    :current-default="getVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', field.pluginDefault)"
                     :plugin-default="field.pluginDefault"
                     :enabled="true"
-                    :modified="hasOverride(block.blockType, 'settings.fields.' + cat.key + '.' + field.key) || hasOverride(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
+                    :modified="hasOverride(block.blockType, 'settings.fields.' + cat.key + '.' + field.key)"
                     :no-checkbox="true"
+                    :required="field.required === true"
                     @update:options="setCategoryOptions(block.blockType, cat.key, field.key, field, $event)"
-                    @update:default="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event, field.pluginDefault)"
+                    @update:default="selectOption(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.pluginDefault)"
                   />
                   <!-- Toggles field (e.g. padding-top with small/large) -->
                   <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row">
@@ -369,12 +372,12 @@
                         </div>
                         <div class="pw-field-row-options">
                           <k-toggles-input
-                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                            :value="getVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)"
                             :options="field.options"
                             :grow="false"
                             :reset="field.reset !== false"
                             :required="field.required === true"
-                            @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
+                            @input="setVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event)"
                           />
                         </div>
                       </span>
@@ -391,9 +394,9 @@
                           <k-toggle-input
                             v-for="sub in field.subFields"
                             :key="sub.key"
-                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, sub.defaultValue)"
+                            :value="getVal(block.blockType, 'settings.fields.' + cat.key + '.' + sub.key + '.default', sub.defaultValue)"
                             :text="$t('prw.option.' + sub.label) || sub.label"
-                            @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, $event)"
+                            @input="setVal(block.blockType, 'settings.fields.' + cat.key + '.' + sub.key + '.default', $event)"
                           />
                         </div>
                       </span>
@@ -410,15 +413,15 @@
                           <!-- Boolean: toggle -->
                           <k-toggle-input
                             v-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'"
-                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                            @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
+                            :value="getVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)"
+                            @input="setVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event)"
                           />
                           <!-- String with options: select -->
                           <select
                             v-else-if="field.options && field.options.length"
                             class="pw-category-select"
-                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
-                            @change="selectOption(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
+                            :value="getVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)"
+                            @change="selectOption(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event.target.value, field.defaultValue)"
                           >
                             <option
                               v-for="opt in field.options"
@@ -432,8 +435,8 @@
                             type="text"
                             class="pw-category-input"
                             :placeholder="field.defaultValue"
-                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key) || ''"
-                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value, field.defaultValue)"
+                            :value="getOverrideOnly(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default') || ''"
+                            @input="setValOrClear(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event.target.value, field.defaultValue)"
                           />
                           <!-- Number: number input -->
                           <input
@@ -441,8 +444,8 @@
                             type="number"
                             class="pw-category-input"
                             :placeholder="String(field.defaultValue)"
-                            :value="getOverrideOnly(block.blockType, 'defaults.' + cat.key + '.' + field.key)"
-                            @input="setValOrClear(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event.target.value !== '' ? Number($event.target.value) : '', String(field.defaultValue))"
+                            :value="getOverrideOnly(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default')"
+                            @input="setValOrClear(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event.target.value !== '' ? Number($event.target.value) : '', String(field.defaultValue))"
                           />
                         </div>
                       </span>
@@ -561,40 +564,36 @@ export default {
      * Build item fields: same as content fields but only item-* keys.
      */
     getItemFields(blockType) {
-      const rawSettings = this.getDefault(blockType, 'settings.fields.content');
-      const rawDefaults = this.getDefault(blockType, 'defaults.content');
-      const settings = rawSettings ? JSON.parse(JSON.stringify(rawSettings)) : {};
-      const defaults = rawDefaults ? JSON.parse(JSON.stringify(rawDefaults)) : {};
+      const settings = this.getDefault(blockType, 'settings.fields.content') || {};
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
         if (!key.startsWith('item-')) continue;
 
+        // Skip "enabled" toggles and default-only fields
+        if (settingVal === 'enabled') continue;
+        if (this.isObject(settingVal) && 'default' in settingVal && !this.hasNestedProps(settingVal)) continue;
+
         const displayKey = key.replace(/^item-/, '');
-        const defaultVal = defaults[key] || {};
         const field = { key, displayKey, enabled: true, properties: [] };
 
-        if (settingVal && typeof settingVal === 'object' && !Array.isArray(settingVal)) {
-          for (const [propKey, propOptions] of Object.entries(settingVal)) {
-            const allOptions = Array.isArray(propOptions) ? propOptions : [];
+        if (this.isObject(settingVal)) {
+          for (const [propKey, propValue] of Object.entries(settingVal)) {
+            if (propValue === false) continue;
+            const propObj = this.isObject(propValue) ? propValue : {};
+            const allOptions = propObj.options || (Array.isArray(propValue) ? propValue : []);
             if (allOptions.length === 0) continue;
-            let pluginDefault = '';
-            if (this.isObject(defaultVal)) {
-              pluginDefault = defaultVal[propKey] !== undefined
-                ? defaultVal[propKey]
-                : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
-            }
+            const pluginDefault = propObj.default !== undefined ? String(propObj.default) : '';
             if (allOptions.length > 1) {
               field.properties.push({
                 key: propKey,
                 allOptions,
                 options: allOptions,
-                pluginDefault: String(pluginDefault),
+                pluginDefault,
+                required: propObj.required === true,
               });
             }
           }
-        } else if (typeof settingVal === 'boolean') {
-          field.enabled = settingVal;
         }
 
         fields.push(field);
@@ -660,30 +659,25 @@ export default {
     },
     getEditorField(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
-      const defaults = this.getDefault(blockType, 'defaults.content') || {};
       const settingVal = settings['editor'];
-      if (!settingVal) return null;
+      if (!settingVal || !this.isObject(settingVal)) return null;
 
-      const defaultVal = defaults['editor'] || {};
       const field = { key: 'editor', enabled: true, properties: [] };
 
-      if (this.isObject(settingVal)) {
-        for (const [propKey, propOptions] of Object.entries(settingVal)) {
-          const allOptions = Array.isArray(propOptions) ? propOptions : [];
-          let pluginDefault = '';
-          if (this.isObject(defaultVal)) {
-            pluginDefault = defaultVal[propKey] !== undefined
-              ? defaultVal[propKey]
-              : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
-          }
-          if (allOptions.length > 1) {
-            field.properties.push({
-              key: propKey,
-              allOptions,
-              options: allOptions,
-              pluginDefault: String(pluginDefault),
-            });
-          }
+      for (const [propKey, propValue] of Object.entries(settingVal)) {
+        if (propValue === false) continue;
+        const propObj = this.isObject(propValue) ? propValue : {};
+        const allOptions = propObj.options || (Array.isArray(propValue) ? propValue : []);
+        if (allOptions.length === 0) continue;
+        const pluginDefault = propObj.default !== undefined ? String(propObj.default) : '';
+        if (allOptions.length > 1) {
+          field.properties.push({
+            key: propKey,
+            allOptions,
+            options: allOptions,
+            pluginDefault,
+            required: propObj.required === true,
+          });
         }
       }
 
@@ -709,10 +703,10 @@ export default {
       for (const key of Object.keys(settingsTabs)) {
         if (!tabs.includes(key)) tabs.push(key);
       }
-      // Add categories that have defaults but no settings tab entry
+      // Add categories that have fields but no settings tab entry
       for (const cat of ['layout', 'style', 'effects', 'grid', 'settings']) {
-        const defaults = this.getDefault(blockType, 'defaults.' + cat);
-        if (defaults && Object.keys(defaults).length && !tabs.includes(cat)) {
+        const catFields = this.getDefault(blockType, 'settings.fields.' + cat);
+        if (catFields && Object.keys(catFields).length && !tabs.includes(cat)) {
           tabs.push(cat);
         }
       }
@@ -736,46 +730,62 @@ export default {
     },
 
     /**
-     * Build unified content fields: merge settings.fields.content with defaults.content.
+     * Build unified content fields from settings.fields.content (new object format).
      */
     getContentFields(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
-      const defaults = this.getDefault(blockType, 'defaults.content') || {};
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
         // Skip editor, item-*, and column-blocks — handled separately
         if (key === 'editor' || key === 'column-blocks' || key.startsWith('item-')) continue;
 
-        const defaultVal = defaults[key] || defaults[key + '-left'] || {};
+        // "enabled" = visibility toggle
+        if (settingVal === 'enabled') {
+          fields.push({ key, enabled: true, properties: [] });
+          continue;
+        }
+
+        // Skip default-only fields (e.g. { "default": false })
+        if (this.isObject(settingVal) && 'default' in settingVal && !this.hasNestedProps(settingVal)) {
+          continue;
+        }
+
         const field = { key, enabled: true, properties: [] };
 
         if (this.isObject(settingVal)) {
-          for (const [propKey, propOptions] of Object.entries(settingVal)) {
-            const allOptions = Array.isArray(propOptions) ? propOptions : [];
-            let pluginDefault = '';
-            if (this.isObject(defaultVal)) {
-              pluginDefault = defaultVal[propKey] !== undefined
-                ? defaultVal[propKey]
-                : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
-            }
+          for (const [propKey, propValue] of Object.entries(settingVal)) {
+            if (propValue === false) continue; // disabled property
+            const propObj = this.isObject(propValue) ? propValue : {};
+            const allOptions = propObj.options || (Array.isArray(propValue) ? propValue : []);
+            if (allOptions.length === 0) continue;
+            const pluginDefault = propObj.default !== undefined ? String(propObj.default) : '';
             if (allOptions.length > 1) {
               field.properties.push({
                 key: propKey,
                 allOptions,
                 options: allOptions,
-                pluginDefault: String(pluginDefault),
+                pluginDefault,
+                required: propObj.required === true,
               });
             }
           }
-        } else if (typeof settingVal === 'boolean') {
-          field.enabled = settingVal;
         }
 
         fields.push(field);
       }
 
       return fields;
+    },
+
+    /**
+     * Check if an object has nested property objects (with options/default).
+     */
+    hasNestedProps(obj) {
+      for (const v of Object.values(obj)) {
+        if (this.isObject(v) && ('options' in v || 'default' in v)) return true;
+      }
+      return false;
     },
 
     /**
@@ -818,32 +828,32 @@ export default {
      * Get currently active (allowed) options for a property.
      */
     getCategoryActiveOptions(blockType, catKey, fieldKey, field) {
-      const override = this.getOverrideOnly(blockType, 'settings.fields.' + catKey + '.' + fieldKey);
-      const arr = JSON.parse(JSON.stringify(override || []));
-      if (Array.isArray(arr) && arr.length > 0) return arr;
+      const override = this.getOverrideOnly(blockType, 'settings.fields.' + catKey + '.' + fieldKey + '.options');
+      if (Array.isArray(override) && override.length > 0) return override;
       return field.allOptions;
     },
 
     setCategoryOptions(blockType, catKey, fieldKey, field, values) {
       const ordered = field.allOptions.filter(o => values.includes(o));
       if (JSON.stringify(ordered) === JSON.stringify(field.allOptions)) {
-        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey);
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey + '.options');
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
       } else {
-        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
+        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey + '.options', ordered);
       }
       // Reset default if no longer in allowed list
-      const currentDefault = this.getVal(blockType, 'defaults.' + catKey + '.' + fieldKey, field.pluginDefault);
+      const currentDefault = this.getVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey + '.default', field.pluginDefault);
       if (!ordered.includes(currentDefault) && ordered.length) {
-        this.setVal(blockType, 'defaults.' + catKey + '.' + fieldKey, ordered[0]);
+        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey + '.default', ordered[0]);
       }
       this.markDirty(blockType);
     },
 
     getActiveOptions(blockType, fieldKey, propKey, prop) {
-      const override = this.getOverrideOnly(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey);
+      const override = this.getOverrideOnly(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey + '.options');
       if (Array.isArray(override)) return override;
       return prop.allOptions;
     },
@@ -853,30 +863,27 @@ export default {
      */
     setActiveOptions(blockType, fieldKey, propKey, prop, values) {
       const updated = Array.isArray(values) ? values : [];
+      const basePath = 'settings.fields.content.' + fieldKey + '.' + propKey;
 
       // Empty array = full reset (all deselected in FieldRow)
       if (updated.length === 0) {
-        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey + '.' + propKey);
+        this.deleteNested(this.blockOverrides[blockType] || {}, basePath);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content');
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
-        this.deleteNested(this.blockOverrides[blockType] || {}, 'defaults.content.' + fieldKey + '.' + propKey);
-        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content.' + fieldKey);
-        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content');
-        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
         this.markDirty(blockType);
         return;
       }
 
       // Keep original order
       const ordered = prop.allOptions.filter(o => updated.includes(o));
-      this.setVal(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey, ordered);
+      this.setVal(blockType, basePath + '.options', ordered);
 
       // If current default is no longer in allowed list, reset it
-      const currentDefault = this.getVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, prop.pluginDefault);
+      const currentDefault = this.getVal(blockType, basePath + '.default', prop.pluginDefault);
       if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
-        this.setVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, ordered[0]);
+        this.setVal(blockType, basePath + '.default', ordered[0]);
       }
 
       this.markDirty(blockType);
@@ -889,17 +896,17 @@ export default {
       const cats = [];
       for (const catKey of ['layout', 'style', 'effects', 'grid', 'settings']) {
         const settingsFields = this.getDefault(blockType, 'settings.fields.' + catKey) || {};
-        const defaultsFields = this.getDefault(blockType, 'defaults.' + catKey) || {};
 
-        const allKeys = new Set([...Object.keys(settingsFields), ...Object.keys(defaultsFields)]);
-        if (allKeys.size === 0) continue;
+        if (Object.keys(settingsFields).length === 0) continue;
 
         const fields = [];
         const grouped = {};
 
-        for (const key of allKeys) {
+        for (const [key, val] of Object.entries(settingsFields)) {
           // Skip parent toggle keys (handled by their sub-fields)
           if (key === 'padding' || key === 'radius') continue;
+          // Skip "enabled" visibility toggles
+          if (val === 'enabled') continue;
 
           // Group radius-* fields
           if (key.startsWith('radius-')) {
@@ -907,21 +914,18 @@ export default {
               grouped['radius'] = { key: 'radius', type: 'toggle-group', subFields: [] };
             }
             const subLabel = key.replace('radius-', '');
-            grouped['radius'].subFields.push({
-              key,
-              label: subLabel,
-              defaultValue: defaultsFields[key] !== undefined ? defaultsFields[key] : false,
-            });
+            const defaultValue = this.isObject(val) && 'default' in val ? val.default : false;
+            grouped['radius'].subFields.push({ key, label: subLabel, defaultValue });
             continue;
           }
 
           // Padding top/bottom as toggles fields
           if (key === 'padding-top' || key === 'padding-bottom') {
-            const defaultVal = defaultsFields[key] !== undefined ? defaultsFields[key] : 'large';
+            const defaultValue = this.isObject(val) && 'default' in val ? val.default : 'large';
             fields.push({
               key,
               type: 'toggles',
-              defaultValue: defaultVal,
+              defaultValue,
               options: [
                 { value: 'small', text: 'Small' },
                 { value: 'large', text: 'Large' },
@@ -930,48 +934,58 @@ export default {
             continue;
           }
 
-          // Array fields rendered as toggles
-          if (Array.isArray(settingsFields[key]) && settingsFields[key].length > 0) {
-            const opts = settingsFields[key];
-            const defaultVal = defaultsFields[key] !== undefined ? defaultsFields[key] : opts[0];
+          // Object with options → FieldRow or toggles
+          if (this.isObject(val) && 'options' in val) {
+            const opts = val.options;
+            const defaultValue = val.default !== undefined ? val.default : opts[0];
+            const required = val.required === true;
+
+            // More than ~5 options or has required → FieldRow with click logic
+            if (opts.length > 5 || required) {
+              fields.push({
+                key,
+                type: 'fieldrow',
+                allOptions: opts,
+                pluginDefault: String(defaultValue),
+                defaultValue,
+                required,
+              });
+            } else {
+              // Toggles
+              fields.push({
+                key,
+                type: 'toggles',
+                defaultValue,
+                required,
+                reset: !required,
+                options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
+              });
+            }
+            continue;
+          }
+
+          // Object with only default → single field
+          if (this.isObject(val) && 'default' in val) {
+            fields.push({
+              key,
+              type: 'single',
+              defaultValue: val.default,
+            });
+            continue;
+          }
+
+          // Plain array (legacy) → toggles
+          if (Array.isArray(val) && val.length > 0) {
             fields.push({
               key,
               type: 'toggles',
-              defaultValue: defaultVal,
+              defaultValue: val[0],
               required: false,
               reset: true,
-              options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
+              options: val.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
             });
             continue;
           }
-
-
-          const settingVal = settingsFields[key];
-          const defaultVal = defaultsFields[key];
-
-          // Fields with string options → FieldRow with click logic
-          const settingArr = settingVal ? JSON.parse(JSON.stringify(settingVal)) : null;
-          if (settingArr && Array.isArray(settingArr) && settingArr.length > 0 && settingArr.every(v => typeof v === 'string')) {
-            fields.push({
-              key,
-              type: 'fieldrow',
-              allOptions: settingArr,
-              pluginDefault: typeof defaultVal === 'string' ? defaultVal : settingArr[0],
-              defaultValue: defaultVal,
-            });
-            continue;
-          }
-
-          // Skip if already handled as fieldrow
-          if (settingArr && typeof settingArr !== 'boolean') continue;
-
-          const field = {
-            key,
-            type: 'single',
-            defaultValue: defaultVal !== undefined ? defaultVal : null,
-          };
-
-          fields.push(field);
         }
 
         // Add grouped fields
