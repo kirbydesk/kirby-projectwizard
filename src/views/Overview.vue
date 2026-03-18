@@ -125,32 +125,34 @@
                   :key="field.key"
                   class="pw-field-group"
                 >
-                  <div class="pw-field-group-header">
-                    <label class="pw-field-group-check">
-                      <input
-                        type="checkbox"
-                        :checked="isFieldEnabled(block.blockType, field)"
-                        @change="toggleField(block.blockType, field, $event.target.checked)"
-                      />
-                    </label>
-                    <span class="pw-field-group-title">{{ field.key }}</span>
-                  </div>
+                  <div class="pw-field-group-box">
+                    <div class="pw-field-group-header">
+                      <label class="pw-field-group-check">
+                        <input
+                          type="checkbox"
+                          :checked="isFieldEnabled(block.blockType, field)"
+                          @change="toggleField(block.blockType, field, $event.target.checked)"
+                        />
+                      </label>
+                      <span class="pw-field-group-title">{{ field.key }}</span>
+                    </div>
 
-                  <template v-if="isFieldEnabled(block.blockType, field) && field.properties.length">
-                    <pw-field-row
-                      v-for="prop in field.properties"
-                      :key="field.key + '-' + prop.key"
-                      :label="prop.key"
-                      :all-options="prop.allOptions"
-                      :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
-                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
-                      :plugin-default="prop.pluginDefault"
-                      :enabled="true"
-                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
-                      @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
-                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
-                    />
-                  </template>
+                    <template v-if="isFieldEnabled(block.blockType, field) && field.properties.length">
+                      <pw-field-row
+                        v-for="prop in field.properties"
+                        :key="field.key + '-' + prop.key"
+                        :label="prop.key"
+                        :all-options="prop.allOptions"
+                        :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
+                        :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                        :plugin-default="prop.pluginDefault"
+                        :enabled="true"
+                        :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                        @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
+                        @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
+                      />
+                    </template>
+                  </div>
                 </div>
               </div>
 
@@ -685,22 +687,23 @@ export default {
 .pw-field-block {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-6);
 }
 
-.pw-field-group {
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--spacing-3) 0;
-}
-
-.pw-field-group:last-child {
-  border-bottom: none;
+.pw-field-group-box {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded-lg);
+  overflow: hidden;
 }
 
 .pw-field-group-header {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  padding: var(--spacing-1) var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-gray-100);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .pw-field-group-check {
@@ -710,6 +713,8 @@ export default {
 
 .pw-field-group-check input {
   accent-color: var(--color-black);
+  width: 15px;
+  height: 15px;
 }
 
 .pw-field-group-title {

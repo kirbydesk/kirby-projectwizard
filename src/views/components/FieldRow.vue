@@ -75,8 +75,13 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  padding: var(--spacing-2) var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-4);
   min-height: 38px;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.pw-field-row:last-child {
+  border-bottom: none;
 }
 
 .pw-field-row.is-disabled {
