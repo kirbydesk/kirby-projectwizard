@@ -207,7 +207,7 @@
                     >
                       <div class="k-input" data-type="text">
                         <span class="k-input-element pw-field-row-inner">
-                          <span class="pw-field-row-toggle-spacer"></span>
+                          <span class="pw-field-row-check" style="visibility: hidden;"></span>
                           <label class="pw-field-row-label">{{ row.label }}</label>
                           <span class="pw-field-row-values">
                             <k-toggle-input
@@ -835,11 +835,6 @@ export default {
   display: flex;
   flex-direction: column;
   padding-bottom: var(--spacing-6);
-}
-
-.pw-field-row-toggle-spacer {
-  width: 5px;
-  flex-shrink: 0;
 }
 
 .pw-field-row-values {
