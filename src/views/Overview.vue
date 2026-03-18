@@ -229,17 +229,13 @@
                           <label class="pw-field-row-label">{{ $t('pw.field.' + field.key) || field.key }}</label>
                         </div>
                         <div class="pw-field-row-options pw-toggle-group">
-                          <label
+                          <k-toggle-input
                             v-for="sub in field.subFields"
                             :key="sub.key"
-                            class="pw-toggle-group-item"
-                          >
-                            <k-toggle-input
-                              :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, sub.defaultValue)"
-                              @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, $event)"
-                            />
-                            <span class="pw-toggle-group-label">{{ $t('prw.option.' + sub.label) || sub.label }}</span>
-                          </label>
+                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, sub.defaultValue)"
+                            :text="$t('prw.option.' + sub.label) || sub.label"
+                            @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, $event)"
+                          />
                         </div>
                       </span>
                     </div>
