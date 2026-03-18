@@ -995,20 +995,12 @@ export default {
 
 .pw-slide-enter-active,
 .pw-slide-leave-active {
-  transition: all 0.25s ease;
-  overflow: hidden;
+  transition: opacity 0.2s ease;
 }
 
 .pw-slide-enter,
 .pw-slide-leave-to {
   opacity: 0;
-  max-height: 0;
-}
-
-.pw-slide-enter-to,
-.pw-slide-leave {
-  opacity: 1;
-  max-height: 2000px;
 }
 
 .pw-content-field .k-toggle-field > .k-input,
