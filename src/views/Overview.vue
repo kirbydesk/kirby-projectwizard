@@ -221,7 +221,31 @@
               <k-headline-field :label="$t('pw.headline.' + cat.key)" />
               <div class="pw-field-block">
                 <template v-for="field in cat.fields">
-                  <div :key="field.key" class="pw-field-row">
+                  <!-- Toggle group (e.g. radius with 4 sub-toggles) -->
+                  <div v-if="field.type === 'toggle-group'" :key="field.key" class="pw-field-row">
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <label class="pw-field-row-label">{{ $t('pw.field.' + field.key) || field.key }}</label>
+                        </div>
+                        <div class="pw-field-row-options pw-toggle-group">
+                          <label
+                            v-for="sub in field.subFields"
+                            :key="sub.key"
+                            class="pw-toggle-group-item"
+                          >
+                            <k-toggle-input
+                              :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, sub.defaultValue)"
+                              @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, $event)"
+                            />
+                            <span class="pw-toggle-group-label">{{ sub.label }}</span>
+                          </label>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                  <!-- Single field -->
+                  <div v-else :key="field.key" class="pw-field-row">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
@@ -578,12 +602,29 @@ export default {
         if (allKeys.size === 0) continue;
 
         const fields = [];
+        const grouped = {};
+
         for (const key of allKeys) {
+          // Group radius-* fields
+          if (key.startsWith('radius-')) {
+            if (!grouped['radius']) {
+              grouped['radius'] = { key: 'radius', type: 'toggle-group', subFields: [] };
+            }
+            const subLabel = key.replace('radius-', '');
+            grouped['radius'].subFields.push({
+              key,
+              label: subLabel,
+              defaultValue: defaultsFields[key] !== undefined ? defaultsFields[key] : false,
+            });
+            continue;
+          }
+
           const settingVal = settingsFields[key];
           const defaultVal = defaultsFields[key];
 
           const field = {
             key,
+            type: 'single',
             settingKey: settingVal !== undefined ? 'settings.fields.' + catKey + '.' + key : null,
             settingValue: settingVal === true || (typeof settingVal === 'string' || Array.isArray(settingVal)),
             defaultValue: defaultVal !== undefined ? defaultVal : null,
@@ -595,6 +636,11 @@ export default {
           }
 
           fields.push(field);
+        }
+
+        // Add grouped fields
+        for (const group of Object.values(grouped)) {
+          fields.push(group);
         }
 
         cats.push({ key: catKey, fields });
@@ -826,6 +872,23 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
+}
+
+.pw-toggle-group {
+  display: flex;
+  gap: var(--spacing-4);
+}
+
+.pw-toggle-group-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  cursor: pointer;
+}
+
+.pw-toggle-group-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
 }
 
 .pw-category-select,
