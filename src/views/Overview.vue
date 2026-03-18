@@ -127,7 +127,7 @@
                 >
                   <!-- Label with enable checkbox -->
                   <k-toggle-field
-                    :label="fieldLabel(field.key)"
+                    :label="false"
                     :value="isFieldEnabled(block.blockType, field)"
                     :text="fieldLabel(field.key)"
                     @input="toggleField(block.blockType, field, $event)"
