@@ -144,18 +144,10 @@
                   class="k-field k-text-field pw-content-field"
                   data-object="content-field"
                 >
-                  <!-- Label with enable checkbox (not for column-block fields) -->
-                  <k-toggle-field
-                    v-if="!getColumnBlocks(block.blockType)"
-                    :label="false"
-                    :value="isFieldEnabled(block.blockType, field)"
-                    :text="fieldLabel(field.key)"
-                    @input="toggleField(block.blockType, field, $event)"
-                  />
-                  <label v-else class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
+                  <label class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
 
                   <!-- Property rows -->
-                  <div v-show="!getColumnBlocks(block.blockType) ? isFieldEnabled(block.blockType, field) : true" v-if="field.properties.length" class="pw-field-rows">
+                  <div v-if="field.properties.length" class="pw-field-rows">
                     <pw-field-row
                       v-for="prop in field.properties"
                       :key="field.key + '-' + prop.key"
@@ -180,14 +172,9 @@
                 class="k-field k-text-field pw-content-field"
                 data-object="content-field"
               >
-                <k-toggle-field
-                  :label="false"
-                  :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
-                  :text="fieldLabel('editor')"
-                  @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
-                />
+                <label class="pw-column-field-label">{{ fieldLabel('editor') }}</label>
 
-                <div v-show="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })" class="pw-field-rows">
+                <div class="pw-field-rows">
                   <!-- Editor content settings (mode, align, sizes) as FieldRows -->
                   <template v-if="getEditorField(block.blockType)">
                     <pw-field-row
