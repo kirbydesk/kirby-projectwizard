@@ -152,6 +152,10 @@ export default {
 
 <style>
 .pw-field-row {
+  padding: 0;
+}
+
+[data-object="content-field"] .pw-field-row {
   padding: 1px 0;
 }
 
