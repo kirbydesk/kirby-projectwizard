@@ -66,10 +66,7 @@ foreach ($blocks as $blockType => $info) {
 				'action'  => fn() => [
 					'component' => 'pw-wizard-overview',
 					'title'     => $label,
-					'breadcrumb' => [
-						['label' => 'Project Wizard', 'link' => 'projectwizard'],
-					],
-					'props'     => [
+						'props'     => [
 						'blockType' => $blockType,
 					],
 				],
