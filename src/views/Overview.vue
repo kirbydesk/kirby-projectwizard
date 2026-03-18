@@ -108,8 +108,8 @@
               <!-- Content Fields -->
               <section class="pw-wizard-section">
               <button class="pw-section-toggle" @click="toggleSection(block.blockType, 'content')">
-                <k-icon :type="isSectionOpen(block.blockType, 'content') ? 'angle-down' : 'angle-right'" />
                 <span>{{ $t('pw.headline.content') }}</span>
+                <k-icon :type="isSectionOpen(block.blockType, 'content') ? 'angle-down' : 'angle-right'" />
               </button>
               <transition name="pw-slide">
               <div v-show="isSectionOpen(block.blockType, 'content')" v-if="getContentFields(block.blockType).length" class="pw-field-block">
@@ -227,8 +227,8 @@
               class="pw-wizard-section"
             >
               <button class="pw-section-toggle" @click="toggleSection(block.blockType, cat.key)">
-                <k-icon :type="isSectionOpen(block.blockType, cat.key) ? 'angle-down' : 'angle-right'" />
                 <span>{{ $t('pw.headline.' + cat.key) }}</span>
+                <k-icon :type="isSectionOpen(block.blockType, cat.key) ? 'angle-down' : 'angle-right'" />
               </button>
               <transition name="pw-slide">
               <div v-show="isSectionOpen(block.blockType, cat.key)" class="pw-field-block">
