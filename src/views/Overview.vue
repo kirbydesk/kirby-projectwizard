@@ -777,8 +777,10 @@ export default {
     },
 
     setCategoryOptions(blockType, catKey, fieldKey, field, values) {
-      const ordered = field.allOptions.filter(o => values.includes(o));
-      if (JSON.stringify(ordered) === JSON.stringify(field.allOptions)) {
+      const updated = Array.isArray(values) ? values : [];
+
+      // Empty array = full reset (all deselected in FieldRow)
+      if (updated.length === 0) {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
@@ -786,14 +788,17 @@ export default {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'defaults.' + catKey + '.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.' + catKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
-      } else {
-        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
+        this.markDirty(blockType);
+        return;
+      }
 
-        // Reset default if no longer in allowed list
-        const currentDefault = this.getVal(blockType, 'defaults.' + catKey + '.' + fieldKey, field.pluginDefault);
-        if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
-          this.setVal(blockType, 'defaults.' + catKey + '.' + fieldKey, ordered[0]);
-        }
+      const ordered = field.allOptions.filter(o => updated.includes(o));
+      this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
+
+      // Reset default if no longer in allowed list
+      const currentDefault = this.getVal(blockType, 'defaults.' + catKey + '.' + fieldKey, field.pluginDefault);
+      if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
+        this.setVal(blockType, 'defaults.' + catKey + '.' + fieldKey, ordered[0]);
       }
       this.markDirty(blockType);
     },
@@ -809,13 +814,9 @@ export default {
      */
     setActiveOptions(blockType, fieldKey, propKey, prop, values) {
       const updated = Array.isArray(values) ? values : [];
-      if (updated.length === 0) return; // Don't allow empty
 
-      // Keep original order
-      const ordered = prop.allOptions.filter(o => updated.includes(o));
-
-      // If same as plugin default, remove both settings and defaults overrides
-      if (JSON.stringify(ordered) === JSON.stringify(prop.allOptions)) {
+      // Empty array = full reset (all deselected in FieldRow)
+      if (updated.length === 0) {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey + '.' + propKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content');
@@ -825,14 +826,18 @@ export default {
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.content');
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
-      } else {
-        this.setVal(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey, ordered);
+        this.markDirty(blockType);
+        return;
+      }
 
-        // If current default is no longer in allowed list, reset it
-        const currentDefault = this.getVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, prop.pluginDefault);
-        if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
-          this.setVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, ordered[0]);
-        }
+      // Keep original order
+      const ordered = prop.allOptions.filter(o => updated.includes(o));
+      this.setVal(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey, ordered);
+
+      // If current default is no longer in allowed list, reset it
+      const currentDefault = this.getVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, prop.pluginDefault);
+      if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
+        this.setVal(blockType, 'defaults.content.' + fieldKey + '.' + propKey, ordered[0]);
       }
 
       this.markDirty(blockType);

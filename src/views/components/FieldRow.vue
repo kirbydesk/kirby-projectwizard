@@ -159,8 +159,7 @@ export default {
           this.touched = false;
           this.localDefault = null;
           this.localActive = [...this.allOptions];
-          this.$emit('update:default', this.pluginDefault);
-          this.$emit('update:options', this.allOptions);
+          this.$emit('update:options', []);
           return;
         }
         this.localDefault = null;
