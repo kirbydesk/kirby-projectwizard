@@ -208,12 +208,12 @@
                       <div class="k-input" data-type="text">
                         <span class="k-input-element pw-field-row-inner">
                           <label class="pw-field-row-label" style="grid-column: 1 / 3;">{{ row.label }}</label>
-                          <span class="pw-field-row-values">
+                          <div class="pw-field-row-options">
                             <k-toggle-input
                               :value="getVal(block.blockType, 'editor.' + row.path, row.value)"
                               @input="setVal(block.blockType, 'editor.' + row.path, $event)"
                             />
-                          </span>
+                          </div>
                         </span>
                       </div>
                     </div>
@@ -836,14 +836,6 @@ export default {
   padding-bottom: var(--spacing-6);
 }
 
-.pw-field-row-values {
-  display: flex;
-  align-items: center;
-}
-
-.pw-field-row-values .k-toggle-input {
-  margin-left: var(--spacing-2);
-}
 
 /* Global tabs (Kirby-style) */
 .pw-wizard-global-tabs {
