@@ -150,12 +150,13 @@
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
                           <input
+                            :id="'pw-status-' + block.blockType + '-' + field.key"
                             type="checkbox"
                             class="pw-field-row-check"
                             :checked="isFieldEnabled(block.blockType, field)"
                             @change="toggleField(block.blockType, field, $event.target.checked)"
                           />
-                          <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
+                          <label class="pw-field-row-label" :for="'pw-status-' + block.blockType + '-' + field.key">{{ $t('prw.property.status') }}</label>
                         </div>
                       </span>
                     </div>
@@ -193,12 +194,13 @@
                     <span class="k-input-element pw-field-row-inner">
                       <div class="pw-field-row-label-col">
                         <input
+                          :id="'pw-status-' + block.blockType + '-editor'"
                           type="checkbox"
                           class="pw-field-row-check"
                           :checked="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
                           @change="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event.target.checked)"
                         />
-                        <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
+                        <label class="pw-field-row-label" :for="'pw-status-' + block.blockType + '-editor'">{{ $t('prw.property.status') }}</label>
                       </div>
                     </span>
                   </div>
