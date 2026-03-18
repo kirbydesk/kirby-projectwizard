@@ -730,7 +730,7 @@ export default {
 .pw-field-enable-check {
   accent-color: var(--color-black);
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: 5px;
   margin-right: 10px;
 }
 

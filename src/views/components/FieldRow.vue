@@ -81,7 +81,7 @@ export default {
   display: flex;
   align-items: center;
   padding: var(--spacing-2) 0;
-  padding-left: 10px;
+  padding-left: 5px;
   min-height: 32px;
 }
 
