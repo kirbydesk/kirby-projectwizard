@@ -134,7 +134,7 @@
                       @change="toggleField(block.blockType, field, $event.target.checked)"
                     />
                     <label class="k-label k-field-label" style="flex: 1 1 0%;">
-                      <span class="k-label-text">{{ field.key }}</span>
+                      <span class="k-label-text">{{ fieldLabel(field.key) }}</span>
                     </label>
                   </header>
 
@@ -144,10 +144,15 @@
                       <input
                         type="text"
                         class="k-string-input k-text-input"
-                        :placeholder="field.key + ' ...'"
+                        :placeholder="fieldPlaceholder(field.key)"
                       />
                     </span>
                   </div>
+
+                  <!-- Help text -->
+                  <footer v-if="fieldHelp(field.key)" class="k-field-footer">
+                    <div class="k-help k-field-help k-text" v-html="fieldHelp(field.key)"></div>
+                  </footer>
 
                   <!-- Property rows below the input -->
                   <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" class="pw-field-rows">
@@ -327,6 +332,21 @@ export default {
       }
     },
 
+    fieldLabel(key) {
+      const tKey = 'pw.field.' + key;
+      const translated = this.$t(tKey);
+      return (translated && translated !== tKey) ? translated : key.charAt(0).toUpperCase() + key.slice(1);
+    },
+    fieldPlaceholder(key) {
+      const tKey = 'pw.field.' + key + '.placeholder';
+      const translated = this.$t(tKey);
+      return (translated && translated !== tKey) ? translated : key.charAt(0).toUpperCase() + key.slice(1) + ' ...';
+    },
+    fieldHelp(key) {
+      const tKey = 'pw.field.' + key + '.help';
+      const translated = this.$t(tKey);
+      return (translated && translated !== tKey) ? translated : null;
+    },
     blockLabel(blockType) {
       // Find plugin name for translation key
       const block = this.blocks.find(b => b.blockType === blockType);

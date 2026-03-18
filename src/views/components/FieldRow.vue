@@ -24,7 +24,7 @@
         }"
         @click="handleClick(opt)"
       >
-        {{ opt }}
+        {{ optionLabel(opt) }}
       </button>
     </div>
   </div>
@@ -42,6 +42,11 @@ export default {
     modified: { type: Boolean, default: false },
   },
   methods: {
+    optionLabel(opt) {
+      const key = 'pw.option.' + opt;
+      const translated = this.$t(key);
+      return (translated && translated !== key) ? translated : opt;
+    },
     handleClick(opt) {
       const isActive = this.activeOptions.includes(opt);
       const isDefault = opt === this.currentDefault;
