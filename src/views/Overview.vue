@@ -709,15 +709,16 @@ export default {
             continue;
           }
 
-          // Only add as single if it has a boolean default value
-          if (defaultVal === null || defaultVal === undefined) continue;
-          if (typeof defaultVal !== 'boolean') continue;
+          // Skip if already handled as fieldrow
+          if (settingArr && typeof settingArr !== 'boolean') continue;
 
-          fields.push({
+          const field = {
             key,
             type: 'single',
-            defaultValue: defaultVal,
-          });
+            defaultValue: defaultVal !== undefined ? defaultVal : null,
+          };
+
+          fields.push(field);
         }
 
         // Add grouped fields
