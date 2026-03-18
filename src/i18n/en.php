@@ -35,12 +35,6 @@
 	'prw.field.padding-right' => 'Padding Right',
 	'prw.field.radius' => 'Radius',
 
-	/* -------------- Padding options --------------*/
-	'prw.option.top' => 'Padding Top',
-	'prw.option.bottom' => 'Padding Bottom',
-	'prw.option.left' => 'Padding Left',
-	'prw.option.right' => 'Padding Right',
-
 	/* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
 	'prw.option.top-right' => 'Top Right',
