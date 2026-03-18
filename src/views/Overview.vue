@@ -153,20 +153,39 @@
                 </div>
               </div>
 
-              <!-- Editor config -->
+              <!-- Editor config (content settings + editor.json merged) -->
               <div
-                v-if="getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length"
+                v-if="getEditorField(block.blockType) || (getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length)"
                 class="k-field k-text-field pw-content-field"
               >
                 <k-toggle-field
                   :label="false"
-                  :value="true"
-                  text="Editor"
+                  :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
+                  :text="fieldLabel('editor')"
+                  @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
                 />
 
-                <div class="pw-field-rows">
+                <div v-show="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })" class="pw-field-rows">
+                  <!-- Editor content settings (mode, align, sizes) as FieldRows -->
+                  <template v-if="getEditorField(block.blockType)">
+                    <pw-field-row
+                      v-for="prop in getEditorField(block.blockType).properties"
+                      :key="'editor-content-' + prop.key"
+                      :uid="block.blockType + '-editor-' + prop.key"
+                      :label="prop.key"
+                      :all-options="prop.allOptions"
+                      :active-options="getActiveOptions(block.blockType, 'editor', prop.key, prop)"
+                      :current-default="getVal(block.blockType, 'defaults.content.editor.' + prop.key, prop.pluginDefault)"
+                      :plugin-default="prop.pluginDefault"
+                      :enabled="true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.editor.' + prop.key) || hasOverride(block.blockType, 'defaults.content.editor.' + prop.key)"
+                      @update:options="setActiveOptions(block.blockType, 'editor', prop.key, prop, $event)"
+                      @update:default="selectOption(block.blockType, 'defaults.content.editor.' + prop.key, $event, prop.pluginDefault)"
+                    />
+                  </template>
+
+                  <!-- Editor config (marks, nodes, headings, toolbar) -->
                   <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
-                    <!-- Array values (marks, nodes, headings) as tags -->
                     <div v-if="Array.isArray(val)" :key="'editor-' + key" class="pw-editor-row">
                       <k-tags-field
                         :label="key"
@@ -176,7 +195,6 @@
                         @input="setEditorArrayFromTags(block.blockType, key, $event, val)"
                       />
                     </div>
-                    <!-- Object values (toolbar) as toggles -->
                     <template v-else-if="isObject(val)">
                       <div
                         v-for="(subVal, subKey) in val"
@@ -342,6 +360,35 @@ export default {
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : null;
     },
+    getEditorField(blockType) {
+      const settings = this.getDefault(blockType, 'settings.fields.content') || {};
+      const defaults = this.getDefault(blockType, 'defaults.content') || {};
+      const settingVal = settings['editor'];
+      if (!settingVal) return null;
+
+      const defaultVal = defaults['editor'] || {};
+      const field = { key: 'editor', enabled: true, properties: [] };
+
+      if (this.isObject(settingVal)) {
+        for (const [propKey, propOptions] of Object.entries(settingVal)) {
+          const allOptions = Array.isArray(propOptions) ? propOptions : [];
+          let pluginDefault = '';
+          if (this.isObject(defaultVal)) {
+            pluginDefault = defaultVal[propKey] !== undefined
+              ? defaultVal[propKey]
+              : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
+          }
+          field.properties.push({
+            key: propKey,
+            allOptions,
+            options: allOptions,
+            pluginDefault: String(pluginDefault),
+          });
+        }
+      }
+
+      return field.properties.length ? field : null;
+    },
     blockLabel(blockType) {
       // Find plugin name for translation key
       const block = this.blocks.find(b => b.blockType === blockType);
@@ -389,6 +436,9 @@ export default {
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
+        // Skip editor — handled separately in editor config block
+        if (key === 'editor') continue;
+
         const defaultVal = defaults[key] || {};
         const field = { key, enabled: true, properties: [] };
 
@@ -403,8 +453,8 @@ export default {
             }
             field.properties.push({
               key: propKey,
-              allOptions,        // all possible values from the plugin
-              options: allOptions, // currently allowed (may be overridden)
+              allOptions,
+              options: allOptions,
               pluginDefault: String(pluginDefault),
             });
           }
