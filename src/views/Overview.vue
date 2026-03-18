@@ -145,14 +145,13 @@
                   data-object="content-field"
                 >
                   <label class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
-                  <div v-if="!getColumnBlocks(block.blockType)" class="pw-field-row">
+                  <div v-if="!getColumnBlocks(block.blockType)" class="pw-field-row pw-clickable" @click="toggleField(block.blockType, field, !isFieldEnabled(block.blockType, field))">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
                           <k-toggle-input
                             :value="isFieldEnabled(block.blockType, field)"
                             :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                            @input="toggleField(block.blockType, field, $event)"
                           />
                         </div>
                       </span>
@@ -186,14 +185,13 @@
                 data-object="content-field"
               >
                 <label class="pw-column-field-label">{{ fieldLabel('editor') }}</label>
-                <div class="pw-field-row">
+                <div class="pw-field-row pw-clickable" @click="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, !isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }))">
                   <div class="k-input" data-type="text">
                     <span class="k-input-element pw-field-row-inner">
                       <div class="pw-field-row-label-col">
                         <k-toggle-input
                           :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
                           :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                          @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
                         />
                       </div>
                     </span>
@@ -267,14 +265,13 @@
                   data-object="content-field"
                 >
                   <label class="pw-column-field-label">{{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}</label>
-                  <div class="pw-field-row">
+                  <div class="pw-field-row pw-clickable" @click="toggleField(block.blockType, field, !isFieldEnabled(block.blockType, field))">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
                           <k-toggle-input
                             :value="isFieldEnabled(block.blockType, field)"
                             :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                            @input="toggleField(block.blockType, field, $event)"
                           />
                         </div>
                       </span>
@@ -1283,6 +1280,10 @@ export default {
       /***background-color: var(--color-gray-150);***/
     }
   }
+}
+
+.pw-clickable {
+  cursor: pointer;
 }
 
 .pw-column-field-label {
