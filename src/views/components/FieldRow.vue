@@ -67,10 +67,14 @@ export default {
       }
     },
     propertyLabel(key) {
-      return this.$t('pw.property.' + key);
+      const tKey = 'pw.property.' + key;
+      const translated = this.$t(tKey);
+      return (translated && translated !== tKey) ? translated : key;
     },
     optionLabel(opt) {
-      return this.$t('pw.option.' + opt);
+      const tKey = 'pw.option.' + opt;
+      const translated = this.$t(tKey);
+      return (translated && translated !== tKey) ? translated : opt;
     },
     handleClick(opt) {
       if (this.noDefault) {
