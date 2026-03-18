@@ -615,6 +615,20 @@ export default {
             continue;
           }
 
+          // Group padding-left + padding-right into horizontal-padding
+          if (key === 'padding-left' || key === 'padding-right') {
+            if (!grouped['horizontal-padding']) {
+              grouped['horizontal-padding'] = { key: 'horizontal-padding', type: 'toggle-group', subFields: [] };
+            }
+            const subLabel = key.replace('padding-', '');
+            grouped['horizontal-padding'].subFields.push({
+              key,
+              label: subLabel,
+              defaultValue: defaultsFields[key] !== undefined ? defaultsFields[key] : false,
+            });
+            continue;
+          }
+
           const settingVal = settingsFields[key];
           const defaultVal = defaultsFields[key];
 

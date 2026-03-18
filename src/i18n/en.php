@@ -29,7 +29,12 @@
 	'prw.option.orderedList' => 'Ordered List',
 
 	/* -------------- Layout fields --------------*/
+	'prw.field.horizontal-padding' => 'Horizontal Padding',
 	'prw.field.radius' => 'Radius',
+
+	/* -------------- Padding options --------------*/
+	'prw.option.left' => 'Left',
+	'prw.option.right' => 'Right',
 
 	/* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
