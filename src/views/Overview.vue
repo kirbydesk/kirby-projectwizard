@@ -138,35 +138,35 @@
                     </label>
                   </header>
 
-                  <!-- Input field with field name as placeholder -->
-                  <div class="k-input" data-type="text">
-                    <span class="k-input-element">
-                      <input
-                        type="text"
-                        class="k-string-input k-text-input"
-                        :placeholder="fieldPlaceholder(field.key)"
+                  <template v-if="isFieldEnabled(block.blockType, field)">
+                    <!-- Input field with field name as placeholder -->
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element">
+                        <input
+                          type="text"
+                          class="k-string-input k-text-input"
+                          :placeholder="fieldPlaceholder(field.key)"
+                        />
+                      </span>
+                    </div>
+
+                    <!-- Property rows below the input -->
+                    <div v-if="field.properties.length" class="pw-field-rows">
+                      <pw-field-row
+                        v-for="prop in field.properties"
+                        :key="field.key + '-' + prop.key"
+                        :label="prop.key"
+                        :all-options="prop.allOptions"
+                        :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
+                        :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                        :plugin-default="prop.pluginDefault"
+                        :enabled="true"
+                        :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                        @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
+                        @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
                       />
-                    </span>
-                  </div>
-
-
-                  <!-- Property rows below the input -->
-                  <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" class="pw-field-rows">
-                    <pw-field-row
-                      v-for="prop in field.properties"
-                      :key="field.key + '-' + prop.key"
-                      :label="prop.key"
-                      :all-options="prop.allOptions"
-                      :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
-                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
-                      :plugin-default="prop.pluginDefault"
-                      :enabled="isFieldEnabled(block.blockType, field)"
-                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
-                      @toggle="toggleField(block.blockType, field, $event)"
-                      @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
-                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
-                    />
-                  </div>
+                    </div>
+                  </template>
                 </div>
               </div>
 
