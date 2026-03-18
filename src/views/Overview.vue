@@ -123,21 +123,25 @@
                 <div
                   v-for="field in getContentFields(block.blockType)"
                   :key="field.key"
-                  class="pw-field-group"
+                  class="k-field k-text-field"
                 >
-                  <div class="pw-field-group-box">
-                    <div class="pw-field-group-header">
-                      <label class="pw-field-group-check">
-                        <input
-                          type="checkbox"
-                          :checked="isFieldEnabled(block.blockType, field)"
-                          @change="toggleField(block.blockType, field, $event.target.checked)"
-                        />
-                      </label>
-                      <span class="pw-field-group-title">{{ field.key }}</span>
-                    </div>
+                  <header class="k-field-header" style="display: flex; align-items: center; overflow: visible;">
+                    <label class="k-label k-field-label" style="flex: 1 1 0%;">
+                      <span class="k-label-text">
+                        <label class="pw-field-group-check">
+                          <input
+                            type="checkbox"
+                            :checked="isFieldEnabled(block.blockType, field)"
+                            @change="toggleField(block.blockType, field, $event.target.checked)"
+                          />
+                        </label>
+                        {{ field.key }}
+                      </span>
+                    </label>
+                  </header>
 
-                    <template v-if="isFieldEnabled(block.blockType, field) && field.properties.length">
+                  <div v-if="isFieldEnabled(block.blockType, field) && field.properties.length" data-type="text" class="k-input">
+                    <span class="k-input-element pw-field-rows">
                       <pw-field-row
                         v-for="prop in field.properties"
                         :key="field.key + '-' + prop.key"
@@ -151,7 +155,13 @@
                         @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
                         @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
                       />
-                    </template>
+                    </span>
+                  </div>
+
+                  <div v-if="!isFieldEnabled(block.blockType, field)" data-type="text" class="k-input">
+                    <span class="k-input-element">
+                      <span class="pw-field-disabled-text">Field disabled</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -690,37 +700,26 @@ export default {
   gap: var(--spacing-6);
 }
 
-.pw-field-group-box {
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: var(--rounded-lg);
-  overflow: hidden;
-}
-
-.pw-field-group-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  padding: var(--spacing-3) var(--spacing-4);
-  background: var(--color-gray-100);
-  border-bottom: 1px solid var(--color-border);
-}
-
 .pw-field-group-check {
   cursor: pointer;
   flex-shrink: 0;
+  margin-right: var(--spacing-2);
 }
 
 .pw-field-group-check input {
   accent-color: var(--color-black);
-  width: 15px;
-  height: 15px;
 }
 
-.pw-field-group-title {
+.pw-field-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.pw-field-disabled-text {
+  color: var(--color-text-dimmed);
   font-size: var(--text-sm);
-  font-weight: 600;
-  text-transform: capitalize;
+  font-style: italic;
+  padding: var(--spacing-2) 0;
 }
 
 /* Global tabs (Kirby-style) */
