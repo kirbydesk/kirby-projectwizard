@@ -125,9 +125,15 @@
                   :key="field.key"
                   class="k-field k-text-field pw-content-field"
                 >
-                  <!-- Label -->
-                  <header class="k-field-header">
-                    <label class="k-label k-field-label">
+                  <!-- Label with enable checkbox -->
+                  <header class="k-field-header" style="display: flex; align-items: center; overflow: visible;">
+                    <input
+                      type="checkbox"
+                      :checked="isFieldEnabled(block.blockType, field)"
+                      class="pw-field-enable-check"
+                      @change="toggleField(block.blockType, field, $event.target.checked)"
+                    />
+                    <label class="k-label k-field-label" style="flex: 1 1 0%;">
                       <span class="k-label-text">{{ field.key }}</span>
                     </label>
                   </header>
@@ -703,6 +709,12 @@ export default {
 
 .pw-content-field .k-label-text {
   text-transform: capitalize;
+}
+
+.pw-field-enable-check {
+  accent-color: var(--color-black);
+  cursor: pointer;
+  margin-right: var(--spacing-2);
 }
 
 .pw-field-rows {
