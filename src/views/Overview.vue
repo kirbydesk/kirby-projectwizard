@@ -186,15 +186,20 @@
 
                   <!-- Editor config (marks, nodes, headings, toolbar) -->
                   <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
-                    <div v-if="Array.isArray(val)" :key="'editor-' + key" class="pw-editor-row">
-                      <k-tags-field
-                        :label="key"
-                        :help="'Default: ' + (val.join(', ') || '(none)')"
-                        :value="getOverrideOnly(block.blockType, 'editor.' + key) || val"
-                        accept="all"
-                        @input="setEditorArrayFromTags(block.blockType, key, $event, val)"
-                      />
-                    </div>
+                    <pw-field-row
+                      v-if="Array.isArray(val)"
+                      :key="'editor-' + key"
+                      :uid="block.blockType + '-editor-' + key"
+                      :label="key"
+                      :all-options="val"
+                      :active-options="getOverrideOnly(block.blockType, 'editor.' + key) || val"
+                      current-default=""
+                      plugin-default=""
+                      :enabled="true"
+                      :modified="hasOverride(block.blockType, 'editor.' + key)"
+                      :no-default="true"
+                      @update:options="setEditorArrayDirect(block.blockType, key, $event, val)"
+                    />
                     <template v-else-if="isObject(val)">
                       <div
                         v-for="(subVal, subKey) in val"
@@ -627,6 +632,16 @@ export default {
         this.$set(this.blockOverrides, bt, JSON.parse(JSON.stringify(this.originalOverrides[bt] || {})));
       }
       this.$set(this.dirtyTabs, this.activeTab, false);
+    },
+
+    setEditorArrayDirect(blockType, key, values, defaultVal) {
+      if (JSON.stringify(values) === JSON.stringify(defaultVal)) {
+        this.deleteNested(this.blockOverrides[blockType] || {}, 'editor.' + key);
+        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'editor');
+      } else {
+        this.setVal(blockType, 'editor.' + key, values);
+      }
+      this.markDirty(blockType);
     },
 
     // --- Nested helpers ---

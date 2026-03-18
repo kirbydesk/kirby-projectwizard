@@ -21,8 +21,8 @@
             class="pw-field-row-option"
             :class="{
               'is-active': localActive.includes(opt),
-              'is-default': opt === localDefault,
-              'is-plugin-default': opt === pluginDefault && !touched && !modified,
+              'is-default': !noDefault && opt === localDefault,
+              'is-plugin-default': !noDefault && opt === pluginDefault && !touched && !modified,
             }"
             @click="handleClick(opt)"
           >
@@ -45,6 +45,7 @@ export default {
     pluginDefault: String,
     enabled: { type: Boolean, default: true },
     modified: { type: Boolean, default: false },
+    noDefault: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -72,6 +73,21 @@ export default {
       return this.$t('pw.option.' + opt);
     },
     handleClick(opt) {
+      if (this.noDefault) {
+        // Two-state: aus ↔ grau
+        this.touched = true;
+        const isActive = this.localActive.includes(opt);
+        if (isActive) {
+          this.localActive = this.localActive.filter(o => o !== opt);
+        } else {
+          this.localActive = this.allOptions.filter(
+            o => this.localActive.includes(o) || o === opt
+          );
+        }
+        this.$emit('update:options', this.localActive);
+        return;
+      }
+
       if (!this.touched) {
         this.touched = true;
         this.localActive = [opt];
