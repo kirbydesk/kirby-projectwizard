@@ -111,7 +111,6 @@
                 <span>{{ $t('pw.headline.content') }}</span>
                 <k-icon :type="isSectionOpen(block.blockType, 'content') ? 'angle-down' : 'angle-right'" />
               </button>
-              <transition name="pw-slide">
               <div v-show="isSectionOpen(block.blockType, 'content')" class="pw-section-content">
               <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
                 <div
@@ -218,7 +217,6 @@
               </div>
             </div>
             </div>
-            </transition>
 
             </section>
 
@@ -232,7 +230,6 @@
                 <span>{{ $t('pw.headline.' + cat.key) }}</span>
                 <k-icon :type="isSectionOpen(block.blockType, cat.key) ? 'angle-down' : 'angle-right'" />
               </button>
-              <transition name="pw-slide">
               <div v-show="isSectionOpen(block.blockType, cat.key)" class="pw-field-block">
                 <template v-for="field in cat.fields">
                   <!-- FieldRow (e.g. theme with options + click logic) -->
@@ -340,7 +337,6 @@
                   </div>
                 </template>
               </div>
-              </transition>
             </section>
 
           </div>
@@ -993,23 +989,6 @@ export default {
   transition: transform 0.2s ease;
 }
 
-.pw-slide-enter-active,
-.pw-slide-leave-active {
-  transition: all 0.25s ease;
-  overflow: hidden;
-}
-
-.pw-slide-enter,
-.pw-slide-leave-to {
-  opacity: 0;
-  max-height: 0;
-}
-
-.pw-slide-enter-to,
-.pw-slide-leave {
-  opacity: 1;
-  max-height: 2000px;
-}
 
 .pw-content-field .k-toggle-field > .k-input,
 .pw-content-field .k-toggle-field > .k-input:focus-within {
