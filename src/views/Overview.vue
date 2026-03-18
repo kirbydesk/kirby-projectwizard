@@ -481,6 +481,7 @@ export default {
       const rawDefaults = this.getDefault(blockType, 'defaults.content');
       const settings = rawSettings ? JSON.parse(JSON.stringify(rawSettings)) : {};
       const defaults = rawDefaults ? JSON.parse(JSON.stringify(rawDefaults)) : {};
+      console.log('getItemFields', blockType, 'keys:', Object.keys(settings), 'item-keys:', Object.keys(settings).filter(k => k.startsWith('item-')));
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
