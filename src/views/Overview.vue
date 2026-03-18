@@ -106,7 +106,7 @@
             <div class="pw-wizard-tab-content">
 
               <!-- Content Fields -->
-              <k-headline-field label="Content" />
+              <k-headline-field :label="$t('pw.headline.content')" />
               <div v-if="getContentFields(block.blockType).length" class="pw-field-block">
                 <div
                   v-for="field in getContentFields(block.blockType)"
@@ -218,7 +218,7 @@
               :key="cat.key"
               class="pw-wizard-tab-content"
             >
-              <k-headline-field :label="cat.key" />
+              <k-headline-field :label="$t('pw.headline.' + cat.key)" />
               <div class="pw-wizard-fields">
                 <template v-for="field in cat.fields">
 
