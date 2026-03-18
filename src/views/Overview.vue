@@ -203,14 +203,17 @@
                     <div
                       v-if="row.type === 'toggle'"
                       :key="'editor-' + row.key"
-                      class="pw-editor-row"
+                      class="pw-field-row"
                     >
-                      <k-toggle-field
-                        :label="row.key"
-                        :value="getVal(block.blockType, 'editor.' + row.path, row.value)"
-                        :text="['off', 'on']"
-                        @input="setVal(block.blockType, 'editor.' + row.path, $event)"
-                      />
+                      <div class="k-input" data-type="text">
+                        <span class="k-input-element pw-field-row-inner">
+                          <span class="pw-field-row-label" style="margin-left: 0;">{{ row.label }}</span>
+                          <k-toggle-input
+                            :value="getVal(block.blockType, 'editor.' + row.path, row.value)"
+                            @input="setVal(block.blockType, 'editor.' + row.path, $event)"
+                          />
+                        </span>
+                      </div>
                     </div>
                   </template>
                 </div>
@@ -379,7 +382,7 @@ export default {
         } else if (val && typeof val === 'object') {
           for (const [subKey, subVal] of Object.entries(val)) {
             if (typeof subVal === 'boolean') {
-              rows.push({ key: key + ' › ' + subKey, type: 'toggle', path: key + '.' + subKey, value: subVal });
+              rows.push({ key: key + '-' + subKey, label: key + ' › ' + subKey, type: 'toggle', path: key + '.' + subKey, value: subVal });
             }
           }
         }
