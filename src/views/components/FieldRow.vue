@@ -136,7 +136,8 @@ export default {
 }
 
 .pw-field-row-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 140px 1fr;
   align-items: center;
   padding: 0 var(--spacing-3);
 }
@@ -154,9 +155,8 @@ export default {
 .pw-field-row-label {
   font-size: var(--text-sm);
   font-weight: 400;
-  min-width: 100px;
-  margin-left: 10px;
   cursor: pointer;
+  padding-left: 10px;
 }
 
 .pw-field-row-options {
