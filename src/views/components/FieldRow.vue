@@ -74,7 +74,6 @@ export default {
 .pw-field-row {
   display: flex;
   align-items: center;
-  gap: var(--spacing-3);
   padding: var(--spacing-2) 0;
   min-height: 32px;
   border-bottom: 1px solid var(--color-gray-100);
@@ -101,6 +100,7 @@ export default {
   font-size: var(--text-sm);
   font-weight: 500;
   min-width: 100px;
+  margin-left: 8px;
 }
 
 .pw-field-row-options {
