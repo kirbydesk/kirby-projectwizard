@@ -239,6 +239,8 @@
                               :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, sub.defaultValue)"
                               :options="sub.options"
                               :grow="false"
+                              :reset="true"
+                              :required="false"
                               @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, $event)"
                             />
                           </div>
