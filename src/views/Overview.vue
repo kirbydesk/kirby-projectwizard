@@ -218,7 +218,6 @@
                   </template>
                 </div>
               </div>
-            </div>
             <!-- Item fields -->
             <div v-if="getItemFields(block.blockType).length" class="pw-item-section">
               <h3 class="pw-item-headline">Items</h3>
@@ -255,7 +254,6 @@
                 </div>
               </div>
             </div>
-
             </div>
             </transition>
 
