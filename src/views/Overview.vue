@@ -154,31 +154,47 @@
               </div>
 
               <!-- Editor config -->
-              <template v-if="getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length">
-                <k-line-field />
-                <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
-                  <k-tags-field
-                    v-if="Array.isArray(val)"
-                    :key="'editor-' + key"
-                    :label="'Editor: ' + key"
-                    :help="'Plugin default: ' + (val.join(', ') || '(none)')"
-                    :value="getOverrideOnly(block.blockType, 'editor.' + key) || val"
-                    accept="all"
-                    @input="setEditorArrayFromTags(block.blockType, key, $event, val)"
-                  />
-                  <template v-else-if="isObject(val)">
-                    <k-toggle-field
-                      v-for="(subVal, subKey) in val"
-                      v-if="typeof subVal === 'boolean'"
-                      :key="'editor-' + key + '-' + subKey"
-                      :label="'Editor: ' + key + ' › ' + subKey"
-                      :value="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
-                      :text="['off', 'on']"
-                      @input="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event)"
-                    />
+              <div
+                v-if="getDefault(block.blockType, 'editor') && Object.keys(getDefault(block.blockType, 'editor')).length"
+                class="k-field k-text-field pw-content-field"
+              >
+                <k-toggle-field
+                  :label="false"
+                  :value="true"
+                  text="Editor"
+                />
+
+                <div class="pw-field-rows">
+                  <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
+                    <!-- Array values (marks, nodes, headings) as tags -->
+                    <div v-if="Array.isArray(val)" :key="'editor-' + key" class="pw-editor-row">
+                      <k-tags-field
+                        :label="key"
+                        :help="'Default: ' + (val.join(', ') || '(none)')"
+                        :value="getOverrideOnly(block.blockType, 'editor.' + key) || val"
+                        accept="all"
+                        @input="setEditorArrayFromTags(block.blockType, key, $event, val)"
+                      />
+                    </div>
+                    <!-- Object values (toolbar) as toggles -->
+                    <template v-else-if="isObject(val)">
+                      <div
+                        v-for="(subVal, subKey) in val"
+                        v-if="typeof subVal === 'boolean'"
+                        :key="'editor-' + key + '-' + subKey"
+                        class="pw-editor-row"
+                      >
+                        <k-toggle-field
+                          :label="key + ' › ' + subKey"
+                          :value="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
+                          :text="['off', 'on']"
+                          @input="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event)"
+                        />
+                      </div>
+                    </template>
                   </template>
-                </template>
-              </template>
+                </div>
+              </div>
             </div>
 
             <!-- ===== Category Tabs (layout, style, effects, grid, settings) ===== -->
@@ -727,6 +743,10 @@ export default {
   display: flex;
   flex-direction: column;
   padding-bottom: var(--spacing-6);
+}
+
+.pw-editor-row {
+  padding: var(--spacing-2) var(--spacing-3);
 }
 
 /* Global tabs (Kirby-style) */
