@@ -930,6 +930,19 @@ export default {
             continue;
           }
 
+          // Array fields rendered as toggles (distribution, vertical position)
+          if (Array.isArray(settingsFields[key]) && settingsFields[key].length > 0) {
+            const opts = settingsFields[key];
+            const defaultVal = defaultsFields[key] !== undefined ? defaultsFields[key] : opts[0];
+            fields.push({
+              key,
+              type: 'toggles',
+              defaultValue: defaultVal,
+              options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
+            });
+            continue;
+          }
+
 
           const settingVal = settingsFields[key];
           const defaultVal = defaultsFields[key];
@@ -967,6 +980,16 @@ export default {
         cats.push({ key: catKey, fields });
       }
       return cats;
+    },
+
+    toggleOptionLabel(val) {
+      const prwKey = 'prw.option.' + val;
+      const prwT = this.$t(prwKey);
+      if (prwT && prwT !== prwKey) return prwT;
+      const pwKey = 'pw.option.' + val;
+      const pwT = this.$t(pwKey);
+      if (pwT && pwT !== pwKey) return pwT;
+      return val;
     },
 
     selectOption(blockType, path, value, pluginDefault) {
