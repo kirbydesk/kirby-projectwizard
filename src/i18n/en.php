@@ -29,15 +29,17 @@
 	'prw.option.orderedList' => 'Ordered List',
 
 	/* -------------- Layout fields --------------*/
-	'prw.field.vertical-padding' => 'Vertical Padding',
-	'prw.field.horizontal-padding' => 'Horizontal Padding',
+	'prw.field.padding-top' => 'Padding Top',
+	'prw.field.padding-bottom' => 'Padding Bottom',
+	'prw.field.padding-left' => 'Padding Left',
+	'prw.field.padding-right' => 'Padding Right',
 	'prw.field.radius' => 'Radius',
 
 	/* -------------- Padding options --------------*/
-	'prw.option.top' => 'Top',
-	'prw.option.bottom' => 'Bottom',
-	'prw.option.left' => 'Left',
-	'prw.option.right' => 'Right',
+	'prw.option.top' => 'Padding Top',
+	'prw.option.bottom' => 'Padding Bottom',
+	'prw.option.left' => 'Padding Left',
+	'prw.option.right' => 'Padding Right',
 
 	/* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',

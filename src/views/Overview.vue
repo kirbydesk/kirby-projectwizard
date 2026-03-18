@@ -226,7 +226,7 @@
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('pw.field.' + field.key) || field.key }}</label>
+                          <label class="pw-field-row-label">{{ $t('prw.field.' + field.key) }}</label>
                         </div>
                         <div class="pw-field-row-options">
                           <k-toggles-input
@@ -265,7 +265,7 @@
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('pw.field.' + field.key) || field.key }}</label>
+                          <label class="pw-field-row-label">{{ $t('prw.field.' + field.key) }}</label>
                         </div>
                         <div class="pw-field-row-options">
                           <!-- Boolean: toggle -->
