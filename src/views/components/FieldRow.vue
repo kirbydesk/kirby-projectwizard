@@ -66,28 +66,32 @@ export default {
       return this.$t('pw.option.' + opt);
     },
     handleClick(opt) {
-      this.touched = true;
+      if (!this.touched) {
+        // First click in unmodified state: select only this value, make it default
+        this.touched = true;
+        this.$emit('update:options', [opt]);
+        this.$emit('update:default', opt);
+        return;
+      }
+
       const isActive = this.activeOptions.includes(opt);
       const isDefault = opt === this.currentDefault;
 
       if (!isActive) {
-        // Not active → activate (add to allowed)
+        // Not active → activate (add to allowed, keep original order)
         const updated = this.allOptions.filter(
           o => this.activeOptions.includes(o) || o === opt
         );
         this.$emit('update:options', updated);
       } else if (isActive && !isDefault) {
-        // Active but not default → make default
+        // Active but not default → make default (blue badge)
         this.$emit('update:default', opt);
       } else if (isActive && isDefault) {
         // Active and default → deactivate (but not if it's the last one)
         const updated = this.activeOptions.filter(o => o !== opt);
         if (updated.length === 0) return;
         this.$emit('update:options', updated);
-        // If we removed the default, set first remaining as default
-        if (opt === this.currentDefault) {
-          this.$emit('update:default', updated[0]);
-        }
+        this.$emit('update:default', updated[0]);
       }
     },
   },
