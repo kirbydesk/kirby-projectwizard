@@ -187,7 +187,7 @@
                   <!-- Editor config (marks, nodes, headings, toolbar) -->
                   <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
                     <pw-field-row
-                      v-if="Array.isArray(val)"
+                      v-if="Array.isArray(val) && val.length > 0"
                       :key="'editor-' + key"
                       :uid="block.blockType + '-editor-' + key"
                       :label="key"
