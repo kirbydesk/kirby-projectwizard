@@ -11,7 +11,7 @@
 	'prw.property.marks' => 'Marks',
 	'prw.property.nodes' => 'Nodes',
 	'prw.property.headings' => 'Headings',
-	'prw.property.status' => 'Status',
+	'prw.property.status' => 'Active',
 
 	/* -------------- Options --------------*/
 	'prw.option.on' => 'On',
