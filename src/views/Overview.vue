@@ -144,16 +144,18 @@
                   class="k-field k-text-field pw-content-field"
                   data-object="content-field"
                 >
-                  <!-- Label with enable checkbox -->
+                  <!-- Label with enable checkbox (not for column-block fields) -->
                   <k-toggle-field
+                    v-if="!getColumnBlocks(block.blockType)"
                     :label="false"
                     :value="isFieldEnabled(block.blockType, field)"
                     :text="fieldLabel(field.key)"
                     @input="toggleField(block.blockType, field, $event)"
                   />
+                  <label v-else class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
 
-                  <!-- Property rows (v-show to preserve state) -->
-                  <div v-show="isFieldEnabled(block.blockType, field)" v-if="field.properties.length" class="pw-field-rows">
+                  <!-- Property rows -->
+                  <div v-show="!getColumnBlocks(block.blockType) ? isFieldEnabled(block.blockType, field) : true" v-if="field.properties.length" class="pw-field-rows">
                     <pw-field-row
                       v-for="prop in field.properties"
                       :key="field.key + '-' + prop.key"
@@ -1235,7 +1237,14 @@ export default {
     .pw-field-row div.k-input {
       background-color: var(--color-gray-150);
     }
-  } 
+  }
+}
+
+.pw-column-field-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--spacing-2) var(--spacing-3);
+  display: block;
 }
 
 
