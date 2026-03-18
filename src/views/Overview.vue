@@ -826,6 +826,10 @@ export default {
   outline: none !important;
 }
 
+.pw-field-row-options .k-choice-input.k-toggle-input {
+  padding-left: var(--spacing-2);
+}
+
 .pw-content-field .k-label-text {
   text-transform: capitalize;
 }
