@@ -699,7 +699,7 @@ export default {
         // Skip editor, item-*, and column-blocks — handled separately
         if (key === 'editor' || key === 'column-blocks' || key.startsWith('item-')) continue;
 
-        const defaultVal = defaults[key] || {};
+        const defaultVal = defaults[key] || defaults[key + '-left'] || {};
         const field = { key, enabled: true, properties: [] };
 
         if (this.isObject(settingVal)) {
