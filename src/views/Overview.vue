@@ -914,6 +914,12 @@ export default {
 .pw-field-row-options .k-toggles-input label {
   border-radius: 999px;
   padding: 0 var(--spacing-2);
+  height: 26px;
+  min-height: 0;
+}
+
+.pw-field-row-options .k-toggles-input ul {
+  height: 26px;
 }
 
 .pw-field-row-options.pw-toggle-group {
