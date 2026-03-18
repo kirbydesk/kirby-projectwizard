@@ -28,10 +28,10 @@
 	'prw.option.bulletList' => 'Bullet List',
 	'prw.option.orderedList' => 'Ordered List',
 
-	/* -------------- Radius toggle labels --------------*/
-	'prw.field.radius.top-left' => 'Top Left',
-	'prw.field.radius.top-right' => 'Top Right',
-	'prw.field.radius.bottom-left' => 'Bottom Left',
-	'prw.field.radius.bottom-right' => 'Bottom Right',
+	/* -------------- Radius options --------------*/
+	'prw.option.top-left' => 'Top Left',
+	'prw.option.top-right' => 'Top Right',
+	'prw.option.bottom-left' => 'Bottom Left',
+	'prw.option.bottom-right' => 'Bottom Right',
 
 ];
