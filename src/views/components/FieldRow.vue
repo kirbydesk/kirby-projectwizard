@@ -142,7 +142,7 @@ export default {
   color: var(--color-text);
   cursor: pointer;
   border-radius: var(--rounded);
-  transition: all 0.15s;
+  transition: none;
 }
 
 /* Not active — dimmed */
@@ -167,7 +167,6 @@ export default {
   background: var(--color-gray-300);
   color: var(--color-text);
   border-radius: 999px;
-  padding: var(--spacing-1) var(--spacing-3);
 }
 
 /* Modified state: not active — lower opacity */
