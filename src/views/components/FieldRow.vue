@@ -67,10 +67,9 @@ export default {
     },
     handleClick(opt) {
       if (!this.touched) {
-        // First click in unmodified state: select only this value, make it default
+        // First click in unmodified state: select only this value (grey badge), keep current default
         this.touched = true;
         this.$emit('update:options', [opt]);
-        this.$emit('update:default', opt);
         return;
       }
 
