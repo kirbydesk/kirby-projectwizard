@@ -221,29 +221,22 @@
               <k-headline-field :label="$t('pw.headline.' + cat.key)" />
               <div class="pw-field-block">
                 <template v-for="field in cat.fields">
-                  <!-- Toggles group (e.g. vertical padding with toggles per sub-field) -->
-                  <div v-if="field.type === 'toggles-group'" :key="field.key" class="pw-field-row">
+                  <!-- Toggles field (e.g. padding-top with small/large) -->
+                  <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('prw.field.' + field.key) || field.key }}</label>
+                          <label class="pw-field-row-label">{{ $t('pw.field.' + field.key) || field.key }}</label>
                         </div>
-                        <div class="pw-field-row-options pw-toggles-group">
-                          <div
-                            v-for="sub in field.subFields"
-                            :key="sub.key"
-                            class="pw-toggles-group-item"
-                          >
-                            <span class="pw-toggles-group-label">{{ $t('prw.option.' + sub.label) || sub.label }}</span>
-                            <k-toggles-input
-                              :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, sub.defaultValue)"
-                              :options="sub.options"
-                              :grow="false"
-                              :reset="true"
-                              :required="false"
-                              @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, $event)"
-                            />
-                          </div>
+                        <div class="pw-field-row-options">
+                          <k-toggles-input
+                            :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, field.defaultValue)"
+                            :options="field.options"
+                            :grow="false"
+                            :reset="true"
+                            :required="false"
+                            @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + field.key, $event)"
+                          />
                         </div>
                       </span>
                     </div>
@@ -642,34 +635,17 @@ export default {
             continue;
           }
 
-          // Group padding-top + padding-bottom into vertical-padding
+          // Padding top/bottom as toggles fields
           if (key === 'padding-top' || key === 'padding-bottom') {
-            if (!grouped['vertical-padding']) {
-              grouped['vertical-padding'] = { key: 'vertical-padding', type: 'toggles-group', subFields: [] };
-            }
-            const subLabel = key.replace('padding-', '');
-            grouped['vertical-padding'].subFields.push({
+            const defaultVal = defaultsFields[key] !== undefined ? defaultsFields[key] : 'large';
+            fields.push({
               key,
-              label: subLabel,
-              defaultValue: defaultsFields[key] !== undefined ? defaultsFields[key] : 'large',
+              type: 'toggles',
+              defaultValue: defaultVal,
               options: [
                 { value: 'small', text: 'Small' },
                 { value: 'large', text: 'Large' },
               ],
-            });
-            continue;
-          }
-
-          // Group padding-left + padding-right into horizontal-padding
-          if (key === 'padding-left' || key === 'padding-right') {
-            if (!grouped['horizontal-padding']) {
-              grouped['horizontal-padding'] = { key: 'horizontal-padding', type: 'toggle-group', subFields: [] };
-            }
-            const subLabel = key.replace('padding-', '');
-            grouped['horizontal-padding'].subFields.push({
-              key,
-              label: subLabel,
-              defaultValue: defaultsFields[key] !== undefined ? defaultsFields[key] : false,
             });
             continue;
           }
@@ -927,22 +903,6 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
-}
-
-.pw-toggles-group {
-  display: flex;
-  column-gap: var(--spacing-10);
-}
-
-.pw-toggles-group-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-}
-
-.pw-toggles-group-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-dimmed);
 }
 
 .pw-field-row-options.pw-toggle-group {
