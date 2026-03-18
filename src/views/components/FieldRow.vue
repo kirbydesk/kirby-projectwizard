@@ -134,9 +134,9 @@ export default {
   opacity: 0.35;
 }
 
-/* Active — normal text, no background */
+/* Active — dimmed text, no background */
 .pw-field-row-option.is-active {
-  color: var(--color-text);
+  color: var(--color-text-dimmed);
 }
 
 /* Unmodified state: default is underlined, dimmed */
