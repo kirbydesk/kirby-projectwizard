@@ -701,11 +701,10 @@ export default {
 .pw-field-block {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-6);
 }
 
 .pw-content-field {
-  margin-bottom: var(--spacing-2);
+  margin-bottom: 0;
 }
 
 .pw-content-field .k-toggle-field > .k-input,
@@ -724,7 +723,7 @@ export default {
 .pw-field-rows {
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-1) 0;
+  padding-bottom: var(--spacing-3);
 }
 
 /* Global tabs (Kirby-style) */
