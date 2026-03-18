@@ -777,27 +777,18 @@ export default {
     },
 
     setCategoryOptions(blockType, catKey, fieldKey, field, values) {
-      const updated = Array.isArray(values) ? values : [];
-
-      // Empty array = full reset (all deselected in FieldRow)
-      if (updated.length === 0) {
+      const ordered = field.allOptions.filter(o => values.includes(o));
+      if (JSON.stringify(ordered) === JSON.stringify(field.allOptions)) {
         this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
-        this.deleteNested(this.blockOverrides[blockType] || {}, 'defaults.' + catKey + '.' + fieldKey);
-        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults.' + catKey);
-        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'defaults');
-        this.markDirty(blockType);
-        return;
+      } else {
+        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
       }
-
-      const ordered = field.allOptions.filter(o => updated.includes(o));
-      this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey, ordered);
-
       // Reset default if no longer in allowed list
       const currentDefault = this.getVal(blockType, 'defaults.' + catKey + '.' + fieldKey, field.pluginDefault);
-      if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
+      if (!ordered.includes(currentDefault) && ordered.length) {
         this.setVal(blockType, 'defaults.' + catKey + '.' + fieldKey, ordered[0]);
       }
       this.markDirty(blockType);
