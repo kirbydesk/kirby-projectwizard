@@ -179,13 +179,13 @@
                       :plugin-default="prop.pluginDefault"
                       :enabled="true"
                       :modified="hasOverride(block.blockType, 'settings.fields.content.editor.' + prop.key) || hasOverride(block.blockType, 'defaults.content.editor.' + prop.key)"
-                      @update:options="setActiveOptions(block.blockType, 'editor', prop.key, prop, $event)"
+                      @update:options="setEditorContentOptions(block.blockType, prop.key, prop, $event)"
                       @update:default="selectOption(block.blockType, 'defaults.content.editor.' + prop.key, $event, prop.pluginDefault)"
                     />
                   </template>
 
                   <!-- Editor config (marks, nodes, headings, toolbar) — only if writer mode available -->
-                  <template v-for="row in getEditorConfigRows(block.blockType)">
+                  <template v-if="writerActive[block.blockType] !== false" v-for="row in getEditorConfigRows(block.blockType)">
                     <pw-field-row
                       v-if="row.type === 'array'"
                       :key="'editor-' + row.key"
@@ -309,6 +309,7 @@ export default {
       blockActiveTabs: {},
       dirtyTabs: {},
       snapshots: {},
+      writerActive: {},
     };
   },
   watch: {
@@ -362,13 +363,13 @@ export default {
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : null;
     },
+    setEditorContentOptions(blockType, propKey, prop, values) {
+      this.setActiveOptions(blockType, 'editor', propKey, prop, values);
+      if (propKey === 'mode') {
+        this.$set(this.writerActive, blockType, values.includes('writer'));
+      }
+    },
     getEditorConfigRows(blockType) {
-      const settings = this.getDefault(blockType, 'settings.fields.content') || {};
-      const editor = settings['editor'];
-      if (!editor) return [];
-      const modeOptions = JSON.parse(JSON.stringify(editor['mode'] || []));
-      if (!modeOptions.includes('writer')) return [];
-
       const raw = this.getDefault(blockType, 'editor');
       const editorConfig = JSON.parse(JSON.stringify(raw || {}));
       const rows = [];
