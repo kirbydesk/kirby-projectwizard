@@ -43,14 +43,10 @@ export default {
   },
   methods: {
     propertyLabel(key) {
-      const tKey = 'pw.property.' + key;
-      const translated = this.$t(tKey);
-      return (translated && translated !== tKey) ? translated : key.charAt(0).toUpperCase() + key.slice(1);
+      return this.$t('pw.property.' + key);
     },
     optionLabel(opt) {
-      const key = 'pw.option.' + opt;
-      const translated = this.$t(key);
-      return (translated && translated !== key) ? translated : opt;
+      return this.$t('pw.option.' + opt);
     },
     handleClick(opt) {
       const isActive = this.activeOptions.includes(opt);
