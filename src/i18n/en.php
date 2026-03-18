@@ -14,8 +14,8 @@
 	'prw.property.status' => 'Enabled',
 
 	/* -------------- Options --------------*/
-	'prw.option.on' => 'On',
-	'prw.option.off' => 'Off',
+	'prw.option.enabled' => 'Enabled',
+	'prw.option.disabled' => 'Disabled',
 	'prw.option.h1' => 'H1',
 	'prw.option.h2' => 'H2',
 	'prw.option.h3' => 'H3',
