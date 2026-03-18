@@ -370,11 +370,12 @@ export default {
     isWriterAvailable(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
       const editor = settings['editor'];
-      console.log('isWriterAvailable', blockType, 'editor:', editor);
-      if (!editor || !this.isObject(editor)) return false;
+      if (!editor) return false;
       const modeOptions = editor['mode'];
-      if (!Array.isArray(modeOptions)) return false;
-      return modeOptions.includes('writer');
+      if (!modeOptions) return false;
+      // Handle Vue 2 reactive arrays
+      const modes = Array.isArray(modeOptions) ? modeOptions : Object.values(modeOptions);
+      return modes.includes('writer');
     },
     getEditorField(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
