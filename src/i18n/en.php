@@ -5,6 +5,9 @@
 	'prw.label.item' => 'Item',
 	'prw.tab.settings' => 'Settings',
 	'prw.tab.colors' => 'Colors',
+	'prw.tab.elements' => 'Elements',
+	'prw.tab.header' => 'Header',
+	'prw.tab.footer' => 'Footer',
 
 	/* -------------- Properties --------------*/
 	'prw.property.align' => 'Alignment',

@@ -35,30 +35,53 @@
 
         <!-- ==================== Global Settings ==================== -->
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
-          <h2 class="pw-wizard-panel-title">Global Settings</h2>
 
-          <!-- Kirby-style tab navigation -->
-          <nav class="pw-wizard-global-tabs">
-            <button
-              v-for="tab in globalTabs"
-              :key="tab.key"
-              class="pw-wizard-global-tab"
-              :class="{ 'is-active': globalActiveTab === tab.key }"
-              @click="globalActiveTab = tab.key"
-            >
-              {{ tab.label }}
-            </button>
+          <!-- Kirby-native tab navigation -->
+          <nav class="k-tabs k-model-tabs">
+            <k-button
+              :text="$t('prw.tab.elements')"
+              icon="dashboard"
+              class="k-tabs-button"
+              :aria-current="globalActiveTab === 'elements' ? 'true' : null"
+              data-has-icon="true"
+              data-has-text="true"
+              data-variant="dimmed"
+              @click="globalActiveTab = 'elements'"
+            />
+            <k-button
+              :text="$t('prw.tab.colors')"
+              icon="palette"
+              class="k-tabs-button"
+              :aria-current="globalActiveTab === 'colors' ? 'true' : null"
+              data-has-icon="true"
+              data-has-text="true"
+              data-variant="dimmed"
+              @click="globalActiveTab = 'colors'"
+            />
+            <k-button
+              :text="$t('prw.tab.header')"
+              icon="header"
+              class="k-tabs-button"
+              :aria-current="globalActiveTab === 'header' ? 'true' : null"
+              data-has-icon="true"
+              data-has-text="true"
+              data-variant="dimmed"
+              @click="globalActiveTab = 'header'"
+            />
+            <k-button
+              :text="$t('prw.tab.footer')"
+              icon="footer"
+              class="k-tabs-button"
+              :aria-current="globalActiveTab === 'footer' ? 'true' : null"
+              data-has-icon="true"
+              data-has-text="true"
+              data-variant="dimmed"
+              @click="globalActiveTab = 'footer'"
+            />
           </nav>
 
-          <!-- Colors -->
-          <div v-if="globalActiveTab === 'colors'" class="pw-wizard-global-content">
-            <p class="pw-wizard-hint">Color themes and scheme configuration.</p>
-          </div>
-
           <!-- Elements -->
-          <div v-if="globalActiveTab === 'elements'" class="pw-wizard-global-content">
-            <p class="pw-wizard-hint">Global element settings (buttons, links, icons, etc.).</p>
-
+          <div v-show="globalActiveTab === 'elements'" class="pw-wizard-global-content">
             <fieldset class="pw-wizard-fieldgroup">
               <h3 class="pw-wizard-fieldgroup-title">Active Blocks</h3>
               <p class="pw-wizard-hint">Select which blocks are available in the content editor.</p>
@@ -80,14 +103,19 @@
             </fieldset>
           </div>
 
+          <!-- Colors -->
+          <div v-show="globalActiveTab === 'colors'" class="pw-wizard-global-content">
+            <p class="pw-wizard-hint">Color themes and scheme configuration coming soon.</p>
+          </div>
+
           <!-- Header -->
-          <div v-if="globalActiveTab === 'header'" class="pw-wizard-global-content">
-            <p class="pw-wizard-hint">Header and navigation configuration.</p>
+          <div v-show="globalActiveTab === 'header'" class="pw-wizard-global-content">
+            <p class="pw-wizard-hint">Header and navigation configuration coming soon.</p>
           </div>
 
           <!-- Footer -->
-          <div v-if="globalActiveTab === 'footer'" class="pw-wizard-global-content">
-            <p class="pw-wizard-hint">Footer configuration.</p>
+          <div v-show="globalActiveTab === 'footer'" class="pw-wizard-global-content">
+            <p class="pw-wizard-hint">Footer configuration coming soon.</p>
           </div>
 
         </div>
@@ -475,13 +503,7 @@ export default {
       blocks: [],
       activeBlocks: [],
       activeTab: 'global',
-      globalActiveTab: 'colors',
-      globalTabs: [
-        { key: 'colors', label: 'Colors' },
-        { key: 'elements', label: 'Elements' },
-        { key: 'header', label: 'Header' },
-        { key: 'footer', label: 'Footer' },
-      ],
+      globalActiveTab: 'elements',
       globalDirty: false,
       blockConfigs: {},
       blockOverrides: {},
