@@ -145,13 +145,22 @@
                   data-object="content-field"
                 >
                   <label class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
-                  <k-toggle-field
-                    v-if="!getColumnBlocks(block.blockType)"
-                    :label="false"
-                    :value="isFieldEnabled(block.blockType, field)"
-                    :text="false"
-                    @input="toggleField(block.blockType, field, $event)"
-                  />
+                  <div v-if="!getColumnBlocks(block.blockType)" class="pw-field-row">
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
+                        </div>
+                        <div class="pw-field-row-options">
+                          <k-toggle-input
+                            :value="isFieldEnabled(block.blockType, field)"
+                            :text="[$t('prw.option.off'), $t('prw.option.on')]"
+                            @input="toggleField(block.blockType, field, $event)"
+                          />
+                        </div>
+                      </span>
+                    </div>
+                  </div>
 
                   <!-- Property rows -->
                   <div v-show="!getColumnBlocks(block.blockType) ? isFieldEnabled(block.blockType, field) : true" v-if="field.properties.length" class="pw-field-rows">
@@ -180,12 +189,22 @@
                 data-object="content-field"
               >
                 <label class="pw-column-field-label">{{ fieldLabel('editor') }}</label>
-                <k-toggle-field
-                  :label="false"
-                  :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
-                  :text="false"
-                  @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
-                />
+                <div class="pw-field-row">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('prw.property.status') }}</label>
+                      </div>
+                      <div class="pw-field-row-options">
+                        <k-toggle-input
+                          :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
+                          :text="[$t('prw.option.off'), $t('prw.option.on')]"
+                          @input="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event)"
+                        />
+                      </div>
+                    </span>
+                  </div>
+                </div>
 
                 <div v-show="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })" class="pw-field-rows">
                   <!-- Editor content settings (mode, align, sizes) as FieldRows -->
