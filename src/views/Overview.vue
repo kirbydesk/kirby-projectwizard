@@ -1079,7 +1079,7 @@ export default {
 
 [data-object="content-field"] .pw-field-rows {
   padding-bottom: var(--spacing-4);
-  margin-top: 0;
+  margin-top: -1px;
 }
 
 
