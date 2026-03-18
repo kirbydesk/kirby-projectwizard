@@ -5,14 +5,16 @@
   >
     <div class="k-input" data-type="text">
       <span class="k-input-element pw-field-row-inner">
-        <input
-          :id="'pw-prop-' + uid"
-          type="checkbox"
-          class="pw-field-row-check"
-          :checked="active"
-          @change="toggleActive($event.target.checked)"
-        />
-        <label class="pw-field-row-label" :for="'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
+        <div class="pw-field-row-label-col">
+          <input
+            :id="'pw-prop-' + uid"
+            type="checkbox"
+            class="pw-field-row-check"
+            :checked="active"
+            @change="toggleActive($event.target.checked)"
+          />
+          <label class="pw-field-row-label" :for="'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
+        </div>
         <div v-if="active" class="pw-field-row-options">
           <button
             v-for="opt in allOptions"
@@ -137,14 +139,19 @@ export default {
 
 .pw-field-row-inner {
   display: grid;
-  grid-template-columns: auto 140px 1fr;
+  grid-template-columns: 160px 1fr;
   align-items: center;
-  gap: 0 10px;
   padding: 0 var(--spacing-3);
 }
 
 .pw-field-row.is-disabled {
   display: none;
+}
+
+.pw-field-row-label-col {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .pw-field-row-check {
