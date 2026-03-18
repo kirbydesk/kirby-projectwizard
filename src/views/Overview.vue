@@ -133,25 +133,23 @@
                     @input="toggleField(block.blockType, field, $event)"
                   />
 
-                  <template v-if="isFieldEnabled(block.blockType, field)">
-                    <!-- Property rows -->
-                    <div v-if="field.properties.length" class="pw-field-rows">
-                      <pw-field-row
-                        v-for="prop in field.properties"
-                        :key="field.key + '-' + prop.key"
-                        :uid="block.blockType + '-' + field.key + '-' + prop.key"
-                        :label="prop.key"
-                        :all-options="prop.allOptions"
-                        :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
-                        :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
-                        :plugin-default="prop.pluginDefault"
-                        :enabled="true"
-                        :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
-                        @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
-                        @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
-                      />
-                    </div>
-                  </template>
+                  <!-- Property rows (v-show to preserve state) -->
+                  <div v-show="isFieldEnabled(block.blockType, field)" v-if="field.properties.length" class="pw-field-rows">
+                    <pw-field-row
+                      v-for="prop in field.properties"
+                      :key="field.key + '-' + prop.key"
+                      :uid="block.blockType + '-' + field.key + '-' + prop.key"
+                      :label="prop.key"
+                      :all-options="prop.allOptions"
+                      :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"
+                      :current-default="getVal(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, prop.pluginDefault)"
+                      :plugin-default="prop.pluginDefault"
+                      :enabled="true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.' + field.key + '.' + prop.key) || hasOverride(block.blockType, 'defaults.content.' + field.key + '.' + prop.key)"
+                      @update:options="setActiveOptions(block.blockType, field.key, prop.key, prop, $event)"
+                      @update:default="selectOption(block.blockType, 'defaults.content.' + field.key + '.' + prop.key, $event, prop.pluginDefault)"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -408,7 +406,10 @@ export default {
      * Check if a content field is enabled.
      */
     isFieldEnabled(blockType, field) {
-      // Check override first
+      // Check _disabled flag
+      const disabled = this.getOverrideOnly(blockType, 'settings.fields.content.' + field.key + '._disabled');
+      if (disabled === true) return false;
+      // Check override
       const override = this.getOverrideOnly(blockType, 'settings.fields.content.' + field.key);
       if (override === false) return false;
       if (override === true || this.isObject(override)) return true;
@@ -423,14 +424,16 @@ export default {
       if (!this.blockOverrides[blockType] || Array.isArray(this.blockOverrides[blockType])) {
         this.$set(this.blockOverrides, blockType, {});
       }
+      const path = 'settings.fields.content.' + field.key;
       if (enabled) {
-        this.deleteNested(this.blockOverrides[blockType], 'settings.fields.content.' + field.key);
-        // Clean up empty parent objects
+        // Remove the _disabled flag, keep other overrides
+        this.deleteNested(this.blockOverrides[blockType], path + '._disabled');
+        this.cleanEmpty(this.blockOverrides[blockType], path);
         this.cleanEmpty(this.blockOverrides[blockType], 'settings.fields.content');
         this.cleanEmpty(this.blockOverrides[blockType], 'settings.fields');
         this.cleanEmpty(this.blockOverrides[blockType], 'settings');
       } else {
-        this.setVal(blockType, 'settings.fields.content.' + field.key, false);
+        this.setVal(blockType, path + '._disabled', true);
       }
       this.markDirty(blockType);
     },
