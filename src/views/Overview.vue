@@ -962,7 +962,7 @@ export default {
 }
 
 .pw-content-field {
-  margin-bottom: 0;
+  margin-bottom: var(--spacing-3);
 }
 
 .pw-wizard-section {
