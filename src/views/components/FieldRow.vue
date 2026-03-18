@@ -14,7 +14,7 @@
             :checked="active"
             @change="toggleActive($event.target.checked)"
           />
-          <label class="pw-field-row-label" :for="noCheckbox ? null : 'pw-prop-' + uid">{{ noCheckbox ? label : propertyLabel(label) }}</label>
+          <label class="pw-field-row-label" :for="noCheckbox ? null : 'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
         </div>
         <div v-if="active" class="pw-field-row-options">
           <button
