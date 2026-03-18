@@ -91,7 +91,6 @@ export default {
         // Blau → Aus: deactivate
         this.defaultSet = false;
         const updated = this.activeOptions.filter(o => o !== opt);
-        if (updated.length === 0) return;
         this.$emit('update:options', updated);
       }
     },
