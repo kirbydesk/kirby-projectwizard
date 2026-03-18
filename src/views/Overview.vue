@@ -909,6 +909,7 @@ export default {
 .pw-field-row-options .k-toggles-input ul {
   border-radius: 999px;
   overflow: hidden;
+  background: none !important;
 }
 
 .pw-field-row-options .k-toggles-input label {
