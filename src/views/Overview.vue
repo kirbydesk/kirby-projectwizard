@@ -961,14 +961,8 @@ export default {
   flex-direction: column;
 }
 
-.pw-section-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
 .pw-content-field {
-  margin-bottom: 0;
+  margin-bottom: var(--spacing-6);
 }
 
 .pw-wizard-section {
