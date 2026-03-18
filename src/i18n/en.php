@@ -1,37 +1,37 @@
 <?php return [
 
 	/* -------------- Labels --------------*/
-	'pw.wizard.title' => 'Project Wizard',
+	'prw.wizard.title' => 'Project Wizard',
 
 	/* -------------- Properties --------------*/
-	'pw.property.align' => 'Alignment',
-	'pw.property.level' => 'Level',
-	'pw.property.sizes' => 'Sizes',
-	'pw.property.mode' => 'Editor Mode',
-	'pw.property.marks' => 'Marks',
-	'pw.property.nodes' => 'Nodes',
-	'pw.property.headings' => 'Headings',
+	'prw.property.align' => 'Alignment',
+	'prw.property.level' => 'Level',
+	'prw.property.sizes' => 'Sizes',
+	'prw.property.mode' => 'Editor Mode',
+	'prw.property.marks' => 'Marks',
+	'prw.property.nodes' => 'Nodes',
+	'prw.property.headings' => 'Headings',
 
 	/* -------------- Options --------------*/
-	'pw.option.h1' => 'H1',
-	'pw.option.h2' => 'H2',
-	'pw.option.h3' => 'H3',
-	'pw.option.h4' => 'H4',
-	'pw.option.bold' => 'Bold',
-	'pw.option.italic' => 'Italic',
-	'pw.option.underline' => 'Underline',
-	'pw.option.strike' => 'Strike',
-	'pw.option.link' => 'Link',
-	'pw.option.|' => '|',
-	'pw.option.copilot' => 'Copilot',
-	'pw.option.copilot-suggestions' => 'Suggestions',
-	'pw.option.bulletList' => 'Bullet List',
-	'pw.option.orderedList' => 'Ordered List',
+	'prw.option.h1' => 'H1',
+	'prw.option.h2' => 'H2',
+	'prw.option.h3' => 'H3',
+	'prw.option.h4' => 'H4',
+	'prw.option.bold' => 'Bold',
+	'prw.option.italic' => 'Italic',
+	'prw.option.underline' => 'Underline',
+	'prw.option.strike' => 'Strike',
+	'prw.option.link' => 'Link',
+	'prw.option.|' => '|',
+	'prw.option.copilot' => 'Copilot',
+	'prw.option.copilot-suggestions' => 'Suggestions',
+	'prw.option.bulletList' => 'Bullet List',
+	'prw.option.orderedList' => 'Ordered List',
 
 	/* -------------- Radius toggle labels --------------*/
-	'pw.field.radius.top-left' => 'Top Left',
-	'pw.field.radius.top-right' => 'Top Right',
-	'pw.field.radius.bottom-left' => 'Bottom Left',
-	'pw.field.radius.bottom-right' => 'Bottom Right',
+	'prw.field.radius.top-left' => 'Top Left',
+	'prw.field.radius.top-right' => 'Top Right',
+	'prw.field.radius.bottom-left' => 'Bottom Left',
+	'prw.field.radius.bottom-right' => 'Bottom Right',
 
 ];

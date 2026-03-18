@@ -238,7 +238,7 @@
                               :value="getVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, sub.defaultValue)"
                               @input="setVal(block.blockType, 'defaults.' + cat.key + '.' + sub.key, $event)"
                             />
-                            <span class="pw-toggle-group-label">{{ sub.label }}</span>
+                            <span class="pw-toggle-group-label">{{ $t('prw.field.radius.' + sub.label) || sub.label }}</span>
                           </label>
                         </div>
                       </span>

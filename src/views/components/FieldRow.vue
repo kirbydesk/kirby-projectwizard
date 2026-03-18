@@ -69,12 +69,12 @@ export default {
       }
     },
     propertyLabel(key) {
-      const tKey = 'pw.property.' + key;
+      const tKey = 'prw.property.' + key;
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : key;
     },
     optionLabel(opt) {
-      const tKey = 'pw.option.' + opt;
+      const tKey = 'prw.option.' + opt;
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : opt;
     },
