@@ -113,6 +113,7 @@ export default {
 .pw-field-row-inner {
   display: flex;
   align-items: center;
+  padding: 0 var(--spacing-3);
 }
 
 .pw-field-row.is-disabled {
