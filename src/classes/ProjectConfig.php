@@ -39,7 +39,6 @@ class ProjectConfig
 				'plugin'   => basename($dir),
 				'icon'     => $icon,
 				'settings' => self::readJson($configDir . '/settings.json'),
-				'defaults' => self::readJson($configDir . '/defaults.json'),
 				'editor'   => self::readJson($configDir . '/editor.json'),
 			];
 		}
@@ -48,43 +47,34 @@ class ProjectConfig
 	}
 
 	/**
-	 * Load overrides for a single block from its directory.
+	 * Load overrides for a single block from the central overrides.json.
 	 */
 	public static function loadBlockOverrides(string $blockType): array
 	{
-		$dir = self::blockDir($blockType);
-		$overrides = [];
-
-		$settings = self::readJson($dir . '/settings.json');
-		$defaults = self::readJson($dir . '/defaults.json');
-		$editor   = self::readJson($dir . '/editor.json');
-
-		if (!empty($settings)) $overrides['settings'] = $settings;
-		if (!empty($defaults)) $overrides['defaults'] = $defaults;
-		if (!empty($editor))   $overrides['editor']   = $editor;
-
-		return $overrides;
+		$allOverrides = self::readJson(self::overridesFile());
+		return $allOverrides[$blockType] ?? [];
 	}
 
 	/**
-	 * Save overrides for a single block to its directory.
+	 * Save overrides for a single block to the central overrides.json.
 	 */
 	public static function saveBlockOverrides(string $blockType, array $config): void
 	{
-		$dir = self::blockDir($blockType);
+		$path = self::overridesFile();
+		$allOverrides = self::readJson($path);
 
-		$settings = $config['settings'] ?? [];
-		$defaults = $config['defaults'] ?? [];
-		$editor   = $config['editor']   ?? [];
+		if (empty($config)) {
+			unset($allOverrides[$blockType]);
+		} else {
+			$allOverrides[$blockType] = $config;
+		}
 
-		// Write files that have content, remove files that don't
-		self::writeOrRemoveJson($dir . '/settings.json', $settings);
-		self::writeOrRemoveJson($dir . '/defaults.json', $defaults);
-		self::writeOrRemoveJson($dir . '/editor.json', $editor);
-
-		// Remove directory if empty
-		if (is_dir($dir) && count(glob($dir . '/*')) === 0) {
-			rmdir($dir);
+		if (empty($allOverrides)) {
+			if (file_exists($path)) unlink($path);
+		} else {
+			$dir = dirname($path);
+			if (!is_dir($dir)) mkdir($dir, 0755, true);
+			file_put_contents($path, json_encode($allOverrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 		}
 	}
 
@@ -98,7 +88,6 @@ class ProjectConfig
 		$pluginDefaults = $detected[$blockType] ?? [
 			'plugin'   => null,
 			'settings' => [],
-			'defaults' => [],
 			'editor'   => [],
 		];
 
@@ -109,7 +98,6 @@ class ProjectConfig
 			'plugin'    => $pluginDefaults['plugin'],
 			'defaults'  => [
 				'settings' => $pluginDefaults['settings'],
-				'defaults' => $pluginDefaults['defaults'],
 				'editor'   => $pluginDefaults['editor'],
 			],
 			'overrides' => $blockOverrides,
@@ -154,7 +142,7 @@ class ProjectConfig
 
 	/**
 	 * Return the full config in the format config.php expects.
-	 * Assembles from blocks.json + individual block directories.
+	 * Assembles from blocks.json + central overrides.json.
 	 */
 	public static function mergedConfig(): array
 	{
@@ -162,14 +150,10 @@ class ProjectConfig
 		$config['blocks'] = self::activeBlocks();
 		$config['kirbyblocks'] = [];
 
-		$blocksDir = self::blocksDir();
-		if (is_dir($blocksDir)) {
-			foreach (glob($blocksDir . '/*', GLOB_ONLYDIR) as $dir) {
-				$blockType = basename($dir);
-				$overrides = self::loadBlockOverrides($blockType);
-				if (!empty($overrides)) {
-					$config['kirbyblocks'][$blockType] = $overrides;
-				}
+		$allOverrides = self::readJson(self::overridesFile());
+		foreach ($allOverrides as $blockType => $overrides) {
+			if (!empty($overrides)) {
+				$config['kirbyblocks'][$blockType] = $overrides;
 			}
 		}
 
@@ -185,10 +169,6 @@ class ProjectConfig
 			'settings' => self::deepMerge(
 				$pluginDefaults['settings'] ?? [],
 				$overrides['settings'] ?? []
-			),
-			'defaults' => self::deepMerge(
-				$pluginDefaults['defaults'] ?? [],
-				$overrides['defaults'] ?? []
 			),
 			'editor' => self::deepMerge(
 				$pluginDefaults['editor'] ?? [],
@@ -213,30 +193,14 @@ class ProjectConfig
 		return $merged;
 	}
 
-	private static function writeOrRemoveJson(string $path, array $data): void
-	{
-		if (empty($data)) {
-			if (file_exists($path)) unlink($path);
-			return;
-		}
-		$dir = dirname($path);
-		if (!is_dir($dir)) mkdir($dir, 0755, true);
-		file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-	}
-
 	private static function configDir(): string
 	{
 		return kirby()->root('site') . '/config/projectwizard';
 	}
 
-	private static function blocksDir(): string
+	private static function overridesFile(): string
 	{
-		return self::configDir() . '/blocks';
-	}
-
-	private static function blockDir(string $blockType): string
-	{
-		return self::blocksDir() . '/' . $blockType;
+		return self::configDir() . '/overrides.json';
 	}
 
 	private static function readJson(string $path): array

@@ -19,7 +19,6 @@ return [
 						'active'     => in_array($blockType, $activeBlocks),
 						'customized' => !empty($blockOverrides),
 						'settings'   => $info['settings'],
-						'defaults'   => $info['defaults'],
 						'editor'     => $info['editor'],
 					];
 				}
