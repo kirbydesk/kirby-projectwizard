@@ -164,9 +164,10 @@ export default {
 
 /* Modified state: active options get grey pilled badge */
 .pw-field-row.is-modified .pw-field-row-option.is-active {
-  background: var(--color-gray-200);
+  background: var(--color-gray-300);
   color: var(--color-text);
   border-radius: 999px;
+  padding: var(--spacing-1) var(--spacing-3);
 }
 
 /* Modified state: not active — lower opacity */
