@@ -128,7 +128,7 @@ export default {
 
 .pw-field-row-label {
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 400;
   min-width: 100px;
   margin-left: 10px;
   cursor: pointer;
