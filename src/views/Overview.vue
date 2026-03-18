@@ -156,6 +156,7 @@
                       <pw-field-row
                         v-for="prop in field.properties"
                         :key="field.key + '-' + prop.key"
+                        :uid="block.blockType + '-' + field.key + '-' + prop.key"
                         :label="prop.key"
                         :all-options="prop.allOptions"
                         :active-options="getActiveOptions(block.blockType, field.key, prop.key, prop)"

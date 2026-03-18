@@ -4,13 +4,13 @@
     :class="{ 'is-disabled': !enabled, 'is-modified': modified }"
   >
     <input
-      :id="'pw-prop-' + label"
+      :id="'pw-prop-' + uid"
       type="checkbox"
       class="pw-field-row-check"
       :checked="enabled"
       @change="$emit('toggle', $event.target.checked)"
     />
-    <label class="pw-field-row-label" :for="'pw-prop-' + label">{{ propertyLabel(label) }}</label>
+    <label class="pw-field-row-label" :for="'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
     <div v-if="enabled" class="pw-field-row-options">
       <button
         v-for="opt in allOptions"
@@ -33,6 +33,7 @@
 <script>
 export default {
   props: {
+    uid: String,
     label: String,
     allOptions: Array,
     activeOptions: Array,
