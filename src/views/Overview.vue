@@ -102,21 +102,8 @@
 
           <div v-if="blockConfigs[block.blockType]" class="pw-wizard-block-sections">
 
-            <!-- Block tab navigation -->
-            <nav class="pw-wizard-global-tabs">
-              <button
-                v-for="tab in getBlockTabs(block.blockType)"
-                :key="tab"
-                class="pw-wizard-global-tab"
-                :class="{ 'is-active': getBlockActiveTab(block.blockType) === tab }"
-                @click="setBlockActiveTab(block.blockType, tab)"
-              >
-                {{ tab }}
-              </button>
-            </nav>
-
-            <!-- ===== Content Tab ===== -->
-            <div v-if="getBlockActiveTab(block.blockType) === 'content'" class="pw-wizard-tab-content">
+            <!-- ===== Content ===== -->
+            <div class="pw-wizard-tab-content">
 
               <!-- Content Fields -->
               <k-headline-field label="Content" />
@@ -225,13 +212,13 @@
               </div>
             </div>
 
-            <!-- ===== Category Tabs (layout, style, effects, grid, settings) ===== -->
+            <!-- ===== Categories (layout, style, effects, grid, settings) ===== -->
             <div
               v-for="cat in getCategories(block.blockType)"
               :key="cat.key"
-              v-show="getBlockActiveTab(block.blockType) === cat.key"
               class="pw-wizard-tab-content"
             >
+              <k-headline-field :label="cat.key" />
               <div class="pw-wizard-fields">
                 <template v-for="field in cat.fields">
 
