@@ -185,38 +185,33 @@
                   </template>
 
                   <!-- Editor config (marks, nodes, headings, toolbar) — only if writer mode available -->
-                  <template v-if="isWriterAvailable(block.blockType)">
-                  <template v-for="(val, key) in getDefault(block.blockType, 'editor')">
+                  <template v-for="row in getEditorConfigRows(block.blockType)">
                     <pw-field-row
-                      v-if="val && val.length > 0 && typeof val !== 'string'"
-                      :key="'editor-' + key"
-                      :uid="block.blockType + '-editor-' + key"
-                      :label="key"
-                      :all-options="val"
-                      :active-options="getOverrideOnly(block.blockType, 'editor.' + key) || val"
+                      v-if="row.type === 'array'"
+                      :key="'editor-' + row.key"
+                      :uid="block.blockType + '-editor-' + row.key"
+                      :label="row.key"
+                      :all-options="row.values"
+                      :active-options="getOverrideOnly(block.blockType, 'editor.' + row.key) || row.values"
                       current-default=""
                       plugin-default=""
                       :enabled="true"
-                      :modified="hasOverride(block.blockType, 'editor.' + key)"
+                      :modified="hasOverride(block.blockType, 'editor.' + row.key)"
                       :no-default="true"
-                      @update:options="setEditorArrayDirect(block.blockType, key, $event, val)"
+                      @update:options="setEditorArrayDirect(block.blockType, row.key, $event, row.values)"
                     />
-                    <template v-else-if="isObject(val)">
-                      <div
-                        v-for="(subVal, subKey) in val"
-                        v-if="typeof subVal === 'boolean'"
-                        :key="'editor-' + key + '-' + subKey"
-                        class="pw-editor-row"
-                      >
-                        <k-toggle-field
-                          :label="key + ' › ' + subKey"
-                          :value="getVal(block.blockType, 'editor.' + key + '.' + subKey, subVal)"
-                          :text="['off', 'on']"
-                          @input="setVal(block.blockType, 'editor.' + key + '.' + subKey, $event)"
-                        />
-                      </div>
-                    </template>
-                  </template>
+                    <div
+                      v-if="row.type === 'toggle'"
+                      :key="'editor-' + row.key"
+                      class="pw-editor-row"
+                    >
+                      <k-toggle-field
+                        :label="row.key"
+                        :value="getVal(block.blockType, 'editor.' + row.path, row.value)"
+                        :text="['off', 'on']"
+                        @input="setVal(block.blockType, 'editor.' + row.path, $event)"
+                      />
+                    </div>
                   </template>
                 </div>
               </div>
@@ -367,14 +362,27 @@ export default {
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : null;
     },
-    isWriterAvailable(blockType) {
+    getEditorConfigRows(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
       const editor = settings['editor'];
-      if (!editor) return false;
-      const modeOptions = editor['mode'];
-      if (!modeOptions) return false;
-      const modes = JSON.parse(JSON.stringify(modeOptions));
-      return Array.isArray(modes) && modes.includes('writer');
+      if (!editor) return [];
+      const modeOptions = JSON.parse(JSON.stringify(editor['mode'] || []));
+      if (!modeOptions.includes('writer')) return [];
+
+      const editorConfig = JSON.parse(JSON.stringify(this.getDefault(blockType, 'editor') || {}));
+      const rows = [];
+      for (const [key, val] of Object.entries(editorConfig)) {
+        if (Array.isArray(val) && val.length > 0) {
+          rows.push({ key, type: 'array', values: val });
+        } else if (val && typeof val === 'object') {
+          for (const [subKey, subVal] of Object.entries(val)) {
+            if (typeof subVal === 'boolean') {
+              rows.push({ key: key + ' › ' + subKey, type: 'toggle', path: key + '.' + subKey, value: subVal });
+            }
+          }
+        }
+      }
+      return rows;
     },
     getEditorField(blockType) {
       const settings = this.getDefault(blockType, 'settings.fields.content') || {};
