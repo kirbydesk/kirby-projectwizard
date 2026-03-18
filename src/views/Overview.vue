@@ -872,7 +872,7 @@ export default {
 
 .pw-toggle-group {
   display: flex;
-  gap: var(--spacing-10);
+  column-gap: var(--spacing-10);
 }
 
 .pw-category-select,
