@@ -134,18 +134,7 @@
                   />
 
                   <template v-if="isFieldEnabled(block.blockType, field)">
-                    <!-- Input field with field name as placeholder -->
-                    <div class="k-input" data-type="text">
-                      <span class="k-input-element">
-                        <input
-                          type="text"
-                          class="k-string-input k-text-input"
-                          :placeholder="fieldPlaceholder(field.key)"
-                        />
-                      </span>
-                    </div>
-
-                    <!-- Property rows below the input -->
+                    <!-- Property rows -->
                     <div v-if="field.properties.length" class="pw-field-rows">
                       <pw-field-row
                         v-for="prop in field.properties"
