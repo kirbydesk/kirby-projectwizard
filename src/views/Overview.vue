@@ -498,12 +498,14 @@ export default {
                 ? defaultVal[propKey]
                 : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
             }
-            field.properties.push({
-              key: propKey,
-              allOptions,
-              options: allOptions,
-              pluginDefault: String(pluginDefault),
-            });
+            if (allOptions.length > 1) {
+              field.properties.push({
+                key: propKey,
+                allOptions,
+                options: allOptions,
+                pluginDefault: String(pluginDefault),
+              });
+            }
           }
         } else if (typeof settingVal === 'boolean') {
           field.enabled = settingVal;
@@ -556,12 +558,14 @@ export default {
               ? defaultVal[propKey]
               : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
           }
-          field.properties.push({
-            key: propKey,
-            allOptions,
-            options: allOptions,
-            pluginDefault: String(pluginDefault),
-          });
+          if (allOptions.length > 1) {
+            field.properties.push({
+              key: propKey,
+              allOptions,
+              options: allOptions,
+              pluginDefault: String(pluginDefault),
+            });
+          }
         }
       }
 
@@ -637,12 +641,14 @@ export default {
                 ? defaultVal[propKey]
                 : (defaultVal[propKey.replace(/s$/, '')] !== undefined ? defaultVal[propKey.replace(/s$/, '')] : '');
             }
-            field.properties.push({
-              key: propKey,
-              allOptions,
-              options: allOptions,
-              pluginDefault: String(pluginDefault),
-            });
+            if (allOptions.length > 1) {
+              field.properties.push({
+                key: propKey,
+                allOptions,
+                options: allOptions,
+                pluginDefault: String(pluginDefault),
+              });
+            }
           }
         } else if (typeof settingVal === 'boolean') {
           field.enabled = settingVal;
