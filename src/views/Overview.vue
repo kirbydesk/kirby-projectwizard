@@ -1092,8 +1092,7 @@ export default {
   border-bottom-color: var(--color-black);
 }
 
-.pw-wizard-global-content,
-.pw-wizard-tab-content {
+.pw-wizard-global-content {
   min-height: 200px;
 }
 
