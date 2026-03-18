@@ -29,7 +29,7 @@
 	'prw.option.orderedList' => 'Ordered List',
 
 	/* -------------- Column Blocks --------------*/
-	'prw.headline.columnBlocks' => 'Column Blocks',
+	'prw.headline.columnBlocks' => 'Allowed Blocks',
 	'prw.option.multicolumnheadline' => 'Headline',
 	'prw.option.multicolumntagline' => 'Tagline',
 	'prw.option.multicolumntext' => 'Text',

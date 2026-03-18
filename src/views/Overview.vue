@@ -456,6 +456,18 @@ export default {
   },
   async created() {
     await this.load();
+    this._onKeydown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (this.dirtyTabs[this.activeTab]) {
+          this.saveCurrentView();
+        }
+      }
+    };
+    window.addEventListener('keydown', this._onKeydown);
+  },
+  beforeDestroy() {
+    window.removeEventListener('keydown', this._onKeydown);
   },
   methods: {
     async load() {
