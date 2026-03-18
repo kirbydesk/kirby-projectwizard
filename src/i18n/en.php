@@ -62,6 +62,7 @@
 
 	/* -------------- Style fields --------------*/
 	'prw.property.theme' => 'Theme',
+	'prw.field.theme' => 'Theme',
 
 	/* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
