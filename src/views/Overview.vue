@@ -126,18 +126,12 @@
                   class="k-field k-text-field pw-content-field"
                 >
                   <!-- Label with enable checkbox -->
-                  <header class="k-field-header" style="display: flex; align-items: center; overflow: visible;">
-                    <input
-                      :id="'pw-field-' + block.blockType + '-' + field.key"
-                      type="checkbox"
-                      :checked="isFieldEnabled(block.blockType, field)"
-                      class="pw-field-enable-check"
-                      @change="toggleField(block.blockType, field, $event.target.checked)"
-                    />
-                    <label class="k-label k-field-label" :for="'pw-field-' + block.blockType + '-' + field.key" style="flex: 1 1 0%; cursor: pointer;">
-                      <span class="k-label-text">{{ fieldLabel(field.key) }}</span>
-                    </label>
-                  </header>
+                  <k-toggle-field
+                    :label="fieldLabel(field.key)"
+                    :value="isFieldEnabled(block.blockType, field)"
+                    :text="['off', 'on']"
+                    @input="toggleField(block.blockType, field, $event)"
+                  />
 
                   <template v-if="isFieldEnabled(block.blockType, field)">
                     <!-- Input field with field name as placeholder -->
@@ -729,16 +723,6 @@ export default {
   text-transform: capitalize;
 }
 
-.pw-field-enable-check {
-  accent-color: var(--color-black);
-  cursor: pointer;
-  margin-left: 5px;
-  margin-right: 10px;
-}
-
-.pw-content-field .k-field-header {
-  gap: 0;
-}
 
 .pw-field-rows {
   display: flex;
