@@ -123,7 +123,6 @@ export default {
   accent-color: var(--color-black);
   cursor: pointer;
   flex-shrink: 0;
-  margin-left: 5px;
 }
 
 .pw-field-row-label {
