@@ -7,13 +7,14 @@
       <span class="k-input-element pw-field-row-inner">
         <div class="pw-field-row-label-col">
           <input
+            v-if="!noCheckbox"
             :id="'pw-prop-' + uid"
             type="checkbox"
             class="pw-field-row-check"
             :checked="active"
             @change="toggleActive($event.target.checked)"
           />
-          <label class="pw-field-row-label" :for="'pw-prop-' + uid">{{ propertyLabel(label) }}</label>
+          <label class="pw-field-row-label" :for="noCheckbox ? null : 'pw-prop-' + uid">{{ noCheckbox ? label : propertyLabel(label) }}</label>
         </div>
         <div v-if="active" class="pw-field-row-options">
           <button
@@ -48,6 +49,7 @@ export default {
     enabled: { type: Boolean, default: true },
     modified: { type: Boolean, default: false },
     noDefault: { type: Boolean, default: false },
+    noCheckbox: { type: Boolean, default: false },
   },
   data() {
     return {

@@ -260,18 +260,21 @@
               <h3 class="pw-item-headline">{{ $t('prw.headline.columnBlocks') }}</h3>
               <div class="pw-field-block">
                 <div class="k-field k-text-field pw-content-field" data-object="content-field">
-                  <pw-field-row
-                    :uid="block.blockType + '-column-blocks'"
-                    label="column-blocks"
-                    :all-options="getColumnBlocks(block.blockType)"
-                    :active-options="getActiveColumnBlocks(block.blockType)"
-                    current-default=""
-                    plugin-default=""
-                    :enabled="true"
-                    :modified="hasOverride(block.blockType, 'settings.fields.content.column-blocks')"
-                    :no-default="true"
-                    @update:options="setColumnBlocks(block.blockType, $event, getColumnBlocks(block.blockType))"
-                  />
+                  <div class="pw-field-rows">
+                    <pw-field-row
+                      :uid="block.blockType + '-column-blocks'"
+                      :label="$t('prw.headline.columnBlocks')"
+                      :all-options="getColumnBlocks(block.blockType)"
+                      :active-options="getActiveColumnBlocks(block.blockType)"
+                      current-default=""
+                      plugin-default=""
+                      :enabled="true"
+                      :modified="hasOverride(block.blockType, 'settings.fields.content.column-blocks')"
+                      :no-default="true"
+                      :no-checkbox="true"
+                      @update:options="setColumnBlocks(block.blockType, $event, getColumnBlocks(block.blockType))"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
