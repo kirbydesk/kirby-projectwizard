@@ -28,6 +28,9 @@
 	'prw.option.bulletList' => 'Bullet List',
 	'prw.option.orderedList' => 'Ordered List',
 
+	/* -------------- Layout fields --------------*/
+	'prw.field.radius' => 'Radius',
+
 	/* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
 	'prw.option.top-right' => 'Top Right',
