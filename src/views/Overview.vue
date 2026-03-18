@@ -714,7 +714,11 @@ export default {
 .pw-field-enable-check {
   accent-color: var(--color-black);
   cursor: pointer;
-  margin-right: var(--spacing-2);
+  margin-right: var(--spacing-1);
+}
+
+.pw-content-field .k-field-header {
+  gap: 0;
 }
 
 .pw-field-rows {
