@@ -19,8 +19,8 @@
         class="pw-field-row-option"
         :class="{
           'is-active': activeOptions.includes(opt),
-          'is-default': opt === currentDefault,
-          'is-plugin-default': opt === pluginDefault && !modified,
+          'is-default': opt === currentDefault && defaultSet,
+          'is-plugin-default': opt === pluginDefault && !touched && !modified,
         }"
         @click="handleClick(opt)"
       >
@@ -46,6 +46,7 @@ export default {
     return {
       active: this.enabled,
       touched: false,
+      defaultSet: this.modified && this.currentDefault !== this.pluginDefault,
     };
   },
   methods: {
@@ -84,6 +85,7 @@ export default {
         this.$emit('update:options', updated);
       } else if (isActive && !isDefault) {
         // Active but not default → make default (blue badge)
+        this.defaultSet = true;
         this.$emit('update:default', opt);
       } else if (isActive && isDefault) {
         // Active and default → deactivate (but not if it's the last one)
