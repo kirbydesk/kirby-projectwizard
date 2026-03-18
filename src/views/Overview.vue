@@ -276,7 +276,7 @@
                     </div>
                   </div>
                   <!-- Single field -->
-                  <div v-else :key="field.key" class="pw-field-row">
+                  <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
