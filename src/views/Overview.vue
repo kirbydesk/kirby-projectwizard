@@ -1074,6 +1074,7 @@ export default {
   display: flex;
   flex-direction: column;
   padding-bottom: var(--spacing-4);
+  margin-top: -4px;
 }
 
 
