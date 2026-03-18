@@ -82,11 +82,6 @@ export default {
   align-items: center;
   padding: var(--spacing-2) 0;
   min-height: 32px;
-  border-bottom: 1px solid var(--color-gray-100);
-}
-
-.pw-field-row:last-child {
-  border-bottom: none;
 }
 
 .pw-field-row.is-disabled {
