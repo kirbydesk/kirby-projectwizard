@@ -139,6 +139,7 @@ export default {
   display: grid;
   grid-template-columns: auto 140px 1fr;
   align-items: center;
+  gap: 0 10px;
   padding: 0 var(--spacing-3);
 }
 
@@ -156,7 +157,6 @@ export default {
   font-size: var(--text-sm);
   font-weight: 400;
   cursor: pointer;
-  padding-left: 10px;
 }
 
 .pw-field-row-options {
