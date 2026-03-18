@@ -207,8 +207,7 @@
                     >
                       <div class="k-input" data-type="text">
                         <span class="k-input-element pw-field-row-inner">
-                          <span class="pw-field-row-check" style="visibility: hidden;"></span>
-                          <label class="pw-field-row-label">{{ row.label }}</label>
+                          <label class="pw-field-row-label" style="grid-column: 1 / 3;">{{ row.label }}</label>
                           <span class="pw-field-row-values">
                             <k-toggle-input
                               :value="getVal(block.blockType, 'editor.' + row.path, row.value)"
