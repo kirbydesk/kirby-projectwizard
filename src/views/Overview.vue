@@ -714,7 +714,7 @@ export default {
 .pw-field-enable-check {
   accent-color: var(--color-black);
   cursor: pointer;
-  margin-right: 6px;
+  margin-right: 8px;
 }
 
 .pw-content-field .k-field-header {
