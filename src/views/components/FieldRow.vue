@@ -19,7 +19,7 @@
         class="pw-field-row-option"
         :class="{
           'is-active': activeOptions.includes(opt),
-          'is-default': opt === currentDefault && defaultSet,
+          'is-default': opt === localDefault,
           'is-plugin-default': opt === pluginDefault && !touched && !modified,
         }"
         @click="handleClick(opt)"
@@ -46,7 +46,7 @@ export default {
     return {
       active: this.enabled,
       touched: false,
-      defaultSet: this.modified && this.currentDefault !== this.pluginDefault,
+      localDefault: null,
     };
   },
   methods: {
@@ -75,21 +75,21 @@ export default {
       }
 
       const isActive = this.activeOptions.includes(opt);
-      const isDefault = opt === this.currentDefault;
+      const isLocalDefault = opt === this.localDefault;
 
       if (!isActive) {
-        // Aus → Grau: activate (add to allowed)
+        // Aus → Grau
         const updated = this.allOptions.filter(
           o => this.activeOptions.includes(o) || o === opt
         );
         this.$emit('update:options', updated);
-      } else if (isActive && !(isDefault && this.defaultSet)) {
-        // Grau → Blau: make default
-        this.defaultSet = true;
+      } else if (isActive && !isLocalDefault) {
+        // Grau → Blau
+        this.localDefault = opt;
         this.$emit('update:default', opt);
-      } else if (isActive && isDefault && this.defaultSet) {
-        // Blau → Aus: deactivate
-        this.defaultSet = false;
+      } else if (isActive && isLocalDefault) {
+        // Blau → Aus
+        this.localDefault = null;
         const updated = this.activeOptions.filter(o => o !== opt);
         this.$emit('update:options', updated);
       }
