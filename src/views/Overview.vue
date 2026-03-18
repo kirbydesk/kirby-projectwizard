@@ -267,12 +267,20 @@
                   class="k-field k-text-field pw-content-field"
                   data-object="content-field"
                 >
-                  <k-toggle-field
-                    :label="false"
-                    :value="isFieldEnabled(block.blockType, field)"
-                    :text="fieldLabel(field.displayKey)"
-                    @input="toggleField(block.blockType, field, $event)"
-                  />
+                  <label class="pw-column-field-label">{{ fieldLabel(field.displayKey) }}</label>
+                  <div class="pw-field-row">
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <k-toggle-input
+                            :value="isFieldEnabled(block.blockType, field)"
+                            :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
+                            @input="toggleField(block.blockType, field, $event)"
+                          />
+                        </div>
+                      </span>
+                    </div>
+                  </div>
 
                   <div v-show="isFieldEnabled(block.blockType, field)" v-if="field.properties.length" class="pw-field-rows">
                     <pw-field-row
