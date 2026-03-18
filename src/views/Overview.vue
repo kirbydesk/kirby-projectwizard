@@ -872,19 +872,7 @@ export default {
 
 .pw-toggle-group {
   display: flex;
-  gap: var(--spacing-4);
-}
-
-.pw-toggle-group-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  cursor: pointer;
-}
-
-.pw-toggle-group-label {
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
+  gap: var(--spacing-6);
 }
 
 .pw-category-select,
