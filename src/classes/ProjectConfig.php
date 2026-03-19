@@ -208,6 +208,43 @@ class ProjectConfig
 		return self::configDir() . '/colors.json';
 	}
 
+	private static function fontsizesFile(): string
+	{
+		return self::configDir() . '/fontsizes.json';
+	}
+
+	/**
+	 * Load fontsize defaults from pagewizard plugin + project overrides.
+	 */
+	public static function loadFontsizes(): array
+	{
+		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
+		$defaults = self::readJson($pluginDir . '/config/fontsizes.json');
+		$overrides = self::readJson(self::fontsizesFile());
+
+		return [
+			'defaults'  => $defaults,
+			'overrides' => $overrides,
+		];
+	}
+
+	/**
+	 * Save fontsize overrides.
+	 */
+	public static function saveFontsizes(array $overrides): void
+	{
+		$path = self::fontsizesFile();
+
+		if (empty($overrides)) {
+			if (file_exists($path)) unlink($path);
+			return;
+		}
+
+		$dir = dirname($path);
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($path, json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+	}
+
 	/**
 	 * Load color defaults from pagewizard plugin + project overrides.
 	 */

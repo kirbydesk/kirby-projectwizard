@@ -35,6 +35,7 @@
         v-for="tab in [
           { key: 'elements', icon: 'dashboard' },
           { key: 'colors', icon: 'palette' },
+          { key: 'fonts', icon: 'text' },
           { key: 'header', icon: 'header' },
           { key: 'footer', icon: 'footer' },
         ]"
@@ -74,6 +75,15 @@
               :color-defaults="colorDefaults"
               :color-overrides="colorOverrides"
               @update:overrides="onColorOverridesUpdate"
+            />
+          </div>
+
+          <!-- Fonts -->
+          <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
+            <pw-global-fonts
+              :font-defaults="fontDefaults"
+              :font-overrides="fontOverrides"
+              @update:overrides="onFontOverridesUpdate"
             />
           </div>
 
@@ -142,6 +152,9 @@ export default {
       colorDefaults: {},
       colorOverrides: {},
       originalColorOverrides: {},
+      fontDefaults: {},
+      fontOverrides: {},
+      originalFontOverrides: {},
     };
   },
   computed: {
@@ -202,6 +215,14 @@ export default {
         this.originalColorOverrides = JSON.parse(JSON.stringify(colorOv));
         this.$set(this.snapshots, 'colors', JSON.stringify(colorOv));
 
+        // Load fontsizes
+        const fonts = await this.$api.get('projectwizard/fontsizes');
+        this.fontDefaults = fonts.defaults || {};
+        const fontOv = (fonts.overrides && !Array.isArray(fonts.overrides)) ? fonts.overrides : {};
+        this.fontOverrides = JSON.parse(JSON.stringify(fontOv));
+        this.originalFontOverrides = JSON.parse(JSON.stringify(fontOv));
+        this.$set(this.snapshots, 'fonts', JSON.stringify(fontOv));
+
         this.loading = false;
       } catch (e) {
         console.error('Failed to load', e);
@@ -236,6 +257,25 @@ export default {
       this.$set(this.dirtyTabs, 'colors', JSON.stringify(this.colorOverrides) !== this.snapshots['colors']);
     },
 
+    // --- Global: Fonts ---
+    onFontOverridesUpdate(overrides) {
+      this.fontOverrides = overrides;
+      this.$set(this.dirtyTabs, 'fonts', JSON.stringify(this.fontOverrides) !== this.snapshots['fonts']);
+    },
+
+    async saveFonts() {
+      try {
+        const res = await this.$api.post('projectwizard/fontsizes', this.fontOverrides);
+        this.fontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.originalFontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.$set(this.snapshots, 'fonts', JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, 'fonts', false);
+        this.$panel.notification.success('Font sizes saved');
+      } catch (e) {
+        this.$panel.notification.error('Failed to save font sizes');
+      }
+    },
+
     // --- Block overrides ---
     onBlockOverridesUpdate(blockType, overrides) {
       this.$set(this.blockOverrides, blockType, overrides);
@@ -251,6 +291,8 @@ export default {
       if (this.activeTab === 'global') {
         if (this.globalActiveTab === 'colors') {
           await this.saveColors();
+        } else if (this.globalActiveTab === 'fonts') {
+          await this.saveFonts();
         } else {
           await this.saveGlobal();
         }
@@ -264,6 +306,9 @@ export default {
         if (this.globalActiveTab === 'colors') {
           this.colorOverrides = JSON.parse(JSON.stringify(this.originalColorOverrides));
           this.$set(this.dirtyTabs, 'colors', false);
+        } else if (this.globalActiveTab === 'fonts') {
+          this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
+          this.$set(this.dirtyTabs, 'fonts', false);
         } else {
           this.activeBlocks = [...this.originalActiveBlocks];
           for (const block of this.blocks) {

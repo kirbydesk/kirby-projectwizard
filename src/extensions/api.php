@@ -99,5 +99,23 @@ return [
 				return ProjectConfig::loadColors();
 			}
 		],
+		// Get fontsize defaults + overrides
+		[
+			'pattern' => 'projectwizard/fontsizes',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadFontsizes();
+			}
+		],
+		// Save fontsize overrides
+		[
+			'pattern' => 'projectwizard/fontsizes',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				ProjectConfig::saveFontsizes($data);
+				return ProjectConfig::loadFontsizes();
+			}
+		],
 	]
 ];
