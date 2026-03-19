@@ -16,7 +16,7 @@
         </button>
       </div>
       <transition name="pw-slide">
-      <div v-show="isSectionOpen('content')" class="pw-section-content">
+      <div v-show="isSectionOpen('content')" class="pw-field-block" data-collapsible="true">
 
       <!-- Column blocks (first, controls which fields are visible) -->
       <div v-if="getColumnBlocks()" class="pw-field-block">
