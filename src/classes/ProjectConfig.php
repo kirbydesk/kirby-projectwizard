@@ -213,6 +213,43 @@ class ProjectConfig
 		return self::configDir() . '/fontsizes.json';
 	}
 
+	private static function elementsFile(): string
+	{
+		return self::configDir() . '/elements.json';
+	}
+
+	/**
+	 * Load element style defaults from pagewizard plugin + project overrides.
+	 */
+	public static function loadElements(): array
+	{
+		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
+		$defaults = self::readJson($pluginDir . '/config/elements.json');
+		$overrides = self::readJson(self::elementsFile());
+
+		return [
+			'defaults'  => $defaults,
+			'overrides' => $overrides,
+		];
+	}
+
+	/**
+	 * Save element style overrides.
+	 */
+	public static function saveElements(array $overrides): void
+	{
+		$path = self::elementsFile();
+
+		if (empty($overrides)) {
+			if (file_exists($path)) unlink($path);
+			return;
+		}
+
+		$dir = dirname($path);
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($path, json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+	}
+
 	/**
 	 * Load fontsize defaults from pagewizard plugin + project overrides.
 	 */

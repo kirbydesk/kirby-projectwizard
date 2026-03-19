@@ -18,7 +18,10 @@
             v-for="(value, varName, index) in group.vars"
             :key="varName"
             class="pw-field-row"
-            :class="{ 'pw-color-row-grouped': isFollowedByState(group.vars, varName, index) }"
+            :class="{
+              'pw-color-row-grouped': isFollowedByState(group.vars, varName, index),
+              'pw-color-row-state': isStateVar(varName),
+            }"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
@@ -100,6 +103,9 @@ export default {
       if (t && t !== tKey) return t;
       return key.charAt(0).toUpperCase() + key.slice(1);
     },
+    isStateVar(varName) {
+      return varName.endsWith('-hover') || varName.endsWith('-active');
+    },
     isFollowedByState(vars, varName, index) {
       const keys = Object.keys(vars);
       const next = keys[index + 1];
@@ -144,13 +150,14 @@ export default {
   margin-bottom: 0;
 }
 
-.pw-color-section .pw-section-header {
-  justify-content: space-between;
+
+.pw-color-section .pw-section-toggle {
+  min-width: 200px;
 }
 
 .pw-color-theme-labels {
   display: flex;
-  gap: var(--spacing-4);
+  gap: 0;
 }
 
 .pw-color-theme-label {
@@ -158,9 +165,11 @@ export default {
   font-weight: 600;
   color: var(--color-text-dimmed);
   width: 180px;
+  text-align: left;
+  padding-left: 5px;
 }
 
-.pw-color-section {
+.pw-color-options {
   width: fit-content;
 }
 
@@ -171,11 +180,11 @@ export default {
 }
 
 .pw-color-options {
-  gap: var(--spacing-4);
+  gap: 0;
 }
 
 .pw-color-options .pw-color-field {
-  margin: var(--spacing-2) 0;
+  margin: 0;
 }
 
 .pw-color-spacer {
@@ -183,11 +192,15 @@ export default {
 }
 
 .pw-color-row-grouped {
-  margin-bottom: 0;
-  padding-bottom: 0;
+  padding-bottom: 1px;
 }
 
-.pw-color-row-grouped + .pw-field-row {
-  padding-top: 0;
+.pw-color-row-state {
+  padding: 1px 0;
 }
+
+.pw-color-row-state:not(.pw-color-row-grouped) {
+  padding-bottom: var(--spacing-1);
+}
+
 </style>

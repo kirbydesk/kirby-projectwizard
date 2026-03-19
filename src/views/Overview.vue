@@ -33,9 +33,10 @@
     <nav v-if="!loading && activeTab === 'global'" class="k-tabs k-model-tabs">
       <button
         v-for="tab in [
-          { key: 'elements', icon: 'dashboard' },
+          { key: 'blocks', icon: 'dashboard' },
           { key: 'colors', icon: 'palette' },
-          { key: 'fonts', icon: 'text' },
+          { key: 'elements', icon: 'layers' },
+          { key: 'fontsizes', icon: 'title' },
           { key: 'header', icon: 'header' },
           { key: 'footer', icon: 'footer' },
         ]"
@@ -62,7 +63,7 @@
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
 
           <!-- Elements -->
-          <div v-show="globalActiveTab === 'elements'" class="pw-wizard-global-content">
+          <div v-show="globalActiveTab === 'blocks'" class="pw-wizard-global-content">
             <pw-global-elements
               :blocks="blocks"
               @toggle="toggleBlock($event.blockType, $event.checked)"
@@ -78,8 +79,17 @@
             />
           </div>
 
+          <!-- Elements -->
+          <div v-show="globalActiveTab === 'elements'" class="pw-wizard-global-content">
+            <pw-global-elements-styles
+              :element-defaults="elementDefaults"
+              :element-overrides="elementOverrides"
+              @update:overrides="onElementOverridesUpdate"
+            />
+          </div>
+
           <!-- Fonts -->
-          <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
+          <div v-show="globalActiveTab === 'fontsizes'" class="pw-wizard-global-content">
             <pw-global-fonts
               :font-defaults="fontDefaults"
               :font-overrides="fontOverrides"
@@ -140,7 +150,7 @@ export default {
       blocks: [],
       activeBlocks: [],
       activeTab: 'global',
-      globalActiveTab: 'elements',
+      globalActiveTab: 'blocks',
       blockConfigs: {},
       blockOverrides: {},
       originalOverrides: {},
@@ -155,6 +165,9 @@ export default {
       fontDefaults: {},
       fontOverrides: {},
       originalFontOverrides: {},
+      elementDefaults: {},
+      elementOverrides: {},
+      originalElementOverrides: {},
     };
   },
   computed: {
@@ -221,7 +234,15 @@ export default {
         const fontOv = (fonts.overrides && !Array.isArray(fonts.overrides)) ? fonts.overrides : {};
         this.fontOverrides = JSON.parse(JSON.stringify(fontOv));
         this.originalFontOverrides = JSON.parse(JSON.stringify(fontOv));
-        this.$set(this.snapshots, 'fonts', JSON.stringify(fontOv));
+        this.$set(this.snapshots, 'fontsizes', JSON.stringify(fontOv));
+
+        // Load elements
+        const elems = await this.$api.get('projectwizard/elements');
+        this.elementDefaults = elems.defaults || {};
+        const elemOv = (elems.overrides && !Array.isArray(elems.overrides)) ? elems.overrides : {};
+        this.elementOverrides = JSON.parse(JSON.stringify(elemOv));
+        this.originalElementOverrides = JSON.parse(JSON.stringify(elemOv));
+        this.$set(this.snapshots, 'elements', JSON.stringify(elemOv));
 
         this.loading = false;
       } catch (e) {
@@ -260,7 +281,7 @@ export default {
     // --- Global: Fonts ---
     onFontOverridesUpdate(overrides) {
       this.fontOverrides = overrides;
-      this.$set(this.dirtyTabs, 'fonts', JSON.stringify(this.fontOverrides) !== this.snapshots['fonts']);
+      this.$set(this.dirtyTabs, 'fontsizes', JSON.stringify(this.fontOverrides) !== this.snapshots['fonts']);
     },
 
     async saveFonts() {
@@ -268,11 +289,30 @@ export default {
         const res = await this.$api.post('projectwizard/fontsizes', this.fontOverrides);
         this.fontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.originalFontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'fonts', JSON.stringify(res.overrides || {}));
-        this.$set(this.dirtyTabs, 'fonts', false);
+        this.$set(this.snapshots, 'fontsizes', JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, 'fontsizes', false);
         this.$panel.notification.success('Font sizes saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save font sizes');
+      }
+    },
+
+    // --- Global: Elements ---
+    onElementOverridesUpdate(overrides) {
+      this.elementOverrides = overrides;
+      this.$set(this.dirtyTabs, 'elements', JSON.stringify(this.elementOverrides) !== this.snapshots['elements']);
+    },
+
+    async saveElements() {
+      try {
+        const res = await this.$api.post('projectwizard/elements', this.elementOverrides);
+        this.elementOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.originalElementOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.$set(this.snapshots, 'elements', JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, 'elements', false);
+        this.$panel.notification.success('Element styles saved');
+      } catch (e) {
+        this.$panel.notification.error('Failed to save element styles');
       }
     },
 
@@ -291,8 +331,10 @@ export default {
       if (this.activeTab === 'global') {
         if (this.globalActiveTab === 'colors') {
           await this.saveColors();
-        } else if (this.globalActiveTab === 'fonts') {
+        } else if (this.globalActiveTab === 'fontsizes') {
           await this.saveFonts();
+        } else if (this.globalActiveTab === 'elements') {
+          await this.saveElements();
         } else {
           await this.saveGlobal();
         }
@@ -306,9 +348,12 @@ export default {
         if (this.globalActiveTab === 'colors') {
           this.colorOverrides = JSON.parse(JSON.stringify(this.originalColorOverrides));
           this.$set(this.dirtyTabs, 'colors', false);
-        } else if (this.globalActiveTab === 'fonts') {
+        } else if (this.globalActiveTab === 'fontsizes') {
           this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
-          this.$set(this.dirtyTabs, 'fonts', false);
+          this.$set(this.dirtyTabs, 'fontsizes', false);
+        } else if (this.globalActiveTab === 'elements') {
+          this.elementOverrides = JSON.parse(JSON.stringify(this.originalElementOverrides));
+          this.$set(this.dirtyTabs, 'elements', false);
         } else {
           this.activeBlocks = [...this.originalActiveBlocks];
           for (const block of this.blocks) {
@@ -387,6 +432,28 @@ export default {
 </script>
 
 <style>
+/* Global px calculator badge */
+.pw-px-calculator {
+  font-size: var(--text-xs);
+  color: var(--color-black);
+  background: var(--color-yellow-400);
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--color-yellow-600);
+  border-left: none;
+  border-radius: 0 var(--rounded) var(--rounded) 0;
+  height: 27px;
+  width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Input adjacent to px calculator */
+.pw-px-calculator-input {
+  border-radius: var(--rounded) 0 0 var(--rounded) !important;
+  border-right: none !important;
+}
+
 .pw-wizard-loading {
   padding: var(--spacing-12);
   text-align: center;

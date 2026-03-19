@@ -99,6 +99,24 @@ return [
 				return ProjectConfig::loadColors();
 			}
 		],
+		// Get element style defaults + overrides
+		[
+			'pattern' => 'projectwizard/elements',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadElements();
+			}
+		],
+		// Save element style overrides
+		[
+			'pattern' => 'projectwizard/elements',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				ProjectConfig::saveElements($data);
+				return ProjectConfig::loadElements();
+			}
+		],
 		// Get fontsize defaults + overrides
 		[
 			'pattern' => 'projectwizard/fontsizes',

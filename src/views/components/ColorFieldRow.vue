@@ -42,7 +42,24 @@ export default {
   max-width: 180px;
 }
 
+.pw-color-field {
+  max-width: 180px;
+}
+
+.pw-color-field .k-color-field {
+  height: auto;
+}
+
 .pw-color-field .k-input[data-type="color"] {
   background: light-dark(#f9f9f9, #1a1a1a);
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 var(--spacing-2);
+  height: 30px;
+}
+
+.pw-color-field .k-color-field-preview {
+  width: 22px;
+  height: 22px;
 }
 </style>

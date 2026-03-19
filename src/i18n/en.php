@@ -5,7 +5,8 @@
 	'prw.label.item' => 'Item',
 	'prw.tab.settings' => 'Settings',
 	'prw.tab.colors' => 'Colors',
-	'prw.tab.fonts' => 'Fonts',
+	'prw.tab.fontsizes' => 'Font Sizes',
+	'prw.tab.blocks' => 'Blocks',
 	'prw.tab.elements' => 'Elements',
 	'prw.tab.header' => 'Header',
 	'prw.tab.footer' => 'Footer',
@@ -100,7 +101,7 @@
 	'prw.color.element-breadcrumb-text-hover' => 'Breadcrumb :Hover',
 	'prw.color.element-breadcrumb-text-active' => 'Breadcrumb :Active',
 	'prw.color.element-quote-text' => 'Quote',
-	'prw.color.element-cite-text' => 'Cite',
+	'prw.color.element-cite-text' => 'Author',
 	'prw.color.element-icon-fill' => 'Icon',
 	'prw.color.element-media-background' => 'Media Background',
 	'prw.color.element-image-zoom' => 'Zoom Icon',
@@ -116,6 +117,15 @@
 	'prw.color.element-button-text-active' => 'Text :Active',
 	'prw.color.element-button-background-active' => 'Background :Active',
 	'prw.color.element-button-border-active' => 'Border :Active',
+
+/* -------------- Element help texts --------------*/
+	'prw.help.line-height' => 'e.g. 1, 1.2, 1.5, 1.8',
+	'prw.help.letter-spacing' => 'e.g. normal, -0.02em, 0.05em',
+	'prw.help.font-size' => 'e.g. 0.75rem, 1rem (16px), 2rem (32px), 4rem (64px)',
+	'prw.help.spacing' => 'e.g. 0.5rem, 0.875rem, 1rem',
+	'prw.help.padding' => 'e.g. 0.5rem 0.75rem, 0.75rem 1rem',
+	'prw.help.border-radius' => 'e.g. 0, 0.25rem, 0.5rem, 999px',
+	'prw.help.css-content' => 'CSS content value',
 
 /* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',

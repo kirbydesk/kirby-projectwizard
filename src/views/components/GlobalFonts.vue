@@ -25,15 +25,21 @@
                   <label class="pw-field-row-label">{{ sizeLabel(varName) }}</label>
                 </div>
                 <div class="pw-field-row-options pw-font-options">
-                  <input
-                    v-for="bp in ['default', 'lg', 'xl']"
-                    :key="bp"
-                    type="text"
-                    class="pw-font-input"
-                    :placeholder="value[bp] || ''"
-                    :value="getOverrideValue(bp, varName)"
-                    @input="setValue(bp, varName, $event.target.value, value[bp] || '')"
-                  />
+                  <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-font-field">
+                    <span class="pw-font-input-wrap">
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        class="pw-font-input pw-px-calculator-input"
+                        :placeholder="stripRem(value[bp])"
+                        :value="stripRem(getOverrideValue(bp, varName))"
+                        @input="setRemValue(bp, varName, $event.target.value, value[bp] || '')"
+                      />
+                      <span class="pw-font-unit">rem</span>
+                    </span>
+                    <span class="pw-px-calculator">{{ remToPx(getOverrideValue(bp, varName) || value[bp]) }}</span>
+                  </span>
                 </div>
               </span>
             </div>
@@ -95,6 +101,20 @@ export default {
       const label = (t && t !== tKey) ? t : size.toUpperCase();
       return label + ' (' + size.toUpperCase() + ')';
     },
+    stripRem(val) {
+      if (!val) return '';
+      return val.replace(/rem$/, '');
+    },
+    setRemValue(bp, varName, value, defaultVal) {
+      const remVal = value === '' ? '' : value + 'rem';
+      this.setValue(bp, varName, remVal, defaultVal);
+    },
+    remToPx(val) {
+      if (!val) return '';
+      const match = val.match(/^([\d.]+)rem$/);
+      if (!match) return '';
+      return Math.round(parseFloat(match[1]) * 16) + 'px';
+    },
     getOverrideValue(bp, varName) {
       return ((this.fontOverrides.global || {})[bp] || {})[varName] || '';
     },
@@ -126,11 +146,14 @@ export default {
 <style>
 .pw-font-section {
   margin-bottom: 0;
-  width: fit-content;
 }
 
-.pw-font-section .pw-section-header {
-  justify-content: space-between;
+.pw-font-section .pw-section-toggle {
+  min-width: 200px;
+}
+
+.pw-font-options {
+  width: fit-content;
 }
 
 .pw-font-bp-labels {
@@ -142,7 +165,8 @@ export default {
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--color-text-dimmed);
-  width: 100px;
+  width: 145px;
+  padding-left: 5px;
 }
 
 .pw-font-list {
@@ -159,10 +183,20 @@ export default {
   width: 100px;
   font-size: var(--text-sm);
   font-family: var(--font-mono);
-  padding: var(--spacing-1) var(--spacing-2);
+  padding: var(--spacing-1) 2.5rem var(--spacing-1) var(--spacing-2);
   border: 1px solid var(--color-border);
   border-radius: var(--rounded);
   background: light-dark(#f9f9f9, #1a1a1a);
+}
+
+.pw-font-input::-webkit-inner-spin-button,
+.pw-font-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pw-font-input {
+  -moz-appearance: textfield;
 }
 
 .pw-font-input:focus {
@@ -173,4 +207,25 @@ export default {
 .pw-font-input::placeholder {
   color: var(--color-text-dimmed);
 }
+
+.pw-font-field {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.pw-font-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pw-font-unit {
+  position: absolute;
+  right: var(--spacing-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+  pointer-events: none;
+}
+
 </style>
