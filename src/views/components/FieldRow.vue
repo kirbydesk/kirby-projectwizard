@@ -253,9 +253,9 @@ export default {
 
 /* Modified state: active options get grey pilled badge */
 .pw-field-row.is-modified .pw-field-row-option.is-active {
-  background: var(--color-gray-300);
+  background: light-dark(var(--color-blue-300), #5D5D5D);
   color: var(--color-text);
-  border-radius: 999px;
+  border-radius: 5px;
 }
 
 /* Modified state: not active — lower opacity */
@@ -267,12 +267,12 @@ export default {
 .pw-field-row.is-modified .pw-field-row-option.is-default.is-active {
   background: var(--color-blue-600);
   color: var(--color-white);
-  border-radius: 999px;
+  border-radius: 5px;
 }
 
 /* Required indicator */
 .pw-field-required {
-  color: var(--color-negative-600);
+  color: var(--color-red-600, #dc2626);
   margin-left: 2px;
 }
 

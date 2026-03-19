@@ -64,6 +64,10 @@
 	'prw.property.theme' => 'Theme',
 	'prw.field.theme' => 'Theme',
 
+/* -------------- Settings fields --------------*/
+	'prw.option.content' => 'Page content',
+	'prw.option.fullscreen' => 'Fullscreen',
+
 /* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
 	'prw.option.top-right' => 'Top Right',

@@ -69,6 +69,7 @@ Felder mit Optionen werden zu Objekten mit `options`, `default`, optional `requi
 - `{ "options": [...], "default": "..." }` = Options mit Default
 - `{ "default": ... }` = Nur Default, keine Options (Boolean, String, Number)
 - `{ ..., "required": true }` = Pflichtfeld, kann nicht leer sein
+- `{ ..., "fixed": true }` = Options nicht veränderbar, nur Default wählbar (Toggles statt FieldRow)
 - Plain Array `[...]` = Nur bei speziellen Fällen wie `column-blocks`
 
 ## Neue Override-Speicherung

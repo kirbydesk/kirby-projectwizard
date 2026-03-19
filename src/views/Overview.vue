@@ -136,10 +136,15 @@
 
               <!-- Content Fields -->
               <section class="pw-wizard-section">
-              <button class="pw-section-toggle" @click="toggleSection(block.blockType, 'content')">
-                <span>{{ $t('pw.headline.content') }}</span>
-                <k-icon :type="isSectionOpen(block.blockType, 'content') ? 'angle-down' : 'angle-right'" />
-              </button>
+              <div class="pw-section-header">
+                <span class="pw-tab-visibility pw-tab-visibility-static">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"/></svg>
+                </span>
+                <button class="pw-section-toggle" @click="toggleSection(block.blockType, 'content')">
+                  <span>{{ $t('pw.headline.content') }}</span>
+                  <k-icon :type="isSectionOpen(block.blockType, 'content') ? 'angle-down' : 'angle-right'" />
+                </button>
+              </div>
               <transition name="pw-slide">
               <div v-show="isSectionOpen(block.blockType, 'content')" class="pw-section-content">
 
@@ -173,19 +178,16 @@
                   class="k-field k-text-field pw-content-field"
                   data-object="content-field"
                 >
-                  <label class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
-                  <div v-if="!getColumnBlocks(block.blockType)" class="pw-field-row pw-clickable" @click="toggleField(block.blockType, field, !isFieldEnabled(block.blockType, field))">
-                    <div class="k-input" data-type="text">
-                      <span class="k-input-element pw-field-row-inner">
-                        <div class="pw-field-row-label-col">
-                          <k-toggle-input
-                            :value="isFieldEnabled(block.blockType, field)"
-                            :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                          />
-                        </div>
-                      </span>
-                    </div>
-                  </div>
+                  <label v-if="!getColumnBlocks(block.blockType)" class="pw-column-field-label pw-clickable">
+                    <input
+                      type="checkbox"
+                      class="pw-field-enable-check"
+                      :checked="isFieldEnabled(block.blockType, field)"
+                      @change="toggleField(block.blockType, field, $event.target.checked)"
+                    />
+                    {{ fieldLabel(field.key) }}
+                  </label>
+                  <label v-else class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
 
                   <!-- Property rows -->
                   <div v-show="!getColumnBlocks(block.blockType) ? isFieldEnabled(block.blockType, field) : true" v-if="field.properties.length" class="pw-field-rows">
@@ -214,19 +216,15 @@
                 class="k-field k-text-field pw-content-field"
                 data-object="content-field"
               >
-                <label class="pw-column-field-label">{{ fieldLabel('editor') }}</label>
-                <div class="pw-field-row pw-clickable" @click="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, !isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }))">
-                  <div class="k-input" data-type="text">
-                    <span class="k-input-element pw-field-row-inner">
-                      <div class="pw-field-row-label-col">
-                        <k-toggle-input
-                          :value="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
-                          :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                        />
-                      </div>
-                    </span>
-                  </div>
-                </div>
+                <label class="pw-column-field-label pw-clickable">
+                  <input
+                    type="checkbox"
+                    class="pw-field-enable-check"
+                    :checked="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })"
+                    @change="toggleField(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true }, $event.target.checked)"
+                  />
+                  {{ fieldLabel('editor') }}
+                </label>
 
                 <div v-show="isFieldEnabled(block.blockType, getEditorField(block.blockType) || { key: 'editor', enabled: true })" class="pw-field-rows">
                   <!-- Editor content settings (mode, align, sizes) as FieldRows -->
@@ -276,6 +274,7 @@
                           <div class="pw-field-row-options">
                             <k-toggle-input
                               :value="getVal(block.blockType, 'editor.' + row.path, row.value)"
+                              :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
                               @input="setVal(block.blockType, 'editor.' + row.path, $event)"
                             />
                           </div>
@@ -294,19 +293,15 @@
                   class="k-field k-text-field pw-content-field"
                   data-object="content-field"
                 >
-                  <label class="pw-column-field-label">{{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}</label>
-                  <div class="pw-field-row pw-clickable" @click="toggleField(block.blockType, field, !isFieldEnabled(block.blockType, field))">
-                    <div class="k-input" data-type="text">
-                      <span class="k-input-element pw-field-row-inner">
-                        <div class="pw-field-row-label-col">
-                          <k-toggle-input
-                            :value="isFieldEnabled(block.blockType, field)"
-                            :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                          />
-                        </div>
-                      </span>
-                    </div>
-                  </div>
+                  <label class="pw-column-field-label pw-clickable">
+                    <input
+                      type="checkbox"
+                      class="pw-field-enable-check"
+                      :checked="isFieldEnabled(block.blockType, field)"
+                      @change="toggleField(block.blockType, field, $event.target.checked)"
+                    />
+                    {{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}
+                  </label>
 
                   <div v-show="isFieldEnabled(block.blockType, field)" v-if="field.properties.length" class="pw-field-rows">
                     <pw-field-row
@@ -339,12 +334,22 @@
               :key="cat.key"
               class="pw-wizard-section"
             >
-              <button class="pw-section-toggle" @click="toggleSection(block.blockType, cat.key)">
-                <span>{{ $t('pw.headline.' + cat.key) }}</span>
-                <k-icon :type="isSectionOpen(block.blockType, cat.key) ? 'angle-down' : 'angle-right'" />
-              </button>
-              <transition name="pw-slide">
-              <div v-show="isSectionOpen(block.blockType, cat.key)" class="pw-field-block">
+              <div class="pw-section-header">
+                <button
+                  type="button"
+                  class="pw-tab-visibility"
+                  @click.stop="toggleVisibility(block.blockType, 'settings.tabs.' + cat.key)"
+                >
+                  <k-icon :type="getVal(block.blockType, 'settings.tabs.' + cat.key, true) === false ? 'hidden' : 'preview'" />
+                </button>
+                <button v-if="cat.fields.length" class="pw-section-toggle" @click="toggleSection(block.blockType, cat.key)">
+                  <span>{{ $t('pw.headline.' + cat.key) }}</span>
+                  <k-icon :type="isSectionOpen(block.blockType, cat.key) ? 'angle-down' : 'angle-right'" />
+                </button>
+                <span v-else class="pw-section-title">{{ $t('pw.headline.' + cat.key) }}</span>
+              </div>
+              <transition v-if="cat.fields.length" name="pw-slide">
+              <div v-show="isSectionOpen(block.blockType, cat.key)" class="pw-field-block" data-collapsible="true">
                 <template v-for="field in cat.fields">
                   <!-- FieldRow (e.g. theme with options + click logic) -->
                   <pw-field-row
@@ -368,7 +373,7 @@
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
+                          <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}<span v-if="field.required" class="pw-field-required">*</span></label>
                         </div>
                         <div class="pw-field-row-options">
                           <k-toggles-input
@@ -377,7 +382,7 @@
                             :grow="false"
                             :reset="field.reset !== false"
                             :required="field.required === true"
-                            @input="setVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event)"
+                            @input="selectOption(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.defaultValue)"
                           />
                         </div>
                       </span>
@@ -414,6 +419,7 @@
                           <k-toggle-input
                             v-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'"
                             :value="getVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)"
+                            :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
                             @input="setVal(block.blockType, 'settings.fields.' + cat.key + '.' + field.key + '.default', $event)"
                           />
                           <!-- String with options: select -->
@@ -772,6 +778,9 @@ export default {
           }
         }
 
+        // Skip fields with no configurable properties (only defaults, no options)
+        if (field.properties.length === 0 && settingVal !== 'enabled') continue;
+
         fields.push(field);
       }
 
@@ -959,7 +968,8 @@ export default {
         for (const [key, val] of Object.entries(settingsFields)) {
           // Skip parent toggle keys (handled by their sub-fields)
           if (key === 'padding' || key === 'radius') continue;
-          // Skip "enabled" visibility toggles
+
+          // "enabled" → skip (visibility only, no configurable value)
           if (val === 'enabled') continue;
 
           // Group radius-* fields
@@ -994,7 +1004,20 @@ export default {
             const defaultValue = val.default !== undefined ? val.default : opts[0];
             const required = val.required === true;
 
-            // More than ~5 options or has required → FieldRow with click logic
+            // Fixed options → always toggles (only default changeable, not the options themselves)
+            if (val.fixed) {
+              fields.push({
+                key,
+                type: 'toggles',
+                defaultValue,
+                required,
+                reset: !required,
+                options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
+              });
+              continue;
+            }
+
+            // Many options or required → FieldRow with click logic (options can be restricted)
             if (opts.length > 5 || required) {
               fields.push({
                 key,
@@ -1015,6 +1038,34 @@ export default {
                 options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
               });
             }
+            continue;
+          }
+
+          // Grid size (1-12) → toggles, required
+          if (key.startsWith('grid-size-') && this.isObject(val) && 'default' in val) {
+            const opts = Array.from({ length: 12 }, (_, i) => i + 1);
+            fields.push({
+              key,
+              type: 'toggles',
+              defaultValue: val.default,
+              required: true,
+              reset: false,
+              options: opts.map(v => ({ value: v, text: String(v) })),
+            });
+            continue;
+          }
+
+          // Grid offset (0-11) → toggles, required
+          if (key.startsWith('grid-offset-') && this.isObject(val) && 'default' in val) {
+            const opts = Array.from({ length: 12 }, (_, i) => i);
+            fields.push({
+              key,
+              type: 'toggles',
+              defaultValue: val.default,
+              required: true,
+              reset: false,
+              options: opts.map(v => ({ value: v, text: String(v) })),
+            });
             continue;
           }
 
@@ -1063,14 +1114,39 @@ export default {
     },
 
     categoryFieldLabel(key) {
-      // Try prw.field.*, then pw.field.*.label, then fallback
+      // Try prw.field.*, then pw.field.*.label, then pw.field.*, then pw.field.{dotted} (grid-size-sm → grid-size.sm)
       const prwKey = 'prw.field.' + key;
       const prwT = this.$t(prwKey);
       if (prwT && prwT !== prwKey) return prwT;
-      const pwKey = 'pw.field.' + key + '.label';
+      const pwLabelKey = 'pw.field.' + key + '.label';
+      const pwLabelT = this.$t(pwLabelKey);
+      if (pwLabelT && pwLabelT !== pwLabelKey) return pwLabelT;
+      const pwKey = 'pw.field.' + key;
       const pwT = this.$t(pwKey);
       if (pwT && pwT !== pwKey) return pwT;
+      const lastDash = key.lastIndexOf('-');
+      if (lastDash > 0) {
+        const dotKey = 'pw.field.' + key.substring(0, lastDash) + '.' + key.substring(lastDash + 1);
+        const dotT = this.$t(dotKey);
+        if (dotT && dotT !== dotKey) return dotT;
+      }
       return key;
+    },
+
+    toggleVisibility(blockType, path) {
+      const current = this.getVal(blockType, path, 'enabled');
+      if (current === false) {
+        // Re-enable → remove override
+        this.deleteNested(this.blockOverrides[blockType] || {}, path);
+        const parts = path.split('.');
+        for (let i = parts.length - 1; i > 0; i--) {
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, parts.slice(0, i).join('.'));
+        }
+      } else {
+        // Disable → store false
+        this.setVal(blockType, path, false);
+      }
+      this.markDirty(blockType);
     },
 
     selectOption(blockType, path, value, pluginDefault) {
@@ -1264,6 +1340,73 @@ export default {
 </script>
 
 <style>
+.pw-field-required {
+  color: var(--color-red-600, #dc2626);
+  margin-left: 2px;
+}
+
+.pw-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+.pw-section-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.pw-tab-visibility {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-1);
+  color: var(--color-text-dimmed);
+  border-radius: var(--rounded);
+}
+
+
+
+.pw-tab-visibility .k-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.pw-tab-visibility-static {
+  cursor: default;
+}
+
+.pw-tab-visibility-static svg {
+  width: 16px;
+  height: 16px;
+}
+
+
+.pw-visibility-toggle {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-1);
+  color: var(--color-text-dimmed);
+  border-radius: var(--rounded);
+}
+
+.pw-visibility-toggle:hover {
+  color: var(--color-text);
+}
+
+
+.pw-visibility-toggle .k-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .pw-wizard {
   /* match native Kirby panel page spacing */
 }
@@ -1284,12 +1427,20 @@ export default {
   flex-direction: column;
 }
 
+.pw-field-block[data-collapsible] {
+  margin-bottom: var(--spacing-10);
+}
+
 [data-object="content-field"] {
   margin-bottom: var(--spacing-2);
 }
 
+[data-object="content-field"] .pw-field-rows .pw-field-row:last-child {
+  margin-bottom: var(--spacing-3);
+}
+
 .pw-wizard-section {
-  margin-bottom: var(--spacing-6);
+  margin-bottom: 0;
 }
 
 .pw-section-toggle {
@@ -1300,15 +1451,12 @@ export default {
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-bottom: var(--spacing-3);
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text);
 }
 
-.pw-section-toggle:hover {
-  color: var(--color-text-dimmed);
-}
+
 
 .pw-section-toggle .k-icon {
   width: 14px;
@@ -1342,16 +1490,28 @@ export default {
 
 /* Toggles styling to match badge look */
 .pw-field-row-options .k-toggles-input ul {
-  border-radius: 999px;
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 2px;
+  border-radius: 5px;
   overflow: hidden;
   background: none !important;
 }
 
+.pw-field-row-options .k-toggles-input li {
+  width: auto !important;
+}
+
 .pw-field-row-options .k-toggles-input label {
-  border-radius: 999px;
+  border-radius: 5px;
   padding: 0 var(--spacing-2);
   height: 22px;
   min-height: 0;
+}
+
+.pw-field-row-options .k-toggles-input input:checked + label {
+  background: var(--color-blue-600) !important;
+  color: var(--color-white) !important;
 }
 
 .pw-field-row-options .k-toggles-input input:focus:not(:checked) + label {
@@ -1426,7 +1586,14 @@ export default {
   font-size: var(--text-sm);
   font-weight: 600;
   padding: var(--spacing-2) var(--spacing-3);
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.pw-field-enable-check {
+  accent-color: var(--color-black);
+  cursor: pointer;
 }
 
 
