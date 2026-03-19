@@ -52,26 +52,6 @@
       </button>
     </nav>
 
-    <!-- Kirby-native tab navigation (block views) -->
-    <nav v-if="!loading && activeTab !== 'global'" class="k-tabs k-model-tabs">
-      <button
-        v-for="tab in [
-          { key: 'settings', icon: 'settings' },
-          { key: 'colors', icon: 'palette' },
-        ]"
-        :key="tab.key"
-        type="button"
-        class="k-tabs-button k-button"
-        :aria-current="blockViewTab === tab.key ? 'true' : null"
-        data-has-icon="true"
-        data-has-text="true"
-        data-variant="dimmed"
-        @click="blockViewTab = tab.key"
-      >
-        <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
-        <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
-      </button>
-    </nav>
 
     <div v-if="loading" class="pw-wizard-loading">Loading...</div>
 
@@ -129,10 +109,6 @@
             />
           </div>
 
-          <!-- Colors tab (placeholder) -->
-          <div v-show="blockViewTab === 'colors'" class="pw-wizard-block-sections">
-            <p class="pw-wizard-hint">Color configuration coming soon.</p>
-          </div>
 
         </div>
 
