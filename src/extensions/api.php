@@ -117,6 +117,42 @@ return [
 				return ProjectConfig::loadElements();
 			}
 		],
+		// Get footer defaults + overrides
+		[
+			'pattern' => 'projectwizard/footer',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadFooter();
+			}
+		],
+		// Save footer overrides
+		[
+			'pattern' => 'projectwizard/footer',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				ProjectConfig::saveFooter($data);
+				return ProjectConfig::loadFooter();
+			}
+		],
+		// Get navigation defaults + overrides
+		[
+			'pattern' => 'projectwizard/navigation',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadNavigation();
+			}
+		],
+		// Save navigation overrides
+		[
+			'pattern' => 'projectwizard/navigation',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				ProjectConfig::saveNavigation($data);
+				return ProjectConfig::loadNavigation();
+			}
+		],
 		// Get fontsize defaults + overrides
 		[
 			'pattern' => 'projectwizard/fontsizes',

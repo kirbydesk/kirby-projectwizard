@@ -6,6 +6,7 @@ import GlobalColors from './views/components/GlobalColors.vue';
 import BlockSettings from './views/components/BlockSettings.vue';
 import GlobalFonts from './views/components/GlobalFonts.vue';
 import GlobalElementStyles from './views/components/GlobalElementStyles.vue';
+import GlobalNavigation from './views/components/GlobalNavigation.vue';
 
 panel.plugin('kirbydesk/kirby-projectwizard', {
 	components: {
@@ -17,5 +18,6 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-global-fonts': GlobalFonts,
 		'pw-block-settings': BlockSettings,
 		'pw-global-elements-styles': GlobalElementStyles,
+		'pw-global-navigation': GlobalNavigation,
 	},
 });

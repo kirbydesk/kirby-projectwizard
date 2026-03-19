@@ -218,6 +218,80 @@ class ProjectConfig
 		return self::configDir() . '/elements.json';
 	}
 
+	private static function navigationFile(): string
+	{
+		return self::configDir() . '/navigation.json';
+	}
+
+	private static function footerFile(): string
+	{
+		return self::configDir() . '/footer.json';
+	}
+
+	/**
+	 * Load footer defaults from pagewizard plugin + project overrides.
+	 */
+	public static function loadFooter(): array
+	{
+		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
+		$defaults = self::readJson($pluginDir . '/config/footer.json');
+		$overrides = self::readJson(self::footerFile());
+
+		return [
+			'defaults'  => $defaults,
+			'overrides' => $overrides,
+		];
+	}
+
+	/**
+	 * Save footer overrides.
+	 */
+	public static function saveFooter(array $overrides): void
+	{
+		$path = self::footerFile();
+
+		if (empty($overrides)) {
+			if (file_exists($path)) unlink($path);
+			return;
+		}
+
+		$dir = dirname($path);
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($path, json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+	}
+
+	/**
+	 * Load navigation defaults from pagewizard plugin + project overrides.
+	 */
+	public static function loadNavigation(): array
+	{
+		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
+		$defaults = self::readJson($pluginDir . '/config/navigation.json');
+		$overrides = self::readJson(self::navigationFile());
+
+		return [
+			'defaults'  => $defaults,
+			'overrides' => $overrides,
+		];
+	}
+
+	/**
+	 * Save navigation overrides.
+	 */
+	public static function saveNavigation(array $overrides): void
+	{
+		$path = self::navigationFile();
+
+		if (empty($overrides)) {
+			if (file_exists($path)) unlink($path);
+			return;
+		}
+
+		$dir = dirname($path);
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($path, json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+	}
+
 	/**
 	 * Load element style defaults from pagewizard plugin + project overrides.
 	 */

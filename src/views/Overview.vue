@@ -99,12 +99,20 @@
 
           <!-- Header -->
           <div v-show="globalActiveTab === 'header'" class="pw-wizard-global-content">
-            <p class="pw-wizard-hint">Header and navigation configuration coming soon.</p>
+            <pw-global-navigation
+              :nav-defaults="navDefaults"
+              :nav-overrides="navOverrides"
+              @update:overrides="onNavOverridesUpdate"
+            />
           </div>
 
           <!-- Footer -->
           <div v-show="globalActiveTab === 'footer'" class="pw-wizard-global-content">
-            <p class="pw-wizard-hint">Footer configuration coming soon.</p>
+            <pw-global-navigation
+              :nav-defaults="footerDefaults"
+              :nav-overrides="footerOverrides"
+              @update:overrides="onFooterOverridesUpdate"
+            />
           </div>
 
         </div>
@@ -168,6 +176,12 @@ export default {
       elementDefaults: {},
       elementOverrides: {},
       originalElementOverrides: {},
+      navDefaults: {},
+      navOverrides: {},
+      originalNavOverrides: {},
+      footerDefaults: {},
+      footerOverrides: {},
+      originalFooterOverrides: {},
     };
   },
   computed: {
@@ -244,6 +258,22 @@ export default {
         this.originalElementOverrides = JSON.parse(JSON.stringify(elemOv));
         this.$set(this.snapshots, 'elements', JSON.stringify(elemOv));
 
+        // Load navigation
+        const navData = await this.$api.get('projectwizard/navigation');
+        this.navDefaults = navData.defaults || {};
+        const navOv = (navData.overrides && !Array.isArray(navData.overrides)) ? navData.overrides : {};
+        this.navOverrides = JSON.parse(JSON.stringify(navOv));
+        this.originalNavOverrides = JSON.parse(JSON.stringify(navOv));
+        this.$set(this.snapshots, 'header', JSON.stringify(navOv));
+
+        // Load footer
+        const footerData = await this.$api.get('projectwizard/footer');
+        this.footerDefaults = footerData.defaults || {};
+        const footerOv = (footerData.overrides && !Array.isArray(footerData.overrides)) ? footerData.overrides : {};
+        this.footerOverrides = JSON.parse(JSON.stringify(footerOv));
+        this.originalFooterOverrides = JSON.parse(JSON.stringify(footerOv));
+        this.$set(this.snapshots, 'footer', JSON.stringify(footerOv));
+
         this.loading = false;
       } catch (e) {
         console.error('Failed to load', e);
@@ -297,6 +327,25 @@ export default {
       }
     },
 
+    // --- Global: Footer ---
+    onFooterOverridesUpdate(overrides) {
+      this.footerOverrides = overrides;
+      this.$set(this.dirtyTabs, 'footer', JSON.stringify(this.footerOverrides) !== this.snapshots['footer']);
+    },
+
+    async saveFooter() {
+      try {
+        const res = await this.$api.post('projectwizard/footer', this.footerOverrides);
+        this.footerOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.originalFooterOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.$set(this.snapshots, 'footer', JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, 'footer', false);
+        this.$panel.notification.success('Footer saved');
+      } catch (e) {
+        this.$panel.notification.error('Failed to save footer');
+      }
+    },
+
     // --- Global: Elements ---
     onElementOverridesUpdate(overrides) {
       this.elementOverrides = overrides;
@@ -313,6 +362,25 @@ export default {
         this.$panel.notification.success('Element styles saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save element styles');
+      }
+    },
+
+    // --- Global: Navigation ---
+    onNavOverridesUpdate(overrides) {
+      this.navOverrides = overrides;
+      this.$set(this.dirtyTabs, 'header', JSON.stringify(this.navOverrides) !== this.snapshots['header']);
+    },
+
+    async saveNavigation() {
+      try {
+        const res = await this.$api.post('projectwizard/navigation', this.navOverrides);
+        this.navOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.originalNavOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.$set(this.snapshots, 'header', JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, 'header', false);
+        this.$panel.notification.success('Navigation saved');
+      } catch (e) {
+        this.$panel.notification.error('Failed to save navigation');
       }
     },
 
@@ -335,6 +403,10 @@ export default {
           await this.saveFonts();
         } else if (this.globalActiveTab === 'elements') {
           await this.saveElements();
+        } else if (this.globalActiveTab === 'header') {
+          await this.saveNavigation();
+        } else if (this.globalActiveTab === 'footer') {
+          await this.saveFooter();
         } else {
           await this.saveGlobal();
         }
@@ -354,6 +426,12 @@ export default {
         } else if (this.globalActiveTab === 'elements') {
           this.elementOverrides = JSON.parse(JSON.stringify(this.originalElementOverrides));
           this.$set(this.dirtyTabs, 'elements', false);
+        } else if (this.globalActiveTab === 'header') {
+          this.navOverrides = JSON.parse(JSON.stringify(this.originalNavOverrides));
+          this.$set(this.dirtyTabs, 'header', false);
+        } else if (this.globalActiveTab === 'footer') {
+          this.footerOverrides = JSON.parse(JSON.stringify(this.originalFooterOverrides));
+          this.$set(this.dirtyTabs, 'footer', false);
         } else {
           this.activeBlocks = [...this.originalActiveBlocks];
           for (const block of this.blocks) {
