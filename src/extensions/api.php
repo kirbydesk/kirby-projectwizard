@@ -81,5 +81,23 @@ return [
 				return ProjectConfig::mergedConfig();
 			}
 		],
+		// Get color defaults + overrides
+		[
+			'pattern' => 'projectwizard/colors',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadColors();
+			}
+		],
+		// Save color overrides
+		[
+			'pattern' => 'projectwizard/colors',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				ProjectConfig::saveColors($data);
+				return ProjectConfig::loadColors();
+			}
+		],
 	]
 ];

@@ -188,7 +188,7 @@ export default {
 
 .pw-field-row-inner {
   display: grid;
-  grid-template-columns: 160px 1fr;
+  grid-template-columns: 200px 1fr;
   align-items: center;
   padding: 0 var(--spacing-3);
 }

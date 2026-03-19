@@ -203,6 +203,43 @@ class ProjectConfig
 		return self::configDir() . '/overrides.json';
 	}
 
+	private static function colorsFile(): string
+	{
+		return self::configDir() . '/colors.json';
+	}
+
+	/**
+	 * Load color defaults from pagewizard plugin + project overrides.
+	 */
+	public static function loadColors(): array
+	{
+		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
+		$defaults = self::readJson($pluginDir . '/config/colors.json');
+		$overrides = self::readJson(self::colorsFile());
+
+		return [
+			'defaults'  => $defaults,
+			'overrides' => $overrides,
+		];
+	}
+
+	/**
+	 * Save color overrides (only differences from plugin defaults).
+	 */
+	public static function saveColors(array $overrides): void
+	{
+		$path = self::colorsFile();
+
+		if (empty($overrides)) {
+			if (file_exists($path)) unlink($path);
+			return;
+		}
+
+		$dir = dirname($path);
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($path, json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+	}
+
 	private static function readJson(string $path): array
 	{
 		if (!file_exists($path)) return [];
