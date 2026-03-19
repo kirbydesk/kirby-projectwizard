@@ -834,26 +834,52 @@ export default {
     },
 
     setCategoryOptions(blockType, catKey, fieldKey, field, values) {
-      const ordered = field.allOptions.filter(o => values.includes(o));
-      if (JSON.stringify(ordered) === JSON.stringify(field.allOptions)) {
-        this.deleteNested(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey + '.options');
-        this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey + '.' + fieldKey);
+      const basePath = 'settings.fields.' + catKey + '.' + fieldKey;
+      const ordered = Array.isArray(values) ? field.allOptions.filter(o => values.includes(o)) : [];
+
+      // Empty array = full reset (last option deselected in FieldRow)
+      if (ordered.length === 0) {
+        this.deleteNested(this.blockOverrides[blockType] || {}, basePath);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey);
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
         this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
-      } else {
-        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey + '.options', ordered);
+        this.markDirty(blockType);
+        return;
       }
+
+      // All options re-selected → check if full reset possible
+      if (JSON.stringify(ordered) === JSON.stringify(field.allOptions)) {
+        const currentDefault = this.getVal(blockType, basePath + '.default', field.pluginDefault);
+        if (currentDefault === field.pluginDefault || currentDefault === String(field.pluginDefault)) {
+          // Options AND default match → full reset
+          this.deleteNested(this.blockOverrides[blockType] || {}, basePath);
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.' + catKey);
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
+          this.markDirty(blockType);
+          return;
+        }
+        // Options match but default differs → remove options override only
+        this.deleteNested(this.blockOverrides[blockType] || {}, basePath + '.options');
+        this.markDirty(blockType);
+        return;
+      }
+
+      this.setVal(blockType, basePath + '.options', ordered);
+
       // Reset default if no longer in allowed list
-      const currentDefault = this.getVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey + '.default', field.pluginDefault);
+      const currentDefault = this.getVal(blockType, basePath + '.default', field.pluginDefault);
       if (!ordered.includes(currentDefault) && ordered.length) {
-        this.setVal(blockType, 'settings.fields.' + catKey + '.' + fieldKey + '.default', ordered[0]);
+        this.setVal(blockType, basePath + '.default', ordered[0]);
       }
       this.markDirty(blockType);
     },
 
     getActiveOptions(blockType, fieldKey, propKey, prop) {
-      const override = this.getOverrideOnly(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey + '.options');
+      // Check if property is disabled
+      const fullOverride = this.getOverrideOnly(blockType, 'settings.fields.content.' + fieldKey + '.' + propKey);
+      if (fullOverride === false) return [];
+      const override = this.isObject(fullOverride) ? fullOverride.options : undefined;
       if (Array.isArray(override)) return override;
       return prop.allOptions;
     },
@@ -862,8 +888,16 @@ export default {
      * Set allowed options from checkboxes input (receives full array).
      */
     setActiveOptions(blockType, fieldKey, propKey, prop, values) {
-      const updated = Array.isArray(values) ? values : [];
       const basePath = 'settings.fields.content.' + fieldKey + '.' + propKey;
+
+      // null = checkbox unchecked → disable property
+      if (values === null) {
+        this.setVal(blockType, basePath, false);
+        this.markDirty(blockType);
+        return;
+      }
+
+      const updated = Array.isArray(values) ? values : [];
 
       // Empty array = full reset (all deselected in FieldRow)
       if (updated.length === 0) {
@@ -878,6 +912,26 @@ export default {
 
       // Keep original order
       const ordered = prop.allOptions.filter(o => updated.includes(o));
+
+      // If all options re-selected → check if full reset possible
+      if (JSON.stringify(ordered) === JSON.stringify(prop.allOptions)) {
+        const currentDefault = this.getVal(blockType, basePath + '.default', prop.pluginDefault);
+        if (currentDefault === prop.pluginDefault || currentDefault === String(prop.pluginDefault)) {
+          // Options AND default match plugin defaults → full reset
+          this.deleteNested(this.blockOverrides[blockType] || {}, basePath);
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content.' + fieldKey);
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields.content');
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings.fields');
+          this.cleanEmpty(this.blockOverrides[blockType] || {}, 'settings');
+          this.markDirty(blockType);
+          return;
+        }
+        // Options match but default differs → remove options override only
+        this.deleteNested(this.blockOverrides[blockType] || {}, basePath + '.options');
+        this.markDirty(blockType);
+        return;
+      }
+
       this.setVal(blockType, basePath + '.options', ordered);
 
       // If current default is no longer in allowed list, reset it

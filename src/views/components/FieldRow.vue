@@ -54,7 +54,7 @@ export default {
   },
   data() {
     return {
-      active: this.enabled,
+      active: this.activeOptions && this.activeOptions.length > 0,
       touched: this.modified,
       localDefault: null,
       localActive: [...(this.activeOptions || [])],
@@ -66,18 +66,20 @@ export default {
         this.touched = false;
         this.localDefault = null;
         this.localActive = [...(this.activeOptions || [])];
+        this.active = this.activeOptions && this.activeOptions.length > 0;
       }
     },
     activeOptions(newVal) {
       this.localActive = [...(newVal || [])];
+      this.active = newVal && newVal.length > 0;
     },
   },
   methods: {
     toggleActive(checked) {
       this.active = checked;
       if (!checked) {
-        // Deactivated — emit empty options to remove from settings
-        this.$emit('update:options', []);
+        // Deactivated — emit null to signal "disabled"
+        this.$emit('update:options', null);
       } else {
         // Reactivated — restore all options
         this.$emit('update:options', this.allOptions);
@@ -117,7 +119,7 @@ export default {
           if (isActive) {
             const updated = this.localActive.filter(o => o !== opt);
             if (updated.length === 0) {
-              // All deselected → reset to defaults
+              if (this.required) return;
               this.touched = false;
               this.localActive = [...this.allOptions];
               this.$emit('update:options', this.allOptions);
@@ -159,7 +161,7 @@ export default {
         // Blau → Aus
         const updated = this.localActive.filter(o => o !== opt);
         if (updated.length === 0) {
-          // All deselected → reset to defaults
+          // Last option deselected → reset to defaults
           this.touched = false;
           this.localDefault = null;
           this.localActive = [...this.allOptions];
