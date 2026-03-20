@@ -168,16 +168,12 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				$key = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $data['family'] ?? 'font'));
-				$fontData = [
+				ProjectConfig::addFont($key, [
 					'family'   => $data['family'],
 					'category' => $data['category'] ?? 'sans-serif',
 					'italic'   => ($data['italic'] ?? false) === true || $data['italic'] === 'true',
 					'files'    => $data['files'] ?? [],
-				];
-				if (!empty($data['defaultWeight'])) {
-					$fontData['defaultWeight'] = $data['defaultWeight'];
-				}
-				ProjectConfig::addFont($key, $fontData);
+				]);
 				return ProjectConfig::loadFonts();
 			}
 		],

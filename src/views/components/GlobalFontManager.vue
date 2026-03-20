@@ -22,17 +22,12 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label
-                      class="pw-field-row-label pw-font-label-clickable"
-                      :class="{ 'is-default': font.family === defaultFont }"
-                      @click="setDefaultFont(font.family)"
-                    >{{ font.family }}</label>
+                    <label class="pw-field-row-label pw-font-label-bold">{{ font.family }}</label>
                     <span class="pw-quad-label">{{ categoryLabel(font.category) }}</span>
                   </div>
                   <div class="pw-field-row-options">
                     <span class="pw-font-file-name">{{ file.src }} <span class="pw-font-weight-label">{{ font.italic ? 'normal, italic' : file.style }}, {{ formatWeight(file.weight) }}</span></span>
-                    <span v-if="font.family === defaultFont" class="pw-font-default-badge">Default</span>
-                    <button v-if="!font.builtin && font.family !== defaultFont && fIdx === 0" type="button" class="pw-font-delete" @click="deleteFont(key)">×</button>
+                    <button v-if="!font.builtin && fIdx === 0" type="button" class="pw-font-delete" @click="deleteFont(key)">×</button>
                   </div>
                 </span>
               </div>
@@ -168,29 +163,6 @@
               {{ $t('prw.fonts.weightHelp') || 'Select one weight for static fonts, or multiple for variable fonts (e.g. 100–900).' }}
             </div>
 
-            <!-- Default Weight (only for range) -->
-            <div v-if="newFont.weights.length >= 2" class="pw-field-row">
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">Default Weight *</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <k-toggles-input
-                      :value="newFont.defaultWeight"
-                      :options="rangeWeightOptions"
-                      :grow="false"
-                      :required="true"
-                      @input="newFont.defaultWeight = $event"
-                    />
-                  </div>
-                </span>
-              </div>
-            </div>
-            <div v-if="newFont.weights.length >= 2" class="pw-font-help">
-              {{ $t('prw.fonts.defaultWeightHelp') || 'Choose the default weight used for body text. Other weights are available for headings, buttons, etc.' }}
-            </div>
-
             <!-- Add button -->
             <div class="pw-font-actions">
               <k-button
@@ -222,7 +194,6 @@ export default {
         italic: null,
         style: 'normal',
         weights: [],
-        defaultWeight: '',
         files: [],
       },
       pendingFiles: [],
@@ -248,17 +219,7 @@ export default {
       }));
     },
     canAddFont() {
-      const hasWeight = this.newFont.weights.length > 0;
-      const hasDefaultWeight = this.newFont.weights.length < 2 || this.newFont.defaultWeight;
-      return this.newFont.family.trim() && this.newFont.category && this.newFont.italic !== null && hasWeight && hasDefaultWeight && this.newFont.files.length > 0;
-    },
-    rangeWeightOptions() {
-      if (this.newFont.weights.length < 2) return [];
-      const sorted = [...this.newFont.weights].map(Number).sort((a, b) => a - b);
-      const min = sorted[0];
-      const max = sorted[sorted.length - 1];
-      const all = [100, 200, 300, 400, 500, 600, 700, 800, 900];
-      return all.filter(w => w >= min && w <= max).map(w => ({ value: String(w), text: String(w) }));
+      return this.newFont.family.trim() && this.newFont.category && this.newFont.italic !== null && this.newFont.weights.length > 0 && this.newFont.files.length > 0;
     },
     computedWeight() {
       if (this.newFont.weights.length === 0) return '';
@@ -269,7 +230,7 @@ export default {
   },
   methods: {
     resetAddForm() {
-      this.newFont = { family: '', category: '', italic: null, style: 'normal', weights: [], defaultWeight: '', files: [] };
+      this.newFont = { family: '', category: '', italic: null, style: 'normal', weights: [], files: [] };
     },
     categoryLabel(cat) {
       const tKey = 'prw.fontcategory.' + cat;
@@ -290,10 +251,8 @@ export default {
     toggleWeight(w) {
       if (this.newFont.weights.length === 1 && this.newFont.weights[0] === w) {
         this.newFont.weights = [];
-        this.newFont.defaultWeight = '';
       } else if (this.newFont.weights.length >= 2) {
         this.newFont.weights = [w];
-        this.newFont.defaultWeight = '';
       } else {
         this.newFont.weights.push(w);
       }
@@ -328,7 +287,7 @@ export default {
       }
 
       // Add font config
-      const fontData = {
+      await this.$api.post('projectwizard/fonts', {
         family: this.newFont.family.trim(),
         category: this.newFont.category,
         italic: this.newFont.italic,
@@ -337,11 +296,7 @@ export default {
           weight: this.computedWeight,
           style: this.newFont.italic ? 'normal' : this.newFont.style,
         })),
-      };
-      if (this.newFont.weights.length >= 2 && this.newFont.defaultWeight) {
-        fontData.defaultWeight = this.newFont.defaultWeight;
-      }
-      await this.$api.post('projectwizard/fonts', fontData);
+      });
 
       // Reset form and close
       this.resetAddForm();
@@ -421,25 +376,9 @@ export default {
   justify-content: space-between;
 }
 
-.pw-font-label-clickable {
-  cursor: pointer;
+.pw-font-label-bold {
   font-weight: 600;
-}
-
-.pw-font-label-clickable:hover {
-  color: var(--color-blue-600);
-}
-
-.pw-font-default-badge {
-  margin-left: auto;
-  background: var(--color-blue-600);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  padding: 0 var(--spacing-2);
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 5px;
+  cursor: default;
 }
 
 .pw-font-category-label {

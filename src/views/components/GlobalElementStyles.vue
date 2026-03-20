@@ -19,7 +19,7 @@
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">{{ propLabel(varName) }}</label>
+                  <label class="pw-field-row-label">{{ propLabel(varName) }}<span v-if="isRequired(varName)" class="pw-field-required"> *</span></label>
                 </div>
                 <div class="pw-field-row-options">
                   <!-- Font family selector -->
@@ -181,9 +181,13 @@ export default {
     },
     fontFamilyOptions() {
       const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
-      const options = [{ value: 'inherit', text: 'Default' }];
+      const seen = new Set();
+      const options = [];
       for (const font of Object.values(allFonts)) {
-        options.push({ value: font.family, text: font.family });
+        if (!seen.has(font.family)) {
+          seen.add(font.family);
+          options.push({ value: font.family, text: font.family });
+        }
       }
       return options;
     },
@@ -210,6 +214,9 @@ export default {
       // Remove element prefix (heading-, tagline-, etc.)
       const propParts = parts.slice(1);
       return propParts.join(' ').replace(/\b\w/g, c => c.toUpperCase());
+    },
+    isRequired(varName) {
+      return varName.endsWith('-font-weight') && !this.getOverrideValue(varName);
     },
     filteredOptions(varName, options) {
       // Only filter font-weight fields
@@ -240,9 +247,6 @@ export default {
       return [{ value: parts[0], text: parts[0] }];
     },
     getFontByFamily(family) {
-      if (family === 'inherit') {
-        family = (this.fonts.default || 'Inter');
-      }
       const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
       return Object.values(allFonts).find(f => f.family === family) || null;
     },

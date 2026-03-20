@@ -2,10 +2,21 @@
   <k-panel-inside class="pw-wizard">
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
-      <template v-if="isDirty" #buttons>
+      <template v-if="isDirty || hasStoredOverrides" #buttons>
         <div class="k-form-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
+              v-if="hasStoredOverrides && !isDirty"
+              :text="'Reset ' + (activeTab === 'global' ? ($t('prw.tab.' + globalActiveTab) || globalActiveTab) : blockLabel(activeTab)) + ' Settings'"
+              icon="undo"
+              variant="filled"
+              size="sm"
+              responsive="true"
+              class="k-form-controls-button"
+              @click="resetCurrentView"
+            />
+            <k-button
+              v-if="isDirty"
               text="Discard"
               icon="undo"
               theme="notice"
@@ -16,6 +27,7 @@
               @click="discardChanges"
             />
             <k-button
+              v-if="isDirty"
               text="Save"
               icon="check"
               theme="notice"
@@ -36,8 +48,7 @@
           { key: 'blocks', icon: 'dashboard' },
           { key: 'global', icon: 'globe' },
           { key: 'elements', icon: 'layers' },
-          { key: 'fonts', icon: 'font' },
-          { key: 'fontsizes', icon: 'title' },
+          { key: 'typography', icon: 'title' },
           { key: 'header', icon: 'header' },
           { key: 'footer', icon: 'footer' },
         ]"
@@ -76,6 +87,7 @@
             <pw-global-navigation
               :nav-defaults="globalDefaults"
               :nav-overrides="globalOverrides"
+              :fonts="fontsData"
               @update:overrides="onGlobalOverridesUpdate"
             />
           </div>
@@ -90,16 +102,12 @@
             />
           </div>
 
-          <!-- Font Manager -->
-          <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
+          <!-- Typography (Fonts + Font Sizes) -->
+          <div v-show="globalActiveTab === 'typography'" class="pw-wizard-global-content">
             <pw-global-font-manager
               :fonts="fontsData"
               @update="loadFontsData"
             />
-          </div>
-
-          <!-- Font Sizes -->
-          <div v-show="globalActiveTab === 'fontsizes'" class="pw-wizard-global-content">
             <pw-global-fonts
               :font-defaults="fontDefaults"
               :font-overrides="fontOverrides"
@@ -112,6 +120,7 @@
             <pw-global-navigation
               :nav-defaults="navDefaults"
               :nav-overrides="navOverrides"
+              :fonts="fontsData"
               @update:overrides="onNavOverridesUpdate"
             />
           </div>
@@ -121,6 +130,7 @@
             <pw-global-navigation
               :nav-defaults="footerDefaults"
               :nav-overrides="footerOverrides"
+              :fonts="fontsData"
               @update:overrides="onFooterOverridesUpdate"
             />
           </div>
@@ -196,6 +206,18 @@ export default {
     };
   },
   computed: {
+    hasStoredOverrides() {
+      if (this.activeTab === 'global') {
+        if (this.globalActiveTab === 'global') return Object.keys(this.originalGlobalOverrides).length > 0;
+        if (this.globalActiveTab === 'typography') return Object.keys(this.originalFontOverrides).length > 0;
+        if (this.globalActiveTab === 'elements') return Object.keys(this.originalElementOverrides).length > 0;
+        if (this.globalActiveTab === 'header') return Object.keys(this.originalNavOverrides).length > 0;
+        if (this.globalActiveTab === 'footer') return Object.keys(this.originalFooterOverrides).length > 0;
+      } else if (this.activeTab && this.originalOverrides[this.activeTab]) {
+        return Object.keys(this.originalOverrides[this.activeTab]).length > 0;
+      }
+      return false;
+    },
     isDirty() {
       if (this.activeTab === 'global') {
         return this.dirtyTabs['global'] || this.dirtyTabs[this.globalActiveTab] || this.dirtyTabs[this.globalActiveTab + '-settings'];
@@ -259,7 +281,7 @@ export default {
         const fontOv = (fonts.overrides && !Array.isArray(fonts.overrides)) ? fonts.overrides : {};
         this.fontOverrides = JSON.parse(JSON.stringify(fontOv));
         this.originalFontOverrides = JSON.parse(JSON.stringify(fontOv));
-        this.$set(this.snapshots, 'fontsizes', JSON.stringify(fontOv));
+        this.$set(this.snapshots, 'typography', JSON.stringify(fontOv));
 
         // Load elements
         const elems = await this.$api.get('projectwizard/elements');
@@ -325,7 +347,7 @@ export default {
     // --- Global: Fonts ---
     onFontOverridesUpdate(overrides) {
       this.fontOverrides = overrides;
-      this.$set(this.dirtyTabs, 'fontsizes', JSON.stringify(this.fontOverrides) !== this.snapshots['fonts']);
+      this.$set(this.dirtyTabs, 'typography', JSON.stringify(this.fontOverrides) !== this.snapshots['fonts']);
     },
 
     async saveFonts() {
@@ -333,11 +355,11 @@ export default {
         const res = await this.$api.post('projectwizard/fontsizes', this.fontOverrides);
         this.fontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.originalFontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'fontsizes', JSON.stringify(res.overrides || {}));
-        this.$set(this.dirtyTabs, 'fontsizes', false);
-        this.$panel.notification.success('Font sizes saved');
+        this.$set(this.snapshots, 'typography', JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, 'typography', false);
+        this.$panel.notification.success('Typography settings saved');
       } catch (e) {
-        this.$panel.notification.error('Failed to save font sizes');
+        this.$panel.notification.error('Failed to save typography settings');
       }
     },
 
@@ -354,9 +376,9 @@ export default {
         this.originalFooterOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.$set(this.snapshots, 'footer', JSON.stringify(res.overrides || {}));
         this.$set(this.dirtyTabs, 'footer', false);
-        this.$panel.notification.success('Footer saved');
+        this.$panel.notification.success('Footer settings saved');
       } catch (e) {
-        this.$panel.notification.error('Failed to save footer');
+        this.$panel.notification.error('Failed to save footer settings');
       }
     },
 
@@ -373,9 +395,9 @@ export default {
         this.originalElementOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.$set(this.snapshots, 'elements', JSON.stringify(res.overrides || {}));
         this.$set(this.dirtyTabs, 'elements', false);
-        this.$panel.notification.success('Element styles saved');
+        this.$panel.notification.success('Elements settings saved');
       } catch (e) {
-        this.$panel.notification.error('Failed to save element styles');
+        this.$panel.notification.error('Failed to save elements settings');
       }
     },
 
@@ -401,9 +423,9 @@ export default {
         this.originalNavOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.$set(this.snapshots, 'header', JSON.stringify(res.overrides || {}));
         this.$set(this.dirtyTabs, 'header', false);
-        this.$panel.notification.success('Navigation saved');
+        this.$panel.notification.success('Header settings saved');
       } catch (e) {
-        this.$panel.notification.error('Failed to save navigation');
+        this.$panel.notification.error('Failed to save header settings');
       }
     },
 
@@ -418,11 +440,58 @@ export default {
     },
 
     // --- Save / Discard ---
+    async resetCurrentView() {
+      const name = this.activeTab === 'global' ? (this.$t('prw.tab.' + this.globalActiveTab) || this.globalActiveTab) : this.blockLabel(this.activeTab);
+      try {
+        await new Promise((resolve, reject) => {
+          this.$panel.dialog.open({
+            component: 'k-text-dialog',
+            props: {
+              text: 'Reset "' + name + '" to defaults? All saved overrides for this section will be removed.',
+              submitBtn: {
+                text: 'Reset',
+                icon: 'undo',
+                theme: 'negative',
+              },
+            },
+            on: {
+              submit: () => {
+                this.$panel.dialog.close();
+                resolve();
+              },
+              cancel: () => reject(),
+            },
+          });
+        });
+      } catch (e) {
+        return;
+      }
+      if (this.activeTab === 'global') {
+        if (this.globalActiveTab === 'global') {
+          this.globalOverrides = {};
+          await this.saveGlobalSettings();
+        } else if (this.globalActiveTab === 'typography') {
+          this.fontOverrides = {};
+          await this.saveFonts();
+        } else if (this.globalActiveTab === 'elements') {
+          this.elementOverrides = {};
+          await this.saveElements();
+        } else if (this.globalActiveTab === 'header') {
+          this.navOverrides = {};
+          await this.saveNavigation();
+        } else if (this.globalActiveTab === 'footer') {
+          this.footerOverrides = {};
+          await this.saveFooter();
+        }
+      } else {
+        await this.resetBlock(this.activeTab);
+      }
+    },
     async saveCurrentView() {
       if (this.activeTab === 'global') {
         if (this.globalActiveTab === 'global') {
           await this.saveGlobalSettings();
-        } else if (this.globalActiveTab === 'fontsizes') {
+        } else if (this.globalActiveTab === 'typography') {
           await this.saveFonts();
         } else if (this.globalActiveTab === 'elements') {
           await this.saveElements();
@@ -443,9 +512,9 @@ export default {
         if (this.globalActiveTab === 'global') {
           this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
           this.$set(this.dirtyTabs, 'global-settings', false);
-        } else if (this.globalActiveTab === 'fontsizes') {
+        } else if (this.globalActiveTab === 'typography') {
           this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
-          this.$set(this.dirtyTabs, 'fontsizes', false);
+          this.$set(this.dirtyTabs, 'typography', false);
         } else if (this.globalActiveTab === 'elements') {
           this.elementOverrides = JSON.parse(JSON.stringify(this.originalElementOverrides));
           this.$set(this.dirtyTabs, 'elements', false);
@@ -475,9 +544,9 @@ export default {
         this.originalActiveBlocks = [...this.activeBlocks];
         this.$set(this.snapshots, 'global', JSON.stringify(this.activeBlocks));
         this.$set(this.dirtyTabs, 'global', false);
-        this.$panel.notification.success('Active blocks saved');
+        this.$panel.notification.success('Blocks settings saved');
       } catch (e) {
-        this.$panel.notification.error('Failed to save');
+        this.$panel.notification.error('Failed to save blocks settings');
       }
     },
 
@@ -489,6 +558,7 @@ export default {
         this.$set(this.snapshots, 'global-settings', JSON.stringify(res.overrides || {}));
         this.$set(this.dirtyTabs, 'global-settings', false);
         this.$panel.notification.success('Global settings saved');
+
       } catch (e) {
         this.$panel.notification.error('Failed to save global settings');
       }
@@ -507,9 +577,9 @@ export default {
         if (block) block.customized = Object.keys(res.overrides || {}).length > 0;
         this.$set(this.snapshots, blockType, JSON.stringify(res.overrides || {}));
         this.$set(this.dirtyTabs, blockType, false);
-        this.$panel.notification.success(this.blockLabel(blockType) + ' saved');
+        this.$panel.notification.success(this.blockLabel(blockType) + ' settings saved');
       } catch (e) {
-        this.$panel.notification.error('Failed to save');
+        this.$panel.notification.error('Failed to save ' + this.blockLabel(blockType) + ' settings');
       }
     },
 
@@ -525,7 +595,7 @@ export default {
         if (block) block.customized = false;
         this.$panel.notification.success(this.blockLabel(blockType) + ' reset to defaults');
       } catch (e) {
-        this.$panel.notification.error('Failed to reset');
+        this.$panel.notification.error('Failed to reset ' + this.blockLabel(blockType) + ' settings');
       }
     },
   },

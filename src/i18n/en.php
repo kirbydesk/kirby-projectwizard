@@ -9,8 +9,7 @@
 	'prw.navgroup.padding' => 'Global Padding',
 	'prw.navgroup.margin' => 'Global Margin',
 	'prw.navgroup.radius' => 'Global Radius',
-	'prw.tab.fonts' => 'Fonts',
-	'prw.tab.fontsizes' => 'Font Sizes',
+	'prw.tab.typography' => 'Typography',
 	'prw.fonts.default' => 'Default Font',
 	'prw.fonts.installed' => 'Installed Fonts',
 	'prw.fonts.add' => 'Add Font',
@@ -146,6 +145,13 @@
 	'prw.fontcategory.monospace' => 'Monospace',
 	'prw.fontcategory.display' => 'Display',
 	'prw.fontcategory.cursive' => 'Handwriting',
+
+/* -------------- Alignment options --------------*/
+	'prw.option.flex-start' => 'Top',
+	'prw.option.center' => 'Center',
+	'prw.option.flex-end' => 'Bottom',
+	'prw.option.enabled' => 'Enabled',
+	'prw.option.disabled' => 'Disabled',
 
 /* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',
