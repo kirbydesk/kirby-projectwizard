@@ -34,7 +34,7 @@
       <button
         v-for="tab in [
           { key: 'blocks', icon: 'dashboard' },
-          { key: 'colors', icon: 'palette' },
+          { key: 'global', icon: 'globe' },
           { key: 'elements', icon: 'layers' },
           { key: 'fontsizes', icon: 'title' },
           { key: 'header', icon: 'header' },
@@ -70,12 +70,12 @@
             />
           </div>
 
-          <!-- Colors -->
-          <div v-show="globalActiveTab === 'colors'" class="pw-wizard-global-content">
-            <pw-global-colors
-              :color-defaults="colorDefaults"
-              :color-overrides="colorOverrides"
-              @update:overrides="onColorOverridesUpdate"
+          <!-- Global -->
+          <div v-show="globalActiveTab === 'global'" class="pw-wizard-global-content">
+            <pw-global-navigation
+              :nav-defaults="globalDefaults"
+              :nav-overrides="globalOverrides"
+              @update:overrides="onGlobalOverridesUpdate"
             />
           </div>
 
@@ -167,9 +167,9 @@ export default {
       snapshots: {},
       writerActive: {},
       blockViewTab: 'settings',
-      colorDefaults: {},
-      colorOverrides: {},
-      originalColorOverrides: {},
+      globalDefaults: {},
+      globalOverrides: {},
+      originalGlobalOverrides: {},
       fontDefaults: {},
       fontOverrides: {},
       originalFontOverrides: {},
@@ -187,7 +187,7 @@ export default {
   computed: {
     isDirty() {
       if (this.activeTab === 'global') {
-        return this.dirtyTabs['global'] || this.dirtyTabs[this.globalActiveTab];
+        return this.dirtyTabs['global'] || this.dirtyTabs[this.globalActiveTab] || this.dirtyTabs[this.globalActiveTab + '-settings'];
       }
       return this.dirtyTabs[this.activeTab];
     },
@@ -234,13 +234,13 @@ export default {
           this.$set(this.snapshots, block.blockType, JSON.stringify(overrides));
         }
 
-        // Load colors
-        const colors = await this.$api.get('projectwizard/colors');
-        this.colorDefaults = colors.defaults || {};
-        const colorOv = (colors.overrides && !Array.isArray(colors.overrides)) ? colors.overrides : {};
-        this.colorOverrides = JSON.parse(JSON.stringify(colorOv));
-        this.originalColorOverrides = JSON.parse(JSON.stringify(colorOv));
-        this.$set(this.snapshots, 'colors', JSON.stringify(colorOv));
+        // Load global
+        const globalData = await this.$api.get('projectwizard/global');
+        this.globalDefaults = globalData.defaults || {};
+        const globalOv = (globalData.overrides && !Array.isArray(globalData.overrides)) ? globalData.overrides : {};
+        this.globalOverrides = JSON.parse(JSON.stringify(globalOv));
+        this.originalGlobalOverrides = JSON.parse(JSON.stringify(globalOv));
+        this.$set(this.snapshots, 'global-settings', JSON.stringify(globalOv));
 
         // Load fontsizes
         const fonts = await this.$api.get('projectwizard/fontsizes');
@@ -302,10 +302,10 @@ export default {
       this.$set(this.dirtyTabs, 'global', JSON.stringify(this.activeBlocks) !== this.snapshots['global']);
     },
 
-    // --- Global: Colors ---
-    onColorOverridesUpdate(overrides) {
-      this.colorOverrides = overrides;
-      this.$set(this.dirtyTabs, 'colors', JSON.stringify(this.colorOverrides) !== this.snapshots['colors']);
+    // --- Global: Settings ---
+    onGlobalOverridesUpdate(overrides) {
+      this.globalOverrides = overrides;
+      this.$set(this.dirtyTabs, 'global-settings', JSON.stringify(this.globalOverrides) !== this.snapshots['global-settings']);
     },
 
     // --- Global: Fonts ---
@@ -397,8 +397,8 @@ export default {
     // --- Save / Discard ---
     async saveCurrentView() {
       if (this.activeTab === 'global') {
-        if (this.globalActiveTab === 'colors') {
-          await this.saveColors();
+        if (this.globalActiveTab === 'global') {
+          await this.saveGlobalSettings();
         } else if (this.globalActiveTab === 'fontsizes') {
           await this.saveFonts();
         } else if (this.globalActiveTab === 'elements') {
@@ -417,9 +417,9 @@ export default {
 
     discardChanges() {
       if (this.activeTab === 'global') {
-        if (this.globalActiveTab === 'colors') {
-          this.colorOverrides = JSON.parse(JSON.stringify(this.originalColorOverrides));
-          this.$set(this.dirtyTabs, 'colors', false);
+        if (this.globalActiveTab === 'global') {
+          this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
+          this.$set(this.dirtyTabs, 'global-settings', false);
         } else if (this.globalActiveTab === 'fontsizes') {
           this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
           this.$set(this.dirtyTabs, 'fontsizes', false);
@@ -458,16 +458,16 @@ export default {
       }
     },
 
-    async saveColors() {
+    async saveGlobalSettings() {
       try {
-        const res = await this.$api.post('projectwizard/colors', this.colorOverrides);
-        this.colorOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.originalColorOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'colors', JSON.stringify(res.overrides || {}));
-        this.$set(this.dirtyTabs, 'colors', false);
-        this.$panel.notification.success('Colors saved');
+        const res = await this.$api.post('projectwizard/global', this.globalOverrides);
+        this.globalOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.originalGlobalOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
+        this.$set(this.snapshots, 'global-settings', JSON.stringify(res.overrides || {}));
+        this.$set(this.dirtyTabs, 'global-settings', false);
+        this.$panel.notification.success('Global settings saved');
       } catch (e) {
-        this.$panel.notification.error('Failed to save colors');
+        this.$panel.notification.error('Failed to save global settings');
       }
     },
 
@@ -512,14 +512,14 @@ export default {
 <style>
 /* Global px calculator badge */
 .pw-px-calculator {
-  font-size: var(--text-xs);
-  color: var(--color-black);
-  background: var(--color-yellow-400);
+  font-size: var(--code-inline-font-size);
+  font-family: var(--font-mono);
+  color: var(--code-inline-color-text);
+  background: var(--code-inline-color-back);
   padding: var(--spacing-1) var(--spacing-2);
-  border: 1px solid var(--color-yellow-600);
-  border-left: none;
   border-radius: 0 var(--rounded) var(--rounded) 0;
-  height: 27px;
+  border: 1px solid var(--code-inline-color-border);
+  height: 26px;
   width: 45px;
   display: flex;
   align-items: center;

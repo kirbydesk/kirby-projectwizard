@@ -1,9 +1,9 @@
 <template>
   <div class="pw-color-field">
+    <span v-if="hasLabel" class="pw-quad-label">{{ $t('pw.option.' + group) || group }}</span>
     <k-color-field
       :value="displayValue"
-      :alpha="false"
-      format="hex"
+      :alpha="true"
       mode="picker"
       @input="onInput"
     />
@@ -19,14 +19,13 @@ export default {
     overrideValue: String,
   },
   computed: {
+    hasLabel() {
+      return this.group === 'default' || this.group === 'variant' || this.group === 'variant2';
+    },
     displayValue() {
       const val = this.overrideValue || this.defaultValue;
-      // color input only accepts 7-char hex
-      if (/^#[0-9a-fA-F]{6}$/.test(val)) return val;
-      if (/^#[0-9a-fA-F]{3}$/.test(val)) {
-        return '#' + val[1]+val[1] + val[2]+val[2] + val[3]+val[3];
-      }
-      return '#000000';
+      if (!val) return '#000000';
+      return val;
     },
   },
   methods: {
@@ -39,27 +38,26 @@ export default {
 
 <style>
 .pw-color-field {
-  max-width: 180px;
-}
-
-.pw-color-field {
-  max-width: 180px;
+  display: flex;
+  align-items: center;
 }
 
 .pw-color-field .k-color-field {
   height: auto;
+  width: 160px;
 }
 
 .pw-color-field .k-input[data-type="color"] {
   background: light-dark(#f9f9f9, #1a1a1a);
-  border: none !important;
   border-radius: 0 !important;
-  padding: 0 var(--spacing-2);
-  height: 30px;
 }
 
 .pw-color-field .k-color-field-preview {
   width: 22px;
   height: 22px;
+}
+
+.pw-color-field .k-string-input {
+  padding-right: 0;
 }
 </style>

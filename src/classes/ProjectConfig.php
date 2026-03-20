@@ -203,9 +203,9 @@ class ProjectConfig
 		return self::configDir() . '/overrides.json';
 	}
 
-	private static function colorsFile(): string
+	private static function globalFile(): string
 	{
-		return self::configDir() . '/colors.json';
+		return self::configDir() . '/global.json';
 	}
 
 	private static function fontsizesFile(): string
@@ -357,13 +357,13 @@ class ProjectConfig
 	}
 
 	/**
-	 * Load color defaults from pagewizard plugin + project overrides.
+	 * Load global defaults from pagewizard plugin + project overrides.
 	 */
-	public static function loadColors(): array
+	public static function loadGlobal(): array
 	{
 		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
-		$defaults = self::readJson($pluginDir . '/config/colors.json');
-		$overrides = self::readJson(self::colorsFile());
+		$defaults = self::readJson($pluginDir . '/config/global.json');
+		$overrides = self::readJson(self::globalFile());
 
 		return [
 			'defaults'  => $defaults,
@@ -372,11 +372,11 @@ class ProjectConfig
 	}
 
 	/**
-	 * Save color overrides (only differences from plugin defaults).
+	 * Save global overrides (only differences from plugin defaults).
 	 */
-	public static function saveColors(array $overrides): void
+	public static function saveGlobal(array $overrides): void
 	{
-		$path = self::colorsFile();
+		$path = self::globalFile();
 
 		if (empty($overrides)) {
 			if (file_exists($path)) unlink($path);

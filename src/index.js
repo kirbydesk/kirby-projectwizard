@@ -2,7 +2,6 @@ import Overview from './views/Overview.vue';
 import FieldRow from './views/components/FieldRow.vue';
 import ColorFieldRow from './views/components/ColorFieldRow.vue';
 import GlobalElements from './views/components/GlobalElements.vue';
-import GlobalColors from './views/components/GlobalColors.vue';
 import BlockSettings from './views/components/BlockSettings.vue';
 import GlobalFonts from './views/components/GlobalFonts.vue';
 import GlobalElementStyles from './views/components/GlobalElementStyles.vue';
@@ -14,7 +13,6 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-field-row': FieldRow,
 		'pw-color-field-row': ColorFieldRow,
 		'pw-global-elements': GlobalElements,
-		'pw-global-colors': GlobalColors,
 		'pw-global-fonts': GlobalFonts,
 		'pw-block-settings': BlockSettings,
 		'pw-global-elements-styles': GlobalElementStyles,

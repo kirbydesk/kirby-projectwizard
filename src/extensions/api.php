@@ -83,20 +83,20 @@ return [
 		],
 		// Get color defaults + overrides
 		[
-			'pattern' => 'projectwizard/colors',
+			'pattern' => 'projectwizard/global',
 			'method'  => 'GET',
 			'action'  => function () {
-				return ProjectConfig::loadColors();
+				return ProjectConfig::loadGlobal();
 			}
 		],
-		// Save color overrides
+		// Save global overrides
 		[
-			'pattern' => 'projectwizard/colors',
+			'pattern' => 'projectwizard/global',
 			'method'  => 'POST',
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
-				ProjectConfig::saveColors($data);
-				return ProjectConfig::loadColors();
+				ProjectConfig::saveGlobal($data);
+				return ProjectConfig::loadGlobal();
 			}
 		],
 		// Get element style defaults + overrides

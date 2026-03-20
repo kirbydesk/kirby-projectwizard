@@ -29,11 +29,11 @@
                     <span class="pw-font-input-wrap">
                       <input
                         type="number"
-                        step="0.1"
+                        :step="group.step || 0.1"
                         min="0"
                         class="pw-font-input pw-px-calculator-input"
-                        :placeholder="stripRem(value[bp])"
-                        :value="stripRem(getOverrideValue(bp, varName))"
+                        :class="{ 'is-default': !getOverrideValue(bp, varName) }"
+                        :value="stripRem(getOverrideValue(bp, varName) || value[bp])"
                         @input="setRemValue(bp, varName, $event.target.value, value[bp] || '')"
                       />
                       <span class="pw-font-unit">rem</span>
@@ -205,6 +205,10 @@ export default {
 }
 
 .pw-font-input::placeholder {
+  color: var(--color-text-dimmed);
+}
+
+.pw-font-input.is-default {
   color: var(--color-text-dimmed);
 }
 
