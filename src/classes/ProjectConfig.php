@@ -388,6 +388,86 @@ class ProjectConfig
 		file_put_contents($path, json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 	}
 
+	private static function fontsConfigFile(): string
+	{
+		return self::configDir() . '/fonts.json';
+	}
+
+	/**
+	 * Load all fonts: builtin from pagewizard plugin + project uploaded fonts.
+	 */
+	public static function loadFonts(): array
+	{
+		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
+		$builtinFonts = self::readJson($pluginDir . '/config/fonts.json');
+		$projectFonts = self::readJson(self::fontsConfigFile());
+		$defaultFont = $projectFonts['_default'] ?? 'Inter';
+		unset($projectFonts['_default']);
+
+		return [
+			'builtin'  => $builtinFonts,
+			'project'  => $projectFonts,
+			'default'  => $defaultFont,
+		];
+	}
+
+	/**
+	 * Save project fonts config (uploaded fonts + default selection).
+	 */
+	public static function saveFontsConfig(array $config): void
+	{
+		$path = self::fontsConfigFile();
+		$dir = dirname($path);
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($path, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+	}
+
+	/**
+	 * Add an uploaded font to the project fonts config.
+	 */
+	public static function addFont(string $key, array $fontData): void
+	{
+		$config = self::readJson(self::fontsConfigFile());
+		$config[$key] = $fontData;
+		self::saveFontsConfig($config);
+	}
+
+	/**
+	 * Remove a font from the project fonts config and delete its files.
+	 */
+	public static function removeFont(string $key): void
+	{
+		$config = self::readJson(self::fontsConfigFile());
+		$fontsDir = kirby()->root('index') . '/assets/fonts';
+
+		// Delete font files
+		if (isset($config[$key]['files'])) {
+			foreach ($config[$key]['files'] as $file) {
+				$path = $fontsDir . '/' . $file['src'];
+				if (file_exists($path)) unlink($path);
+			}
+		}
+
+		unset($config[$key]);
+
+		if (empty($config) || (count($config) === 1 && isset($config['_default']))) {
+			$path = self::fontsConfigFile();
+			if (file_exists($path)) unlink($path);
+		} else {
+			self::saveFontsConfig($config);
+		}
+	}
+
+	/**
+	 * Set the default font family.
+	 */
+	public static function setDefaultFont(string $family): void
+	{
+		$config = self::readJson(self::fontsConfigFile());
+		$config['_default'] = $family;
+		self::saveFontsConfig($config);
+	}
+
 	private static function readJson(string $path): array
 	{
 		if (!file_exists($path)) return [];

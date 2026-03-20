@@ -153,6 +153,74 @@ return [
 				return ProjectConfig::loadNavigation();
 			}
 		],
+		// Get all fonts (builtin + project)
+		[
+			'pattern' => 'projectwizard/fonts',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadFonts();
+			}
+		],
+		// Add a font
+		[
+			'pattern' => 'projectwizard/fonts',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				$key = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $data['family'] ?? 'font'));
+				$fontData = [
+					'family'   => $data['family'],
+					'category' => $data['category'] ?? 'sans-serif',
+					'italic'   => ($data['italic'] ?? false) === true || $data['italic'] === 'true',
+					'files'    => $data['files'] ?? [],
+				];
+				if (!empty($data['defaultWeight'])) {
+					$fontData['defaultWeight'] = $data['defaultWeight'];
+				}
+				ProjectConfig::addFont($key, $fontData);
+				return ProjectConfig::loadFonts();
+			}
+		],
+		// Upload font file (base64, must be before (:any) route)
+		[
+			'pattern' => 'projectwizard/fonts/upload',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				$name = basename($data['name'] ?? '');
+				$base64 = $data['data'] ?? '';
+
+				if (!$name || !str_ends_with(strtolower($name), '.woff2') || !$base64) {
+					return ['error' => 'Invalid file'];
+				}
+
+				$fontsDir = kirby()->root('index') . '/assets/fonts';
+				if (!is_dir($fontsDir)) mkdir($fontsDir, 0777, true);
+
+				file_put_contents($fontsDir . '/' . $name, base64_decode($base64));
+
+				return ['uploaded' => [$name]];
+			}
+		],
+		// Delete a font
+		[
+			'pattern' => 'projectwizard/fonts/(:any)',
+			'method'  => 'DELETE',
+			'action'  => function (string $key) {
+				ProjectConfig::removeFont($key);
+				return ProjectConfig::loadFonts();
+			}
+		],
+		// Set default font
+		[
+			'pattern' => 'projectwizard/fonts/default',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				ProjectConfig::setDefaultFont($data['family'] ?? 'Inter');
+				return ProjectConfig::loadFonts();
+			}
+		],
 		// Get fontsize defaults + overrides
 		[
 			'pattern' => 'projectwizard/fontsizes',

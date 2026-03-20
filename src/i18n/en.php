@@ -9,7 +9,16 @@
 	'prw.navgroup.padding' => 'Global Padding',
 	'prw.navgroup.margin' => 'Global Margin',
 	'prw.navgroup.radius' => 'Global Radius',
+	'prw.tab.fonts' => 'Fonts',
 	'prw.tab.fontsizes' => 'Font Sizes',
+	'prw.fonts.default' => 'Default Font',
+	'prw.fonts.installed' => 'Installed Fonts',
+	'prw.fonts.add' => 'Add Font',
+	'prw.fonts.nameHelp' => 'Enter the exact font family name as specified by the font provider (e.g. "Roboto", "Open Sans", "Playfair Display").',
+	'prw.fonts.categoryHelp' => 'Select the font category. This is used as CSS fallback (e.g. sans-serif, serif) when the font is not yet loaded.',
+	'prw.fonts.italicHelp' => 'Enable if the font includes italic styles. Some variable fonts include italic in a separate file, others have it built-in.',
+	'prw.fonts.weightHelp' => 'Enter a single weight (e.g. 400) for static fonts, or a range (e.g. 100 900) for variable fonts that support all weights.',
+	'prw.fonts.defaultWeightHelp' => 'Choose the default weight used for body text. Other weights are available for headings, buttons, etc.',
 	'prw.tab.blocks' => 'Blocks',
 	'prw.tab.elements' => 'Elements',
 	'prw.tab.header' => 'Header',
@@ -130,6 +139,13 @@
 	'prw.help.padding' => 'e.g. 0.5rem 0.75rem, 0.75rem 1rem',
 	'prw.help.border-radius' => 'e.g. 0, 0.25rem, 0.5rem, 999px',
 	'prw.help.css-content' => 'CSS content value',
+
+/* -------------- Font categories --------------*/
+	'prw.fontcategory.sans-serif' => 'Sans-Serif',
+	'prw.fontcategory.serif' => 'Serif',
+	'prw.fontcategory.monospace' => 'Monospace',
+	'prw.fontcategory.display' => 'Display',
+	'prw.fontcategory.cursive' => 'Handwriting',
 
 /* -------------- Radius options --------------*/
 	'prw.option.top-left' => 'Top Left',

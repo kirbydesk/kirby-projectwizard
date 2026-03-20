@@ -36,6 +36,7 @@
           { key: 'blocks', icon: 'dashboard' },
           { key: 'global', icon: 'globe' },
           { key: 'elements', icon: 'layers' },
+          { key: 'fonts', icon: 'font' },
           { key: 'fontsizes', icon: 'title' },
           { key: 'header', icon: 'header' },
           { key: 'footer', icon: 'footer' },
@@ -84,11 +85,20 @@
             <pw-global-elements-styles
               :element-defaults="elementDefaults"
               :element-overrides="elementOverrides"
+              :fonts="fontsData"
               @update:overrides="onElementOverridesUpdate"
             />
           </div>
 
-          <!-- Fonts -->
+          <!-- Font Manager -->
+          <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
+            <pw-global-font-manager
+              :fonts="fontsData"
+              @update="loadFontsData"
+            />
+          </div>
+
+          <!-- Font Sizes -->
           <div v-show="globalActiveTab === 'fontsizes'" class="pw-wizard-global-content">
             <pw-global-fonts
               :font-defaults="fontDefaults"
@@ -170,6 +180,7 @@ export default {
       globalDefaults: {},
       globalOverrides: {},
       originalGlobalOverrides: {},
+      fontsData: {},
       fontDefaults: {},
       fontOverrides: {},
       originalFontOverrides: {},
@@ -257,6 +268,9 @@ export default {
         this.elementOverrides = JSON.parse(JSON.stringify(elemOv));
         this.originalElementOverrides = JSON.parse(JSON.stringify(elemOv));
         this.$set(this.snapshots, 'elements', JSON.stringify(elemOv));
+
+        // Load fonts
+        await this.loadFontsData();
 
         // Load navigation
         const navData = await this.$api.get('projectwizard/navigation');
@@ -362,6 +376,15 @@ export default {
         this.$panel.notification.success('Element styles saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save element styles');
+      }
+    },
+
+    // --- Global: Fonts ---
+    async loadFontsData() {
+      try {
+        this.fontsData = await this.$api.get('projectwizard/fonts');
+      } catch (e) {
+        console.error('Failed to load fonts', e);
       }
     },
 

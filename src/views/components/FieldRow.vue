@@ -217,6 +217,7 @@ export default {
 
 .pw-field-row-options {
   display: flex;
+  align-items: center;
   gap: var(--spacing-2);
   flex-wrap: wrap;
 }

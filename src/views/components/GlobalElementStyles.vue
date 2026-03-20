@@ -22,11 +22,20 @@
                   <label class="pw-field-row-label">{{ propLabel(varName) }}</label>
                 </div>
                 <div class="pw-field-row-options">
-                  <!-- Toggles for options -->
-                  <k-toggles-input
-                    v-if="def.options"
+                  <!-- Font family selector -->
+                  <select
+                    v-if="def.type === 'font-family'"
+                    class="pw-element-input pw-font-select"
                     :value="getOverrideValue(varName) || def.value"
-                    :options="def.options.map(o => ({ value: o, text: o }))"
+                    @change="setValue(varName, $event.target.value, def.value)"
+                  >
+                    <option v-for="opt in fontFamilyOptions" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
+                  </select>
+                  <!-- Toggles for options (font-weight filtered by font) -->
+                  <k-toggles-input
+                    v-else-if="def.options"
+                    :value="getOverrideValue(varName) || def.value"
+                    :options="filteredOptions(varName, def.options)"
                     :grow="false"
                     :required="true"
                     @input="setValue(varName, $event, def.value)"
@@ -150,6 +159,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    fonts: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   data() {
     return {
@@ -165,6 +178,14 @@ export default {
         }
       }
       return result;
+    },
+    fontFamilyOptions() {
+      const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
+      const options = [{ value: 'inherit', text: 'Default' }];
+      for (const font of Object.values(allFonts)) {
+        options.push({ value: font.family, text: font.family });
+      }
+      return options;
     },
   },
   methods: {
@@ -190,6 +211,42 @@ export default {
       const propParts = parts.slice(1);
       return propParts.join(' ').replace(/\b\w/g, c => c.toUpperCase());
     },
+    filteredOptions(varName, options) {
+      // Only filter font-weight fields
+      if (!varName.endsWith('-font-weight')) {
+        return options.map(o => ({ value: o, text: o }));
+      }
+      // Get the element prefix (e.g. "heading" from "heading-font-weight")
+      const prefix = varName.replace('-font-weight', '');
+      const fontFamilyVar = prefix + '-font-family';
+      // Get selected font family for this element
+      const selectedFamily = this.getOverrideValue(fontFamilyVar) || 'inherit';
+      const font = this.getFontByFamily(selectedFamily);
+      if (!font || !font.files || !font.files.length) {
+        return options.map(o => ({ value: o, text: o }));
+      }
+      // Parse weight range from font files
+      const weight = font.files[0].weight || '400';
+      const parts = weight.split(' ');
+      if (parts.length === 2) {
+        const min = parseInt(parts[0]);
+        const max = parseInt(parts[1]);
+        return options.filter(o => {
+          const n = parseInt(o);
+          return n >= min && n <= max;
+        }).map(o => ({ value: o, text: o }));
+      }
+      // Single weight
+      return [{ value: parts[0], text: parts[0] }];
+    },
+    getFontByFamily(family) {
+      if (family === 'inherit') {
+        family = (this.fonts.default || 'Inter');
+      }
+      const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
+      return Object.values(allFonts).find(f => f.family === family) || null;
+    },
+
     // --- Color methods ---
     colorLabel(varName) {
       const tKey = 'prw.color.' + varName;
@@ -430,6 +487,14 @@ export default {
 }
 
 
+
+.pw-font-select {
+  width: 200px;
+  cursor: pointer;
+  padding-right: var(--spacing-8);
+  appearance: auto;
+  font-family: var(--font-family);
+}
 
 .pw-element-help {
   font-size: var(--text-xs);
