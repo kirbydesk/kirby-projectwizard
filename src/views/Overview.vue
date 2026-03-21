@@ -48,7 +48,6 @@
           { key: 'blocks', icon: 'dashboard' },
           { key: 'global', icon: 'globe' },
           { key: 'elements', icon: 'layers' },
-          { key: 'typography', icon: 'title' },
           { key: 'header', icon: 'header' },
           { key: 'footer', icon: 'footer' },
         ]"
@@ -90,6 +89,10 @@
               :fonts="fontsData"
               @update:overrides="onGlobalOverridesUpdate"
             />
+            <pw-global-font-manager
+              :fonts="fontsData"
+              @update="loadFontsData"
+            />
           </div>
 
           <!-- Elements -->
@@ -98,20 +101,10 @@
               :element-defaults="elementDefaults"
               :element-overrides="elementOverrides"
               :fonts="fontsData"
-              @update:overrides="onElementOverridesUpdate"
-            />
-          </div>
-
-          <!-- Typography (Fonts + Font Sizes) -->
-          <div v-show="globalActiveTab === 'typography'" class="pw-wizard-global-content">
-            <pw-global-font-manager
-              :fonts="fontsData"
-              @update="loadFontsData"
-            />
-            <pw-global-fonts
               :font-defaults="fontDefaults"
               :font-overrides="fontOverrides"
-              @update:overrides="onFontOverridesUpdate"
+              @update:overrides="onElementOverridesUpdate"
+              @update:font-overrides="onFontOverridesUpdate"
             />
           </div>
 
@@ -209,7 +202,7 @@ export default {
     hasStoredOverrides() {
       if (this.activeTab === 'global') {
         if (this.globalActiveTab === 'global') return Object.keys(this.originalGlobalOverrides).length > 0;
-        if (this.globalActiveTab === 'typography') return Object.keys(this.originalFontOverrides).length > 0;
+        if (this.globalActiveTab === 'elements') return Object.keys(this.originalElementOverrides).length > 0 || Object.keys(this.originalFontOverrides).length > 0;
         if (this.globalActiveTab === 'elements') return Object.keys(this.originalElementOverrides).length > 0;
         if (this.globalActiveTab === 'header') return Object.keys(this.originalNavOverrides).length > 0;
         if (this.globalActiveTab === 'footer') return Object.keys(this.originalFooterOverrides).length > 0;
@@ -281,7 +274,7 @@ export default {
         const fontOv = (fonts.overrides && !Array.isArray(fonts.overrides)) ? fonts.overrides : {};
         this.fontOverrides = JSON.parse(JSON.stringify(fontOv));
         this.originalFontOverrides = JSON.parse(JSON.stringify(fontOv));
-        this.$set(this.snapshots, 'typography', JSON.stringify(fontOv));
+        this.$set(this.snapshots, 'fontsizes', JSON.stringify(fontOv));
 
         // Load elements
         const elems = await this.$api.get('projectwizard/elements');
@@ -347,7 +340,13 @@ export default {
     // --- Global: Fonts ---
     onFontOverridesUpdate(overrides) {
       this.fontOverrides = overrides;
-      this.$set(this.dirtyTabs, 'typography', JSON.stringify(this.fontOverrides) !== this.snapshots['fonts']);
+      this.updateElementsDirty();
+    },
+
+    updateElementsDirty() {
+      const elemDirty = JSON.stringify(this.elementOverrides) !== this.snapshots['elements'];
+      const fontDirty = JSON.stringify(this.fontOverrides) !== this.snapshots['fontsizes'];
+      this.$set(this.dirtyTabs, 'elements', elemDirty || fontDirty);
     },
 
     async saveFonts() {
@@ -355,11 +354,9 @@ export default {
         const res = await this.$api.post('projectwizard/fontsizes', this.fontOverrides);
         this.fontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.originalFontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'typography', JSON.stringify(res.overrides || {}));
-        this.$set(this.dirtyTabs, 'typography', false);
-        this.$panel.notification.success('Typography settings saved');
+        this.$set(this.snapshots, 'fontsizes', JSON.stringify(res.overrides || {}));
       } catch (e) {
-        this.$panel.notification.error('Failed to save typography settings');
+        this.$panel.notification.error('Failed to save font sizes');
       }
     },
 
@@ -385,7 +382,7 @@ export default {
     // --- Global: Elements ---
     onElementOverridesUpdate(overrides) {
       this.elementOverrides = overrides;
-      this.$set(this.dirtyTabs, 'elements', JSON.stringify(this.elementOverrides) !== this.snapshots['elements']);
+      this.updateElementsDirty();
     },
 
     async saveElements() {
@@ -394,6 +391,8 @@ export default {
         this.elementOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.originalElementOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
         this.$set(this.snapshots, 'elements', JSON.stringify(res.overrides || {}));
+        // Also save font sizes
+        await this.saveFonts();
         this.$set(this.dirtyTabs, 'elements', false);
         this.$panel.notification.success('Elements settings saved');
       } catch (e) {
@@ -470,11 +469,9 @@ export default {
         if (this.globalActiveTab === 'global') {
           this.globalOverrides = {};
           await this.saveGlobalSettings();
-        } else if (this.globalActiveTab === 'typography') {
-          this.fontOverrides = {};
-          await this.saveFonts();
         } else if (this.globalActiveTab === 'elements') {
           this.elementOverrides = {};
+          this.fontOverrides = {};
           await this.saveElements();
         } else if (this.globalActiveTab === 'header') {
           this.navOverrides = {};
@@ -491,8 +488,6 @@ export default {
       if (this.activeTab === 'global') {
         if (this.globalActiveTab === 'global') {
           await this.saveGlobalSettings();
-        } else if (this.globalActiveTab === 'typography') {
-          await this.saveFonts();
         } else if (this.globalActiveTab === 'elements') {
           await this.saveElements();
         } else if (this.globalActiveTab === 'header') {
@@ -512,11 +507,9 @@ export default {
         if (this.globalActiveTab === 'global') {
           this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
           this.$set(this.dirtyTabs, 'global-settings', false);
-        } else if (this.globalActiveTab === 'typography') {
-          this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
-          this.$set(this.dirtyTabs, 'typography', false);
         } else if (this.globalActiveTab === 'elements') {
           this.elementOverrides = JSON.parse(JSON.stringify(this.originalElementOverrides));
+          this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
           this.$set(this.dirtyTabs, 'elements', false);
         } else if (this.globalActiveTab === 'header') {
           this.navOverrides = JSON.parse(JSON.stringify(this.originalNavOverrides));

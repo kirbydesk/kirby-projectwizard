@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div class="pw-font-help" style="margin-bottom: var(--spacing-4)">
+      These sizes are used when the "sizes" option is enabled in block settings. Otherwise, the font-size from the Elements tab is used as fallback.
+    </div>
     <section v-for="(group, groupKey) in groups" :key="groupKey" class="pw-font-section">
       <div class="pw-section-header">
         <button class="pw-section-toggle" @click="toggle(groupKey)">
@@ -7,9 +10,9 @@
           <k-icon :type="isOpen(groupKey) ? 'angle-down' : 'angle-right'" />
         </button>
         <div v-if="isOpen(groupKey)" class="pw-font-bp-labels">
-          <span class="pw-font-bp-label">Default</span>
-          <span class="pw-font-bp-label">≥ 1024px (LG)</span>
-          <span class="pw-font-bp-label">≥ 1280px (XL)</span>
+          <span class="pw-font-bp-label">Mobile</span>
+          <span class="pw-font-bp-label">Tablet</span>
+          <span class="pw-font-bp-label">Desktop</span>
         </div>
       </div>
       <transition name="pw-slide">

@@ -42,6 +42,24 @@
                   />
                   <!-- Dual-pair: renders nothing here, handled below -->
                   <template v-else-if="def.type === 'dual-pair'"></template>
+                  <!-- Responsive font-size (default/lg/xl) -->
+                  <template v-else-if="def.default !== undefined && def.lg !== undefined">
+                    <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                      <span class="pw-quad-label">{{ { 'default': 'Mobile', 'lg': 'Tablet', 'xl': 'Desktop' }[bp] }}</span>
+                      <span class="pw-element-input-wrap">
+                        <input
+                          type="number"
+                          :step="def.step || 0.1"
+                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                          :class="{ 'is-default': !getResponsiveOverride(varName, bp) }"
+                          :value="stripUnit(getResponsiveOverride(varName, bp) || def[bp])"
+                          @input="setResponsiveValue(varName, bp, $event.target.value, def[bp], def.unit)"
+                        />
+                        <span v-if="def.unit" class="pw-element-unit">{{ def.unit }}</span>
+                      </span>
+                      <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(varName, bp) || def[bp], def.unit) }}</span>
+                    </span>
+                  </template>
                   <!-- Number input with unit -->
                   <template v-else-if="def.unit !== undefined">
                     <span class="pw-element-field">
@@ -142,6 +160,54 @@
               </div>
             </div>
           </template>
+          <!-- Sizes (from fontsizes.json) -->
+          <template v-if="fontSizesForGroup(groupKey)">
+            <div class="pw-field-row pw-sizes-toggle">
+              <button type="button" class="pw-section-toggle pw-sizes-header" @click="$set(openSections, groupKey + '-sizes', !openSections[groupKey + '-sizes'])">
+                <span>Sizes</span>
+                <k-icon :type="openSections[groupKey + '-sizes'] ? 'angle-down' : 'angle-right'" />
+              </button>
+            </div>
+            <template v-if="openSections[groupKey + '-sizes']">
+              <div class="pw-sizes-help">
+                These sizes are used when the "sizes" option is enabled in block settings.
+              </div>
+              <div class="pw-sizes-bp-labels">
+                <span class="pw-font-bp-label">Mobile</span>
+                <span class="pw-font-bp-label">Tablet</span>
+                <span class="pw-font-bp-label">Desktop</span>
+              </div>
+              <div
+                v-for="(sizeVal, sizeName) in fontSizesForGroup(groupKey).vars"
+                :key="'size-' + sizeName"
+                class="pw-field-row"
+              >
+                <div class="k-input" data-type="text">
+                  <span class="k-input-element pw-field-row-inner">
+                    <div class="pw-field-row-label-col">
+                      <label class="pw-field-row-label">{{ sizeName.split('-').pop() }}</label>
+                    </div>
+                    <div class="pw-field-row-options">
+                      <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="number"
+                            :step="fontSizesForGroup(groupKey).step || 0.1"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :class="{ 'is-default': !getFontSizeOverride(bp, sizeName) }"
+                            :value="stripUnit(getFontSizeOverride(bp, sizeName) || sizeVal[bp])"
+                            @input="setFontSizeValue(bp, sizeName, $event.target.value, sizeVal[bp], 'rem')"
+                          />
+                          <span class="pw-element-unit">rem</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getFontSizeOverride(bp, sizeName) || sizeVal[bp], 'rem') }}</span>
+                      </span>
+                    </div>
+                  </span>
+                </div>
+              </div>
+            </template>
+          </template>
         </div>
       </transition>
     </section>
@@ -160,6 +226,14 @@ export default {
       default: () => ({}),
     },
     fonts: {
+      type: Object,
+      default: () => ({}),
+    },
+    fontDefaults: {
+      type: Object,
+      default: () => ({}),
+    },
+    fontOverrides: {
       type: Object,
       default: () => ({}),
     },
@@ -343,6 +417,55 @@ export default {
       const t = this.$t(tKey);
       return (t && t !== tKey) ? t : key;
     },
+    fontSizesForGroup(groupKey) {
+      return this.fontDefaults[groupKey] || null;
+    },
+    getFontSizeOverride(bp, varName) {
+      return ((this.fontOverrides.global || {})[bp] || {})[varName] || '';
+    },
+    setFontSizeValue(bp, varName, value, defaultVal, unit) {
+      const withUnit = value === '' ? '' : value + (unit || '');
+      const overrides = JSON.parse(JSON.stringify(this.fontOverrides));
+
+      if (withUnit === '' || withUnit === defaultVal) {
+        if (overrides.global && overrides.global[bp]) {
+          delete overrides.global[bp][varName];
+          if (Object.keys(overrides.global[bp]).length === 0) delete overrides.global[bp];
+          if (overrides.global && Object.keys(overrides.global).length === 0) delete overrides.global;
+        }
+      } else {
+        if (!overrides.global) overrides.global = {};
+        if (!overrides.global[bp]) overrides.global[bp] = {};
+        overrides.global[bp][varName] = withUnit;
+      }
+
+      this.$emit('update:font-overrides', overrides);
+    },
+    getResponsiveOverride(varName, bp) {
+      return ((this.elementOverrides.global || {})[bp] || {})[varName] || '';
+    },
+    setResponsiveValue(varName, bp, value, defaultVal, unit) {
+      const withUnit = value === '' ? '' : value + (unit || '');
+      const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
+
+      if (withUnit === '' || withUnit === defaultVal) {
+        if (overrides.global && overrides.global[bp]) {
+          delete overrides.global[bp][varName];
+          if (Object.keys(overrides.global[bp]).length === 0) {
+            delete overrides.global[bp];
+          }
+          if (overrides.global && Object.keys(overrides.global).length === 0) {
+            delete overrides.global;
+          }
+        }
+      } else {
+        if (!overrides.global) overrides.global = {};
+        if (!overrides.global[bp]) overrides.global[bp] = {};
+        overrides.global[bp][varName] = withUnit;
+      }
+
+      this.$emit('update:overrides', overrides);
+    },
     getOverrideValue(varName) {
       return (this.elementOverrides.global || {})[varName] || '';
     },
@@ -498,6 +621,38 @@ export default {
   padding-right: var(--spacing-8);
   appearance: auto;
   font-family: var(--font-family);
+}
+
+.pw-sizes-toggle {
+  padding: 0;
+}
+
+.pw-sizes-header {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-dimmed);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.pw-sizes-help {
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+  padding: 0 var(--spacing-3) var(--spacing-2);
+}
+
+.pw-sizes-bp-labels {
+  display: flex;
+  gap: var(--spacing-6);
+  padding: 0 var(--spacing-3);
+  margin-left: 200px;
+  margin-bottom: var(--spacing-1);
+}
+
+.pw-font-bp-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-dimmed);
+  width: 100px;
 }
 
 .pw-element-help {

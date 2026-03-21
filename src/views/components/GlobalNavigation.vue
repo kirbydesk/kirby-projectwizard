@@ -89,6 +89,24 @@
                       @update:value="setValue(varName, $event || '', def.value)"
                     />
                   </template>
+                  <!-- Responsive font-size (default/lg/xl) -->
+                  <template v-else-if="def.default !== undefined && def.lg !== undefined">
+                    <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                      <span class="pw-quad-label">{{ { 'default': 'Mobile', 'lg': 'Tablet', 'xl': 'Desktop' }[bp] }}</span>
+                      <span class="pw-element-input-wrap">
+                        <input
+                          type="number"
+                          :step="def.step || 0.1"
+                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                          :class="{ 'is-default': !getResponsiveOverride(varName, bp) }"
+                          :value="stripUnit(getResponsiveOverride(varName, bp) || def[bp])"
+                          @input="setResponsiveValue(varName, bp, $event.target.value, def[bp], def.unit)"
+                        />
+                        <span v-if="def.unit" class="pw-element-unit">{{ def.unit }}</span>
+                      </span>
+                      <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(varName, bp) || def[bp], def.unit) }}</span>
+                    </span>
+                  </template>
                   <!-- Number input with unit + px calculator -->
                   <template v-else-if="def.unit !== undefined">
                     <span class="pw-element-field">
@@ -456,6 +474,31 @@ export default {
         if (!overrides.global) overrides.global = {};
         if (!overrides.global[theme]) overrides.global[theme] = {};
         overrides.global[theme][varName] = value;
+      }
+
+      this.$emit('update:overrides', overrides);
+    },
+    getResponsiveOverride(varName, bp) {
+      return ((this.navOverrides.global || {})[bp] || {})[varName] || '';
+    },
+    setResponsiveValue(varName, bp, value, defaultVal, unit) {
+      const withUnit = value === '' ? '' : value + (unit || '');
+      const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+
+      if (withUnit === '' || withUnit === defaultVal) {
+        if (overrides.global && overrides.global[bp]) {
+          delete overrides.global[bp][varName];
+          if (Object.keys(overrides.global[bp]).length === 0) {
+            delete overrides.global[bp];
+          }
+          if (overrides.global && Object.keys(overrides.global).length === 0) {
+            delete overrides.global;
+          }
+        }
+      } else {
+        if (!overrides.global) overrides.global = {};
+        if (!overrides.global[bp]) overrides.global[bp] = {};
+        overrides.global[bp][varName] = withUnit;
       }
 
       this.$emit('update:overrides', overrides);

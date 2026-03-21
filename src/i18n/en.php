@@ -9,7 +9,6 @@
 	'prw.navgroup.padding' => 'Global Padding',
 	'prw.navgroup.margin' => 'Global Margin',
 	'prw.navgroup.radius' => 'Global Radius',
-	'prw.tab.typography' => 'Typography',
 	'prw.fonts.default' => 'Default Font',
 	'prw.fonts.installed' => 'Installed Fonts',
 	'prw.fonts.add' => 'Add Font',
