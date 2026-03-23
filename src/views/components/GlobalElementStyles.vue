@@ -9,190 +9,164 @@
       </div>
       <transition name="pw-slide">
         <div v-show="isOpen(groupKey)" class="pw-element-list">
-          <!-- Style vars -->
-          <div
-            v-for="(def, varName) in group.vars"
-            v-if="def.type !== 'dual-pair'"
-            :key="varName"
-            class="pw-field-row"
-          >
-            <div class="k-input" data-type="text">
-              <span class="k-input-element pw-field-row-inner">
-                <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">{{ propLabel(varName) }}<span v-if="isRequired(varName)" class="pw-field-required"> *</span></label>
-                </div>
-                <div class="pw-field-row-options">
-                  <!-- Font family selector -->
-                  <select
-                    v-if="def.type === 'font-family'"
-                    class="pw-element-input pw-font-select"
-                    :value="getOverrideValue(varName) || def.value"
-                    @change="setValue(varName, $event.target.value, def.value)"
-                  >
-                    <option v-for="opt in fontFamilyOptions" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
-                  </select>
-                  <!-- Toggles for options (font-weight filtered by font) -->
-                  <k-toggles-input
-                    v-else-if="def.options"
-                    :value="getOverrideValue(varName) || def.value"
-                    :options="filteredOptions(varName, def.options)"
-                    :grow="false"
-                    :required="true"
-                    @input="setValue(varName, $event, def.value)"
-                  />
-                  <!-- Dual-pair: renders nothing here, handled below -->
-                  <template v-else-if="def.type === 'dual-pair'"></template>
-                  <!-- Responsive font-size (default/lg/xl) -->
-                  <template v-else-if="def.default !== undefined && def.lg !== undefined">
-                    <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
-                      <span class="pw-quad-label">{{ { 'default': 'Mobile', 'lg': 'Tablet', 'xl': 'Desktop' }[bp] }}</span>
-                      <span class="pw-element-input-wrap">
-                        <input
-                          type="number"
-                          :step="def.step || 0.1"
-                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
-                          :class="{ 'is-default': !getResponsiveOverride(varName, bp) }"
-                          :value="stripUnit(getResponsiveOverride(varName, bp) || def[bp])"
-                          @input="setResponsiveValue(varName, bp, $event.target.value, def[bp], def.unit)"
-                        />
-                        <span v-if="def.unit" class="pw-element-unit">{{ def.unit }}</span>
-                      </span>
-                      <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(varName, bp) || def[bp], def.unit) }}</span>
-                    </span>
-                  </template>
-                  <!-- Number input with unit -->
-                  <template v-else-if="def.unit !== undefined">
-                    <span class="pw-element-field">
-                      <span class="pw-element-input-wrap">
-                        <input
-                          type="number"
-                          :step="def.step || 0.1"
-                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
-                          :class="{ 'is-default': !getOverrideValue(varName) }"
-                          :value="stripUnit(getOverrideValue(varName) || def.value)"
-                          @input="setUnitValue(varName, $event.target.value, def.value, def.unit)"
-                        />
-                        <span v-if="def.unit" class="pw-element-unit">{{ def.unit }}</span>
-                      </span>
-                      <span class="pw-px-calculator">{{ toPx(getOverrideValue(varName) || def.value, def.unit) }}</span>
-                    </span>
-                    <span v-if="def.help" class="pw-element-help">{{ helpText(def.help) }}</span>
-                  </template>
-                  <!-- Text input for free values -->
-                  <template v-else>
-                    <input
-                      type="text"
-                      class="pw-element-input"
-                      :placeholder="def.value"
-                      :value="getOverrideValue(varName)"
-                      @input="setValue(varName, $event.target.value, def.value)"
-                    />
-                    <span v-if="def.help" class="pw-element-help">{{ helpText(def.help) }}</span>
-                  </template>
-                </div>
-              </span>
-            </div>
-          </div>
-          <!-- Dual-pair rows (padding, border-radius with 2 inputs per row) -->
-          <template v-for="(def, varName) in group.vars">
-            <template v-if="def.type === 'dual-pair'">
-              <div
-                v-for="(row, rIdx) in def.rows"
-                :key="varName + '-' + rIdx"
-                class="pw-field-row"
-                :class="{ 'pw-dual-first': rIdx === 0 && def.rows.length > 1, 'pw-dual-next': rIdx > 0 }"
-              >
-                <div class="k-input" data-type="text">
-                  <span class="k-input-element pw-field-row-inner">
-                    <div class="pw-field-row-label-col">
-                      <label class="pw-field-row-label">{{ row.label }} {{ propLabel(varName) }}</label>
-                    </div>
-                    <div class="pw-field-row-options">
-                      <span v-for="(idx, lIdx) in row.indices" :key="lIdx" class="pw-element-field">
-                        <span class="pw-quad-label">{{ row.labels[lIdx] }}</span>
-                        <span class="pw-element-input-wrap">
-                          <input
-                            type="number"
-                            :step="def.step || 0.1"
-                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
-                            :class="{ 'is-default': !getQuadValue(varName, idx) }"
-                            :value="stripUnit(getQuadValue(varName, idx) || def.value[idx])"
-                            @input="setQuadValue(varName, idx, $event.target.value, def)"
-                          />
-                          <span v-if="def.unit" class="pw-element-unit">{{ def.unit }}</span>
-                        </span>
-                        <span class="pw-px-calculator">{{ toPx(getQuadValue(varName, idx) || def.value[idx], def.unit) }}</span>
-                      </span>
-                    </div>
-                  </span>
-                </div>
+          <!-- Grouped fields -->
+          <template v-for="(fieldGroup, gIdx) in groupedFields(group)">
+            <!-- Group header row -->
+            <div v-if="fieldGroup.header" :key="'gh-' + gIdx" class="pw-group-header">
+              <div class="pw-field-row-label-col"></div>
+              <div class="pw-group-header-labels" :class="'pw-group-type-' + fieldGroup.fieldType">
+                <span v-for="label in fieldGroup.header" :key="label" class="pw-group-column-cell"><span class="pw-group-column-label">{{ label }}</span></span>
               </div>
-            </template>
-          </template>
-          <!-- Colors (3 themes per row) -->
-          <template v-if="group.colors">
+            </div>
+            <!-- Field rows in group -->
+            <template v-for="(field, fIdx) in fieldGroup.fields">
             <div
-              v-for="(colorVal, varName, index) in group.colors"
-              :key="'color-' + varName"
+              :key="'gf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :class="{
-                'pw-color-row-grouped': isFollowedByColorState(group.colors, varName, index),
-                'pw-color-row-state': varName.endsWith('-hover') || varName.endsWith('-active'),
+                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(groupKey) && openSections[groupKey + '-sizes']),
+                'pw-dual-next': field.isState,
               }"
             >
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ colorLabel(varName) }}</label>
+                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(groupKey)">
+                      <button
+                        type="button"
+                        class="pw-sizes-toggle"
+                        @click.prevent="$set(openSections, groupKey + '-sizes', !openSections[groupKey + '-sizes'])"
+                      >
+                        <k-icon class="pw-sizes-chevron" :type="openSections[groupKey + '-sizes'] ? 'angle-down' : 'angle-right'" />
+                        <span>{{ field.label }}</span>
+                      </button>
+                    </template>
+                    <label v-else class="pw-field-row-label">{{ field.label }}</label>
                   </div>
-                  <div class="pw-field-row-options pw-element-color-options">
-                    <pw-color-field-row
-                      v-for="theme in ['default', 'variant', 'variant2']"
-                      :key="theme"
-                      :group="theme"
-                      :var-name="varName"
-                      :default-value="colorVal[theme] || ''"
-                      :override-value="getColorOverrideValue(theme, varName)"
-                      @update:value="setColorValue(theme, varName, $event, colorVal[theme] || '')"
+                  <div class="pw-field-row-options" :class="fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : ''">
+                    <!-- Font family selector -->
+                    <select
+                      v-if="field.def.type === 'font-family'"
+                      class="pw-element-input pw-font-select"
+                      :value="getOverrideValue(field.varName) || field.def.value"
+                      @change="setValue(field.varName, $event.target.value, field.def.value)"
+                    >
+                      <option v-for="opt in fontFamilyOptions" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
+                    </select>
+                    <!-- Toggles for options -->
+                    <k-toggles-input
+                      v-else-if="field.def.options"
+                      :value="getOverrideValue(field.varName) || field.def.value"
+                      :options="filteredOptions(field.varName, field.def.options)"
+                      :grow="false"
+                      :required="true"
+                      @input="setValue(field.varName, $event, field.def.value)"
                     />
+                    <!-- Multi-value (padding, border-radius: 1 row, N inputs) -->
+                    <template v-else-if="field.type === 'multi-value'">
+                      <span v-for="(val, idx) in field.def.value" :key="idx" class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="number"
+                            :step="field.def.step || 0.1"
+                            :min="field.def.min"
+                            :max="field.def.max"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :class="{ 'is-default': !getQuadValue(field.varName, idx) }"
+                            :value="stripUnit(getQuadValue(field.varName, idx) || val)"
+                            @input="setQuadValue(field.varName, idx, $event.target.value, field.def)"
+                          />
+                          <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit) }}</span>
+                      </span>
+                    </template>
+                    <!-- Responsive (default/lg/xl) -->
+                    <template v-else-if="field.type === 'responsive'">
+                      <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="number"
+                            :step="field.def.step || 0.1"
+                            :min="field.def.min"
+                            :max="field.def.max"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :class="{ 'is-default': !getResponsiveOverride(field.varName, bp) }"
+                            :value="stripUnit(getResponsiveOverride(field.varName, bp) || field.def[bp])"
+                            @input="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
+                          />
+                          <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
+                      </span>
+                    </template>
+                    <!-- Theme colors (default/variant/variant2) -->
+                    <template v-else-if="field.type === 'theme-color'">
+                      <pw-color-field-row
+                        v-for="theme in ['default', 'variant', 'variant2']"
+                        :key="theme"
+                        :group="theme"
+                        :var-name="field.varName"
+                        :default-value="field.colorVal[theme] || ''"
+                        :override-value="getColorOverrideValue(theme, field.varName)"
+                        @update:value="setColorValue(theme, field.varName, $event, field.colorVal[theme] || '')"
+                      />
+                    </template>
+                    <!-- Number input with unit -->
+                    <template v-else-if="field.def.unit !== undefined">
+                      <span class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="number"
+                            :step="field.def.step || 0.1"
+                            :min="field.def.min"
+                            :max="field.def.max"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :class="{ 'is-default': !getOverrideValue(field.varName) }"
+                            :value="stripUnit(getOverrideValue(field.varName) || field.def.value)"
+                            @input="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
+                          />
+                          <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
+                      </span>
+                      <span v-if="field.def.help" class="pw-element-help">{{ helpText(field.def.help) }}</span>
+                    </template>
+                    <!-- Text input -->
+                    <template v-else>
+                      <input
+                        type="text"
+                        class="pw-element-input"
+                        :placeholder="field.def.value"
+                        :value="getOverrideValue(field.varName)"
+                        @input="setValue(field.varName, $event.target.value, field.def.value)"
+                      />
+                      <span v-if="field.def.help" class="pw-element-help">{{ helpText(field.def.help) }}</span>
+                    </template>
                   </div>
                 </span>
               </div>
             </div>
-          </template>
-          <!-- Sizes (from fontsizes.json) -->
-          <template v-if="fontSizesForGroup(groupKey)">
-            <div class="pw-field-row pw-sizes-toggle">
-              <button type="button" class="pw-section-toggle pw-sizes-header" @click="$set(openSections, groupKey + '-sizes', !openSections[groupKey + '-sizes'])">
-                <span>Sizes</span>
-                <k-icon :type="openSections[groupKey + '-sizes'] ? 'angle-down' : 'angle-right'" />
-              </button>
-            </div>
-            <template v-if="openSections[groupKey + '-sizes']">
-              <div class="pw-sizes-help">
-                These sizes are used when the "sizes" option is enabled in block settings.
-              </div>
-              <div class="pw-sizes-bp-labels">
-                <span class="pw-font-bp-label">Mobile</span>
-                <span class="pw-font-bp-label">Tablet</span>
-                <span class="pw-font-bp-label">Desktop</span>
-              </div>
+            <!-- Sizes rows (appear after font-size row when toggled) -->
+            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(groupKey) && openSections[groupKey + '-sizes']">
               <div
                 v-for="(sizeVal, sizeName) in fontSizesForGroup(groupKey).vars"
                 :key="'size-' + sizeName"
-                class="pw-field-row"
+                class="pw-field-row pw-dual-first pw-dual-next"
               >
                 <div class="k-input" data-type="text">
                   <span class="k-input-element pw-field-row-inner">
                     <div class="pw-field-row-label-col">
-                      <label class="pw-field-row-label">{{ sizeName.split('-').pop() }}</label>
+                      <label class="pw-field-row-label pw-sizes-label">{{ sizeName.split('-').pop() }}</label>
                     </div>
-                    <div class="pw-field-row-options">
+                    <div class="pw-field-row-options pw-group-type-responsive">
                       <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
                             type="number"
                             :step="fontSizesForGroup(groupKey).step || 0.1"
+                            min="0.1"
+                            max="20"
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :class="{ 'is-default': !getFontSizeOverride(bp, sizeName) }"
                             :value="stripUnit(getFontSizeOverride(bp, sizeName) || sizeVal[bp])"
@@ -207,6 +181,9 @@
                 </div>
               </div>
             </template>
+            </template>
+            <!-- Group end spacing -->
+            <div v-if="fieldGroup.header" :key="'ge-' + gIdx" class="pw-group-end"></div>
           </template>
         </div>
       </transition>
@@ -280,33 +257,121 @@ export default {
       return key.charAt(0).toUpperCase() + key.slice(1);
     },
     propLabel(varName) {
-      // "heading-font-weight" → "Font Weight"
       const tKey = 'prw.element.' + varName;
       const t = this.$t(tKey);
       if (t && t !== tKey) return t;
       const parts = varName.split('-');
-      // Remove element prefix (heading-, tagline-, etc.)
       const propParts = parts.slice(1);
       return propParts.join(' ').replace(/\b\w/g, c => c.toUpperCase());
     },
-    isRequired(varName) {
-      return varName.endsWith('-font-weight') && !this.getOverrideValue(varName);
+    // --- Field signature + grouping ---
+    fieldSignature(varName, def, isColor) {
+      if (isColor) {
+        return { type: 'theme-color', labels: ['Default', 'Variant', 'Variant2'] };
+      }
+      if (Array.isArray(def.value) && def.labels) {
+        return { type: 'multi-value', labels: def.labels };
+      }
+      if (def.default !== undefined && def.lg !== undefined && def.variant === undefined) {
+        return { type: 'responsive', labels: ['Mobile', 'Tablet', 'Desktop'] };
+      }
+      return { type: 'single', labels: null };
     },
+    groupedFields(group) {
+      const allFields = [];
+
+      // Build color fields
+      const colorFields = [];
+      if (group.colors) {
+        const colorKeys = Object.keys(group.colors);
+        for (let i = 0; i < colorKeys.length; i++) {
+          const varName = colorKeys[i];
+          const colorVal = group.colors[varName];
+          const sig = this.fieldSignature(varName, {}, true);
+          const nextKey = colorKeys[i + 1] || '';
+          const isState = varName.endsWith('-hover') || varName.endsWith('-active');
+          const isFollowedByState = nextKey.endsWith('-hover') || nextKey.endsWith('-active');
+          colorFields.push({
+            varName,
+            def: {},
+            colorVal,
+            label: this.colorLabel(varName),
+            isState,
+            isFollowedByState,
+            type: 'theme-color',
+            sigLabels: sig.labels,
+            sigKey: sig.type + ':' + sig.labels.join(','),
+          });
+        }
+      }
+
+      // Collect vars, insert colors after singles (before responsive/multi-value groups)
+      if (group.vars) {
+        let colorsInserted = false;
+        for (const [varName, def] of Object.entries(group.vars)) {
+          const sig = this.fieldSignature(varName, def, false);
+          // Insert colors before first non-single field
+          if (!colorsInserted && sig.type !== 'single' && colorFields.length > 0) {
+            allFields.push(...colorFields);
+            colorsInserted = true;
+          }
+          allFields.push({
+            varName,
+            def,
+            label: this.propLabel(varName),
+            type: sig.type,
+            sigLabels: sig.labels,
+            sigKey: sig.type === 'single' ? 'single-' + varName : sig.type + ':' + (sig.labels || []).join(','),
+          });
+        }
+        // If all fields were singles, append colors at end
+        if (!colorsInserted && colorFields.length > 0) {
+          allFields.push(...colorFields);
+        }
+      } else if (colorFields.length > 0) {
+        allFields.push(...colorFields);
+      }
+
+      // Group consecutive fields with same signature
+      const groups = [];
+      let currentGroup = null;
+
+      for (const field of allFields) {
+        if (field.type === 'single') {
+          // Singles don't group
+          if (currentGroup) {
+            groups.push(currentGroup);
+            currentGroup = null;
+          }
+          groups.push({ header: null, fields: [field] });
+        } else if (currentGroup && currentGroup.sigKey === field.sigKey) {
+          currentGroup.fields.push(field);
+        } else {
+          if (currentGroup) groups.push(currentGroup);
+          currentGroup = {
+            sigKey: field.sigKey,
+            header: field.sigLabels,
+            fieldType: field.type,
+            fields: [field],
+          };
+        }
+      }
+      if (currentGroup) groups.push(currentGroup);
+
+      return groups;
+    },
+
     filteredOptions(varName, options) {
-      // Only filter font-weight fields
       if (!varName.endsWith('-font-weight')) {
         return options.map(o => ({ value: o, text: o }));
       }
-      // Get the element prefix (e.g. "heading" from "heading-font-weight")
       const prefix = varName.replace('-font-weight', '');
       const fontFamilyVar = prefix + '-font-family';
-      // Get selected font family for this element
       const selectedFamily = this.getOverrideValue(fontFamilyVar) || 'inherit';
       const font = this.getFontByFamily(selectedFamily);
       if (!font || !font.files || !font.files.length) {
         return options.map(o => ({ value: o, text: o }));
       }
-      // Parse weight range from font files
       const weight = font.files[0].weight || '400';
       const parts = weight.split(' ');
       if (parts.length === 2) {
@@ -317,7 +382,6 @@ export default {
           return n >= min && n <= max;
         }).map(o => ({ value: o, text: o }));
       }
-      // Single weight
       return [{ value: parts[0], text: parts[0] }];
     },
     getFontByFamily(family) {
@@ -331,11 +395,6 @@ export default {
       const t = this.$t(tKey);
       if (t && t !== tKey) return t;
       return varName;
-    },
-    isFollowedByColorState(colors, varName, index) {
-      const keys = Object.keys(colors);
-      const next = keys[index + 1];
-      return next && (next.endsWith('-hover') || next.endsWith('-active'));
     },
     getColorOverrideValue(theme, varName) {
       return ((this.elementOverrides.global || {})[theme] || {})[varName] || '';
@@ -372,15 +431,12 @@ export default {
       const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
       if (!overrides.global) overrides.global = {};
 
-      // Get current values (override or defaults)
       const current = Array.isArray(overrides.global[varName])
         ? [...overrides.global[varName]]
         : [...def.value];
 
-      // Set the new value with unit
       current[index] = value === '' ? def.value[index] : value + (def.unit || '');
 
-      // If all match defaults, remove override
       const allDefault = current.every((v, i) => v === def.value[i]);
       if (allDefault) {
         delete overrides.global[varName];
@@ -501,39 +557,29 @@ export default {
   margin-bottom: var(--spacing-10);
 }
 
-.pw-element-color-header {
+
+.pw-group-header {
   display: flex;
   gap: 0;
-  padding: 0 var(--spacing-3);
-  margin-bottom: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-3) var(--spacing-1);
+  margin-top: var(--spacing-4);
 }
 
-.pw-element-color-header .pw-field-row-label {
+.pw-group-end + .pw-group-header {
+  margin-top: 0;
+}
+
+.pw-group-header .pw-field-row-label-col {
   width: 200px;
   flex-shrink: 0;
 }
 
-.pw-element-theme-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-text-dimmed);
-  width: 180px;
-  padding-left: 5px;
-}
-
-.pw-dual-first {
-  padding-bottom: 1px;
-}
-
-.pw-dual-next {
-  padding-top: 1px;
-}
-
-.pw-field-row-options:has(.pw-quad-label) {
+.pw-group-header-labels {
+  display: flex;
   gap: var(--spacing-6);
 }
 
-.pw-quad-label {
+.pw-group-column-label {
   font-size: 0.65rem;
   font-family: var(--font-mono);
   color: var(--color-black);
@@ -542,21 +588,34 @@ export default {
   padding: 2px var(--spacing-2);
   border-radius: 999px;
   white-space: nowrap;
-  margin-right: var(--spacing-1);
+  width: fit-content;
 }
 
-.pw-element-color-options {
-  gap: 0;
+.pw-group-end {
+  margin-bottom: var(--spacing-4);
 }
 
-/* Reduced spacing: row followed by :hover or :active */
-.pw-color-row-grouped {
-  padding-bottom: 1px;
+/* Column cell — fixed width wrapper, pill centered inside */
+.pw-group-column-cell {
+  display: flex;
 }
 
-/* :hover/:active rows get small top padding */
-.pw-color-row-state {
-  padding-top: 1px;
+.pw-group-type-multi-value,
+.pw-group-type-responsive {
+  gap: var(--spacing-4);
+}
+
+.pw-group-type-multi-value .pw-group-column-cell,
+.pw-group-type-responsive .pw-group-column-cell {
+  width: 145px; /* 100px input + 45px px-calculator */
+}
+
+.pw-group-type-theme-color {
+  gap: var(--spacing-4);
+}
+
+.pw-group-type-theme-color .pw-group-column-cell {
+  width: 160px; /* color picker width */
 }
 
 .pw-element-input {
@@ -613,8 +672,6 @@ export default {
   pointer-events: none;
 }
 
-
-
 .pw-font-select {
   width: 200px;
   cursor: pointer;
@@ -624,35 +681,32 @@ export default {
 }
 
 .pw-sizes-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-text);
   padding: 0;
 }
 
-.pw-sizes-header {
-  font-size: var(--text-xs);
-  font-weight: 600;
+.pw-sizes-chevron {
   color: var(--color-text-dimmed);
-  padding: var(--spacing-2) var(--spacing-3);
+  width: 18px;
+  height: 18px;
 }
 
-.pw-sizes-help {
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-  padding: 0 var(--spacing-3) var(--spacing-2);
+.pw-sizes-chevron svg {
+  width: 18px;
+  height: 18px;
 }
 
-.pw-sizes-bp-labels {
-  display: flex;
-  gap: var(--spacing-6);
-  padding: 0 var(--spacing-3);
-  margin-left: 200px;
-  margin-bottom: var(--spacing-1);
-}
-
-.pw-font-bp-label {
+.pw-sizes-label {
   font-size: var(--text-xs);
-  font-weight: 600;
   color: var(--color-text-dimmed);
-  width: 100px;
 }
 
 .pw-element-help {

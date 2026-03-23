@@ -3,20 +3,23 @@
     <div class="pw-font-help" style="margin-bottom: var(--spacing-4)">
       These sizes are used when the "sizes" option is enabled in block settings. Otherwise, the font-size from the Elements tab is used as fallback.
     </div>
-    <section v-for="(group, groupKey) in groups" :key="groupKey" class="pw-font-section">
+    <section v-for="(group, groupKey) in groups" :key="groupKey" class="pw-element-section">
       <div class="pw-section-header">
         <button class="pw-section-toggle" @click="toggle(groupKey)">
           <span>{{ groupLabel(groupKey) }}</span>
           <k-icon :type="isOpen(groupKey) ? 'angle-down' : 'angle-right'" />
         </button>
-        <div v-if="isOpen(groupKey)" class="pw-font-bp-labels">
-          <span class="pw-font-bp-label">Mobile</span>
-          <span class="pw-font-bp-label">Tablet</span>
-          <span class="pw-font-bp-label">Desktop</span>
-        </div>
       </div>
       <transition name="pw-slide">
-        <div v-show="isOpen(groupKey)" class="pw-font-list">
+        <div v-show="isOpen(groupKey)" class="pw-element-list">
+          <div class="pw-group-header">
+            <div class="pw-field-row-label-col"></div>
+            <div class="pw-group-header-labels pw-group-type-responsive">
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">Mobile</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">Tablet</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">Desktop</span></span>
+            </div>
+          </div>
           <div
             v-for="(value, varName) in group.vars"
             :key="varName"
@@ -27,19 +30,20 @@
                 <div class="pw-field-row-label-col">
                   <label class="pw-field-row-label">{{ sizeLabel(varName) }}</label>
                 </div>
-                <div class="pw-field-row-options pw-font-options">
-                  <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-font-field">
-                    <span class="pw-font-input-wrap">
+                <div class="pw-field-row-options pw-group-type-responsive">
+                  <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                    <span class="pw-element-input-wrap">
                       <input
                         type="number"
                         :step="group.step || 0.1"
-                        min="0"
-                        class="pw-font-input pw-px-calculator-input"
+                        min="0.1"
+                        max="20"
+                        class="pw-element-input pw-element-input-number pw-px-calculator-input"
                         :class="{ 'is-default': !getOverrideValue(bp, varName) }"
                         :value="stripRem(getOverrideValue(bp, varName) || value[bp])"
                         @input="setRemValue(bp, varName, $event.target.value, value[bp] || '')"
                       />
-                      <span class="pw-font-unit">rem</span>
+                      <span class="pw-element-unit">rem</span>
                     </span>
                     <span class="pw-px-calculator">{{ remToPx(getOverrideValue(bp, varName) || value[bp]) }}</span>
                   </span>
@@ -47,6 +51,7 @@
               </span>
             </div>
           </div>
+          <div class="pw-group-end"></div>
         </div>
       </transition>
     </section>
@@ -147,92 +152,9 @@ export default {
 </script>
 
 <style>
-.pw-font-section {
-  margin-bottom: 0;
-}
-
-.pw-font-section .pw-section-toggle {
-  min-width: 200px;
-}
-
-.pw-font-options {
-  width: fit-content;
-}
-
-.pw-font-bp-labels {
-  display: flex;
-  gap: var(--spacing-4);
-}
-
-.pw-font-bp-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-text-dimmed);
-  width: 145px;
-  padding-left: 5px;
-}
-
-.pw-font-list {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: var(--spacing-10);
-}
-
-.pw-font-options {
-  gap: var(--spacing-4);
-}
-
-.pw-font-input {
-  width: 100px;
-  font-size: var(--text-sm);
-  font-family: var(--font-mono);
-  padding: var(--spacing-1) 2.5rem var(--spacing-1) var(--spacing-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--rounded);
-  background: light-dark(#f9f9f9, #1a1a1a);
-}
-
-.pw-font-input::-webkit-inner-spin-button,
-.pw-font-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.pw-font-input {
-  -moz-appearance: textfield;
-}
-
-.pw-font-input:focus {
-  outline: none;
-  border-color: var(--color-focus);
-}
-
-.pw-font-input::placeholder {
-  color: var(--color-text-dimmed);
-}
-
-.pw-font-input.is-default {
-  color: var(--color-text-dimmed);
-}
-
-.pw-font-field {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.pw-font-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.pw-font-unit {
-  position: absolute;
-  right: var(--spacing-2);
+.pw-font-help {
   font-size: var(--text-xs);
   color: var(--color-text-dimmed);
-  pointer-events: none;
+  padding: 0 var(--spacing-3);
 }
-
 </style>

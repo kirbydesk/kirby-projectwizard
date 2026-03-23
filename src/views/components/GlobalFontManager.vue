@@ -26,7 +26,7 @@
                     <span class="pw-quad-label">{{ categoryLabel(font.category) }}</span>
                   </div>
                   <div class="pw-field-row-options">
-                    <span class="pw-font-file-name">{{ file.src }} <span class="pw-font-weight-label">{{ font.italic ? 'normal, italic' : file.style }}, {{ formatWeight(file.weight) }}</span></span>
+                    <span class="pw-font-file-name">{{ file.src }} <span class="pw-font-weight-label">{{ font.italic && font.files.length === 1 ? 'normal, italic' : file.style }}, {{ formatWeight(file.weight) }}</span></span>
                     <button v-if="!font.builtin && fIdx === 0" type="button" class="pw-font-delete" @click="deleteFont(key)">×</button>
                   </div>
                 </span>
@@ -492,5 +492,25 @@ export default {
 
 .pw-font-actions {
   padding: var(--spacing-3);
+}
+
+.pw-dual-first {
+  padding-bottom: 1px;
+}
+
+.pw-dual-next {
+  padding-top: 1px;
+}
+
+.pw-quad-label {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--color-black);
+  background: var(--color-yellow-300);
+  border: 1px solid var(--color-yellow-600);
+  padding: 2px var(--spacing-2);
+  border-radius: 999px;
+  white-space: nowrap;
+  margin-right: var(--spacing-1);
 }
 </style>

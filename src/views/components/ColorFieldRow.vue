@@ -1,6 +1,5 @@
 <template>
   <div class="pw-color-field">
-    <span v-if="hasLabel" class="pw-quad-label">{{ $t('pw.option.' + group) || group }}</span>
     <k-color-field
       :value="displayValue"
       :alpha="true"
@@ -19,9 +18,6 @@ export default {
     overrideValue: String,
   },
   computed: {
-    hasLabel() {
-      return this.group === 'default' || this.group === 'variant' || this.group === 'variant2';
-    },
     displayValue() {
       const val = this.overrideValue || this.defaultValue;
       if (!val) return '#000000';
