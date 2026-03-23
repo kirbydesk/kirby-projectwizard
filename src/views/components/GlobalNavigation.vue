@@ -441,9 +441,17 @@ export default {
       const match = svg.match(/<svg[\s\S]*<\/svg>/i);
       if (!match) return '';
       svg = match[0];
-      // Remove width/height="100%" (use viewBox instead)
-      svg = svg.replace(/(<svg[^>]*?)\s+width="100%"/i, '$1');
-      svg = svg.replace(/(<svg[^>]*?)\s+height="100%"/i, '$1');
+      // Replace percentage or missing width/height with real values from viewBox
+      const vbMatch = svg.match(/viewBox=["'][\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)["']/);
+      if (vbMatch) {
+        const w = Math.round(parseFloat(vbMatch[1]));
+        const h = Math.round(parseFloat(vbMatch[2]));
+        // Remove existing width/height
+        svg = svg.replace(/(<svg[^>]*?)\s+width="[^"]*"/i, '$1');
+        svg = svg.replace(/(<svg[^>]*?)\s+height="[^"]*"/i, '$1');
+        // Add real dimensions
+        svg = svg.replace(/<svg/, '<svg width="' + w + '" height="' + h + '"');
+      }
       return svg.trim();
     },
     openSvgDialog(varName, defaultVal) {
