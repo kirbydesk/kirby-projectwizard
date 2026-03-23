@@ -474,4 +474,106 @@ class ProjectConfig
 		$data = json_decode(file_get_contents($path), true);
 		return is_array($data) ? $data : [];
 	}
+
+	/**
+	 * Run scaffold once on first panel access.
+	 * Copies template files and pagewizard assets to the project.
+	 */
+	public static function scaffold(): void
+	{
+		$lockFile = self::configDir() . '/.initialized';
+		if (file_exists($lockFile)) return;
+
+		$projectRoot = kirby()->root('index') . '/..';
+		$wizardDir   = __DIR__ . '/../..';
+		$pwDir       = kirby()->root('plugins') . '/kirby-pagewizard';
+
+		// --- Projectwizard: copy files (only if not existing) ---
+		$copyDir = $wizardDir . '/src/scaffold/copy';
+		if (is_dir($copyDir)) {
+			self::copyDir($copyDir, $projectRoot);
+		}
+
+		// --- Projectwizard: generate templates ---
+		$templateDir = $wizardDir . '/src/scaffold/templates';
+		if (is_dir($templateDir)) {
+			$projectName = basename(realpath($projectRoot));
+			$valetHost   = $projectName . '.test';
+
+			$replacements = [
+				'{{PROJECT_NAME}}' => $projectName,
+				'{{VALET_HOST}}'   => $valetHost,
+			];
+
+			// package.json → root
+			self::generateTemplate($templateDir . '/package.json', $projectRoot . '/package.json', $replacements);
+
+			// composer.json → root
+			self::generateTemplate($templateDir . '/composer.json', $projectRoot . '/composer.json', $replacements);
+
+			// .env → root
+			self::generateTemplate($templateDir . '/.env', $projectRoot . '/.env', $replacements);
+
+			// config.{host}.php → site/config/
+			self::generateTemplate(
+				$templateDir . '/config.host.php',
+				$projectRoot . '/site/config/config.' . $valetHost . '.php',
+				$replacements
+			);
+		}
+
+		// --- Pagewizard: copy fonts ---
+		$fontsSource = $pwDir . '/src/scaffold/fonts';
+		$fontsDest   = $projectRoot . '/public/assets/fonts';
+		if (is_dir($fontsSource)) {
+			if (!is_dir($fontsDest)) mkdir($fontsDest, 0755, true);
+			foreach (glob($fontsSource . '/*.woff2') as $font) {
+				$dest = $fontsDest . '/' . basename($font);
+				if (!file_exists($dest)) {
+					copy($font, $dest);
+				}
+			}
+		}
+
+		// --- Pagewizard: copy projectbuilder.php ---
+		$builderSource = $pwDir . '/src/scaffold/projectbuilder.php';
+		$builderDest   = $projectRoot . '/projectbuilder.php';
+		if (file_exists($builderSource) && !file_exists($builderDest)) {
+			copy($builderSource, $builderDest);
+		}
+
+		// Write lock file
+		$dir = self::configDir();
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($lockFile, date('Y-m-d H:i:s'));
+	}
+
+	/**
+	 * Recursively copy directory, skip existing files.
+	 */
+	private static function copyDir(string $src, string $dest): void
+	{
+		foreach (scandir($src) as $item) {
+			if ($item === '.' || $item === '..') continue;
+			$srcPath  = $src . '/' . $item;
+			$destPath = $dest . '/' . $item;
+			if (is_dir($srcPath)) {
+				if (!is_dir($destPath)) mkdir($destPath, 0755, true);
+				self::copyDir($srcPath, $destPath);
+			} elseif (!file_exists($destPath)) {
+				copy($srcPath, $destPath);
+			}
+		}
+	}
+
+	/**
+	 * Generate file from template, replacing placeholders. Skip if target exists.
+	 */
+	private static function generateTemplate(string $template, string $target, array $replacements): void
+	{
+		if (file_exists($target) || !file_exists($template)) return;
+		$content = file_get_contents($template);
+		$content = str_replace(array_keys($replacements), array_values($replacements), $content);
+		file_put_contents($target, $content);
+	}
 }

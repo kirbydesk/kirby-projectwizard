@@ -1,0 +1,25 @@
+{
+  "name": "{{PROJECT_NAME}}/project",
+  "description": "Kirby CMS project",
+  "type": "project",
+  "license": "proprietary",
+  "config": {
+    "allow-plugins": {
+      "getkirby/composer-installer": true
+    },
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "extra": {
+    "kirby-cms-path": "kirby",
+    "kirby-plugins-path": "site/plugins"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "getkirby/cms": "^5.0",
+    "getkirby/composer-installer": "^1.0",
+    "kirbydesk/kirby-pagewizard": "^1.0"
+  }
+}
