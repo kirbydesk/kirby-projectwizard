@@ -28,6 +28,7 @@
               <div
                 :key="'gf-' + gIdx + '-' + fIdx"
                 class="pw-field-row"
+                :class="{ 'pw-dual-first': field.isTight, 'pw-dual-next': field.isTightNext }"
               >
                 <div class="k-input" data-type="text">
                   <span class="k-input-element pw-field-row-inner">
@@ -61,7 +62,7 @@
                       <select
                         v-else-if="field.def.type === 'font-family'"
                         class="pw-element-input pw-font-select"
-                        :value="getOverrideValue(field.varName) || field.def.value"
+                        :value="fontSelectValue(field.varName, field.def.value)"
                         @change="setValue(field.varName, $event.target.value, field.def.value)"
                       >
                         <option v-for="opt in fontFamilyOptions" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
@@ -157,7 +158,7 @@
                       <!-- SVG + dependent height field -->
                       <template v-else-if="field.def.type === 'svg'">
                         <template v-if="getOverrideValue(field.varName)">
-                          <div class="pw-svg-preview" @click="openSvgDialog(field.varName, field.def.value)"><div class="pw-svg-preview-checker" v-html="getOverrideValue(field.varName)"></div></div>
+                          <label class="pw-svg-preview"><div class="pw-svg-preview-checker" v-html="getOverrideValue(field.varName)"></div><input type="file" accept=".svg" style="display:none" @change="onSvgFileUpload(field.varName, $event, field.def.value)" /></label>
                           <template v-if="dependentField(field.varName)">
                             <span class="pw-element-field">
                               <span class="pw-group-column-label" style="margin-right: var(--spacing-2)">Height</span>
@@ -184,14 +185,11 @@
                             @click="removeSvg(field.varName)"
                           />
                         </template>
-                        <k-button
-                          v-else
-                          text="Add SVG"
-                          icon="code"
-                          size="xs"
-                          variant="filled"
-                          @click="openSvgDialog(field.varName, field.def.value)"
-                        />
+                        <label v-else class="pw-svg-upload-btn">
+                          <k-icon type="upload" />
+                          Upload SVG
+                          <input type="file" accept=".svg" style="display:none" @change="onSvgFileUpload(field.varName, $event, field.def.value)" />
+                        </label>
                       </template>
                       <!-- Text input -->
                       <input
@@ -272,6 +270,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    bodyDefaultFont: {
+      type: String,
+      default: 'Inter',
+    },
   },
   data() {
     return {
@@ -297,9 +299,11 @@ export default {
     fontFamilyOptions() {
       const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
       const seen = new Set();
-      const options = [];
+      // Show "Default" option only if this section doesn't define the body default itself
+      const hasBodyDefault = Object.values(this.navDefaults).some(g => g && g.vars && g.vars['font-family-default']);
+      const options = hasBodyDefault ? [] : [{ value: 'default', text: 'Default (' + this.bodyDefaultFont + ')' }];
       for (const font of Object.values(allFonts)) {
-        if (!seen.has(font.family)) {
+        if (!seen.has(font.family) && (hasBodyDefault || font.family !== this.bodyDefaultFont)) {
           seen.add(font.family);
           options.push({ value: font.family, text: font.family });
         }
@@ -354,15 +358,19 @@ export default {
           }
           // Skip fields with requires if dependency not met, or if rendered inline (dependentField)
           if (def.requires) {
-            if (!this.getOverrideValue(def.requires)) {
-              continue;
-            }
-            // Height fields are rendered inline in SVG row via dependentField
-            if (varName.endsWith('-display-height')) {
-              continue;
+            // "field:value" format — show only when field has specific value
+            if (def.requires.includes(':')) {
+              const [reqField, reqValue] = def.requires.split(':');
+              const currentValue = this.getOverrideValue(reqField) || this.getDefaultValue(group, reqField);
+              if (currentValue !== reqValue) continue;
+            } else {
+              if (!this.getOverrideValue(def.requires)) continue;
+              // Height fields are rendered inline in SVG row via dependentField
+              if (varName.endsWith('-display-height')) continue;
             }
           }
           const sig = this.fieldSignature(varName, def);
+          const isState = varName.includes('-active-') || varName.endsWith('-active');
           allFields.push({
             varName,
             def,
@@ -370,7 +378,19 @@ export default {
             type: sig.type,
             sigLabels: sig.labels,
             sigKey: sig.type === 'single' ? 'single-' + varName : sig.type + ':' + (sig.labels || []).join(','),
+            isDependent: !!def.requires,
+            isState,
           });
+        }
+      }
+
+      // Mark tight spacing (dependent or state fields get reduced gap)
+      for (let i = 0; i < allFields.length; i++) {
+        const f = allFields[i];
+        f.isTightNext = f.isDependent || f.isState;
+        if (i < allFields.length - 1) {
+          const next = allFields[i + 1];
+          f.isTight = next.isDependent || next.isState;
         }
       }
 
@@ -411,6 +431,11 @@ export default {
       return groups;
     },
 
+    getDefaultValue(group, varName) {
+      const def = group.vars ? group.vars[varName] : null;
+      if (!def) return '';
+      return def.value || '';
+    },
     dependentField(svgVarName) {
       // Find the field that has requires: svgVarName
       for (const [, group] of Object.entries(this.navDefaults)) {
@@ -454,42 +479,25 @@ export default {
       }
       return svg.trim();
     },
-    openSvgDialog(varName, defaultVal) {
-      const current = this.getOverrideValue(varName) || '';
-      this.$panel.dialog.open({
-        component: 'k-form-dialog',
-        props: {
-          fields: {
-            svg: {
-              type: 'textarea',
-              label: 'SVG Code',
-              buttons: false,
-              value: current,
-              font: 'monospace',
-              size: 'medium',
-              placeholder: 'Paste SVG code here...',
-            },
-          },
-          value: { svg: current },
-          submitBtn: { text: 'Apply', icon: 'check' },
-        },
-        on: {
-          submit: (values) => {
-            const cleaned = this.sanitizeSvg(values.svg || '');
-            if (!cleaned) {
-              this.$panel.notification.error('No valid SVG found');
-              return;
-            }
-            const dims = this.parseSvgDimensions(cleaned);
-            if (!dims) {
-              this.$panel.notification.error('SVG must have a viewBox or width/height attributes');
-              return;
-            }
-            this.$panel.dialog.close();
-            this.onSvgInput(varName, cleaned, defaultVal);
-          },
-        },
-      });
+    onSvgFileUpload(varName, event, defaultVal) {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (!file || !file.name.endsWith('.svg')) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const cleaned = this.sanitizeSvg(reader.result);
+        if (!cleaned) {
+          this.$panel.notification.error('No valid SVG found');
+          return;
+        }
+        const dims = this.parseSvgDimensions(cleaned);
+        if (!dims) {
+          this.$panel.notification.error('SVG must have a viewBox or width/height attributes');
+          return;
+        }
+        this.onSvgInput(varName, cleaned, defaultVal);
+      };
+      reader.readAsText(file);
     },
     removeSvg(varName) {
       const overrides = JSON.parse(JSON.stringify(this.navOverrides));
@@ -684,6 +692,11 @@ export default {
     getOverrideValue(varName) {
       return (this.navOverrides.global || {})[varName] || '';
     },
+    fontSelectValue(varName, defValue) {
+      const ov = this.getOverrideValue(varName);
+      if (ov && ov === this.bodyDefaultFont) return 'default';
+      return ov || defValue;
+    },
     setValue(varName, value, defaultVal) {
       const overrides = JSON.parse(JSON.stringify(this.navOverrides));
 
@@ -740,6 +753,22 @@ export default {
   width: auto;
 }
 
+
+.pw-svg-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  background: var(--color-gray-100);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--rounded);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.pw-svg-upload-btn:hover {
+  background: var(--color-gray-200);
+}
 
 .pw-icon-select {
   display: flex;

@@ -87,6 +87,7 @@
               :nav-defaults="globalDefaults"
               :nav-overrides="globalOverrides"
               :fonts="fontsData"
+              :body-default-font="bodyDefaultFont"
               @update:overrides="onGlobalOverridesUpdate"
             />
             <pw-global-font-manager
@@ -103,6 +104,7 @@
               :fonts="fontsData"
               :font-defaults="fontDefaults"
               :font-overrides="fontOverrides"
+              :body-default-font="bodyDefaultFont"
               @update:overrides="onElementOverridesUpdate"
               @update:font-overrides="onFontOverridesUpdate"
             />
@@ -114,6 +116,7 @@
               :nav-defaults="navDefaults"
               :nav-overrides="navOverrides"
               :fonts="fontsData"
+              :body-default-font="bodyDefaultFont"
               @update:overrides="onNavOverridesUpdate"
             />
           </div>
@@ -124,6 +127,7 @@
               :nav-defaults="footerDefaults"
               :nav-overrides="footerOverrides"
               :fonts="fontsData"
+              :body-default-font="bodyDefaultFont"
               @update:overrides="onFooterOverridesUpdate"
             />
           </div>
@@ -210,6 +214,18 @@ export default {
         return Object.keys(this.originalOverrides[this.activeTab]).length > 0;
       }
       return false;
+    },
+    bodyDefaultFont() {
+      // Resolve body default font from global defaults + overrides
+      const groups = this.globalDefaults || {};
+      let def = 'Inter';
+      for (const group of Object.values(groups)) {
+        if (group && group.vars && group.vars['font-family-default']) {
+          def = group.vars['font-family-default'].value || def;
+        }
+      }
+      const ov = this.globalOverrides && this.globalOverrides['global'];
+      return (ov && ov['font-family-default']) || def;
     },
     isDirty() {
       if (this.activeTab === 'global') {
@@ -352,9 +368,9 @@ export default {
     async saveFonts() {
       try {
         const res = await this.$api.post('projectwizard/fontsizes', this.fontOverrides);
-        this.fontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.originalFontOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'fontsizes', JSON.stringify(res.overrides || {}));
+        this.fontOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.originalFontOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.$set(this.snapshots, 'fontsizes', JSON.stringify(this.safeOverrides(res.overrides)));
       } catch (e) {
         this.$panel.notification.error('Failed to save font sizes');
       }
@@ -369,9 +385,10 @@ export default {
     async saveFooter() {
       try {
         const res = await this.$api.post('projectwizard/footer', this.footerOverrides);
-        this.footerOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.originalFooterOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'footer', JSON.stringify(res.overrides || {}));
+        const ov = this.safeOverrides(res.overrides);
+        this.footerOverrides = JSON.parse(JSON.stringify(ov));
+        this.originalFooterOverrides = JSON.parse(JSON.stringify(ov));
+        this.$set(this.snapshots, 'footer', JSON.stringify(ov));
         this.$set(this.dirtyTabs, 'footer', false);
         this.$panel.notification.success('Footer settings saved');
       } catch (e) {
@@ -388,9 +405,9 @@ export default {
     async saveElements() {
       try {
         const res = await this.$api.post('projectwizard/elements', this.elementOverrides);
-        this.elementOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.originalElementOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'elements', JSON.stringify(res.overrides || {}));
+        this.elementOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.originalElementOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.$set(this.snapshots, 'elements', JSON.stringify(this.safeOverrides(res.overrides)));
         // Also save font sizes
         await this.saveFonts();
         this.$set(this.dirtyTabs, 'elements', false);
@@ -418,9 +435,9 @@ export default {
     async saveNavigation() {
       try {
         const res = await this.$api.post('projectwizard/navigation', this.navOverrides);
-        this.navOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.originalNavOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'header', JSON.stringify(res.overrides || {}));
+        this.navOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.originalNavOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.$set(this.snapshots, 'header', JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, 'header', false);
         this.$panel.notification.success('Header settings saved');
       } catch (e) {
@@ -500,6 +517,8 @@ export default {
       } else {
         await this.saveBlock(this.activeTab);
       }
+      // Trigger projectbuilder hook to regenerate tailwind.css
+      try { fetch(window.location.origin, { cache: 'no-store' }); } catch(e) {}
     },
 
     discardChanges() {
@@ -546,9 +565,9 @@ export default {
     async saveGlobalSettings() {
       try {
         const res = await this.$api.post('projectwizard/global', this.globalOverrides);
-        this.globalOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.originalGlobalOverrides = JSON.parse(JSON.stringify(res.overrides || {}));
-        this.$set(this.snapshots, 'global-settings', JSON.stringify(res.overrides || {}));
+        this.globalOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.originalGlobalOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+        this.$set(this.snapshots, 'global-settings', JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, 'global-settings', false);
         this.$panel.notification.success('Global settings saved');
 
@@ -564,11 +583,11 @@ export default {
           this.blockOverrides[blockType] || {}
         );
         this.$set(this.blockConfigs, blockType, res);
-        this.$set(this.blockOverrides, blockType, JSON.parse(JSON.stringify(res.overrides || {})));
-        this.$set(this.originalOverrides, blockType, JSON.parse(JSON.stringify(res.overrides || {})));
+        this.$set(this.blockOverrides, blockType, JSON.parse(JSON.stringify(this.safeOverrides(res.overrides))));
+        this.$set(this.originalOverrides, blockType, JSON.parse(JSON.stringify(this.safeOverrides(res.overrides))));
         const block = this.blocks.find(b => b.blockType === blockType);
-        if (block) block.customized = Object.keys(res.overrides || {}).length > 0;
-        this.$set(this.snapshots, blockType, JSON.stringify(res.overrides || {}));
+        if (block) block.customized = Object.keys(this.safeOverrides(res.overrides)).length > 0;
+        this.$set(this.snapshots, blockType, JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, blockType, false);
         this.$panel.notification.success(this.blockLabel(blockType) + ' settings saved');
       } catch (e) {
@@ -590,6 +609,9 @@ export default {
       } catch (e) {
         this.$panel.notification.error('Failed to reset ' + this.blockLabel(blockType) + ' settings');
       }
+    },
+    safeOverrides(ov) {
+      return (ov && !Array.isArray(ov)) ? ov : {};
     },
   },
 };

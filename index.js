@@ -1,1 +1,2517 @@
-(function(){"use strict";function p(s,e,t,i,a,l,r,n){var c=typeof s=="function"?s.options:s;return e&&(c.render=e,c.staticRenderFns=t,c._compiled=!0),{exports:s,options:c}}const v={props:{blockType:{type:String,default:null}},data(){return{loading:!0,blocks:[],activeBlocks:[],activeTab:"global",globalActiveTab:"blocks",blockConfigs:{},blockOverrides:{},originalOverrides:{},originalActiveBlocks:[],dirtyTabs:{},snapshots:{},writerActive:{},blockViewTab:"settings",globalDefaults:{},globalOverrides:{},originalGlobalOverrides:{},fontsData:{},fontDefaults:{},fontOverrides:{},originalFontOverrides:{},elementDefaults:{},elementOverrides:{},originalElementOverrides:{},navDefaults:{},navOverrides:{},originalNavOverrides:{},footerDefaults:{},footerOverrides:{},originalFooterOverrides:{}}},computed:{hasStoredOverrides(){if(this.activeTab==="global"){if(this.globalActiveTab==="global")return Object.keys(this.originalGlobalOverrides).length>0;if(this.globalActiveTab==="elements")return Object.keys(this.originalElementOverrides).length>0||Object.keys(this.originalFontOverrides).length>0;if(this.globalActiveTab==="elements")return Object.keys(this.originalElementOverrides).length>0;if(this.globalActiveTab==="header")return Object.keys(this.originalNavOverrides).length>0;if(this.globalActiveTab==="footer")return Object.keys(this.originalFooterOverrides).length>0}else if(this.activeTab&&this.originalOverrides[this.activeTab])return Object.keys(this.originalOverrides[this.activeTab]).length>0;return!1},isDirty(){return this.activeTab==="global"?this.dirtyTabs.global||this.dirtyTabs[this.globalActiveTab]||this.dirtyTabs[this.globalActiveTab+"-settings"]:this.dirtyTabs[this.activeTab]}},watch:{blockType:{immediate:!0,handler(s){this.activeTab=s||"global"}}},async created(){await this.load(),this._onKeydown=s=>{(s.ctrlKey||s.metaKey)&&s.key==="s"&&(s.preventDefault(),this.isDirty&&this.saveCurrentView())},window.addEventListener("keydown",this._onKeydown)},beforeDestroy(){window.removeEventListener("keydown",this._onKeydown)},methods:{async load(){try{const s=await this.$api.get("projectwizard/blocks");this.blocks=s.blocks||[],this.activeBlocks=s.activeBlocks||[],this.originalActiveBlocks=[...this.activeBlocks],this.$set(this.snapshots,"global",JSON.stringify(this.activeBlocks));for(const d of this.blocks){const f=await this.$api.get("projectwizard/block/"+d.blockType);this.$set(this.blockConfigs,d.blockType,f);const h=f.overrides&&!Array.isArray(f.overrides)?f.overrides:{};this.$set(this.blockOverrides,d.blockType,JSON.parse(JSON.stringify(h))),this.$set(this.originalOverrides,d.blockType,JSON.parse(JSON.stringify(h))),this.$set(this.snapshots,d.blockType,JSON.stringify(h))}const e=await this.$api.get("projectwizard/global");this.globalDefaults=e.defaults||{};const t=e.overrides&&!Array.isArray(e.overrides)?e.overrides:{};this.globalOverrides=JSON.parse(JSON.stringify(t)),this.originalGlobalOverrides=JSON.parse(JSON.stringify(t)),this.$set(this.snapshots,"global-settings",JSON.stringify(t));const i=await this.$api.get("projectwizard/fontsizes");this.fontDefaults=i.defaults||{};const a=i.overrides&&!Array.isArray(i.overrides)?i.overrides:{};this.fontOverrides=JSON.parse(JSON.stringify(a)),this.originalFontOverrides=JSON.parse(JSON.stringify(a)),this.$set(this.snapshots,"fontsizes",JSON.stringify(a));const l=await this.$api.get("projectwizard/elements");this.elementDefaults=l.defaults||{};const r=l.overrides&&!Array.isArray(l.overrides)?l.overrides:{};this.elementOverrides=JSON.parse(JSON.stringify(r)),this.originalElementOverrides=JSON.parse(JSON.stringify(r)),this.$set(this.snapshots,"elements",JSON.stringify(r)),await this.loadFontsData();const n=await this.$api.get("projectwizard/navigation");this.navDefaults=n.defaults||{};const c=n.overrides&&!Array.isArray(n.overrides)?n.overrides:{};this.navOverrides=JSON.parse(JSON.stringify(c)),this.originalNavOverrides=JSON.parse(JSON.stringify(c)),this.$set(this.snapshots,"header",JSON.stringify(c));const o=await this.$api.get("projectwizard/footer");this.footerDefaults=o.defaults||{};const u=o.overrides&&!Array.isArray(o.overrides)?o.overrides:{};this.footerOverrides=JSON.parse(JSON.stringify(u)),this.originalFooterOverrides=JSON.parse(JSON.stringify(u)),this.$set(this.snapshots,"footer",JSON.stringify(u)),this.loading=!1}catch(s){console.error("Failed to load",s)}},blockLabel(s){const e=this.blocks.find(i=>i.blockType===s);if(e){const i=this.$t(e.plugin+".name");if(i&&i!==e.plugin+".name")return i}const t=s.replace(/^pw/,"").replace(/([A-Z])/g," $1").trim()||s;return t.charAt(0).toUpperCase()+t.slice(1)},toggleBlock(s,e){const t=this.blocks.find(i=>i.blockType===s);t&&(t.active=e),e?this.activeBlocks.includes(s)||this.activeBlocks.push(s):this.activeBlocks=this.activeBlocks.filter(i=>i!==s),this.$set(this.dirtyTabs,"global",JSON.stringify(this.activeBlocks)!==this.snapshots.global)},onGlobalOverridesUpdate(s){this.globalOverrides=s,this.$set(this.dirtyTabs,"global-settings",JSON.stringify(this.globalOverrides)!==this.snapshots["global-settings"])},onFontOverridesUpdate(s){this.fontOverrides=s,this.updateElementsDirty()},updateElementsDirty(){const s=JSON.stringify(this.elementOverrides)!==this.snapshots.elements,e=JSON.stringify(this.fontOverrides)!==this.snapshots.fontsizes;this.$set(this.dirtyTabs,"elements",s||e)},async saveFonts(){try{const s=await this.$api.post("projectwizard/fontsizes",this.fontOverrides);this.fontOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.originalFontOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.$set(this.snapshots,"fontsizes",JSON.stringify(s.overrides||{}))}catch{this.$panel.notification.error("Failed to save font sizes")}},onFooterOverridesUpdate(s){this.footerOverrides=s,this.$set(this.dirtyTabs,"footer",JSON.stringify(this.footerOverrides)!==this.snapshots.footer)},async saveFooter(){try{const s=await this.$api.post("projectwizard/footer",this.footerOverrides);this.footerOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.originalFooterOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.$set(this.snapshots,"footer",JSON.stringify(s.overrides||{})),this.$set(this.dirtyTabs,"footer",!1),this.$panel.notification.success("Footer settings saved")}catch{this.$panel.notification.error("Failed to save footer settings")}},onElementOverridesUpdate(s){this.elementOverrides=s,this.updateElementsDirty()},async saveElements(){try{const s=await this.$api.post("projectwizard/elements",this.elementOverrides);this.elementOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.originalElementOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.$set(this.snapshots,"elements",JSON.stringify(s.overrides||{})),await this.saveFonts(),this.$set(this.dirtyTabs,"elements",!1),this.$panel.notification.success("Elements settings saved")}catch{this.$panel.notification.error("Failed to save elements settings")}},async loadFontsData(){try{this.fontsData=await this.$api.get("projectwizard/fonts")}catch(s){console.error("Failed to load fonts",s)}},onNavOverridesUpdate(s){this.navOverrides=s,this.$set(this.dirtyTabs,"header",JSON.stringify(this.navOverrides)!==this.snapshots.header)},async saveNavigation(){try{const s=await this.$api.post("projectwizard/navigation",this.navOverrides);this.navOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.originalNavOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.$set(this.snapshots,"header",JSON.stringify(s.overrides||{})),this.$set(this.dirtyTabs,"header",!1),this.$panel.notification.success("Header settings saved")}catch{this.$panel.notification.error("Failed to save header settings")}},onBlockOverridesUpdate(s,e){this.$set(this.blockOverrides,s,e);const t=JSON.stringify(e),i=this.snapshots[s]||"{}";this.$set(this.dirtyTabs,s,t!==i);const a=this.blockConfigs[s];a&&(a.hasOverrides=Object.keys(e||{}).length>0)},async resetCurrentView(){const s=this.activeTab==="global"?this.$t("prw.tab."+this.globalActiveTab)||this.globalActiveTab:this.blockLabel(this.activeTab);try{await new Promise((e,t)=>{this.$panel.dialog.open({component:"k-text-dialog",props:{text:'Reset "'+s+'" to defaults? All saved overrides for this section will be removed.',submitBtn:{text:"Reset",icon:"undo",theme:"negative"}},on:{submit:()=>{this.$panel.dialog.close(),e()},cancel:()=>t()}})})}catch{return}this.activeTab==="global"?this.globalActiveTab==="global"?(this.globalOverrides={},await this.saveGlobalSettings()):this.globalActiveTab==="elements"?(this.elementOverrides={},this.fontOverrides={},await this.saveElements()):this.globalActiveTab==="header"?(this.navOverrides={},await this.saveNavigation()):this.globalActiveTab==="footer"&&(this.footerOverrides={},await this.saveFooter()):await this.resetBlock(this.activeTab)},async saveCurrentView(){this.activeTab==="global"?this.globalActiveTab==="global"?await this.saveGlobalSettings():this.globalActiveTab==="elements"?await this.saveElements():this.globalActiveTab==="header"?await this.saveNavigation():this.globalActiveTab==="footer"?await this.saveFooter():await this.saveGlobal():await this.saveBlock(this.activeTab)},discardChanges(){if(this.activeTab==="global")if(this.globalActiveTab==="global")this.globalOverrides=JSON.parse(JSON.stringify(this.originalGlobalOverrides)),this.$set(this.dirtyTabs,"global-settings",!1);else if(this.globalActiveTab==="elements")this.elementOverrides=JSON.parse(JSON.stringify(this.originalElementOverrides)),this.fontOverrides=JSON.parse(JSON.stringify(this.originalFontOverrides)),this.$set(this.dirtyTabs,"elements",!1);else if(this.globalActiveTab==="header")this.navOverrides=JSON.parse(JSON.stringify(this.originalNavOverrides)),this.$set(this.dirtyTabs,"header",!1);else if(this.globalActiveTab==="footer")this.footerOverrides=JSON.parse(JSON.stringify(this.originalFooterOverrides)),this.$set(this.dirtyTabs,"footer",!1);else{this.activeBlocks=[...this.originalActiveBlocks];for(const s of this.blocks)s.active=this.activeBlocks.includes(s.blockType);this.$set(this.dirtyTabs,"global",!1)}else{const s=this.activeTab;this.$set(this.blockOverrides,s,JSON.parse(JSON.stringify(this.originalOverrides[s]||{}))),this.$set(this.dirtyTabs,this.activeTab,!1)}},async saveGlobal(){try{await this.$api.post("projectwizard/blocks/active",{blocks:this.activeBlocks}),this.originalActiveBlocks=[...this.activeBlocks],this.$set(this.snapshots,"global",JSON.stringify(this.activeBlocks)),this.$set(this.dirtyTabs,"global",!1),this.$panel.notification.success("Blocks settings saved")}catch{this.$panel.notification.error("Failed to save blocks settings")}},async saveGlobalSettings(){try{const s=await this.$api.post("projectwizard/global",this.globalOverrides);this.globalOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.originalGlobalOverrides=JSON.parse(JSON.stringify(s.overrides||{})),this.$set(this.snapshots,"global-settings",JSON.stringify(s.overrides||{})),this.$set(this.dirtyTabs,"global-settings",!1),this.$panel.notification.success("Global settings saved")}catch{this.$panel.notification.error("Failed to save global settings")}},async saveBlock(s){try{const e=await this.$api.post("projectwizard/block/"+s,this.blockOverrides[s]||{});this.$set(this.blockConfigs,s,e),this.$set(this.blockOverrides,s,JSON.parse(JSON.stringify(e.overrides||{}))),this.$set(this.originalOverrides,s,JSON.parse(JSON.stringify(e.overrides||{})));const t=this.blocks.find(i=>i.blockType===s);t&&(t.customized=Object.keys(e.overrides||{}).length>0),this.$set(this.snapshots,s,JSON.stringify(e.overrides||{})),this.$set(this.dirtyTabs,s,!1),this.$panel.notification.success(this.blockLabel(s)+" settings saved")}catch{this.$panel.notification.error("Failed to save "+this.blockLabel(s)+" settings")}},async resetBlock(s){try{const e=await this.$api.post("projectwizard/block/"+s+"/reset");this.$set(this.blockConfigs,s,e),this.$set(this.blockOverrides,s,{}),this.$set(this.originalOverrides,s,{}),this.$set(this.snapshots,s,"{}"),this.$set(this.dirtyTabs,s,!1);const t=this.blocks.find(i=>i.blockType===s);t&&(t.customized=!1),this.$panel.notification.success(this.blockLabel(s)+" reset to defaults")}catch{this.$panel.notification.error("Failed to reset "+this.blockLabel(s)+" settings")}}}};var g=function(){var e=this,t=e._self._c;return t("k-panel-inside",{staticClass:"pw-wizard"},[t("k-header",{scopedSlots:e._u([e.isDirty||e.hasStoredOverrides?{key:"buttons",fn:function(){return[t("div",{staticClass:"k-form-controls"},[t("div",{staticClass:"k-button-group",attrs:{"data-layout":"collapsed"}},[e.hasStoredOverrides&&!e.isDirty?t("k-button",{staticClass:"k-form-controls-button",attrs:{text:"Reset "+(e.activeTab==="global"?e.$t("prw.tab."+e.globalActiveTab)||e.globalActiveTab:e.blockLabel(e.activeTab))+" Settings",icon:"undo",variant:"filled",size:"sm",responsive:"true"},on:{click:e.resetCurrentView}}):e._e(),e.isDirty?t("k-button",{staticClass:"k-form-controls-button",attrs:{text:"Discard",icon:"undo",theme:"notice",variant:"filled",size:"sm",responsive:"true"},on:{click:e.discardChanges}}):e._e(),e.isDirty?t("k-button",{staticClass:"k-form-controls-button",attrs:{text:"Save",icon:"check",theme:"notice",variant:"filled",size:"sm"},on:{click:e.saveCurrentView}}):e._e()],1)])]},proxy:!0}:null],null,!0)},[e._v(" "+e._s(e.blockType?e.blockLabel(e.blockType):"Project Wizard")+" ")]),!e.loading&&e.activeTab==="global"?t("nav",{staticClass:"k-tabs k-model-tabs"},e._l([{key:"blocks",icon:"dashboard"},{key:"global",icon:"globe"},{key:"elements",icon:"layers"},{key:"header",icon:"header"},{key:"footer",icon:"footer"}],function(i){return t("button",{key:i.key,staticClass:"k-tabs-button k-button",attrs:{type:"button","aria-current":e.globalActiveTab===i.key?"true":null,"data-has-icon":"true","data-has-text":"true","data-variant":"dimmed"},on:{click:function(a){e.globalActiveTab=i.key}}},[t("span",{staticClass:"k-button-icon"},[t("k-icon",{attrs:{type:i.icon}})],1),t("span",{staticClass:"k-button-text"},[e._v(e._s(e.$t("prw.tab."+i.key)))])])}),0):e._e(),e.loading?t("div",{staticClass:"pw-wizard-loading"},[e._v("Loading...")]):t("div",{staticClass:"pw-wizard-content"},[e.activeTab==="global"?t("div",{staticClass:"pw-wizard-panel"},[t("div",{directives:[{name:"show",rawName:"v-show",value:e.globalActiveTab==="blocks",expression:"globalActiveTab === 'blocks'"}],staticClass:"pw-wizard-global-content"},[t("pw-global-elements",{attrs:{blocks:e.blocks},on:{toggle:function(i){return e.toggleBlock(i.blockType,i.checked)}}})],1),t("div",{directives:[{name:"show",rawName:"v-show",value:e.globalActiveTab==="global",expression:"globalActiveTab === 'global'"}],staticClass:"pw-wizard-global-content"},[t("pw-global-navigation",{attrs:{"nav-defaults":e.globalDefaults,"nav-overrides":e.globalOverrides,fonts:e.fontsData},on:{"update:overrides":e.onGlobalOverridesUpdate}}),t("pw-global-font-manager",{attrs:{fonts:e.fontsData},on:{update:e.loadFontsData}})],1),t("div",{directives:[{name:"show",rawName:"v-show",value:e.globalActiveTab==="elements",expression:"globalActiveTab === 'elements'"}],staticClass:"pw-wizard-global-content"},[t("pw-global-elements-styles",{attrs:{"element-defaults":e.elementDefaults,"element-overrides":e.elementOverrides,fonts:e.fontsData,"font-defaults":e.fontDefaults,"font-overrides":e.fontOverrides},on:{"update:overrides":e.onElementOverridesUpdate,"update:font-overrides":e.onFontOverridesUpdate}})],1),t("div",{directives:[{name:"show",rawName:"v-show",value:e.globalActiveTab==="header",expression:"globalActiveTab === 'header'"}],staticClass:"pw-wizard-global-content"},[t("pw-global-navigation",{attrs:{"nav-defaults":e.navDefaults,"nav-overrides":e.navOverrides,fonts:e.fontsData},on:{"update:overrides":e.onNavOverridesUpdate}})],1),t("div",{directives:[{name:"show",rawName:"v-show",value:e.globalActiveTab==="footer",expression:"globalActiveTab === 'footer'"}],staticClass:"pw-wizard-global-content"},[t("pw-global-navigation",{attrs:{"nav-defaults":e.footerDefaults,"nav-overrides":e.footerOverrides,fonts:e.fontsData},on:{"update:overrides":e.onFooterOverridesUpdate}})],1)]):e._e(),e._l(e.blocks,function(i){return t("div",{directives:[{name:"show",rawName:"v-show",value:e.activeTab===i.blockType,expression:"activeTab === block.blockType"}],key:i.blockType,staticClass:"pw-wizard-panel"},[e.blockConfigs[i.blockType]?t("div",{directives:[{name:"show",rawName:"v-show",value:e.blockViewTab==="settings",expression:"blockViewTab === 'settings'"}]},[t("pw-block-settings",{attrs:{block:i,config:e.blockConfigs[i.blockType],overrides:e.blockOverrides[i.blockType]||{},"writer-active":e.writerActive[i.blockType]!==!1},on:{"update:overrides":function(a){return e.onBlockOverridesUpdate(i.blockType,a)},"update:writer-active":function(a){return e.$set(e.writerActive,i.blockType,a)}}})],1):e._e()])})],2)],1)},b=[],w=p(v,g,b);const y=w.exports,m={props:{uid:String,label:String,allOptions:Array,activeOptions:Array,currentDefault:String,pluginDefault:String,enabled:{type:Boolean,default:!0},modified:{type:Boolean,default:!1},noDefault:{type:Boolean,default:!1},noCheckbox:{type:Boolean,default:!1},required:{type:Boolean,default:!1}},data(){return{active:this.activeOptions&&this.activeOptions.length>0,touched:this.modified,localDefault:null,localActive:[...this.activeOptions||[]]}},watch:{modified(s){s||(this.touched=!1,this.localDefault=null,this.localActive=[...this.activeOptions||[]],this.active=this.activeOptions&&this.activeOptions.length>0)},activeOptions(s){this.localActive=[...s||[]],this.active=s&&s.length>0}},methods:{toggleActive(s){this.active=s,s?this.$emit("update:options",this.allOptions):this.$emit("update:options",null)},propertyLabel(s){const e="prw.property."+s,t=this.$t(e);return t&&t!==e?t:s},optionLabel(s){const e="prw.option."+s,t=this.$t(e);if(t&&t!==e)return t;const i="pw.option."+s,a=this.$t(i);if(a&&a!==i)return a;const l=["multicolumn"];for(const r of l)if(s.startsWith(r)){const n="kirbyblock-"+r+".sub."+s.slice(r.length),c=this.$t(n);if(c&&c!==n)return c}return s},handleClick(s){if(this.noDefault){if(!this.touched)this.touched=!0,this.localActive=[s];else if(this.localActive.includes(s)){const a=this.localActive.filter(l=>l!==s);if(a.length===0){if(this.required)return;this.touched=!1,this.localActive=[...this.allOptions],this.$emit("update:options",this.allOptions);return}this.localActive=a}else this.localActive=this.allOptions.filter(a=>this.localActive.includes(a)||a===s);this.$emit("update:options",this.localActive);return}if(!this.touched){this.touched=!0,this.localActive=[s],this.$emit("update:options",[s]);return}const e=this.localActive.includes(s),t=s===this.localDefault;if(e){if(e&&!t)this.localDefault=s,this.$emit("update:default",s);else if(e&&t){const i=this.localActive.filter(a=>a!==s);if(i.length===0){this.touched=!1,this.localDefault=null,this.localActive=[...this.allOptions],this.$emit("update:options",[]);return}this.localDefault=null,this.localActive=i,this.$emit("update:options",i)}}else{const i=this.allOptions.filter(a=>this.localActive.includes(a)||a===s);this.localActive=i,this.$emit("update:options",i)}}}};var O=function(){var e=this,t=e._self._c;return t("div",{staticClass:"pw-field-row",class:{"is-disabled":!e.enabled,"is-modified":e.modified||e.touched}},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[e.noCheckbox?e._e():t("input",{staticClass:"pw-field-row-check",attrs:{id:"pw-prop-"+e.uid,type:"checkbox"},domProps:{checked:e.active},on:{change:function(i){return e.toggleActive(i.target.checked)}}}),t("label",{staticClass:"pw-field-row-label",attrs:{for:e.noCheckbox?null:"pw-prop-"+e.uid}},[e._v(e._s(e.propertyLabel(e.label))),e.required?t("span",{staticClass:"pw-field-required"},[e._v("*")]):e._e()])]),e.active?t("div",{staticClass:"pw-field-row-options"},e._l(e.allOptions,function(i){return t("button",{key:i,staticClass:"pw-field-row-option",class:{"is-active":e.localActive.includes(i),"is-default":!e.noDefault&&i===e.localDefault,"is-plugin-default":!e.noDefault&&i===e.pluginDefault&&!e.touched&&!e.modified},attrs:{type:"button"},on:{click:function(a){return e.handleClick(i)}}},[e._v(" "+e._s(e.optionLabel(i))+" ")])}),0):e._e()])])])},k=[],_=p(m,O,k);const C=_.exports,S={props:{group:String,varName:String,defaultValue:String,overrideValue:String},computed:{displayValue(){const s=this.overrideValue||this.defaultValue;return s||"#000000"}},methods:{onInput(s){this.$emit("update:value",s===this.defaultValue?"":s||"")}}};var F=function(){var e=this,t=e._self._c;return t("div",{staticClass:"pw-color-field"},[t("k-color-field",{attrs:{value:e.displayValue,alpha:!0,mode:"picker"},on:{input:e.onInput}})],1)},$=[],N=p(S,F,$);const x=N.exports,A={props:{blocks:{type:Array,default:()=>[]}},methods:{blockLabel(s){const e=this.blocks.find(i=>i.blockType===s);if(e){const i=this.$t(e.plugin+".name");if(i&&i!==e.plugin+".name")return i}const t=s.replace(/^pw/,"").replace(/([A-Z])/g," $1").trim()||s;return t.charAt(0).toUpperCase()+t.slice(1)}}};var V=function(){var e=this,t=e._self._c;return t("div",{staticClass:"pw-wizard-global-content"},[t("fieldset",{staticClass:"pw-wizard-fieldgroup"},[t("h3",{staticClass:"pw-wizard-fieldgroup-title"},[e._v("Active Blocks")]),t("p",{staticClass:"pw-wizard-hint"},[e._v("Select which blocks are available in the content editor.")]),t("div",{staticClass:"pw-wizard-checklist"},e._l(e.blocks,function(i){return t("label",{key:i.blockType,staticClass:"pw-wizard-check"},[t("input",{attrs:{type:"checkbox"},domProps:{checked:i.active},on:{change:function(a){return e.$emit("toggle",{blockType:i.blockType,checked:a.target.checked})}}}),t("span",{staticClass:"pw-wizard-check-label"},[e._v(e._s(e.blockLabel(i.blockType)))]),t("span",{staticClass:"pw-wizard-check-meta"},[e._v(e._s(i.plugin))])])}),0)])])},D=[],j=p(A,V,D);const T=j.exports,J={props:{block:{type:Object,required:!0},config:{type:Object,required:!0},overrides:{type:Object,default:()=>({})},writerActive:{type:Boolean,default:!0}},data(){return{sectionState:{}}},computed:{blockType(){return this.block.blockType}},methods:{getContentFields(){const s=this.getDefault("settings.fields.content")||{},e=[];for(const[t,i]of Object.entries(s)){if(t==="editor"||t==="column-blocks"||t.startsWith("item-"))continue;if(i==="enabled"){e.push({key:t,enabled:!0,properties:[]});continue}if(this.isObject(i)&&"default"in i&&!this.hasNestedProps(i))continue;const a={key:t,enabled:!0,properties:[]};if(this.isObject(i))for(const[l,r]of Object.entries(i)){if(r===!1)continue;const n=this.isObject(r)?r:{},c=n.options||(Array.isArray(r)?r:[]);if(c.length===0)continue;const o=n.default!==void 0?String(n.default):"";c.length>1&&a.properties.push({key:l,allOptions:c,options:c,pluginDefault:o,required:n.required===!0})}a.properties.length===0&&i!=="enabled"||e.push(a)}return e},getItemFields(){const s=this.getDefault("settings.fields.content")||{},e=[];for(const[t,i]of Object.entries(s)){if(!t.startsWith("item-")||i==="enabled"||this.isObject(i)&&"default"in i&&!this.hasNestedProps(i))continue;const a=t.replace(/^item-/,""),l={key:t,displayKey:a,enabled:!0,properties:[]};if(this.isObject(i))for(const[r,n]of Object.entries(i)){if(n===!1)continue;const c=this.isObject(n)?n:{},o=c.options||(Array.isArray(n)?n:[]);if(o.length===0)continue;const u=c.default!==void 0?String(c.default):"";o.length>1&&l.properties.push({key:r,allOptions:o,options:o,pluginDefault:u,required:c.required===!0})}e.push(l)}return e},getEditorField(){const e=(this.getDefault("settings.fields.content")||{}).editor;if(!e||!this.isObject(e))return null;const t={key:"editor",enabled:!0,properties:[]};for(const[i,a]of Object.entries(e)){if(a===!1)continue;const l=this.isObject(a)?a:{},r=l.options||(Array.isArray(a)?a:[]);if(r.length===0)continue;const n=l.default!==void 0?String(l.default):"";r.length>1&&t.properties.push({key:i,allOptions:r,options:r,pluginDefault:n,required:l.required===!0})}return t.properties.length?t:null},getEditorConfigRows(){const s=this.getDefault("editor"),e=JSON.parse(JSON.stringify(s||{})),t=[];for(const[i,a]of Object.entries(e))if(Array.isArray(a)&&a.length>0)t.push({key:i,type:"array",values:a});else if(a&&typeof a=="object")for(const[l,r]of Object.entries(a))typeof r=="boolean"&&t.push({key:i+"-"+l,label:i+" › "+l,type:"toggle",path:i+"."+l,value:r});return t},getColumnBlocks(){const e=(this.getDefault("settings.fields.content")||{})["column-blocks"];return Array.isArray(e)&&e.length?e:null},getActiveColumnBlocks(){const s=this.getOverrideOnly("settings.fields.content.column-blocks");return Array.isArray(s)&&s.length?s:this.getColumnBlocks()||[]},isColumnBlockField(s){return this.getColumnBlocks()?this.getActiveColumnBlocks().some(i=>i.replace("multicolumn","")===s):!0},setColumnBlocks(s,e){const t=e.filter(i=>s.includes(i));JSON.stringify(t)===JSON.stringify(e)?(this.deleteNested(this.overrides||{},"settings.fields.content.column-blocks"),this.cleanEmpty(this.overrides||{},"settings.fields.content"),this.cleanEmpty(this.overrides||{},"settings.fields"),this.cleanEmpty(this.overrides||{},"settings")):this.setVal("settings.fields.content.column-blocks",t),this.markDirty()},setEditorContentOptions(s,e,t){this.setActiveOptions("editor",s,e,t),s==="mode"&&this.$emit("update:writer-active",t.includes("writer"))},getActiveOptions(s,e,t){const i=this.getOverrideOnly("settings.fields.content."+s+"."+e);if(i===!1)return[];const a=this.isObject(i)?i.options:void 0;return Array.isArray(a)?a:t.allOptions},setActiveOptions(s,e,t,i){const a="settings.fields.content."+s+"."+e;if(i===null){this.setVal(a,!1),this.markDirty();return}const l=Array.isArray(i)?i:[];if(l.length===0){this.deleteNested(this.overrides||{},a),this.cleanEmpty(this.overrides||{},"settings.fields.content."+s),this.cleanEmpty(this.overrides||{},"settings.fields.content"),this.cleanEmpty(this.overrides||{},"settings.fields"),this.cleanEmpty(this.overrides||{},"settings"),this.markDirty();return}const r=t.allOptions.filter(c=>l.includes(c));if(JSON.stringify(r)===JSON.stringify(t.allOptions)){const c=this.getVal(a+".default",t.pluginDefault);if(c===t.pluginDefault||c===String(t.pluginDefault)){this.deleteNested(this.overrides||{},a),this.cleanEmpty(this.overrides||{},"settings.fields.content."+s),this.cleanEmpty(this.overrides||{},"settings.fields.content"),this.cleanEmpty(this.overrides||{},"settings.fields"),this.cleanEmpty(this.overrides||{},"settings"),this.markDirty();return}this.deleteNested(this.overrides||{},a+".options"),this.markDirty();return}this.setVal(a+".options",r);const n=this.getVal(a+".default",t.pluginDefault);n&&!r.includes(n)&&r.length&&this.setVal(a+".default",r[0]),this.markDirty()},getCategories(){const s=[];for(const e of["layout","style","effects","grid","settings"]){const t=this.getDefault("settings.fields."+e)||{};if(Object.keys(t).length===0)continue;const i=[],a={};for(const[l,r]of Object.entries(t))if(!(l==="padding"||l==="radius")&&r!=="enabled"){if(l.startsWith("radius-")){a.radius||(a.radius={key:"radius",type:"toggle-group",subFields:[]});const n=l.replace("radius-",""),c=this.isObject(r)&&"default"in r?r.default:!1;a.radius.subFields.push({key:l,label:n,defaultValue:c});continue}if(l==="padding-top"||l==="padding-bottom"){const n=this.isObject(r)&&"default"in r?r.default:"large";i.push({key:l,type:"toggles",defaultValue:n,options:[{value:"small",text:"Small"},{value:"large",text:"Large"}]});continue}if(this.isObject(r)&&"options"in r){const n=r.options,c=r.default!==void 0?r.default:n[0],o=r.required===!0;if(r.fixed){i.push({key:l,type:"toggles",defaultValue:c,required:o,reset:!o,options:n.map(u=>({value:u,text:this.toggleOptionLabel(u)}))});continue}n.length>5||o?i.push({key:l,type:"fieldrow",allOptions:n,pluginDefault:String(c),defaultValue:c,required:o}):i.push({key:l,type:"toggles",defaultValue:c,required:o,reset:!o,options:n.map(u=>({value:u,text:this.toggleOptionLabel(u)}))});continue}if(l.startsWith("grid-size-")&&this.isObject(r)&&"default"in r){const n=Array.from({length:12},(c,o)=>o+1);i.push({key:l,type:"toggles",defaultValue:r.default,required:!0,reset:!1,options:n.map(c=>({value:c,text:String(c)}))});continue}if(l.startsWith("grid-offset-")&&this.isObject(r)&&"default"in r){const n=Array.from({length:12},(c,o)=>o);i.push({key:l,type:"toggles",defaultValue:r.default,required:!0,reset:!1,options:n.map(c=>({value:c,text:String(c)}))});continue}if(this.isObject(r)&&"default"in r){i.push({key:l,type:"single",defaultValue:r.default});continue}if(Array.isArray(r)&&r.length>0){i.push({key:l,type:"toggles",defaultValue:r[0],required:!1,reset:!0,options:r.map(n=>({value:n,text:this.toggleOptionLabel(n)}))});continue}}for(const l of Object.values(a))i.push(l);s.push({key:e,fields:i})}return s},getCategoryActiveOptions(s,e,t){const i=this.getOverrideOnly("settings.fields."+s+"."+e+".options");return Array.isArray(i)&&i.length>0?i:t.allOptions},setCategoryOptions(s,e,t,i){const a="settings.fields."+s+"."+e,l=Array.isArray(i)?t.allOptions.filter(n=>i.includes(n)):[];if(l.length===0){this.deleteNested(this.overrides||{},a),this.cleanEmpty(this.overrides||{},"settings.fields."+s),this.cleanEmpty(this.overrides||{},"settings.fields"),this.cleanEmpty(this.overrides||{},"settings"),this.markDirty();return}if(JSON.stringify(l)===JSON.stringify(t.allOptions)){const n=this.getVal(a+".default",t.pluginDefault);if(n===t.pluginDefault||n===String(t.pluginDefault)){this.deleteNested(this.overrides||{},a),this.cleanEmpty(this.overrides||{},"settings.fields."+s),this.cleanEmpty(this.overrides||{},"settings.fields"),this.cleanEmpty(this.overrides||{},"settings"),this.markDirty();return}this.deleteNested(this.overrides||{},a+".options"),this.markDirty();return}this.setVal(a+".options",l);const r=this.getVal(a+".default",t.pluginDefault);!l.includes(r)&&l.length&&this.setVal(a+".default",l[0]),this.markDirty()},isFieldEnabled(s){if(this.getOverrideOnly("settings.fields.content."+s.key+"._disabled")===!0)return!1;const t=this.getOverrideOnly("settings.fields.content."+s.key);return t===!1?!1:t===!0||this.isObject(t)?!0:s.enabled!==!1},toggleField(s,e){(!this.overrides||Array.isArray(this.overrides))&&this.$emit("update:overrides",{});const t="settings.fields.content."+s.key;e?(this.deleteNested(this.overrides,t+"._disabled"),this.cleanEmpty(this.overrides,t),this.cleanEmpty(this.overrides,"settings.fields.content"),this.cleanEmpty(this.overrides,"settings.fields"),this.cleanEmpty(this.overrides,"settings")):this.setVal(t+"._disabled",!0),this.markDirty()},toggleVisibility(s){if(this.getVal(s,"enabled")===!1){this.deleteNested(this.overrides||{},s);const t=s.split(".");for(let i=t.length-1;i>0;i--)this.cleanEmpty(this.overrides||{},t.slice(0,i).join("."))}else this.setVal(s,!1);this.markDirty()},toggleSection(s){const e=this.blockType+"-"+s;this.$set(this.sectionState,e,!this.isSectionOpen(s))},isSectionOpen(s){const e=this.blockType+"-"+s;return this.sectionState[e]!==!1},selectOption(s,e,t){if(e===t||e===String(t)){this.deleteNested(this.overrides||{},s);const i=s.split(".");for(let a=i.length-1;a>0;a--)this.cleanEmpty(this.overrides||{},i.slice(0,a).join("."))}else this.setVal(s,e);this.markDirty()},setEditorArrayDirect(s,e,t){JSON.stringify(e)===JSON.stringify(t)?(this.deleteNested(this.overrides||{},"editor."+s),this.cleanEmpty(this.overrides||{},"editor")):this.setVal("editor."+s,e),this.markDirty()},getVal(s,e){const t=this.nested(this.overrides||{},s);return t!==void 0?t:e},getOverrideOnly(s){return this.nested(this.overrides||{},s)},hasOverride(s){return this.nested(this.overrides||{},s)!==void 0},setVal(s,e){(!this.overrides||Array.isArray(this.overrides))&&this.$emit("update:overrides",{}),this.setNested(this.overrides,s,e),this.markDirty()},setValOrClear(s,e,t){(!this.overrides||Array.isArray(this.overrides))&&this.$emit("update:overrides",{}),e===""||e===t?this.deleteNested(this.overrides,s):this.setNested(this.overrides,s,e),this.markDirty()},getDefault(s){return this.config?this.nested(this.config.defaults,s):null},markDirty(){this.$emit("update:overrides",this.overrides)},fieldLabel(s){const e="pw.field."+s,t=this.$t(e);return t&&t!==e?t:s.charAt(0).toUpperCase()+s.slice(1)},categoryFieldLabel(s){const e="prw.field."+s,t=this.$t(e);if(t&&t!==e)return t;const i="pw.field."+s+".label",a=this.$t(i);if(a&&a!==i)return a;const l="pw.field."+s,r=this.$t(l);if(r&&r!==l)return r;const n=s.lastIndexOf("-");if(n>0){const c="pw.field."+s.substring(0,n)+"."+s.substring(n+1),o=this.$t(c);if(o&&o!==c)return o}return s},toggleOptionLabel(s){const e="prw.option."+s,t=this.$t(e);if(t&&t!==e)return t;const i="pw.option."+s,a=this.$t(i);return a&&a!==i?a:s},nested(s,e){if(e)return e.split(".").reduce((t,i)=>t&&t[i]!==void 0?t[i]:void 0,s)},setNested(s,e,t){const i=e.split(".");let a=s;for(let l=0;l<i.length-1;l++)(!a[i[l]]||typeof a[i[l]]!="object")&&this.$set(a,i[l],{}),a=a[i[l]];this.$set(a,i[i.length-1],t)},cleanEmpty(s,e){const t=this.nested(s,e);t&&typeof t=="object"&&Object.keys(t).length===0&&this.deleteNested(s,e)},deleteNested(s,e){const t=e.split(".");let i=s;for(let a=0;a<t.length-1;a++){if(!i[t[a]])return;i=i[t[a]]}this.$delete(i,t[t.length-1])},isObject(s){return s&&typeof s=="object"&&!Array.isArray(s)},hasNestedProps(s){for(const e of Object.values(s))if(this.isObject(e)&&("options"in e||"default"in e))return!0;return!1}}};var z=function(){var e=this,t=e._self._c;return t("div",{staticClass:"pw-wizard-block-sections"},[t("div",{staticClass:"pw-wizard-tab-content"},[t("section",{staticClass:"pw-wizard-section"},[t("div",{staticClass:"pw-section-header"},[t("span",{staticClass:"pw-tab-visibility pw-tab-visibility-static"},[t("svg",{attrs:{xmlns:"http://www.w3.org/2000/svg",viewBox:"0 0 24 24",fill:"currentColor"}},[t("path",{attrs:{d:"M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"}})])]),t("button",{staticClass:"pw-section-toggle",on:{click:function(i){return e.toggleSection("content")}}},[t("span",[e._v(e._s(e.$t("pw.headline.content")))]),t("k-icon",{attrs:{type:e.isSectionOpen("content")?"angle-down":"angle-right"}})],1)]),t("transition",{attrs:{name:"pw-slide"}},[t("div",{directives:[{name:"show",rawName:"v-show",value:e.isSectionOpen("content"),expression:"isSectionOpen('content')"}],staticClass:"pw-field-block",attrs:{"data-collapsible":"true"}},[e.getColumnBlocks()?t("div",{staticClass:"pw-field-block"},[t("div",{staticClass:"k-field k-text-field pw-content-field",attrs:{"data-object":"content-field"}},[t("div",{staticClass:"pw-field-rows"},[t("pw-field-row",{attrs:{uid:e.blockType+"-column-blocks",label:e.$t("prw.headline.columnBlocks"),"all-options":e.getColumnBlocks(),"active-options":e.getActiveColumnBlocks(),"current-default":"","plugin-default":"",enabled:!0,modified:e.hasOverride("settings.fields.content.column-blocks"),"no-default":!0,"no-checkbox":!0},on:{"update:options":function(i){e.setColumnBlocks(i,e.getColumnBlocks())}}})],1)])]):e._e(),e.getContentFields().length?t("div",{staticClass:"pw-field-block"},e._l(e.getContentFields(),function(i){return t("div",{directives:[{name:"show",rawName:"v-show",value:e.isColumnBlockField(i.key),expression:"isColumnBlockField(field.key)"}],key:i.key,staticClass:"k-field k-text-field pw-content-field",attrs:{"data-object":"content-field"}},[e.getColumnBlocks()?t("label",{staticClass:"pw-column-field-label"},[e._v(e._s(e.fieldLabel(i.key)))]):t("label",{staticClass:"pw-column-field-label pw-clickable"},[t("input",{staticClass:"pw-field-enable-check",attrs:{type:"checkbox"},domProps:{checked:e.isFieldEnabled(i)},on:{change:function(a){return e.toggleField(i,a.target.checked)}}}),e._v(" "+e._s(e.fieldLabel(i.key))+" ")]),i.properties.length?t("div",{directives:[{name:"show",rawName:"v-show",value:e.getColumnBlocks()?!0:e.isFieldEnabled(i),expression:"!getColumnBlocks() ? isFieldEnabled(field) : true"}],staticClass:"pw-field-rows"},e._l(i.properties,function(a){return t("pw-field-row",{key:i.key+"-"+a.key,attrs:{uid:e.blockType+"-"+i.key+"-"+a.key,label:a.key,"all-options":a.allOptions,"active-options":e.getActiveOptions(i.key,a.key,a),"current-default":e.getVal("settings.fields.content."+i.key+"."+a.key+".default",a.pluginDefault),"plugin-default":a.pluginDefault,enabled:!0,required:a.required===!0,modified:e.hasOverride("settings.fields.content."+i.key+"."+a.key)},on:{"update:options":function(l){return e.setActiveOptions(i.key,a.key,a,l)},"update:default":function(l){return e.selectOption("settings.fields.content."+i.key+"."+a.key+".default",l,a.pluginDefault)}}})}),1):e._e()])}),0):e._e(),e.getEditorField()||e.getEditorConfigRows().length?t("div",{staticClass:"k-field k-text-field pw-content-field",attrs:{"data-object":"content-field"}},[t("label",{staticClass:"pw-column-field-label pw-clickable"},[t("input",{staticClass:"pw-field-enable-check",attrs:{type:"checkbox"},domProps:{checked:e.isFieldEnabled(e.getEditorField()||{key:"editor",enabled:!0})},on:{change:function(i){e.toggleField(e.getEditorField()||{key:"editor",enabled:!0},i.target.checked)}}}),e._v(" "+e._s(e.fieldLabel("editor"))+" ")]),t("div",{directives:[{name:"show",rawName:"v-show",value:e.isFieldEnabled(e.getEditorField()||{key:"editor",enabled:!0}),expression:"isFieldEnabled(getEditorField() || { key: 'editor', enabled: true })"}],staticClass:"pw-field-rows"},[e.getEditorField()?e._l(e.getEditorField().properties,function(i){return t("pw-field-row",{key:"editor-content-"+i.key,attrs:{uid:e.blockType+"-editor-"+i.key,label:i.key,"all-options":i.allOptions,"active-options":e.getActiveOptions("editor",i.key,i),"current-default":e.getVal("settings.fields.content.editor."+i.key+".default",i.pluginDefault),"plugin-default":i.pluginDefault,enabled:!0,modified:e.hasOverride("settings.fields.content.editor."+i.key)},on:{"update:options":function(a){return e.setEditorContentOptions(i.key,i,a)},"update:default":function(a){return e.selectOption("settings.fields.content.editor."+i.key+".default",a,i.pluginDefault)}}})}):e._e(),e._l(e.getEditorConfigRows(),function(i){return e.writerActive!==!1?[i.type==="array"?t("pw-field-row",{key:"editor-"+i.key,attrs:{uid:e.blockType+"-editor-"+i.key,label:i.key,"all-options":i.values,"active-options":e.getOverrideOnly("editor."+i.key)||i.values,"current-default":"","plugin-default":"",enabled:!0,modified:e.hasOverride("editor."+i.key),"no-default":!0},on:{"update:options":function(a){return e.setEditorArrayDirect(i.key,a,i.values)}}}):e._e(),i.type==="toggle"?t("div",{key:"editor-"+i.key,staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(i.label))])]),t("div",{staticClass:"pw-field-row-options"},[t("k-toggle-input",{attrs:{value:e.getVal("editor."+i.path,i.value),text:[e.$t("pw.option.disabled"),e.$t("pw.option.enabled")]},on:{input:function(a){return e.setVal("editor."+i.path,a)}}})],1)])])]):e._e()]:e._e()})],2)]):e._e(),e.getItemFields().length?t("div",{staticClass:"pw-item-section"},[t("div",{staticClass:"pw-field-block"},e._l(e.getItemFields(),function(i){return t("div",{key:i.key,staticClass:"k-field k-text-field pw-content-field",attrs:{"data-object":"content-field"}},[t("label",{staticClass:"pw-column-field-label pw-clickable"},[t("input",{staticClass:"pw-field-enable-check",attrs:{type:"checkbox"},domProps:{checked:e.isFieldEnabled(i)},on:{change:function(a){return e.toggleField(i,a.target.checked)}}}),e._v(" "+e._s(e.$t("prw.label.item"))+": "+e._s(e.fieldLabel(i.displayKey))+" ")]),i.properties.length?t("div",{directives:[{name:"show",rawName:"v-show",value:e.isFieldEnabled(i),expression:"isFieldEnabled(field)"}],staticClass:"pw-field-rows"},e._l(i.properties,function(a){return t("pw-field-row",{key:i.key+"-"+a.key,attrs:{uid:e.blockType+"-"+i.key+"-"+a.key,label:a.key,"all-options":a.allOptions,"active-options":e.getActiveOptions(i.key,a.key,a),"current-default":e.getVal("settings.fields.content."+i.key+"."+a.key+".default",a.pluginDefault),"plugin-default":a.pluginDefault,enabled:!0,required:a.required===!0,modified:e.hasOverride("settings.fields.content."+i.key+"."+a.key)},on:{"update:options":function(l){return e.setActiveOptions(i.key,a.key,a,l)},"update:default":function(l){return e.selectOption("settings.fields.content."+i.key+"."+a.key+".default",l,a.pluginDefault)}}})}),1):e._e()])}),0)]):e._e()])])],1),e._l(e.getCategories(),function(i){return t("section",{key:i.key,staticClass:"pw-wizard-section"},[t("div",{staticClass:"pw-section-header"},[t("button",{staticClass:"pw-tab-visibility",attrs:{type:"button"},on:{click:function(a){return a.stopPropagation(),e.toggleVisibility("settings.tabs."+i.key)}}},[t("k-icon",{attrs:{type:e.getVal("settings.tabs."+i.key,!0)===!1?"hidden":"preview"}})],1),i.fields.length?t("button",{staticClass:"pw-section-toggle",on:{click:function(a){return e.toggleSection(i.key)}}},[t("span",[e._v(e._s(e.$t("pw.headline."+i.key)))]),t("k-icon",{attrs:{type:e.isSectionOpen(i.key)?"angle-down":"angle-right"}})],1):t("span",{staticClass:"pw-section-title"},[e._v(e._s(e.$t("pw.headline."+i.key)))])]),i.fields.length?t("transition",{attrs:{name:"pw-slide"}},[t("div",{directives:[{name:"show",rawName:"v-show",value:e.isSectionOpen(i.key),expression:"isSectionOpen(cat.key)"}],staticClass:"pw-field-block",attrs:{"data-collapsible":"true"}},[e._l(i.fields,function(a){return[a.type==="fieldrow"?t("pw-field-row",{key:a.key,attrs:{uid:e.blockType+"-"+i.key+"-"+a.key,label:a.key,"all-options":a.allOptions,"active-options":e.getCategoryActiveOptions(i.key,a.key,a),"current-default":e.getVal("settings.fields."+i.key+"."+a.key+".default",a.pluginDefault),"plugin-default":a.pluginDefault,enabled:!0,modified:e.hasOverride("settings.fields."+i.key+"."+a.key),"no-checkbox":!0,required:a.required===!0},on:{"update:options":function(l){return e.setCategoryOptions(i.key,a.key,a,l)},"update:default":function(l){return e.selectOption("settings.fields."+i.key+"."+a.key+".default",l,a.pluginDefault)}}}):e._e(),a.type==="toggles"?t("div",{key:a.key,staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(e.categoryFieldLabel(a.key))),a.required?t("span",{staticClass:"pw-field-required"},[e._v("*")]):e._e()])]),t("div",{staticClass:"pw-field-row-options"},[t("k-toggles-input",{attrs:{value:e.getVal("settings.fields."+i.key+"."+a.key+".default",a.defaultValue),options:a.options,grow:!1,reset:a.reset!==!1,required:a.required===!0},on:{input:function(l){return e.selectOption("settings.fields."+i.key+"."+a.key+".default",l,a.defaultValue)}}})],1)])])]):a.type==="toggle-group"?t("div",{key:a.key,staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(e.categoryFieldLabel(a.key)))])]),t("div",{staticClass:"pw-field-row-options pw-toggle-group"},e._l(a.subFields,function(l){return t("k-toggle-input",{key:l.key,attrs:{value:e.getVal("settings.fields."+i.key+"."+l.key+".default",l.defaultValue),text:e.$t("prw.option."+l.label)||l.label},on:{input:function(r){return e.setVal("settings.fields."+i.key+"."+l.key+".default",r)}}})}),1)])])]):a.type==="single"?t("div",{key:a.key,staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(e.categoryFieldLabel(a.key)))])]),t("div",{staticClass:"pw-field-row-options"},[a.defaultValue!==null&&typeof a.defaultValue=="boolean"?t("k-toggle-input",{attrs:{value:e.getVal("settings.fields."+i.key+"."+a.key+".default",a.defaultValue),text:[e.$t("pw.option.disabled"),e.$t("pw.option.enabled")]},on:{input:function(l){return e.setVal("settings.fields."+i.key+"."+a.key+".default",l)}}}):a.options&&a.options.length?t("select",{staticClass:"pw-category-select",domProps:{value:e.getVal("settings.fields."+i.key+"."+a.key+".default",a.defaultValue)},on:{change:function(l){return e.selectOption("settings.fields."+i.key+"."+a.key+".default",l.target.value,a.defaultValue)}}},e._l(a.options,function(l){return t("option",{key:l,domProps:{value:l}},[e._v(e._s(l))])}),0):a.defaultValue!==null&&typeof a.defaultValue=="string"?t("input",{staticClass:"pw-category-input",attrs:{type:"text",placeholder:a.defaultValue},domProps:{value:e.getOverrideOnly("settings.fields."+i.key+"."+a.key+".default")||""},on:{input:function(l){return e.setValOrClear("settings.fields."+i.key+"."+a.key+".default",l.target.value,a.defaultValue)}}}):a.defaultValue!==null&&typeof a.defaultValue=="number"?t("input",{staticClass:"pw-category-input",attrs:{type:"number",placeholder:String(a.defaultValue)},domProps:{value:e.getOverrideOnly("settings.fields."+i.key+"."+a.key+".default")},on:{input:function(l){e.setValOrClear("settings.fields."+i.key+"."+a.key+".default",l.target.value!==""?Number(l.target.value):"",String(a.defaultValue))}}}):e._e()],1)])])]):e._e()]})],2)]):e._e()],1)})],2)])},L=[],B=p(J,z,L);const E=B.exports,P={props:{fontDefaults:{type:Object,default:()=>({})},fontOverrides:{type:Object,default:()=>({})}},data(){return{openSections:{}}},computed:{groups(){const s={};for(const[e,t]of Object.entries(this.fontDefaults))t&&typeof t=="object"&&t.vars&&(s[e]=t);return s}},methods:{toggle(s){this.$set(this.openSections,s,!this.isOpen(s))},isOpen(s){return this.openSections[s]!==!1},groupLabel(s){const e="prw.fontgroup."+s,t=this.$t(e);return t&&t!==e?t:s.charAt(0).toUpperCase()+s.slice(1)},sizeLabel(s){const e=s.match(/-size-(.+)$/);if(!e)return s;const t=e[1],i="pw.option."+t,a=this.$t(i);return(a&&a!==i?a:t.toUpperCase())+" ("+t.toUpperCase()+")"},stripRem(s){return s?s.replace(/rem$/,""):""},setRemValue(s,e,t,i){const a=t===""?"":t+"rem";this.setValue(s,e,a,i)},remToPx(s){if(!s)return"";const e=s.match(/^([\d.]+)rem$/);return e?Math.round(parseFloat(e[1])*16)+"px":""},getOverrideValue(s,e){return((this.fontOverrides.global||{})[s]||{})[e]||""},setValue(s,e,t,i){const a=JSON.parse(JSON.stringify(this.fontOverrides));t===""||t===i?a.global&&a.global[s]&&(delete a.global[s][e],Object.keys(a.global[s]).length===0&&delete a.global[s],a.global&&Object.keys(a.global).length===0&&delete a.global):(a.global||(a.global={}),a.global[s]||(a.global[s]={}),a.global[s][e]=t),this.$emit("update:overrides",a)}}};var U=function(){var e=this,t=e._self._c;return t("div",[t("div",{staticClass:"pw-font-help",staticStyle:{"margin-bottom":"var(--spacing-4)"}},[e._v(' These sizes are used when the "sizes" option is enabled in block settings. Otherwise, the font-size from the Elements tab is used as fallback. ')]),e._l(e.groups,function(i,a){return t("section",{key:a,staticClass:"pw-element-section"},[t("div",{staticClass:"pw-section-header"},[t("button",{staticClass:"pw-section-toggle",on:{click:function(l){return e.toggle(a)}}},[t("span",[e._v(e._s(e.groupLabel(a)))]),t("k-icon",{attrs:{type:e.isOpen(a)?"angle-down":"angle-right"}})],1)]),t("transition",{attrs:{name:"pw-slide"}},[t("div",{directives:[{name:"show",rawName:"v-show",value:e.isOpen(a),expression:"isOpen(groupKey)"}],staticClass:"pw-element-list"},[t("div",{staticClass:"pw-group-header"},[t("div",{staticClass:"pw-field-row-label-col"}),t("div",{staticClass:"pw-group-header-labels pw-group-type-responsive"},[t("span",{staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v("Mobile")])]),t("span",{staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v("Tablet")])]),t("span",{staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v("Desktop")])])])]),e._l(i.vars,function(l,r){return t("div",{key:r,staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(e.sizeLabel(r)))])]),t("div",{staticClass:"pw-field-row-options pw-group-type-responsive"},e._l(["default","lg","xl"],function(n){return t("span",{key:n,staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getOverrideValue(n,r)},attrs:{type:"number",step:i.step||.1,min:"0.1",max:"20"},domProps:{value:e.stripRem(e.getOverrideValue(n,r)||l[n])},on:{input:function(c){return e.setRemValue(n,r,c.target.value,l[n]||"")}}}),t("span",{staticClass:"pw-element-unit"},[e._v("rem")])]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.remToPx(e.getOverrideValue(n,r)||l[n])))])])}),0)])])])}),t("div",{staticClass:"pw-group-end"})],2)])],1)})],2)},R=[],q=p(P,U,R);const W=q.exports,M={props:{elementDefaults:{type:Object,default:()=>({})},elementOverrides:{type:Object,default:()=>({})},fonts:{type:Object,default:()=>({})},fontDefaults:{type:Object,default:()=>({})},fontOverrides:{type:Object,default:()=>({})}},data(){return{openSections:{}}},computed:{groups(){const s={};for(const[e,t]of Object.entries(this.elementDefaults))t&&typeof t=="object"&&(t.vars||t.colors)&&(s[e]=t);return s},fontFamilyOptions(){const s={...this.fonts.builtin||{},...this.fonts.project||{}},e=new Set,t=[];for(const i of Object.values(s))e.has(i.family)||(e.add(i.family),t.push({value:i.family,text:i.family}));return t}},methods:{toggle(s){this.$set(this.openSections,s,!this.isOpen(s))},isOpen(s){return this.openSections[s]!==!1},groupLabel(s){const e="prw.elementgroup."+s,t=this.$t(e);return t&&t!==e?t:s.charAt(0).toUpperCase()+s.slice(1)},propLabel(s){const e="prw.element."+s,t=this.$t(e);return t&&t!==e?t:s.split("-").slice(1).join(" ").replace(/\b\w/g,l=>l.toUpperCase())},fieldSignature(s,e,t){return t?{type:"theme-color",labels:["Default","Variant","Variant2"]}:Array.isArray(e.value)&&e.labels?{type:"multi-value",labels:e.labels}:e.default!==void 0&&e.lg!==void 0&&e.variant===void 0?{type:"responsive",labels:["Mobile","Tablet","Desktop"]}:{type:"single",labels:null}},groupedFields(s){const e=[],t=[];if(s.colors){const l=Object.keys(s.colors);for(let r=0;r<l.length;r++){const n=l[r],c=s.colors[n],o=this.fieldSignature(n,{},!0),u=l[r+1]||"",d=n.endsWith("-hover")||n.endsWith("-active"),f=u.endsWith("-hover")||u.endsWith("-active");t.push({varName:n,def:{},colorVal:c,label:this.colorLabel(n),isState:d,isFollowedByState:f,type:"theme-color",sigLabels:o.labels,sigKey:o.type+":"+o.labels.join(",")})}}if(s.vars){let l=!1;for(const[r,n]of Object.entries(s.vars)){const c=this.fieldSignature(r,n,!1);!l&&c.type!=="single"&&t.length>0&&(e.push(...t),l=!0),e.push({varName:r,def:n,label:this.propLabel(r),type:c.type,sigLabels:c.labels,sigKey:c.type==="single"?"single-"+r:c.type+":"+(c.labels||[]).join(",")})}!l&&t.length>0&&e.push(...t)}else t.length>0&&e.push(...t);const i=[];let a=null;for(const l of e)l.type==="single"?(a&&(i.push(a),a=null),i.push({header:null,fields:[l]})):a&&a.sigKey===l.sigKey?a.fields.push(l):(a&&i.push(a),a={sigKey:l.sigKey,header:l.sigLabels,fieldType:l.type,fields:[l]});return a&&i.push(a),i},filteredOptions(s,e){if(!s.endsWith("-font-weight"))return e.map(c=>({value:c,text:c}));const i=s.replace("-font-weight","")+"-font-family",a=this.getOverrideValue(i)||"inherit",l=this.getFontByFamily(a);if(!l||!l.files||!l.files.length)return e.map(c=>({value:c,text:c}));const n=(l.files[0].weight||"400").split(" ");if(n.length===2){const c=parseInt(n[0]),o=parseInt(n[1]);return e.filter(u=>{const d=parseInt(u);return d>=c&&d<=o}).map(u=>({value:u,text:u}))}return[{value:n[0],text:n[0]}]},getFontByFamily(s){const e={...this.fonts.builtin||{},...this.fonts.project||{}};return Object.values(e).find(t=>t.family===s)||null},colorLabel(s){const e="prw.color."+s,t=this.$t(e);return t&&t!==e?t:s},getColorOverrideValue(s,e){return((this.elementOverrides.global||{})[s]||{})[e]||""},setColorValue(s,e,t,i){const a=JSON.parse(JSON.stringify(this.elementOverrides));t===""||t===i?a.global&&a.global[s]&&(delete a.global[s][e],Object.keys(a.global[s]).length===0&&delete a.global[s],a.global&&Object.keys(a.global).length===0&&delete a.global):(a.global||(a.global={}),a.global[s]||(a.global[s]={}),a.global[s][e]=t),this.$emit("update:overrides",a)},getQuadValue(s,e){const t=(this.elementOverrides.global||{})[s];return Array.isArray(t)&&t[e]||""},setQuadValue(s,e,t,i){const a=JSON.parse(JSON.stringify(this.elementOverrides));a.global||(a.global={});const l=Array.isArray(a.global[s])?[...a.global[s]]:[...i.value];l[e]=t===""?i.value[e]:t+(i.unit||""),l.every((n,c)=>n===i.value[c])?(delete a.global[s],Object.keys(a.global).length===0&&delete a.global):a.global[s]=l,this.$emit("update:overrides",a)},stripUnit(s){return s?s.replace(/(rem|em|px)$/,""):""},setUnitValue(s,e,t,i){const a=e===""?"":e+(i||"");this.setValue(s,a,t)},toPx(s,e){if(!s)return"";const t=parseFloat(s);return isNaN(t)?"":e==="rem"||s.endsWith("rem")||e==="em"||s.endsWith("em")||e===""&&t>0?Math.round(t*16)+"px":""},helpText(s){const e="prw.help."+s,t=this.$t(e);return t&&t!==e?t:s},fontSizesForGroup(s){return this.fontDefaults[s]||null},getFontSizeOverride(s,e){return((this.fontOverrides.global||{})[s]||{})[e]||""},setFontSizeValue(s,e,t,i,a){const l=t===""?"":t+(a||""),r=JSON.parse(JSON.stringify(this.fontOverrides));l===""||l===i?r.global&&r.global[s]&&(delete r.global[s][e],Object.keys(r.global[s]).length===0&&delete r.global[s],r.global&&Object.keys(r.global).length===0&&delete r.global):(r.global||(r.global={}),r.global[s]||(r.global[s]={}),r.global[s][e]=l),this.$emit("update:font-overrides",r)},getResponsiveOverride(s,e){return((this.elementOverrides.global||{})[e]||{})[s]||""},setResponsiveValue(s,e,t,i,a){const l=t===""?"":t+(a||""),r=JSON.parse(JSON.stringify(this.elementOverrides));l===""||l===i?r.global&&r.global[e]&&(delete r.global[e][s],Object.keys(r.global[e]).length===0&&delete r.global[e],r.global&&Object.keys(r.global).length===0&&delete r.global):(r.global||(r.global={}),r.global[e]||(r.global[e]={}),r.global[e][s]=l),this.$emit("update:overrides",r)},getOverrideValue(s){return(this.elementOverrides.global||{})[s]||""},setValue(s,e,t){const i=JSON.parse(JSON.stringify(this.elementOverrides));e===""||e===t?i.global&&(delete i.global[s],Object.keys(i.global).length===0&&delete i.global):(i.global||(i.global={}),i.global[s]=e),this.$emit("update:overrides",i)}}};var K=function(){var e=this,t=e._self._c;return t("div",e._l(e.groups,function(i,a){return t("section",{key:a,staticClass:"pw-element-section"},[t("div",{staticClass:"pw-section-header"},[t("button",{staticClass:"pw-section-toggle",on:{click:function(l){return e.toggle(a)}}},[t("span",[e._v(e._s(e.groupLabel(a)))]),t("k-icon",{attrs:{type:e.isOpen(a)?"angle-down":"angle-right"}})],1)]),t("transition",{attrs:{name:"pw-slide"}},[t("div",{directives:[{name:"show",rawName:"v-show",value:e.isOpen(a),expression:"isOpen(groupKey)"}],staticClass:"pw-element-list"},[e._l(e.groupedFields(i),function(l,r){return[l.header?t("div",{key:"gh-"+r,staticClass:"pw-group-header"},[t("div",{staticClass:"pw-field-row-label-col"}),t("div",{staticClass:"pw-group-header-labels",class:"pw-group-type-"+l.fieldType},e._l(l.header,function(n){return t("span",{key:n,staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v(e._s(n))])])}),0)]):e._e(),e._l(l.fields,function(n,c){return[t("div",{key:"gf-"+r+"-"+c,staticClass:"pw-field-row",class:{"pw-dual-first":n.isFollowedByState||n.varName.endsWith("-font-size")&&e.fontSizesForGroup(a)&&e.openSections[a+"-sizes"],"pw-dual-next":n.isState}},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[n.varName.endsWith("-font-size")&&e.fontSizesForGroup(a)?[t("button",{staticClass:"pw-sizes-toggle",attrs:{type:"button"},on:{click:function(o){return o.preventDefault(),e.$set(e.openSections,a+"-sizes",!e.openSections[a+"-sizes"])}}},[t("k-icon",{staticClass:"pw-sizes-chevron",attrs:{type:e.openSections[a+"-sizes"]?"angle-down":"angle-right"}}),t("span",[e._v(e._s(n.label))])],1)]:t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(n.label))])],2),t("div",{staticClass:"pw-field-row-options",class:l.header?"pw-group-type-"+l.fieldType:""},[n.def.type==="font-family"?t("select",{staticClass:"pw-element-input pw-font-select",domProps:{value:e.getOverrideValue(n.varName)||n.def.value},on:{change:function(o){return e.setValue(n.varName,o.target.value,n.def.value)}}},e._l(e.fontFamilyOptions,function(o){return t("option",{key:o.value,domProps:{value:o.value}},[e._v(e._s(o.text))])}),0):n.def.options?t("k-toggles-input",{attrs:{value:e.getOverrideValue(n.varName)||n.def.value,options:e.filteredOptions(n.varName,n.def.options),grow:!1,required:!0},on:{input:function(o){return e.setValue(n.varName,o,n.def.value)}}}):n.type==="multi-value"?e._l(n.def.value,function(o,u){return t("span",{key:u,staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getQuadValue(n.varName,u)},attrs:{type:"number",step:n.def.step||.1,min:n.def.min,max:n.def.max},domProps:{value:e.stripUnit(e.getQuadValue(n.varName,u)||o)},on:{input:function(d){return e.setQuadValue(n.varName,u,d.target.value,n.def)}}}),n.def.unit?t("span",{staticClass:"pw-element-unit"},[e._v(e._s(n.def.unit))]):e._e()]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getQuadValue(n.varName,u)||o,n.def.unit)))])])}):n.type==="responsive"?e._l(["default","lg","xl"],function(o){return t("span",{key:o,staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getResponsiveOverride(n.varName,o)},attrs:{type:"number",step:n.def.step||.1,min:n.def.min,max:n.def.max},domProps:{value:e.stripUnit(e.getResponsiveOverride(n.varName,o)||n.def[o])},on:{input:function(u){return e.setResponsiveValue(n.varName,o,u.target.value,n.def[o],n.def.unit)}}}),n.def.unit?t("span",{staticClass:"pw-element-unit"},[e._v(e._s(n.def.unit))]):e._e()]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getResponsiveOverride(n.varName,o)||n.def[o],n.def.unit)))])])}):n.type==="theme-color"?e._l(["default","variant","variant2"],function(o){return t("pw-color-field-row",{key:o,attrs:{group:o,"var-name":n.varName,"default-value":n.colorVal[o]||"","override-value":e.getColorOverrideValue(o,n.varName)},on:{"update:value":function(u){return e.setColorValue(o,n.varName,u,n.colorVal[o]||"")}}})}):n.def.unit!==void 0?[t("span",{staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getOverrideValue(n.varName)},attrs:{type:"number",step:n.def.step||.1,min:n.def.min,max:n.def.max},domProps:{value:e.stripUnit(e.getOverrideValue(n.varName)||n.def.value)},on:{input:function(o){return e.setUnitValue(n.varName,o.target.value,n.def.value,n.def.unit)}}}),n.def.unit?t("span",{staticClass:"pw-element-unit"},[e._v(e._s(n.def.unit))]):e._e()]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getOverrideValue(n.varName)||n.def.value,n.def.unit)))])]),n.def.help?t("span",{staticClass:"pw-element-help"},[e._v(e._s(e.helpText(n.def.help)))]):e._e()]:[t("input",{staticClass:"pw-element-input",attrs:{type:"text",placeholder:n.def.value},domProps:{value:e.getOverrideValue(n.varName)},on:{input:function(o){return e.setValue(n.varName,o.target.value,n.def.value)}}}),n.def.help?t("span",{staticClass:"pw-element-help"},[e._v(e._s(e.helpText(n.def.help)))]):e._e()]],2)])])]),n.varName.endsWith("-font-size")&&e.fontSizesForGroup(a)&&e.openSections[a+"-sizes"]?e._l(e.fontSizesForGroup(a).vars,function(o,u){return t("div",{key:"size-"+u,staticClass:"pw-field-row pw-dual-first pw-dual-next"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label pw-sizes-label"},[e._v(e._s(u.split("-").pop()))])]),t("div",{staticClass:"pw-field-row-options pw-group-type-responsive"},e._l(["default","lg","xl"],function(d){return t("span",{key:d,staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getFontSizeOverride(d,u)},attrs:{type:"number",step:e.fontSizesForGroup(a).step||.1,min:"0.1",max:"20"},domProps:{value:e.stripUnit(e.getFontSizeOverride(d,u)||o[d])},on:{input:function(f){return e.setFontSizeValue(d,u,f.target.value,o[d],"rem")}}}),t("span",{staticClass:"pw-element-unit"},[e._v("rem")])]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getFontSizeOverride(d,u)||o[d],"rem")))])])}),0)])])])}):e._e()]}),l.header?t("div",{key:"ge-"+r,staticClass:"pw-group-end"}):e._e()]})],2)])],1)}),0)},G=[],I=p(M,K,G);const Q=I.exports,H={props:{navDefaults:{type:Object,default:()=>({})},navOverrides:{type:Object,default:()=>({})},fonts:{type:Object,default:()=>({})}},data(){return{openSections:{},inlineIcons:{"arrow-down":'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>',"chevron-down":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',"caret-down":'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>',"plus-minus":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg>'}}},computed:{groups(){const s={};for(const[e,t]of Object.entries(this.navDefaults))t&&typeof t=="object"&&(t.vars||t.colors)&&(s[e]=t);return s},fontFamilyOptions(){const s={...this.fonts.builtin||{},...this.fonts.project||{}},e=new Set,t=[];for(const i of Object.values(s))e.has(i.family)||(e.add(i.family),t.push({value:i.family,text:i.family}));return t}},methods:{toggle(s){this.$set(this.openSections,s,!this.isOpen(s))},isOpen(s){return this.openSections[s]!==!1},groupLabel(s){const e="prw.navgroup."+s,t=this.$t(e);return t&&t!==e?t:s.charAt(0).toUpperCase()+s.slice(1).replace(/-/g," ")},hasColors(s){return s.colors&&Object.keys(s.colors).length>0},isFollowedByColorState(s,e){const i=Object.keys(s)[e+1];return i&&(i.endsWith("-hover")||i.endsWith("-active"))},fieldSignature(s,e){return e.type==="color-group"&&e.fields&&e.labels?{type:"color-group",labels:e.labels}:Array.isArray(e.value)&&e.labels?{type:"multi-value",labels:e.labels}:e.default!==void 0&&e.lg!==void 0&&e.variant===void 0?{type:"responsive",labels:["Mobile","Tablet","Desktop"]}:{type:"single",labels:null}},groupedFields(s){const e=[];if(s.vars)for(const[a,l]of Object.entries(s.vars)){if(l.type==="label"){e.push({isLabel:!0,labelText:a.replace("_label_","")});continue}if(l.requires&&(!this.getOverrideValue(l.requires)||a.endsWith("-display-height")))continue;const r=this.fieldSignature(a,l);e.push({varName:a,def:l,label:l.label||this.propLabel(a),type:r.type,sigLabels:r.labels,sigKey:r.type==="single"?"single-"+a:r.type+":"+(r.labels||[]).join(",")})}const t=[];let i=null;for(const a of e){if(a.isLabel){i&&(t.push(i),i=null),t.push({isLabel:!0,labelText:a.labelText});continue}a.type==="single"?(i&&(t.push(i),i=null),t.push({header:null,fields:[a]})):i&&i.sigKey===a.sigKey?i.fields.push(a):(i&&t.push(i),i={sigKey:a.sigKey,header:a.sigLabels,fieldType:a.type,fields:[a]})}return i&&t.push(i),t},dependentField(s){for(const[,e]of Object.entries(this.navDefaults))if(e.vars){for(const[t,i]of Object.entries(e.vars))if(i.requires===s)return{varName:t,def:i}}return null},toggleIcon(s,e,t){(this.getOverrideValue(s)||t)===e?this.setValue(s,"none",t):this.setValue(s,e,t)},sanitizeSvg(s){if(!s)return"";let e=s.replace(/<\?xml[^?]*\?>\s*/gi,"").replace(/<!DOCTYPE[^>]*>\s*/gi,"").replace(/<!--[\s\S]*?-->\s*/g,"");const t=e.match(/<svg[\s\S]*<\/svg>/i);if(!t)return"";e=t[0];const i=e.match(/viewBox=["'][\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)["']/);if(i){const a=Math.round(parseFloat(i[1])),l=Math.round(parseFloat(i[2]));e=e.replace(/(<svg[^>]*?)\s+width="[^"]*"/i,"$1"),e=e.replace(/(<svg[^>]*?)\s+height="[^"]*"/i,"$1"),e=e.replace(/<svg/,'<svg width="'+a+'" height="'+l+'"')}return e.trim()},openSvgDialog(s,e){const t=this.getOverrideValue(s)||"";this.$panel.dialog.open({component:"k-form-dialog",props:{fields:{svg:{type:"textarea",label:"SVG Code",buttons:!1,value:t,font:"monospace",size:"medium",placeholder:"Paste SVG code here..."}},value:{svg:t},submitBtn:{text:"Apply",icon:"check"}},on:{submit:i=>{const a=this.sanitizeSvg(i.svg||"");if(!a){this.$panel.notification.error("No valid SVG found");return}if(!this.parseSvgDimensions(a)){this.$panel.notification.error("SVG must have a viewBox or width/height attributes");return}this.$panel.dialog.close(),this.onSvgInput(s,a,e)}}})},removeSvg(s){const e=JSON.parse(JSON.stringify(this.navOverrides));e.global&&(delete e.global[s],delete e.global[s+"-width"],delete e.global[s+"-height"],Object.keys(e.global).length===0&&delete e.global),this.$emit("update:overrides",e)},onSvgInput(s,e,t){if(!e){this.setValue(s,"",t);return}const i=JSON.parse(JSON.stringify(this.navOverrides));i.global||(i.global={}),i.global[s]=e;const a=this.parseSvgDimensions(e);a&&(i.global[s+"-width"]=String(a.width),i.global[s+"-height"]=String(a.height)),this.$emit("update:overrides",i)},parseSvgDimensions(s){if(!s||!s.includes("<svg"))return null;try{const i=new DOMParser().parseFromString(s,"image/svg+xml").querySelector("svg");if(!i)return null;const a=i.getAttribute("viewBox");if(a){const n=a.trim().split(/\s+/);if(n.length===4)return{width:Math.round(parseFloat(n[2])),height:Math.round(parseFloat(n[3]))}}const l=parseFloat(i.getAttribute("width")),r=parseFloat(i.getAttribute("height"));return l&&r?{width:Math.round(l),height:Math.round(r)}:null}catch{return null}},filteredOptions(s,e){if(!s.endsWith("font-weight"))return e.map(c=>({value:String(c),text:this.optionLabel(c)}));const i=s.replace("font-weight","")+"font-family",a=this.getOverrideValue(i),l=this.getFontByFamily(a);if(!l||!l.files||!l.files.length)return e.map(c=>({value:String(c),text:this.optionLabel(c)}));const n=(l.files[0].weight||"400").split(" ");if(n.length===2){const c=parseInt(n[0]),o=parseInt(n[1]);return e.filter(u=>{const d=parseInt(u);return d>=c&&d<=o}).map(u=>({value:String(u),text:this.optionLabel(u)}))}return[{value:n[0],text:this.optionLabel(n[0])}]},getFontByFamily(s){if(!s){for(const t of Object.values(this.navDefaults))if(t.vars&&t.vars["font-family"]){s=t.vars["font-family"].value;break}}const e={...this.fonts.builtin||{},...this.fonts.project||{}};return Object.values(e).find(t=>t.family===s)||null},optionLabel(s){const e="prw.option."+s,t=this.$t(e);return t&&t!==e?t:String(s)},propLabel(s){const e="prw.nav."+s,t=this.$t(e);return t&&t!==e?t:s},getQuadValue(s,e){const t=(this.navOverrides.global||{})[s];return Array.isArray(t)&&t[e]||""},setQuadValue(s,e,t,i){const a=JSON.parse(JSON.stringify(this.navOverrides));a.global||(a.global={});const l=Array.isArray(a.global[s])?[...a.global[s]]:[...i.value];l[e]=t===""?i.value[e]:t+(i.unit||""),l.every((n,c)=>n===i.value[c])?(delete a.global[s],Object.keys(a.global).length===0&&delete a.global):a.global[s]=l,this.$emit("update:overrides",a)},stripUnit(s){return s?s.replace(/(rem|em|px)$/,""):""},setUnitValue(s,e,t,i){const a=e===""?"":e+(i||"");this.setValue(s,a,t)},toPx(s,e){if(!s)return"";const t=parseFloat(s);return isNaN(t)?"":e==="rem"||s.endsWith("rem")||e==="em"||s.endsWith("em")||e===""&&t>0?Math.round(t*16)+"px":""},getColorOverrideValue(s,e){return((this.navOverrides.global||{})[s]||{})[e]||""},setColorValue(s,e,t,i){const a=JSON.parse(JSON.stringify(this.navOverrides));t===""||t===i?a.global&&a.global[s]&&(delete a.global[s][e],Object.keys(a.global[s]).length===0&&delete a.global[s],a.global&&Object.keys(a.global).length===0&&delete a.global):(a.global||(a.global={}),a.global[s]||(a.global[s]={}),a.global[s][e]=t),this.$emit("update:overrides",a)},getResponsiveOverride(s,e){return((this.navOverrides.global||{})[e]||{})[s]||""},setResponsiveValue(s,e,t,i,a){const l=t===""?"":t+(a||""),r=JSON.parse(JSON.stringify(this.navOverrides));l===""||l===i?r.global&&r.global[e]&&(delete r.global[e][s],Object.keys(r.global[e]).length===0&&delete r.global[e],r.global&&Object.keys(r.global).length===0&&delete r.global):(r.global||(r.global={}),r.global[e]||(r.global[e]={}),r.global[e][s]=l),this.$emit("update:overrides",r)},getOverrideValue(s){return(this.navOverrides.global||{})[s]||""},setValue(s,e,t){const i=JSON.parse(JSON.stringify(this.navOverrides));e===""||e===t||e===String(t)?i.global&&(delete i.global[s],Object.keys(i.global).length===0&&delete i.global):(i.global||(i.global={}),i.global[s]=e),this.$emit("update:overrides",i)}}};var Z=function(){var e=this,t=e._self._c;return t("div",e._l(e.groups,function(i,a){return t("section",{key:a,staticClass:"pw-element-section"},[t("div",{staticClass:"pw-section-header"},[t("button",{staticClass:"pw-section-toggle",on:{click:function(l){return e.toggle(a)}}},[t("span",[e._v(e._s(e.groupLabel(a)))]),t("k-icon",{attrs:{type:e.isOpen(a)?"angle-down":"angle-right"}})],1)]),t("transition",{attrs:{name:"pw-slide"}},[t("div",{directives:[{name:"show",rawName:"v-show",value:e.isOpen(a),expression:"isOpen(groupKey)"}],staticClass:"pw-element-list"},[e._l(e.groupedFields(i),function(l,r){return[l.isLabel?t("div",{key:"gl-"+r,staticClass:"pw-nav-label"},[e._v(" "+e._s(l.labelText)+" ")]):[l.header?t("div",{key:"gh-"+r,staticClass:"pw-group-header"},[t("div",{staticClass:"pw-field-row-label-col"}),t("div",{staticClass:"pw-group-header-labels",class:"pw-group-type-"+l.fieldType},e._l(l.header,function(n){return t("span",{key:n,staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v(e._s(n))])])}),0)]):e._e(),e._l(l.fields,function(n,c){return[t("div",{key:"gf-"+r+"-"+c,staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(n.label))])]),t("div",{staticClass:"pw-field-row-options",class:l.header?"pw-group-type-"+l.fieldType:""},[n.def.type==="visibility"?t("button",{staticClass:"pw-tab-visibility",attrs:{type:"button"},on:{click:function(o){e.setValue(n.varName,(e.getOverrideValue(n.varName)||n.def.value)==="true"?"false":"true",n.def.value)}}},[t("k-icon",{attrs:{type:(e.getOverrideValue(n.varName)||n.def.value)==="true"?"preview":"hidden"}})],1):n.def.type==="icon-select"?t("div",{staticClass:"pw-icon-select"},e._l(n.def.options,function(o){return t("button",{key:o,staticClass:"pw-icon-option",class:{"is-active":(e.getOverrideValue(n.varName)||n.def.value)===o&&(e.getOverrideValue(n.varName)||n.def.value)!=="none"},attrs:{type:"button"},domProps:{innerHTML:e._s(e.inlineIcons[o])},on:{click:function(u){return e.toggleIcon(n.varName,o,n.def.value)}}})}),0):n.def.type==="font-family"?t("select",{staticClass:"pw-element-input pw-font-select",domProps:{value:e.getOverrideValue(n.varName)||n.def.value},on:{change:function(o){return e.setValue(n.varName,o.target.value,n.def.value)}}},e._l(e.fontFamilyOptions,function(o){return t("option",{key:o.value,domProps:{value:o.value}},[e._v(e._s(o.text))])}),0):n.def.options?t("k-toggles-input",{attrs:{value:e.getOverrideValue(n.varName)||n.def.value,options:e.filteredOptions(n.varName,n.def.options),grow:!1,required:!0},on:{input:function(o){return e.setValue(n.varName,o,n.def.value)}}}):n.type==="color-group"?e._l(n.def.fields,function(o,u){return t("pw-color-field-row",{key:u,attrs:{group:"nav","var-name":u,"default-value":o.value,"override-value":e.getOverrideValue(u)},on:{"update:value":function(d){return e.setValue(u,d||"",o.value)}}})}):n.def.type==="color"?[t("pw-color-field-row",{attrs:{group:"nav","var-name":n.varName,"default-value":n.def.value,"override-value":e.getOverrideValue(n.varName)},on:{"update:value":function(o){return e.setValue(n.varName,o||"",n.def.value)}}})]:n.type==="multi-value"?e._l(n.def.value,function(o,u){return t("span",{key:u,staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getQuadValue(n.varName,u)},attrs:{type:"number",step:n.def.step||.1,min:n.def.min,max:n.def.max},domProps:{value:e.stripUnit(e.getQuadValue(n.varName,u)||o)},on:{input:function(d){return e.setQuadValue(n.varName,u,d.target.value,n.def)}}}),n.def.unit?t("span",{staticClass:"pw-element-unit"},[e._v(e._s(n.def.unit))]):e._e()]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getQuadValue(n.varName,u)||o,n.def.unit)))])])}):n.type==="responsive"?e._l(["default","lg","xl"],function(o){return t("span",{key:o,staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getResponsiveOverride(n.varName,o)},attrs:{type:"number",step:n.def.step||.1,min:n.def.min,max:n.def.max},domProps:{value:e.stripUnit(e.getResponsiveOverride(n.varName,o)||n.def[o])},on:{input:function(u){return e.setResponsiveValue(n.varName,o,u.target.value,n.def[o],n.def.unit)}}}),n.def.unit?t("span",{staticClass:"pw-element-unit"},[e._v(e._s(n.def.unit))]):e._e()]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getResponsiveOverride(n.varName,o)||n.def[o],n.def.unit)))])])}):n.def.unit!==void 0?[t("span",{staticClass:"pw-element-field"},[t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getOverrideValue(n.varName)},attrs:{type:"number",step:n.def.step||.1,min:n.def.min,max:n.def.max},domProps:{value:e.stripUnit(e.getOverrideValue(n.varName)||n.def.value)},on:{input:function(o){return e.setUnitValue(n.varName,o.target.value,n.def.value,n.def.unit)}}}),n.def.unit?t("span",{staticClass:"pw-element-unit"},[e._v(e._s(n.def.unit))]):e._e()]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getOverrideValue(n.varName)||n.def.value,n.def.unit)))])])]:n.def.type==="svg"?[e.getOverrideValue(n.varName)?[t("div",{staticClass:"pw-svg-preview",on:{click:function(o){return e.openSvgDialog(n.varName,n.def.value)}}},[t("div",{staticClass:"pw-svg-preview-checker",domProps:{innerHTML:e._s(e.getOverrideValue(n.varName))}})]),e.dependentField(n.varName)?[t("span",{staticClass:"pw-element-field"},[t("span",{staticClass:"pw-group-column-label",staticStyle:{"margin-right":"var(--spacing-2)"}},[e._v("Height")]),t("span",{staticClass:"pw-element-input-wrap"},[t("input",{staticClass:"pw-element-input pw-element-input-number pw-px-calculator-input",class:{"is-default":!e.getOverrideValue(e.dependentField(n.varName).varName)},attrs:{type:"number",step:e.dependentField(n.varName).def.step||.1,min:e.dependentField(n.varName).def.min,max:e.dependentField(n.varName).def.max},domProps:{value:e.stripUnit(e.getOverrideValue(e.dependentField(n.varName).varName)||e.dependentField(n.varName).def.value)},on:{input:function(o){e.setUnitValue(e.dependentField(n.varName).varName,o.target.value,e.dependentField(n.varName).def.value,e.dependentField(n.varName).def.unit)}}}),t("span",{staticClass:"pw-element-unit"},[e._v(e._s(e.dependentField(n.varName).def.unit))])]),t("span",{staticClass:"pw-px-calculator"},[e._v(e._s(e.toPx(e.getOverrideValue(e.dependentField(n.varName).varName)||e.dependentField(n.varName).def.value,e.dependentField(n.varName).def.unit)))])])]:e._e(),t("k-button",{attrs:{text:"Remove",icon:"remove",size:"xs"},on:{click:function(o){return e.removeSvg(n.varName)}}})]:t("k-button",{attrs:{text:"Add SVG",icon:"code",size:"xs",variant:"filled"},on:{click:function(o){return e.openSvgDialog(n.varName,n.def.value)}}})]:t("input",{staticClass:"pw-element-input",attrs:{type:"text",placeholder:n.def.value},domProps:{value:e.getOverrideValue(n.varName)},on:{input:function(o){return e.setValue(n.varName,o.target.value,n.def.value)}}})],2)])])])]}),l.header?t("div",{key:"ge-"+r,staticClass:"pw-group-end"}):e._e()]]}),i.colors?[e.hasColors(i)?t("div",{staticClass:"pw-group-header"},[t("div",{staticClass:"pw-field-row-label-col"}),t("div",{staticClass:"pw-group-header-labels pw-group-type-theme-color"},[t("span",{staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v("Default")])]),t("span",{staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v("Variant")])]),t("span",{staticClass:"pw-group-column-cell"},[t("span",{staticClass:"pw-group-column-label"},[e._v("Variant2")])])])]):e._e(),e._l(i.colors,function(l,r,n){return t("div",{key:"color-"+r,staticClass:"pw-field-row",class:{"pw-dual-first":e.isFollowedByColorState(i.colors,n),"pw-dual-next":r.endsWith("-hover")||r.endsWith("-active")}},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label"},[e._v(e._s(e.propLabel(r)))])]),t("div",{staticClass:"pw-field-row-options pw-group-type-theme-color"},e._l(["default","variant","variant2"],function(c){return t("pw-color-field-row",{key:c,attrs:{group:c,"var-name":r,"default-value":l[c]||"","override-value":e.getColorOverrideValue(c,r)},on:{"update:value":function(o){return e.setColorValue(c,r,o,l[c]||"")}}})}),1)])])])}),t("div",{staticClass:"pw-group-end"})]:e._e()],2)])],1)}),0)},Y=[],X=p(H,Z,Y);const ee=X.exports,te={props:{fonts:{type:Object,default:()=>({})}},data(){return{showAddForm:!1,newFont:{family:"",category:"",italic:null,style:"normal",weights:[],files:[]},pendingFiles:[]}},computed:{allFonts(){return{...this.fonts.builtin||{},...this.fonts.project||{}}},defaultFont(){return this.fonts.default||"Inter"},categoryOptions(){return["sans-serif","serif","monospace","display","cursive"].map(s=>({value:s,text:this.categoryLabel(s)}))},fontFamilyOptions(){return Object.values(this.allFonts).map(s=>({value:s.family,text:s.family}))},canAddFont(){return this.newFont.family.trim()&&this.newFont.category&&this.newFont.italic!==null&&this.newFont.weights.length>0&&this.newFont.files.length>0},computedWeight(){if(this.newFont.weights.length===0)return"";const s=[...this.newFont.weights].sort((e,t)=>Number(e)-Number(t));return s.length===1?s[0]:s[0]+" "+s[s.length-1]}},methods:{resetAddForm(){this.newFont={family:"",category:"",italic:null,style:"normal",weights:[],files:[]}},categoryLabel(s){const e="prw.fontcategory."+s,t=this.$t(e);return t&&t!==e?t:s},formatWeight(s){if(!s)return"";const e=s.split(" ");return e.length===2?e[0]+"–"+e[1]:s},isInWeightRange(s){if(this.newFont.weights.length<2)return!1;const e=this.newFont.weights.map(Number),t=Number(s);return t>Math.min(...e)&&t<Math.max(...e)&&!this.newFont.weights.includes(s)},toggleWeight(s){this.newFont.weights.length===1&&this.newFont.weights[0]===s?this.newFont.weights=[]:this.newFont.weights.length>=2?this.newFont.weights=[s]:this.newFont.weights.push(s)},onFileSelect(s){const e=Array.from(s.target.files);for(const t of e)t.name.endsWith(".woff2")&&(this.newFont.files.push({name:t.name,file:t,style:"normal"}),this.pendingFiles.push(t));s.target.value=""},async addFont(){if(this.canAddFont){for(const s of this.newFont.files){const e=new FileReader,t=await new Promise(i=>{e.onload=()=>i(e.result.split(",")[1]),e.readAsDataURL(s.file)});await this.$api.post("projectwizard/fonts/upload",{name:s.name,data:t})}await this.$api.post("projectwizard/fonts",{family:this.newFont.family.trim(),category:this.newFont.category,italic:this.newFont.italic,files:this.newFont.files.map(s=>({src:s.name,weight:this.computedWeight,style:this.newFont.italic?"normal":this.newFont.style}))}),this.resetAddForm(),this.pendingFiles=[],this.showAddForm=!1,this.$emit("update")}},async deleteFont(s){const e=this.allFonts[s],t=e?e.family:s;window.confirm('Delete font "'+t+'"?')&&(await this.$api.delete("projectwizard/fonts/"+s),this.$emit("update"))},async setDefaultFont(s){await this.$api.post("projectwizard/fonts/default",{family:s}),this.$emit("update")}}};var se=function(){var e=this,t=e._self._c;return t("div",{staticClass:"pw-font-manager"},[t("section",{staticClass:"pw-element-section"},[t("div",{staticClass:"pw-section-header pw-font-header"},[t("span",{staticClass:"pw-section-title"},[e._v(e._s(e.$t("prw.fonts.installed")||"Installed Fonts"))]),t("k-button",{attrs:{text:e.showAddForm?"Cancel":e.$t("prw.fonts.add")||"Add Font",icon:e.showAddForm?"cancel":"add",size:"xs"},on:{click:function(i){e.showAddForm=!e.showAddForm,e.showAddForm||e.resetAddForm()}}})],1),t("div",{staticClass:"pw-element-list"},[e._l(e.allFonts,function(i,a){return e._l(i.files,function(l,r){return t("div",{key:a+"-"+r,staticClass:"pw-field-row",class:{"pw-dual-first":r===0&&i.files.length>1,"pw-dual-next":r>0}},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[t("div",{staticClass:"pw-field-row-label-col"},[t("label",{staticClass:"pw-field-row-label pw-font-label-bold"},[e._v(e._s(i.family))]),t("span",{staticClass:"pw-quad-label"},[e._v(e._s(e.categoryLabel(i.category)))])]),t("div",{staticClass:"pw-field-row-options"},[t("span",{staticClass:"pw-font-file-name"},[e._v(e._s(l.src)+" "),t("span",{staticClass:"pw-font-weight-label"},[e._v(e._s(i.italic&&i.files.length===1?"normal, italic":l.style)+", "+e._s(e.formatWeight(l.weight)))])]),!i.builtin&&r===0?t("button",{staticClass:"pw-font-delete",attrs:{type:"button"},on:{click:function(n){return e.deleteFont(a)}}},[e._v("×")]):e._e()])])])])})})],2)]),e.showAddForm?t("section",{staticClass:"pw-element-section"},[t("div",{staticClass:"pw-section-header"},[t("span",{staticClass:"pw-section-toggle"},[t("span",[e._v(e._s(e.$t("prw.fonts.add")||"Add Font"))])])]),t("div",{staticClass:"pw-element-list"},[t("div",{staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[e._m(0),t("div",{staticClass:"pw-field-row-options"},[t("label",{staticClass:"pw-font-upload-btn"},[t("k-icon",{attrs:{type:"upload"}}),e._v(" Upload .woff2 "),t("input",{staticStyle:{display:"none"},attrs:{type:"file",accept:".woff2"},on:{change:e.onFileSelect}})],1),e.newFont.files.length?t("span",{staticClass:"pw-font-file-selected"},[e._v(e._s(e.newFont.files[0].name))]):e._e()])])])]),e._m(1),t("div",{staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[e._m(2),t("div",{staticClass:"pw-field-row-options"},[t("input",{directives:[{name:"model",rawName:"v-model",value:e.newFont.family,expression:"newFont.family"}],staticClass:"pw-element-input pw-font-name-input",attrs:{type:"text",placeholder:"e.g. Acme, Roboto"},domProps:{value:e.newFont.family},on:{input:function(i){i.target.composing||e.$set(e.newFont,"family",i.target.value)}}})])])])]),t("div",{staticClass:"pw-font-help"},[e._v(" "+e._s(e.$t("prw.fonts.nameHelp")||'Enter the exact font family name as specified by the font provider (e.g. "Roboto", "Open Sans", "Playfair Display").')+" ")]),t("div",{staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[e._m(3),t("div",{staticClass:"pw-field-row-options"},[t("k-toggles-input",{attrs:{value:e.newFont.category,options:e.categoryOptions,grow:!1,required:!0},on:{input:function(i){e.newFont.category=i}}})],1)])])]),t("div",{staticClass:"pw-font-help"},[e._v(" "+e._s(e.$t("prw.fonts.categoryHelp")||"Select the font category. This is used as CSS fallback (e.g. sans-serif, serif) when the font is not yet loaded.")+" ")]),t("div",{staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[e._m(4),t("div",{staticClass:"pw-field-row-options"},[t("k-toggles-input",{attrs:{value:e.newFont.italic===null?"":e.newFont.italic?"yes":"no",options:[{value:"yes",text:"Yes"},{value:"no",text:"No"}],grow:!1,required:!0},on:{input:function(i){e.newFont.italic=i==="yes"}}}),e.newFont.italic===!1?[t("span",{staticClass:"pw-font-inline-label"},[e._v("Choose Style")]),t("k-toggles-input",{attrs:{value:e.newFont.style,options:[{value:"normal",text:"Normal"},{value:"italic",text:"Italic"}],grow:!1,required:!0},on:{input:function(i){e.newFont.style=i}}})]:e._e()],2)])])]),t("div",{staticClass:"pw-font-help"},[e._v(" "+e._s(e.$t("prw.fonts.italicHelp")||"Enable if the font includes italic styles. Some variable fonts include italic in a separate file, others have it built-in.")+" ")]),t("div",{staticClass:"pw-field-row"},[t("div",{staticClass:"k-input",attrs:{"data-type":"text"}},[t("span",{staticClass:"k-input-element pw-field-row-inner"},[e._m(5),t("div",{staticClass:"pw-field-row-options"},[t("div",{staticClass:"pw-weight-toggles"},e._l(["100","200","300","400","500","600","700","800","900"],function(i){return t("button",{key:i,staticClass:"pw-weight-toggle",class:{"is-active":e.newFont.weights.includes(i),"is-in-range":e.isInWeightRange(i)},attrs:{type:"button"},on:{click:function(a){return e.toggleWeight(i)}}},[e._v(e._s(i))])}),0)])])])]),t("div",{staticClass:"pw-font-help"},[e._v(" "+e._s(e.$t("prw.fonts.weightHelp")||"Select one weight for static fonts, or multiple for variable fonts (e.g. 100–900).")+" ")]),t("div",{staticClass:"pw-font-actions"},[t("k-button",{attrs:{disabled:!e.canAddFont,text:"Add Font",icon:"check",theme:"positive",variant:"filled",size:"sm"},on:{click:e.addFont}})],1)])]):e._e()])},ie=[function(){var s=this,e=s._self._c;return e("div",{staticClass:"pw-field-row-label-col"},[e("label",{staticClass:"pw-field-row-label"},[s._v("Font File *")])])},function(){var s=this,e=s._self._c;return e("div",{staticClass:"pw-font-help"},[s._v(" Upload a .woff2 font file. You can use "),e("a",{attrs:{href:"https://gwfh.mranftl.com/",target:"_blank",rel:"noopener"}},[s._v("Google Webfonts Helper")]),s._v(" to download Google Fonts as .woff2. ")])},function(){var s=this,e=s._self._c;return e("div",{staticClass:"pw-field-row-label-col"},[e("label",{staticClass:"pw-field-row-label"},[s._v("Font Family Name *")])])},function(){var s=this,e=s._self._c;return e("div",{staticClass:"pw-field-row-label-col"},[e("label",{staticClass:"pw-field-row-label"},[s._v("Category *")])])},function(){var s=this,e=s._self._c;return e("div",{staticClass:"pw-field-row-label-col"},[e("label",{staticClass:"pw-field-row-label"},[s._v("Supports Italic Automatically *")])])},function(){var s=this,e=s._self._c;return e("div",{staticClass:"pw-field-row-label-col"},[e("label",{staticClass:"pw-field-row-label"},[s._v("Weight *")])])}],ae=p(te,se,ie);const ne=ae.exports;panel.plugin("kirbydesk/kirby-projectwizard",{components:{"pw-wizard-overview":y,"pw-field-row":C,"pw-color-field-row":x,"pw-global-elements":T,"pw-global-fonts":W,"pw-block-settings":E,"pw-global-elements-styles":Q,"pw-global-navigation":ee,"pw-global-font-manager":ne}})})();
+(function() {
+  "use strict";
+  function normalizeComponent(scriptExports, render, staticRenderFns, functionalTemplate, injectStyles, scopeId, moduleIdentifier, shadowMode) {
+    var options = typeof scriptExports === "function" ? scriptExports.options : scriptExports;
+    if (render) {
+      options.render = render;
+      options.staticRenderFns = staticRenderFns;
+      options._compiled = true;
+    }
+    return {
+      exports: scriptExports,
+      options
+    };
+  }
+  const _sfc_main$8 = {
+    props: {
+      blockType: {
+        type: String,
+        default: null
+      }
+    },
+    data() {
+      return {
+        loading: true,
+        blocks: [],
+        activeBlocks: [],
+        activeTab: "global",
+        globalActiveTab: "blocks",
+        blockConfigs: {},
+        blockOverrides: {},
+        originalOverrides: {},
+        originalActiveBlocks: [],
+        dirtyTabs: {},
+        snapshots: {},
+        writerActive: {},
+        blockViewTab: "settings",
+        globalDefaults: {},
+        globalOverrides: {},
+        originalGlobalOverrides: {},
+        fontsData: {},
+        fontDefaults: {},
+        fontOverrides: {},
+        originalFontOverrides: {},
+        elementDefaults: {},
+        elementOverrides: {},
+        originalElementOverrides: {},
+        navDefaults: {},
+        navOverrides: {},
+        originalNavOverrides: {},
+        footerDefaults: {},
+        footerOverrides: {},
+        originalFooterOverrides: {}
+      };
+    },
+    computed: {
+      hasStoredOverrides() {
+        if (this.activeTab === "global") {
+          if (this.globalActiveTab === "global") return Object.keys(this.originalGlobalOverrides).length > 0;
+          if (this.globalActiveTab === "elements") return Object.keys(this.originalElementOverrides).length > 0 || Object.keys(this.originalFontOverrides).length > 0;
+          if (this.globalActiveTab === "elements") return Object.keys(this.originalElementOverrides).length > 0;
+          if (this.globalActiveTab === "header") return Object.keys(this.originalNavOverrides).length > 0;
+          if (this.globalActiveTab === "footer") return Object.keys(this.originalFooterOverrides).length > 0;
+        } else if (this.activeTab && this.originalOverrides[this.activeTab]) {
+          return Object.keys(this.originalOverrides[this.activeTab]).length > 0;
+        }
+        return false;
+      },
+      bodyDefaultFont() {
+        const groups = this.globalDefaults || {};
+        let def = "Inter";
+        for (const group of Object.values(groups)) {
+          if (group && group.vars && group.vars["font-family-default"]) {
+            def = group.vars["font-family-default"].value || def;
+          }
+        }
+        const ov = this.globalOverrides && this.globalOverrides["global"];
+        return ov && ov["font-family-default"] || def;
+      },
+      isDirty() {
+        if (this.activeTab === "global") {
+          return this.dirtyTabs["global"] || this.dirtyTabs[this.globalActiveTab] || this.dirtyTabs[this.globalActiveTab + "-settings"];
+        }
+        return this.dirtyTabs[this.activeTab];
+      }
+    },
+    watch: {
+      blockType: {
+        immediate: true,
+        handler(val) {
+          this.activeTab = val || "global";
+        }
+      }
+    },
+    async created() {
+      await this.load();
+      this._onKeydown = (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+          e.preventDefault();
+          if (this.isDirty) {
+            this.saveCurrentView();
+          }
+        }
+      };
+      window.addEventListener("keydown", this._onKeydown);
+    },
+    beforeDestroy() {
+      window.removeEventListener("keydown", this._onKeydown);
+    },
+    methods: {
+      async load() {
+        try {
+          const res = await this.$api.get("projectwizard/blocks");
+          this.blocks = res.blocks || [];
+          this.activeBlocks = res.activeBlocks || [];
+          this.originalActiveBlocks = [...this.activeBlocks];
+          this.$set(this.snapshots, "global", JSON.stringify(this.activeBlocks));
+          for (const block of this.blocks) {
+            const config = await this.$api.get("projectwizard/block/" + block.blockType);
+            this.$set(this.blockConfigs, block.blockType, config);
+            const overrides = config.overrides && !Array.isArray(config.overrides) ? config.overrides : {};
+            this.$set(this.blockOverrides, block.blockType, JSON.parse(JSON.stringify(overrides)));
+            this.$set(this.originalOverrides, block.blockType, JSON.parse(JSON.stringify(overrides)));
+            this.$set(this.snapshots, block.blockType, JSON.stringify(overrides));
+          }
+          const globalData = await this.$api.get("projectwizard/global");
+          this.globalDefaults = globalData.defaults || {};
+          const globalOv = globalData.overrides && !Array.isArray(globalData.overrides) ? globalData.overrides : {};
+          this.globalOverrides = JSON.parse(JSON.stringify(globalOv));
+          this.originalGlobalOverrides = JSON.parse(JSON.stringify(globalOv));
+          this.$set(this.snapshots, "global-settings", JSON.stringify(globalOv));
+          const fonts = await this.$api.get("projectwizard/fontsizes");
+          this.fontDefaults = fonts.defaults || {};
+          const fontOv = fonts.overrides && !Array.isArray(fonts.overrides) ? fonts.overrides : {};
+          this.fontOverrides = JSON.parse(JSON.stringify(fontOv));
+          this.originalFontOverrides = JSON.parse(JSON.stringify(fontOv));
+          this.$set(this.snapshots, "fontsizes", JSON.stringify(fontOv));
+          const elems = await this.$api.get("projectwizard/elements");
+          this.elementDefaults = elems.defaults || {};
+          const elemOv = elems.overrides && !Array.isArray(elems.overrides) ? elems.overrides : {};
+          this.elementOverrides = JSON.parse(JSON.stringify(elemOv));
+          this.originalElementOverrides = JSON.parse(JSON.stringify(elemOv));
+          this.$set(this.snapshots, "elements", JSON.stringify(elemOv));
+          await this.loadFontsData();
+          const navData = await this.$api.get("projectwizard/navigation");
+          this.navDefaults = navData.defaults || {};
+          const navOv = navData.overrides && !Array.isArray(navData.overrides) ? navData.overrides : {};
+          this.navOverrides = JSON.parse(JSON.stringify(navOv));
+          this.originalNavOverrides = JSON.parse(JSON.stringify(navOv));
+          this.$set(this.snapshots, "header", JSON.stringify(navOv));
+          const footerData = await this.$api.get("projectwizard/footer");
+          this.footerDefaults = footerData.defaults || {};
+          const footerOv = footerData.overrides && !Array.isArray(footerData.overrides) ? footerData.overrides : {};
+          this.footerOverrides = JSON.parse(JSON.stringify(footerOv));
+          this.originalFooterOverrides = JSON.parse(JSON.stringify(footerOv));
+          this.$set(this.snapshots, "footer", JSON.stringify(footerOv));
+          this.loading = false;
+        } catch (e) {
+          console.error("Failed to load", e);
+        }
+      },
+      blockLabel(blockType) {
+        const block = this.blocks.find((b) => b.blockType === blockType);
+        if (block) {
+          const translated = this.$t(block.plugin + ".name");
+          if (translated && translated !== block.plugin + ".name") return translated;
+        }
+        const name = blockType.replace(/^pw/, "").replace(/([A-Z])/g, " $1").trim() || blockType;
+        return name.charAt(0).toUpperCase() + name.slice(1);
+      },
+      // --- Global: Elements ---
+      toggleBlock(blockType, checked) {
+        const block = this.blocks.find((b) => b.blockType === blockType);
+        if (block) block.active = checked;
+        if (checked) {
+          if (!this.activeBlocks.includes(blockType)) this.activeBlocks.push(blockType);
+        } else {
+          this.activeBlocks = this.activeBlocks.filter((b) => b !== blockType);
+        }
+        this.$set(this.dirtyTabs, "global", JSON.stringify(this.activeBlocks) !== this.snapshots["global"]);
+      },
+      // --- Global: Settings ---
+      onGlobalOverridesUpdate(overrides) {
+        this.globalOverrides = overrides;
+        this.$set(this.dirtyTabs, "global-settings", JSON.stringify(this.globalOverrides) !== this.snapshots["global-settings"]);
+      },
+      // --- Global: Fonts ---
+      onFontOverridesUpdate(overrides) {
+        this.fontOverrides = overrides;
+        this.updateElementsDirty();
+      },
+      updateElementsDirty() {
+        const elemDirty = JSON.stringify(this.elementOverrides) !== this.snapshots["elements"];
+        const fontDirty = JSON.stringify(this.fontOverrides) !== this.snapshots["fontsizes"];
+        this.$set(this.dirtyTabs, "elements", elemDirty || fontDirty);
+      },
+      async saveFonts() {
+        try {
+          const res = await this.$api.post("projectwizard/fontsizes", this.fontOverrides);
+          this.fontOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.originalFontOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.$set(this.snapshots, "fontsizes", JSON.stringify(this.safeOverrides(res.overrides)));
+        } catch (e) {
+          this.$panel.notification.error("Failed to save font sizes");
+        }
+      },
+      // --- Global: Footer ---
+      onFooterOverridesUpdate(overrides) {
+        this.footerOverrides = overrides;
+        this.$set(this.dirtyTabs, "footer", JSON.stringify(this.footerOverrides) !== this.snapshots["footer"]);
+      },
+      async saveFooter() {
+        try {
+          const res = await this.$api.post("projectwizard/footer", this.footerOverrides);
+          const ov = this.safeOverrides(res.overrides);
+          this.footerOverrides = JSON.parse(JSON.stringify(ov));
+          this.originalFooterOverrides = JSON.parse(JSON.stringify(ov));
+          this.$set(this.snapshots, "footer", JSON.stringify(ov));
+          this.$set(this.dirtyTabs, "footer", false);
+          this.$panel.notification.success("Footer settings saved");
+        } catch (e) {
+          this.$panel.notification.error("Failed to save footer settings");
+        }
+      },
+      // --- Global: Elements ---
+      onElementOverridesUpdate(overrides) {
+        this.elementOverrides = overrides;
+        this.updateElementsDirty();
+      },
+      async saveElements() {
+        try {
+          const res = await this.$api.post("projectwizard/elements", this.elementOverrides);
+          this.elementOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.originalElementOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.$set(this.snapshots, "elements", JSON.stringify(this.safeOverrides(res.overrides)));
+          await this.saveFonts();
+          this.$set(this.dirtyTabs, "elements", false);
+          this.$panel.notification.success("Elements settings saved");
+        } catch (e) {
+          this.$panel.notification.error("Failed to save elements settings");
+        }
+      },
+      // --- Global: Fonts ---
+      async loadFontsData() {
+        try {
+          this.fontsData = await this.$api.get("projectwizard/fonts");
+        } catch (e) {
+          console.error("Failed to load fonts", e);
+        }
+      },
+      // --- Global: Navigation ---
+      onNavOverridesUpdate(overrides) {
+        this.navOverrides = overrides;
+        this.$set(this.dirtyTabs, "header", JSON.stringify(this.navOverrides) !== this.snapshots["header"]);
+      },
+      async saveNavigation() {
+        try {
+          const res = await this.$api.post("projectwizard/navigation", this.navOverrides);
+          this.navOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.originalNavOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.$set(this.snapshots, "header", JSON.stringify(this.safeOverrides(res.overrides)));
+          this.$set(this.dirtyTabs, "header", false);
+          this.$panel.notification.success("Header settings saved");
+        } catch (e) {
+          this.$panel.notification.error("Failed to save header settings");
+        }
+      },
+      // --- Block overrides ---
+      onBlockOverridesUpdate(blockType, overrides) {
+        this.$set(this.blockOverrides, blockType, overrides);
+        const current = JSON.stringify(overrides);
+        const snapshot = this.snapshots[blockType] || "{}";
+        this.$set(this.dirtyTabs, blockType, current !== snapshot);
+        const config = this.blockConfigs[blockType];
+        if (config) config.hasOverrides = Object.keys(overrides || {}).length > 0;
+      },
+      // --- Save / Discard ---
+      async resetCurrentView() {
+        const name = this.activeTab === "global" ? this.$t("prw.tab." + this.globalActiveTab) || this.globalActiveTab : this.blockLabel(this.activeTab);
+        try {
+          await new Promise((resolve, reject) => {
+            this.$panel.dialog.open({
+              component: "k-text-dialog",
+              props: {
+                text: 'Reset "' + name + '" to defaults? All saved overrides for this section will be removed.',
+                submitBtn: {
+                  text: "Reset",
+                  icon: "undo",
+                  theme: "negative"
+                }
+              },
+              on: {
+                submit: () => {
+                  this.$panel.dialog.close();
+                  resolve();
+                },
+                cancel: () => reject()
+              }
+            });
+          });
+        } catch (e) {
+          return;
+        }
+        if (this.activeTab === "global") {
+          if (this.globalActiveTab === "global") {
+            this.globalOverrides = {};
+            await this.saveGlobalSettings();
+          } else if (this.globalActiveTab === "elements") {
+            this.elementOverrides = {};
+            this.fontOverrides = {};
+            await this.saveElements();
+          } else if (this.globalActiveTab === "header") {
+            this.navOverrides = {};
+            await this.saveNavigation();
+          } else if (this.globalActiveTab === "footer") {
+            this.footerOverrides = {};
+            await this.saveFooter();
+          }
+        } else {
+          await this.resetBlock(this.activeTab);
+        }
+      },
+      async saveCurrentView() {
+        if (this.activeTab === "global") {
+          if (this.globalActiveTab === "global") {
+            await this.saveGlobalSettings();
+          } else if (this.globalActiveTab === "elements") {
+            await this.saveElements();
+          } else if (this.globalActiveTab === "header") {
+            await this.saveNavigation();
+          } else if (this.globalActiveTab === "footer") {
+            await this.saveFooter();
+          } else {
+            await this.saveGlobal();
+          }
+        } else {
+          await this.saveBlock(this.activeTab);
+        }
+        try {
+          fetch(window.location.origin, { cache: "no-store" });
+        } catch (e) {
+        }
+      },
+      discardChanges() {
+        if (this.activeTab === "global") {
+          if (this.globalActiveTab === "global") {
+            this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
+            this.$set(this.dirtyTabs, "global-settings", false);
+          } else if (this.globalActiveTab === "elements") {
+            this.elementOverrides = JSON.parse(JSON.stringify(this.originalElementOverrides));
+            this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
+            this.$set(this.dirtyTabs, "elements", false);
+          } else if (this.globalActiveTab === "header") {
+            this.navOverrides = JSON.parse(JSON.stringify(this.originalNavOverrides));
+            this.$set(this.dirtyTabs, "header", false);
+          } else if (this.globalActiveTab === "footer") {
+            this.footerOverrides = JSON.parse(JSON.stringify(this.originalFooterOverrides));
+            this.$set(this.dirtyTabs, "footer", false);
+          } else {
+            this.activeBlocks = [...this.originalActiveBlocks];
+            for (const block of this.blocks) {
+              block.active = this.activeBlocks.includes(block.blockType);
+            }
+            this.$set(this.dirtyTabs, "global", false);
+          }
+        } else {
+          const bt = this.activeTab;
+          this.$set(this.blockOverrides, bt, JSON.parse(JSON.stringify(this.originalOverrides[bt] || {})));
+          this.$set(this.dirtyTabs, this.activeTab, false);
+        }
+      },
+      async saveGlobal() {
+        try {
+          await this.$api.post("projectwizard/blocks/active", { blocks: this.activeBlocks });
+          this.originalActiveBlocks = [...this.activeBlocks];
+          this.$set(this.snapshots, "global", JSON.stringify(this.activeBlocks));
+          this.$set(this.dirtyTabs, "global", false);
+          this.$panel.notification.success("Blocks settings saved");
+        } catch (e) {
+          this.$panel.notification.error("Failed to save blocks settings");
+        }
+      },
+      async saveGlobalSettings() {
+        try {
+          const res = await this.$api.post("projectwizard/global", this.globalOverrides);
+          this.globalOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.originalGlobalOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
+          this.$set(this.snapshots, "global-settings", JSON.stringify(this.safeOverrides(res.overrides)));
+          this.$set(this.dirtyTabs, "global-settings", false);
+          this.$panel.notification.success("Global settings saved");
+        } catch (e) {
+          this.$panel.notification.error("Failed to save global settings");
+        }
+      },
+      async saveBlock(blockType) {
+        try {
+          const res = await this.$api.post(
+            "projectwizard/block/" + blockType,
+            this.blockOverrides[blockType] || {}
+          );
+          this.$set(this.blockConfigs, blockType, res);
+          this.$set(this.blockOverrides, blockType, JSON.parse(JSON.stringify(this.safeOverrides(res.overrides))));
+          this.$set(this.originalOverrides, blockType, JSON.parse(JSON.stringify(this.safeOverrides(res.overrides))));
+          const block = this.blocks.find((b) => b.blockType === blockType);
+          if (block) block.customized = Object.keys(this.safeOverrides(res.overrides)).length > 0;
+          this.$set(this.snapshots, blockType, JSON.stringify(this.safeOverrides(res.overrides)));
+          this.$set(this.dirtyTabs, blockType, false);
+          this.$panel.notification.success(this.blockLabel(blockType) + " settings saved");
+        } catch (e) {
+          this.$panel.notification.error("Failed to save " + this.blockLabel(blockType) + " settings");
+        }
+      },
+      async resetBlock(blockType) {
+        try {
+          const res = await this.$api.post("projectwizard/block/" + blockType + "/reset");
+          this.$set(this.blockConfigs, blockType, res);
+          this.$set(this.blockOverrides, blockType, {});
+          this.$set(this.originalOverrides, blockType, {});
+          this.$set(this.snapshots, blockType, "{}");
+          this.$set(this.dirtyTabs, blockType, false);
+          const block = this.blocks.find((b) => b.blockType === blockType);
+          if (block) block.customized = false;
+          this.$panel.notification.success(this.blockLabel(blockType) + " reset to defaults");
+        } catch (e) {
+          this.$panel.notification.error("Failed to reset " + this.blockLabel(blockType) + " settings");
+        }
+      },
+      safeOverrides(ov) {
+        return ov && !Array.isArray(ov) ? ov : {};
+      }
+    }
+  };
+  var _sfc_render$8 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("k-panel-inside", { staticClass: "pw-wizard" }, [_c("k-header", { scopedSlots: _vm._u([_vm.isDirty || _vm.hasStoredOverrides ? { key: "buttons", fn: function() {
+      return [_c("div", { staticClass: "k-form-controls" }, [_c("div", { staticClass: "k-button-group", attrs: { "data-layout": "collapsed" } }, [_vm.hasStoredOverrides && !_vm.isDirty ? _c("k-button", { staticClass: "k-form-controls-button", attrs: { "text": "Reset " + (_vm.activeTab === "global" ? _vm.$t("prw.tab." + _vm.globalActiveTab) || _vm.globalActiveTab : _vm.blockLabel(_vm.activeTab)) + " Settings", "icon": "undo", "variant": "filled", "size": "sm", "responsive": "true" }, on: { "click": _vm.resetCurrentView } }) : _vm._e(), _vm.isDirty ? _c("k-button", { staticClass: "k-form-controls-button", attrs: { "text": "Discard", "icon": "undo", "theme": "notice", "variant": "filled", "size": "sm", "responsive": "true" }, on: { "click": _vm.discardChanges } }) : _vm._e(), _vm.isDirty ? _c("k-button", { staticClass: "k-form-controls-button", attrs: { "text": "Save", "icon": "check", "theme": "notice", "variant": "filled", "size": "sm" }, on: { "click": _vm.saveCurrentView } }) : _vm._e()], 1)])];
+    }, proxy: true } : null], null, true) }, [_vm._v(" " + _vm._s(_vm.blockType ? _vm.blockLabel(_vm.blockType) : "Project Wizard") + " ")]), !_vm.loading && _vm.activeTab === "global" ? _c("nav", { staticClass: "k-tabs k-model-tabs" }, _vm._l([
+      { key: "blocks", icon: "dashboard" },
+      { key: "global", icon: "globe" },
+      { key: "elements", icon: "layers" },
+      { key: "header", icon: "header" },
+      { key: "footer", icon: "footer" }
+    ], function(tab) {
+      return _c("button", { key: tab.key, staticClass: "k-tabs-button k-button", attrs: { "type": "button", "aria-current": _vm.globalActiveTab === tab.key ? "true" : null, "data-has-icon": "true", "data-has-text": "true", "data-variant": "dimmed" }, on: { "click": function($event) {
+        _vm.globalActiveTab = tab.key;
+      } } }, [_c("span", { staticClass: "k-button-icon" }, [_c("k-icon", { attrs: { "type": tab.icon } })], 1), _c("span", { staticClass: "k-button-text" }, [_vm._v(_vm._s(_vm.$t("prw.tab." + tab.key)))])]);
+    }), 0) : _vm._e(), _vm.loading ? _c("div", { staticClass: "pw-wizard-loading" }, [_vm._v("Loading...")]) : _c("div", { staticClass: "pw-wizard-content" }, [_vm.activeTab === "global" ? _c("div", { staticClass: "pw-wizard-panel" }, [_c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.globalActiveTab === "blocks", expression: "globalActiveTab === 'blocks'" }], staticClass: "pw-wizard-global-content" }, [_c("pw-global-elements", { attrs: { "blocks": _vm.blocks }, on: { "toggle": function($event) {
+      return _vm.toggleBlock($event.blockType, $event.checked);
+    } } })], 1), _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.globalActiveTab === "global", expression: "globalActiveTab === 'global'" }], staticClass: "pw-wizard-global-content" }, [_c("pw-global-navigation", { attrs: { "nav-defaults": _vm.globalDefaults, "nav-overrides": _vm.globalOverrides, "fonts": _vm.fontsData, "body-default-font": _vm.bodyDefaultFont }, on: { "update:overrides": _vm.onGlobalOverridesUpdate } }), _c("pw-global-font-manager", { attrs: { "fonts": _vm.fontsData }, on: { "update": _vm.loadFontsData } })], 1), _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.globalActiveTab === "elements", expression: "globalActiveTab === 'elements'" }], staticClass: "pw-wizard-global-content" }, [_c("pw-global-elements-styles", { attrs: { "element-defaults": _vm.elementDefaults, "element-overrides": _vm.elementOverrides, "fonts": _vm.fontsData, "font-defaults": _vm.fontDefaults, "font-overrides": _vm.fontOverrides, "body-default-font": _vm.bodyDefaultFont }, on: { "update:overrides": _vm.onElementOverridesUpdate, "update:font-overrides": _vm.onFontOverridesUpdate } })], 1), _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.globalActiveTab === "header", expression: "globalActiveTab === 'header'" }], staticClass: "pw-wizard-global-content" }, [_c("pw-global-navigation", { attrs: { "nav-defaults": _vm.navDefaults, "nav-overrides": _vm.navOverrides, "fonts": _vm.fontsData, "body-default-font": _vm.bodyDefaultFont }, on: { "update:overrides": _vm.onNavOverridesUpdate } })], 1), _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.globalActiveTab === "footer", expression: "globalActiveTab === 'footer'" }], staticClass: "pw-wizard-global-content" }, [_c("pw-global-navigation", { attrs: { "nav-defaults": _vm.footerDefaults, "nav-overrides": _vm.footerOverrides, "fonts": _vm.fontsData, "body-default-font": _vm.bodyDefaultFont }, on: { "update:overrides": _vm.onFooterOverridesUpdate } })], 1)]) : _vm._e(), _vm._l(_vm.blocks, function(block) {
+      return _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.activeTab === block.blockType, expression: "activeTab === block.blockType" }], key: block.blockType, staticClass: "pw-wizard-panel" }, [_vm.blockConfigs[block.blockType] ? _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.blockViewTab === "settings", expression: "blockViewTab === 'settings'" }] }, [_c("pw-block-settings", { attrs: { "block": block, "config": _vm.blockConfigs[block.blockType], "overrides": _vm.blockOverrides[block.blockType] || {}, "writer-active": _vm.writerActive[block.blockType] !== false }, on: { "update:overrides": function($event) {
+        return _vm.onBlockOverridesUpdate(block.blockType, $event);
+      }, "update:writer-active": function($event) {
+        return _vm.$set(_vm.writerActive, block.blockType, $event);
+      } } })], 1) : _vm._e()]);
+    })], 2)], 1);
+  };
+  var _sfc_staticRenderFns$8 = [];
+  _sfc_render$8._withStripped = true;
+  var __component__$8 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$8,
+    _sfc_render$8,
+    _sfc_staticRenderFns$8
+  );
+  __component__$8.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/Overview.vue";
+  const Overview = __component__$8.exports;
+  const _sfc_main$7 = {
+    props: {
+      uid: String,
+      label: String,
+      allOptions: Array,
+      activeOptions: Array,
+      currentDefault: String,
+      pluginDefault: String,
+      enabled: { type: Boolean, default: true },
+      modified: { type: Boolean, default: false },
+      noDefault: { type: Boolean, default: false },
+      noCheckbox: { type: Boolean, default: false },
+      required: { type: Boolean, default: false }
+    },
+    data() {
+      return {
+        active: this.activeOptions && this.activeOptions.length > 0,
+        touched: this.modified,
+        localDefault: null,
+        localActive: [...this.activeOptions || []]
+      };
+    },
+    watch: {
+      modified(val) {
+        if (!val) {
+          this.touched = false;
+          this.localDefault = null;
+          this.localActive = [...this.activeOptions || []];
+          this.active = this.activeOptions && this.activeOptions.length > 0;
+        }
+      },
+      activeOptions(newVal) {
+        this.localActive = [...newVal || []];
+        this.active = newVal && newVal.length > 0;
+      }
+    },
+    methods: {
+      toggleActive(checked) {
+        this.active = checked;
+        if (!checked) {
+          this.$emit("update:options", null);
+        } else {
+          this.$emit("update:options", this.allOptions);
+        }
+      },
+      propertyLabel(key) {
+        const tKey = "prw.property." + key;
+        const translated = this.$t(tKey);
+        return translated && translated !== tKey ? translated : key;
+      },
+      optionLabel(opt) {
+        const prwKey = "prw.option." + opt;
+        const prwTranslated = this.$t(prwKey);
+        if (prwTranslated && prwTranslated !== prwKey) return prwTranslated;
+        const pwKey = "pw.option." + opt;
+        const pwTranslated = this.$t(pwKey);
+        if (pwTranslated && pwTranslated !== pwKey) return pwTranslated;
+        const prefixes = ["multicolumn"];
+        for (const prefix of prefixes) {
+          if (opt.startsWith(prefix)) {
+            const subKey = "kirbyblock-" + prefix + ".sub." + opt.slice(prefix.length);
+            const subTranslated = this.$t(subKey);
+            if (subTranslated && subTranslated !== subKey) return subTranslated;
+          }
+        }
+        return opt;
+      },
+      handleClick(opt) {
+        if (this.noDefault) {
+          if (!this.touched) {
+            this.touched = true;
+            this.localActive = [opt];
+          } else {
+            const isActive2 = this.localActive.includes(opt);
+            if (isActive2) {
+              const updated = this.localActive.filter((o) => o !== opt);
+              if (updated.length === 0) {
+                if (this.required) return;
+                this.touched = false;
+                this.localActive = [...this.allOptions];
+                this.$emit("update:options", this.allOptions);
+                return;
+              }
+              this.localActive = updated;
+            } else {
+              this.localActive = this.allOptions.filter(
+                (o) => this.localActive.includes(o) || o === opt
+              );
+            }
+          }
+          this.$emit("update:options", this.localActive);
+          return;
+        }
+        if (!this.touched) {
+          this.touched = true;
+          this.localActive = [opt];
+          this.$emit("update:options", [opt]);
+          return;
+        }
+        const isActive = this.localActive.includes(opt);
+        const isLocalDefault = opt === this.localDefault;
+        if (!isActive) {
+          const updated = this.allOptions.filter(
+            (o) => this.localActive.includes(o) || o === opt
+          );
+          this.localActive = updated;
+          this.$emit("update:options", updated);
+        } else if (isActive && !isLocalDefault) {
+          this.localDefault = opt;
+          this.$emit("update:default", opt);
+        } else if (isActive && isLocalDefault) {
+          const updated = this.localActive.filter((o) => o !== opt);
+          if (updated.length === 0) {
+            this.touched = false;
+            this.localDefault = null;
+            this.localActive = [...this.allOptions];
+            this.$emit("update:options", []);
+            return;
+          }
+          this.localDefault = null;
+          this.localActive = updated;
+          this.$emit("update:options", updated);
+        }
+      }
+    }
+  };
+  var _sfc_render$7 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-field-row", class: { "is-disabled": !_vm.enabled, "is-modified": _vm.modified || _vm.touched } }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [!_vm.noCheckbox ? _c("input", { staticClass: "pw-field-row-check", attrs: { "id": "pw-prop-" + _vm.uid, "type": "checkbox" }, domProps: { "checked": _vm.active }, on: { "change": function($event) {
+      return _vm.toggleActive($event.target.checked);
+    } } }) : _vm._e(), _c("label", { staticClass: "pw-field-row-label", attrs: { "for": _vm.noCheckbox ? null : "pw-prop-" + _vm.uid } }, [_vm._v(_vm._s(_vm.propertyLabel(_vm.label))), _vm.required ? _c("span", { staticClass: "pw-field-required" }, [_vm._v("*")]) : _vm._e()])]), _vm.active ? _c("div", { staticClass: "pw-field-row-options" }, _vm._l(_vm.allOptions, function(opt) {
+      return _c("button", { key: opt, staticClass: "pw-field-row-option", class: {
+        "is-active": _vm.localActive.includes(opt),
+        "is-default": !_vm.noDefault && opt === _vm.localDefault,
+        "is-plugin-default": !_vm.noDefault && opt === _vm.pluginDefault && !_vm.touched && !_vm.modified
+      }, attrs: { "type": "button" }, on: { "click": function($event) {
+        return _vm.handleClick(opt);
+      } } }, [_vm._v(" " + _vm._s(_vm.optionLabel(opt)) + " ")]);
+    }), 0) : _vm._e()])])]);
+  };
+  var _sfc_staticRenderFns$7 = [];
+  _sfc_render$7._withStripped = true;
+  var __component__$7 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$7,
+    _sfc_render$7,
+    _sfc_staticRenderFns$7
+  );
+  __component__$7.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/FieldRow.vue";
+  const FieldRow = __component__$7.exports;
+  const _sfc_main$6 = {
+    props: {
+      group: String,
+      varName: String,
+      defaultValue: String,
+      overrideValue: String
+    },
+    computed: {
+      displayValue() {
+        const val = this.overrideValue || this.defaultValue;
+        if (!val) return "#000000";
+        return val;
+      }
+    },
+    methods: {
+      onInput(value) {
+        this.$emit("update:value", value === this.defaultValue ? "" : value || "");
+      }
+    }
+  };
+  var _sfc_render$6 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-color-field" }, [_c("k-color-field", { attrs: { "value": _vm.displayValue, "alpha": true, "mode": "picker" }, on: { "input": _vm.onInput } })], 1);
+  };
+  var _sfc_staticRenderFns$6 = [];
+  _sfc_render$6._withStripped = true;
+  var __component__$6 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$6,
+    _sfc_render$6,
+    _sfc_staticRenderFns$6
+  );
+  __component__$6.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/ColorFieldRow.vue";
+  const ColorFieldRow = __component__$6.exports;
+  const _sfc_main$5 = {
+    props: {
+      blocks: {
+        type: Array,
+        default: () => []
+      }
+    },
+    methods: {
+      blockLabel(blockType) {
+        const block = this.blocks.find((b) => b.blockType === blockType);
+        if (block) {
+          const translated = this.$t(block.plugin + ".name");
+          if (translated && translated !== block.plugin + ".name") return translated;
+        }
+        const name = blockType.replace(/^pw/, "").replace(/([A-Z])/g, " $1").trim() || blockType;
+        return name.charAt(0).toUpperCase() + name.slice(1);
+      }
+    }
+  };
+  var _sfc_render$5 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-wizard-global-content" }, [_c("fieldset", { staticClass: "pw-wizard-fieldgroup" }, [_c("h3", { staticClass: "pw-wizard-fieldgroup-title" }, [_vm._v("Active Blocks")]), _c("p", { staticClass: "pw-wizard-hint" }, [_vm._v("Select which blocks are available in the content editor.")]), _c("div", { staticClass: "pw-wizard-checklist" }, _vm._l(_vm.blocks, function(block) {
+      return _c("label", { key: block.blockType, staticClass: "pw-wizard-check" }, [_c("input", { attrs: { "type": "checkbox" }, domProps: { "checked": block.active }, on: { "change": function($event) {
+        return _vm.$emit("toggle", { blockType: block.blockType, checked: $event.target.checked });
+      } } }), _c("span", { staticClass: "pw-wizard-check-label" }, [_vm._v(_vm._s(_vm.blockLabel(block.blockType)))]), _c("span", { staticClass: "pw-wizard-check-meta" }, [_vm._v(_vm._s(block.plugin))])]);
+    }), 0)])]);
+  };
+  var _sfc_staticRenderFns$5 = [];
+  _sfc_render$5._withStripped = true;
+  var __component__$5 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$5,
+    _sfc_render$5,
+    _sfc_staticRenderFns$5
+  );
+  __component__$5.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/GlobalElements.vue";
+  const GlobalElements = __component__$5.exports;
+  const _sfc_main$4 = {
+    props: {
+      block: {
+        type: Object,
+        required: true
+      },
+      config: {
+        type: Object,
+        required: true
+      },
+      overrides: {
+        type: Object,
+        default: () => ({})
+      },
+      writerActive: {
+        type: Boolean,
+        default: true
+      }
+    },
+    data() {
+      return {
+        sectionState: {}
+      };
+    },
+    computed: {
+      blockType() {
+        return this.block.blockType;
+      }
+    },
+    methods: {
+      // --- Content fields ---
+      getContentFields() {
+        const settings = this.getDefault("settings.fields.content") || {};
+        const fields = [];
+        for (const [key, settingVal] of Object.entries(settings)) {
+          if (key === "editor" || key === "column-blocks" || key.startsWith("item-")) continue;
+          if (settingVal === "enabled") {
+            fields.push({ key, enabled: true, properties: [] });
+            continue;
+          }
+          if (this.isObject(settingVal) && "default" in settingVal && !this.hasNestedProps(settingVal)) {
+            continue;
+          }
+          const field = { key, enabled: true, properties: [] };
+          if (this.isObject(settingVal)) {
+            for (const [propKey, propValue] of Object.entries(settingVal)) {
+              if (propValue === false) continue;
+              const propObj = this.isObject(propValue) ? propValue : {};
+              const allOptions = propObj.options || (Array.isArray(propValue) ? propValue : []);
+              if (allOptions.length === 0) continue;
+              const pluginDefault = propObj.default !== void 0 ? String(propObj.default) : "";
+              if (allOptions.length > 1) {
+                field.properties.push({
+                  key: propKey,
+                  allOptions,
+                  options: allOptions,
+                  pluginDefault,
+                  required: propObj.required === true
+                });
+              }
+            }
+          }
+          if (field.properties.length === 0 && settingVal !== "enabled") continue;
+          fields.push(field);
+        }
+        return fields;
+      },
+      getItemFields() {
+        const settings = this.getDefault("settings.fields.content") || {};
+        const fields = [];
+        for (const [key, settingVal] of Object.entries(settings)) {
+          if (!key.startsWith("item-")) continue;
+          if (settingVal === "enabled") continue;
+          if (this.isObject(settingVal) && "default" in settingVal && !this.hasNestedProps(settingVal)) continue;
+          const displayKey = key.replace(/^item-/, "");
+          const field = { key, displayKey, enabled: true, properties: [] };
+          if (this.isObject(settingVal)) {
+            for (const [propKey, propValue] of Object.entries(settingVal)) {
+              if (propValue === false) continue;
+              const propObj = this.isObject(propValue) ? propValue : {};
+              const allOptions = propObj.options || (Array.isArray(propValue) ? propValue : []);
+              if (allOptions.length === 0) continue;
+              const pluginDefault = propObj.default !== void 0 ? String(propObj.default) : "";
+              if (allOptions.length > 1) {
+                field.properties.push({
+                  key: propKey,
+                  allOptions,
+                  options: allOptions,
+                  pluginDefault,
+                  required: propObj.required === true
+                });
+              }
+            }
+          }
+          fields.push(field);
+        }
+        return fields;
+      },
+      getEditorField() {
+        const settings = this.getDefault("settings.fields.content") || {};
+        const settingVal = settings["editor"];
+        if (!settingVal || !this.isObject(settingVal)) return null;
+        const field = { key: "editor", enabled: true, properties: [] };
+        for (const [propKey, propValue] of Object.entries(settingVal)) {
+          if (propValue === false) continue;
+          const propObj = this.isObject(propValue) ? propValue : {};
+          const allOptions = propObj.options || (Array.isArray(propValue) ? propValue : []);
+          if (allOptions.length === 0) continue;
+          const pluginDefault = propObj.default !== void 0 ? String(propObj.default) : "";
+          if (allOptions.length > 1) {
+            field.properties.push({
+              key: propKey,
+              allOptions,
+              options: allOptions,
+              pluginDefault,
+              required: propObj.required === true
+            });
+          }
+        }
+        return field.properties.length ? field : null;
+      },
+      getEditorConfigRows() {
+        const raw = this.getDefault("editor");
+        const editorConfig = JSON.parse(JSON.stringify(raw || {}));
+        const rows = [];
+        for (const [key, val] of Object.entries(editorConfig)) {
+          if (Array.isArray(val) && val.length > 0) {
+            rows.push({ key, type: "array", values: val });
+          } else if (val && typeof val === "object") {
+            for (const [subKey, subVal] of Object.entries(val)) {
+              if (typeof subVal === "boolean") {
+                rows.push({ key: key + "-" + subKey, label: key + " › " + subKey, type: "toggle", path: key + "." + subKey, value: subVal });
+              }
+            }
+          }
+        }
+        return rows;
+      },
+      // --- Column blocks ---
+      getColumnBlocks() {
+        const settings = this.getDefault("settings.fields.content") || {};
+        const val = settings["column-blocks"];
+        return Array.isArray(val) && val.length ? val : null;
+      },
+      getActiveColumnBlocks() {
+        const override = this.getOverrideOnly("settings.fields.content.column-blocks");
+        if (Array.isArray(override) && override.length) return override;
+        return this.getColumnBlocks() || [];
+      },
+      isColumnBlockField(fieldKey) {
+        const columnBlocks = this.getColumnBlocks();
+        if (!columnBlocks) return true;
+        const active = this.getActiveColumnBlocks();
+        return active.some((cb) => cb.replace("multicolumn", "") === fieldKey);
+      },
+      setColumnBlocks(values, allBlocks) {
+        const ordered = allBlocks.filter((b) => values.includes(b));
+        if (JSON.stringify(ordered) === JSON.stringify(allBlocks)) {
+          this.deleteNested(this.overrides || {}, "settings.fields.content.column-blocks");
+          this.cleanEmpty(this.overrides || {}, "settings.fields.content");
+          this.cleanEmpty(this.overrides || {}, "settings.fields");
+          this.cleanEmpty(this.overrides || {}, "settings");
+        } else {
+          this.setVal("settings.fields.content.column-blocks", ordered);
+        }
+        this.markDirty();
+      },
+      // --- Editor options ---
+      setEditorContentOptions(propKey, prop, values) {
+        this.setActiveOptions("editor", propKey, prop, values);
+        if (propKey === "mode") {
+          this.$emit("update:writer-active", values.includes("writer"));
+        }
+      },
+      // --- Active options ---
+      getActiveOptions(fieldKey, propKey, prop) {
+        const fullOverride = this.getOverrideOnly("settings.fields.content." + fieldKey + "." + propKey);
+        if (fullOverride === false) return [];
+        const override = this.isObject(fullOverride) ? fullOverride.options : void 0;
+        if (Array.isArray(override)) return override;
+        return prop.allOptions;
+      },
+      setActiveOptions(fieldKey, propKey, prop, values) {
+        const basePath = "settings.fields.content." + fieldKey + "." + propKey;
+        if (values === null) {
+          this.setVal(basePath, false);
+          this.markDirty();
+          return;
+        }
+        const updated = Array.isArray(values) ? values : [];
+        if (updated.length === 0) {
+          this.deleteNested(this.overrides || {}, basePath);
+          this.cleanEmpty(this.overrides || {}, "settings.fields.content." + fieldKey);
+          this.cleanEmpty(this.overrides || {}, "settings.fields.content");
+          this.cleanEmpty(this.overrides || {}, "settings.fields");
+          this.cleanEmpty(this.overrides || {}, "settings");
+          this.markDirty();
+          return;
+        }
+        const ordered = prop.allOptions.filter((o) => updated.includes(o));
+        if (JSON.stringify(ordered) === JSON.stringify(prop.allOptions)) {
+          const currentDefault2 = this.getVal(basePath + ".default", prop.pluginDefault);
+          if (currentDefault2 === prop.pluginDefault || currentDefault2 === String(prop.pluginDefault)) {
+            this.deleteNested(this.overrides || {}, basePath);
+            this.cleanEmpty(this.overrides || {}, "settings.fields.content." + fieldKey);
+            this.cleanEmpty(this.overrides || {}, "settings.fields.content");
+            this.cleanEmpty(this.overrides || {}, "settings.fields");
+            this.cleanEmpty(this.overrides || {}, "settings");
+            this.markDirty();
+            return;
+          }
+          this.deleteNested(this.overrides || {}, basePath + ".options");
+          this.markDirty();
+          return;
+        }
+        this.setVal(basePath + ".options", ordered);
+        const currentDefault = this.getVal(basePath + ".default", prop.pluginDefault);
+        if (currentDefault && !ordered.includes(currentDefault) && ordered.length) {
+          this.setVal(basePath + ".default", ordered[0]);
+        }
+        this.markDirty();
+      },
+      // --- Categories ---
+      getCategories() {
+        const cats = [];
+        for (const catKey of ["layout", "style", "effects", "grid", "settings"]) {
+          const settingsFields = this.getDefault("settings.fields." + catKey) || {};
+          if (Object.keys(settingsFields).length === 0) continue;
+          const fields = [];
+          const grouped = {};
+          for (const [key, val] of Object.entries(settingsFields)) {
+            if (key === "padding" || key === "radius") continue;
+            if (val === "enabled") continue;
+            if (key.startsWith("radius-")) {
+              if (!grouped["radius"]) {
+                grouped["radius"] = { key: "radius", type: "toggle-group", subFields: [] };
+              }
+              const subLabel = key.replace("radius-", "");
+              const defaultValue = this.isObject(val) && "default" in val ? val.default : false;
+              grouped["radius"].subFields.push({ key, label: subLabel, defaultValue });
+              continue;
+            }
+            if (key === "padding-top" || key === "padding-bottom") {
+              const defaultValue = this.isObject(val) && "default" in val ? val.default : "large";
+              fields.push({
+                key,
+                type: "toggles",
+                defaultValue,
+                options: [
+                  { value: "small", text: "Small" },
+                  { value: "large", text: "Large" }
+                ]
+              });
+              continue;
+            }
+            if (this.isObject(val) && "options" in val) {
+              const opts = val.options;
+              const defaultValue = val.default !== void 0 ? val.default : opts[0];
+              const required = val.required === true;
+              if (val.fixed) {
+                fields.push({
+                  key,
+                  type: "toggles",
+                  defaultValue,
+                  required,
+                  reset: !required,
+                  options: opts.map((v) => ({ value: v, text: this.toggleOptionLabel(v) }))
+                });
+                continue;
+              }
+              if (opts.length > 5 || required) {
+                fields.push({
+                  key,
+                  type: "fieldrow",
+                  allOptions: opts,
+                  pluginDefault: String(defaultValue),
+                  defaultValue,
+                  required
+                });
+              } else {
+                fields.push({
+                  key,
+                  type: "toggles",
+                  defaultValue,
+                  required,
+                  reset: !required,
+                  options: opts.map((v) => ({ value: v, text: this.toggleOptionLabel(v) }))
+                });
+              }
+              continue;
+            }
+            if (key.startsWith("grid-size-") && this.isObject(val) && "default" in val) {
+              const opts = Array.from({ length: 12 }, (_, i) => i + 1);
+              fields.push({
+                key,
+                type: "toggles",
+                defaultValue: val.default,
+                required: true,
+                reset: false,
+                options: opts.map((v) => ({ value: v, text: String(v) }))
+              });
+              continue;
+            }
+            if (key.startsWith("grid-offset-") && this.isObject(val) && "default" in val) {
+              const opts = Array.from({ length: 12 }, (_, i) => i);
+              fields.push({
+                key,
+                type: "toggles",
+                defaultValue: val.default,
+                required: true,
+                reset: false,
+                options: opts.map((v) => ({ value: v, text: String(v) }))
+              });
+              continue;
+            }
+            if (this.isObject(val) && "default" in val) {
+              fields.push({
+                key,
+                type: "single",
+                defaultValue: val.default
+              });
+              continue;
+            }
+            if (Array.isArray(val) && val.length > 0) {
+              fields.push({
+                key,
+                type: "toggles",
+                defaultValue: val[0],
+                required: false,
+                reset: true,
+                options: val.map((v) => ({ value: v, text: this.toggleOptionLabel(v) }))
+              });
+              continue;
+            }
+          }
+          for (const group of Object.values(grouped)) {
+            fields.push(group);
+          }
+          cats.push({ key: catKey, fields });
+        }
+        return cats;
+      },
+      getCategoryActiveOptions(catKey, fieldKey, field) {
+        const override = this.getOverrideOnly("settings.fields." + catKey + "." + fieldKey + ".options");
+        if (Array.isArray(override) && override.length > 0) return override;
+        return field.allOptions;
+      },
+      setCategoryOptions(catKey, fieldKey, field, values) {
+        const basePath = "settings.fields." + catKey + "." + fieldKey;
+        const ordered = Array.isArray(values) ? field.allOptions.filter((o) => values.includes(o)) : [];
+        if (ordered.length === 0) {
+          this.deleteNested(this.overrides || {}, basePath);
+          this.cleanEmpty(this.overrides || {}, "settings.fields." + catKey);
+          this.cleanEmpty(this.overrides || {}, "settings.fields");
+          this.cleanEmpty(this.overrides || {}, "settings");
+          this.markDirty();
+          return;
+        }
+        if (JSON.stringify(ordered) === JSON.stringify(field.allOptions)) {
+          const currentDefault2 = this.getVal(basePath + ".default", field.pluginDefault);
+          if (currentDefault2 === field.pluginDefault || currentDefault2 === String(field.pluginDefault)) {
+            this.deleteNested(this.overrides || {}, basePath);
+            this.cleanEmpty(this.overrides || {}, "settings.fields." + catKey);
+            this.cleanEmpty(this.overrides || {}, "settings.fields");
+            this.cleanEmpty(this.overrides || {}, "settings");
+            this.markDirty();
+            return;
+          }
+          this.deleteNested(this.overrides || {}, basePath + ".options");
+          this.markDirty();
+          return;
+        }
+        this.setVal(basePath + ".options", ordered);
+        const currentDefault = this.getVal(basePath + ".default", field.pluginDefault);
+        if (!ordered.includes(currentDefault) && ordered.length) {
+          this.setVal(basePath + ".default", ordered[0]);
+        }
+        this.markDirty();
+      },
+      // --- Field enabled/toggle ---
+      isFieldEnabled(field) {
+        const disabled = this.getOverrideOnly("settings.fields.content." + field.key + "._disabled");
+        if (disabled === true) return false;
+        const override = this.getOverrideOnly("settings.fields.content." + field.key);
+        if (override === false) return false;
+        if (override === true || this.isObject(override)) return true;
+        return field.enabled !== false;
+      },
+      toggleField(field, enabled) {
+        if (!this.overrides || Array.isArray(this.overrides)) {
+          this.$emit("update:overrides", {});
+        }
+        const path = "settings.fields.content." + field.key;
+        if (enabled) {
+          this.deleteNested(this.overrides, path + "._disabled");
+          this.cleanEmpty(this.overrides, path);
+          this.cleanEmpty(this.overrides, "settings.fields.content");
+          this.cleanEmpty(this.overrides, "settings.fields");
+          this.cleanEmpty(this.overrides, "settings");
+        } else {
+          this.setVal(path + "._disabled", true);
+        }
+        this.markDirty();
+      },
+      toggleVisibility(path) {
+        const current = this.getVal(path, "enabled");
+        if (current === false) {
+          this.deleteNested(this.overrides || {}, path);
+          const parts = path.split(".");
+          for (let i = parts.length - 1; i > 0; i--) {
+            this.cleanEmpty(this.overrides || {}, parts.slice(0, i).join("."));
+          }
+        } else {
+          this.setVal(path, false);
+        }
+        this.markDirty();
+      },
+      toggleSection(sectionKey) {
+        const key = this.blockType + "-" + sectionKey;
+        this.$set(this.sectionState, key, !this.isSectionOpen(sectionKey));
+      },
+      isSectionOpen(sectionKey) {
+        const key = this.blockType + "-" + sectionKey;
+        return this.sectionState[key] !== false;
+      },
+      selectOption(path, value, pluginDefault) {
+        if (value === pluginDefault || value === String(pluginDefault)) {
+          this.deleteNested(this.overrides || {}, path);
+          const parts = path.split(".");
+          for (let i = parts.length - 1; i > 0; i--) {
+            this.cleanEmpty(this.overrides || {}, parts.slice(0, i).join("."));
+          }
+        } else {
+          this.setVal(path, value);
+        }
+        this.markDirty();
+      },
+      setEditorArrayDirect(key, values, defaultVal) {
+        if (JSON.stringify(values) === JSON.stringify(defaultVal)) {
+          this.deleteNested(this.overrides || {}, "editor." + key);
+          this.cleanEmpty(this.overrides || {}, "editor");
+        } else {
+          this.setVal("editor." + key, values);
+        }
+        this.markDirty();
+      },
+      // --- Value getters/setters ---
+      getVal(path, defaultVal) {
+        const ov = this.nested(this.overrides || {}, path);
+        return ov !== void 0 ? ov : defaultVal;
+      },
+      getOverrideOnly(path) {
+        return this.nested(this.overrides || {}, path);
+      },
+      hasOverride(path) {
+        return this.nested(this.overrides || {}, path) !== void 0;
+      },
+      setVal(path, value) {
+        if (!this.overrides || Array.isArray(this.overrides)) {
+          this.$emit("update:overrides", {});
+        }
+        this.setNested(this.overrides, path, value);
+        this.markDirty();
+      },
+      setValOrClear(path, value, placeholder) {
+        if (!this.overrides || Array.isArray(this.overrides)) {
+          this.$emit("update:overrides", {});
+        }
+        if (value === "" || value === placeholder) {
+          this.deleteNested(this.overrides, path);
+        } else {
+          this.setNested(this.overrides, path, value);
+        }
+        this.markDirty();
+      },
+      getDefault(path) {
+        if (!this.config) return null;
+        return this.nested(this.config.defaults, path);
+      },
+      markDirty() {
+        this.$emit("update:overrides", this.overrides);
+      },
+      // --- Label helpers ---
+      fieldLabel(key) {
+        const tKey = "pw.field." + key;
+        const translated = this.$t(tKey);
+        return translated && translated !== tKey ? translated : key.charAt(0).toUpperCase() + key.slice(1);
+      },
+      categoryFieldLabel(key) {
+        const prwKey = "prw.field." + key;
+        const prwT = this.$t(prwKey);
+        if (prwT && prwT !== prwKey) return prwT;
+        const pwLabelKey = "pw.field." + key + ".label";
+        const pwLabelT = this.$t(pwLabelKey);
+        if (pwLabelT && pwLabelT !== pwLabelKey) return pwLabelT;
+        const pwKey = "pw.field." + key;
+        const pwT = this.$t(pwKey);
+        if (pwT && pwT !== pwKey) return pwT;
+        const lastDash = key.lastIndexOf("-");
+        if (lastDash > 0) {
+          const dotKey = "pw.field." + key.substring(0, lastDash) + "." + key.substring(lastDash + 1);
+          const dotT = this.$t(dotKey);
+          if (dotT && dotT !== dotKey) return dotT;
+        }
+        return key;
+      },
+      toggleOptionLabel(val) {
+        const prwKey = "prw.option." + val;
+        const prwT = this.$t(prwKey);
+        if (prwT && prwT !== prwKey) return prwT;
+        const pwKey = "pw.option." + val;
+        const pwT = this.$t(pwKey);
+        if (pwT && pwT !== pwKey) return pwT;
+        return val;
+      },
+      // --- Nested object helpers ---
+      nested(obj, path) {
+        if (!path) return void 0;
+        return path.split(".").reduce((o, k) => o && o[k] !== void 0 ? o[k] : void 0, obj);
+      },
+      setNested(obj, path, value) {
+        const keys = path.split(".");
+        let cur = obj;
+        for (let i = 0; i < keys.length - 1; i++) {
+          if (!cur[keys[i]] || typeof cur[keys[i]] !== "object") {
+            this.$set(cur, keys[i], {});
+          }
+          cur = cur[keys[i]];
+        }
+        this.$set(cur, keys[keys.length - 1], value);
+      },
+      cleanEmpty(obj, path) {
+        const val = this.nested(obj, path);
+        if (val && typeof val === "object" && Object.keys(val).length === 0) {
+          this.deleteNested(obj, path);
+        }
+      },
+      deleteNested(obj, path) {
+        const keys = path.split(".");
+        let cur = obj;
+        for (let i = 0; i < keys.length - 1; i++) {
+          if (!cur[keys[i]]) return;
+          cur = cur[keys[i]];
+        }
+        this.$delete(cur, keys[keys.length - 1]);
+      },
+      isObject(val) {
+        return val && typeof val === "object" && !Array.isArray(val);
+      },
+      hasNestedProps(obj) {
+        for (const v of Object.values(obj)) {
+          if (this.isObject(v) && ("options" in v || "default" in v)) return true;
+        }
+        return false;
+      }
+    }
+  };
+  var _sfc_render$4 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-wizard-block-sections" }, [_c("div", { staticClass: "pw-wizard-tab-content" }, [_c("section", { staticClass: "pw-wizard-section" }, [_c("div", { staticClass: "pw-section-header" }, [_c("span", { staticClass: "pw-tab-visibility pw-tab-visibility-static" }, [_c("svg", { attrs: { "xmlns": "http://www.w3.org/2000/svg", "viewBox": "0 0 24 24", "fill": "currentColor" } }, [_c("path", { attrs: { "d": "M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z" } })])]), _c("button", { staticClass: "pw-section-toggle", on: { "click": function($event) {
+      return _vm.toggleSection("content");
+    } } }, [_c("span", [_vm._v(_vm._s(_vm.$t("pw.headline.content")))]), _c("k-icon", { attrs: { "type": _vm.isSectionOpen("content") ? "angle-down" : "angle-right" } })], 1)]), _c("transition", { attrs: { "name": "pw-slide" } }, [_c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isSectionOpen("content"), expression: "isSectionOpen('content')" }], staticClass: "pw-field-block", attrs: { "data-collapsible": "true" } }, [_vm.getColumnBlocks() ? _c("div", { staticClass: "pw-field-block" }, [_c("div", { staticClass: "k-field k-text-field pw-content-field", attrs: { "data-object": "content-field" } }, [_c("div", { staticClass: "pw-field-rows" }, [_c("pw-field-row", { attrs: { "uid": _vm.blockType + "-column-blocks", "label": _vm.$t("prw.headline.columnBlocks"), "all-options": _vm.getColumnBlocks(), "active-options": _vm.getActiveColumnBlocks(), "current-default": "", "plugin-default": "", "enabled": true, "modified": _vm.hasOverride("settings.fields.content.column-blocks"), "no-default": true, "no-checkbox": true }, on: { "update:options": function($event) {
+      _vm.setColumnBlocks($event, _vm.getColumnBlocks());
+    } } })], 1)])]) : _vm._e(), _vm.getContentFields().length ? _c("div", { staticClass: "pw-field-block" }, _vm._l(_vm.getContentFields(), function(field) {
+      return _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isColumnBlockField(field.key), expression: "isColumnBlockField(field.key)" }], key: field.key, staticClass: "k-field k-text-field pw-content-field", attrs: { "data-object": "content-field" } }, [!_vm.getColumnBlocks() ? _c("div", { staticClass: "pw-column-field-label pw-clickable", on: { "click": function($event) {
+        _vm.toggleField(field, !_vm.isFieldEnabled(field));
+      } } }, [_c("span", { staticClass: "pw-tab-visibility" }, [_c("k-icon", { attrs: { "type": _vm.isFieldEnabled(field) ? "preview" : "hidden" } })], 1), _c("span", [_vm._v(_vm._s(_vm.fieldLabel(field.key)))])]) : _c("div", { staticClass: "pw-column-field-label" }, [_c("span", [_vm._v(_vm._s(_vm.fieldLabel(field.key)))])]), field.properties.length ? _c("div", { directives: [{ name: "show", rawName: "v-show", value: !_vm.getColumnBlocks() ? _vm.isFieldEnabled(field) : true, expression: "!getColumnBlocks() ? isFieldEnabled(field) : true" }], staticClass: "pw-field-rows" }, _vm._l(field.properties, function(prop) {
+        return _c("pw-field-row", { key: field.key + "-" + prop.key, attrs: { "uid": _vm.blockType + "-" + field.key + "-" + prop.key, "label": prop.key, "all-options": prop.allOptions, "active-options": _vm.getActiveOptions(field.key, prop.key, prop), "current-default": _vm.getVal("settings.fields.content." + field.key + "." + prop.key + ".default", prop.pluginDefault), "plugin-default": prop.pluginDefault, "enabled": true, "required": prop.required === true, "modified": _vm.hasOverride("settings.fields.content." + field.key + "." + prop.key) }, on: { "update:options": function($event) {
+          return _vm.setActiveOptions(field.key, prop.key, prop, $event);
+        }, "update:default": function($event) {
+          return _vm.selectOption("settings.fields.content." + field.key + "." + prop.key + ".default", $event, prop.pluginDefault);
+        } } });
+      }), 1) : _vm._e()]);
+    }), 0) : _vm._e(), _vm.getEditorField() || _vm.getEditorConfigRows().length ? _c("div", { staticClass: "k-field k-text-field pw-content-field", attrs: { "data-object": "content-field" } }, [_c("div", { staticClass: "pw-column-field-label pw-clickable", on: { "click": function($event) {
+      _vm.toggleField(_vm.getEditorField() || { key: "editor", enabled: true }, !_vm.isFieldEnabled(_vm.getEditorField() || { key: "editor", enabled: true }));
+    } } }, [_c("span", { staticClass: "pw-tab-visibility" }, [_c("k-icon", { attrs: { "type": _vm.isFieldEnabled(_vm.getEditorField() || { key: "editor", enabled: true }) ? "preview" : "hidden" } })], 1), _c("span", [_vm._v(_vm._s(_vm.fieldLabel("editor")))])]), _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isFieldEnabled(_vm.getEditorField() || { key: "editor", enabled: true }), expression: "isFieldEnabled(getEditorField() || { key: 'editor', enabled: true })" }], staticClass: "pw-field-rows" }, [_vm.getEditorField() ? _vm._l(_vm.getEditorField().properties, function(prop) {
+      return _c("pw-field-row", { key: "editor-content-" + prop.key, attrs: { "uid": _vm.blockType + "-editor-" + prop.key, "label": prop.key, "all-options": prop.allOptions, "active-options": _vm.getActiveOptions("editor", prop.key, prop), "current-default": _vm.getVal("settings.fields.content.editor." + prop.key + ".default", prop.pluginDefault), "plugin-default": prop.pluginDefault, "enabled": true, "modified": _vm.hasOverride("settings.fields.content.editor." + prop.key) }, on: { "update:options": function($event) {
+        return _vm.setEditorContentOptions(prop.key, prop, $event);
+      }, "update:default": function($event) {
+        return _vm.selectOption("settings.fields.content.editor." + prop.key + ".default", $event, prop.pluginDefault);
+      } } });
+    }) : _vm._e(), _vm._l(_vm.getEditorConfigRows(), function(row) {
+      return _vm.writerActive !== false ? [row.type === "array" ? _c("pw-field-row", { key: "editor-" + row.key, attrs: { "uid": _vm.blockType + "-editor-" + row.key, "label": row.key, "all-options": row.values, "active-options": _vm.getOverrideOnly("editor." + row.key) || row.values, "current-default": "", "plugin-default": "", "enabled": true, "modified": _vm.hasOverride("editor." + row.key), "no-default": true }, on: { "update:options": function($event) {
+        return _vm.setEditorArrayDirect(row.key, $event, row.values);
+      } } }) : _vm._e(), row.type === "toggle" ? _c("div", { key: "editor-" + row.key, staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(row.label))])]), _c("div", { staticClass: "pw-field-row-options" }, [_c("k-toggle-input", { attrs: { "value": _vm.getVal("editor." + row.path, row.value), "text": [_vm.$t("pw.option.disabled"), _vm.$t("pw.option.enabled")] }, on: { "input": function($event) {
+        return _vm.setVal("editor." + row.path, $event);
+      } } })], 1)])])]) : _vm._e()] : _vm._e();
+    })], 2)]) : _vm._e(), _vm.getItemFields().length ? _c("div", { staticClass: "pw-item-section" }, [_c("div", { staticClass: "pw-field-block" }, _vm._l(_vm.getItemFields(), function(field) {
+      return _c("div", { key: field.key, staticClass: "k-field k-text-field pw-content-field", attrs: { "data-object": "content-field" } }, [_c("div", { staticClass: "pw-column-field-label pw-clickable", on: { "click": function($event) {
+        _vm.toggleField(field, !_vm.isFieldEnabled(field));
+      } } }, [_c("span", { staticClass: "pw-tab-visibility" }, [_c("k-icon", { attrs: { "type": _vm.isFieldEnabled(field) ? "preview" : "hidden" } })], 1), _c("span", [_vm._v(_vm._s(_vm.$t("prw.label.item")) + ": " + _vm._s(_vm.fieldLabel(field.displayKey)))])]), field.properties.length ? _c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isFieldEnabled(field), expression: "isFieldEnabled(field)" }], staticClass: "pw-field-rows" }, _vm._l(field.properties, function(prop) {
+        return _c("pw-field-row", { key: field.key + "-" + prop.key, attrs: { "uid": _vm.blockType + "-" + field.key + "-" + prop.key, "label": prop.key, "all-options": prop.allOptions, "active-options": _vm.getActiveOptions(field.key, prop.key, prop), "current-default": _vm.getVal("settings.fields.content." + field.key + "." + prop.key + ".default", prop.pluginDefault), "plugin-default": prop.pluginDefault, "enabled": true, "required": prop.required === true, "modified": _vm.hasOverride("settings.fields.content." + field.key + "." + prop.key) }, on: { "update:options": function($event) {
+          return _vm.setActiveOptions(field.key, prop.key, prop, $event);
+        }, "update:default": function($event) {
+          return _vm.selectOption("settings.fields.content." + field.key + "." + prop.key + ".default", $event, prop.pluginDefault);
+        } } });
+      }), 1) : _vm._e()]);
+    }), 0)]) : _vm._e()])])], 1), _vm._l(_vm.getCategories(), function(cat) {
+      return _c("section", { key: cat.key, staticClass: "pw-wizard-section" }, [_c("div", { staticClass: "pw-section-header" }, [_c("button", { staticClass: "pw-tab-visibility", attrs: { "type": "button" }, on: { "click": function($event) {
+        $event.stopPropagation();
+        return _vm.toggleVisibility("settings.tabs." + cat.key);
+      } } }, [_c("k-icon", { attrs: { "type": _vm.getVal("settings.tabs." + cat.key, true) === false ? "hidden" : "preview" } })], 1), cat.fields.length ? _c("button", { staticClass: "pw-section-toggle", on: { "click": function($event) {
+        return _vm.toggleSection(cat.key);
+      } } }, [_c("span", [_vm._v(_vm._s(_vm.$t("pw.headline." + cat.key)))]), _c("k-icon", { attrs: { "type": _vm.isSectionOpen(cat.key) ? "angle-down" : "angle-right" } })], 1) : _c("span", { staticClass: "pw-section-title" }, [_vm._v(_vm._s(_vm.$t("pw.headline." + cat.key)))])]), cat.fields.length ? _c("transition", { attrs: { "name": "pw-slide" } }, [_c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isSectionOpen(cat.key), expression: "isSectionOpen(cat.key)" }], staticClass: "pw-field-block", attrs: { "data-collapsible": "true" } }, [_vm._l(cat.fields, function(field) {
+        return [field.type === "fieldrow" ? _c("pw-field-row", { key: field.key, attrs: { "uid": _vm.blockType + "-" + cat.key + "-" + field.key, "label": field.key, "all-options": field.allOptions, "active-options": _vm.getCategoryActiveOptions(cat.key, field.key, field), "current-default": _vm.getVal("settings.fields." + cat.key + "." + field.key + ".default", field.pluginDefault), "plugin-default": field.pluginDefault, "enabled": true, "modified": _vm.hasOverride("settings.fields." + cat.key + "." + field.key), "no-checkbox": true, "required": field.required === true }, on: { "update:options": function($event) {
+          return _vm.setCategoryOptions(cat.key, field.key, field, $event);
+        }, "update:default": function($event) {
+          return _vm.selectOption("settings.fields." + cat.key + "." + field.key + ".default", $event, field.pluginDefault);
+        } } }) : _vm._e(), field.type === "toggles" ? _c("div", { key: field.key, staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(_vm.categoryFieldLabel(field.key))), field.required ? _c("span", { staticClass: "pw-field-required" }, [_vm._v("*")]) : _vm._e()])]), _c("div", { staticClass: "pw-field-row-options" }, [_c("k-toggles-input", { attrs: { "value": _vm.getVal("settings.fields." + cat.key + "." + field.key + ".default", field.defaultValue), "options": field.options, "grow": false, "reset": field.reset !== false, "required": field.required === true }, on: { "input": function($event) {
+          return _vm.selectOption("settings.fields." + cat.key + "." + field.key + ".default", $event, field.defaultValue);
+        } } })], 1)])])]) : field.type === "toggle-group" ? _c("div", { key: field.key, staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(_vm.categoryFieldLabel(field.key)))])]), _c("div", { staticClass: "pw-field-row-options pw-toggle-group" }, _vm._l(field.subFields, function(sub) {
+          return _c("k-toggle-input", { key: sub.key, attrs: { "value": _vm.getVal("settings.fields." + cat.key + "." + sub.key + ".default", sub.defaultValue), "text": _vm.$t("prw.option." + sub.label) || sub.label }, on: { "input": function($event) {
+            return _vm.setVal("settings.fields." + cat.key + "." + sub.key + ".default", $event);
+          } } });
+        }), 1)])])]) : field.type === "single" ? _c("div", { key: field.key, staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(_vm.categoryFieldLabel(field.key)))])]), _c("div", { staticClass: "pw-field-row-options" }, [field.defaultValue !== null && typeof field.defaultValue === "boolean" ? _c("k-toggle-input", { attrs: { "value": _vm.getVal("settings.fields." + cat.key + "." + field.key + ".default", field.defaultValue), "text": [_vm.$t("pw.option.disabled"), _vm.$t("pw.option.enabled")] }, on: { "input": function($event) {
+          return _vm.setVal("settings.fields." + cat.key + "." + field.key + ".default", $event);
+        } } }) : field.options && field.options.length ? _c("select", { staticClass: "pw-category-select", domProps: { "value": _vm.getVal("settings.fields." + cat.key + "." + field.key + ".default", field.defaultValue) }, on: { "change": function($event) {
+          return _vm.selectOption("settings.fields." + cat.key + "." + field.key + ".default", $event.target.value, field.defaultValue);
+        } } }, _vm._l(field.options, function(opt) {
+          return _c("option", { key: opt, domProps: { "value": opt } }, [_vm._v(_vm._s(opt))]);
+        }), 0) : field.defaultValue !== null && typeof field.defaultValue === "string" ? _c("input", { staticClass: "pw-category-input", attrs: { "type": "text", "placeholder": field.defaultValue }, domProps: { "value": _vm.getOverrideOnly("settings.fields." + cat.key + "." + field.key + ".default") || "" }, on: { "input": function($event) {
+          return _vm.setValOrClear("settings.fields." + cat.key + "." + field.key + ".default", $event.target.value, field.defaultValue);
+        } } }) : field.defaultValue !== null && typeof field.defaultValue === "number" ? _c("input", { staticClass: "pw-category-input", attrs: { "type": "number", "placeholder": String(field.defaultValue) }, domProps: { "value": _vm.getOverrideOnly("settings.fields." + cat.key + "." + field.key + ".default") }, on: { "input": function($event) {
+          _vm.setValOrClear("settings.fields." + cat.key + "." + field.key + ".default", $event.target.value !== "" ? Number($event.target.value) : "", String(field.defaultValue));
+        } } }) : _vm._e()], 1)])])]) : _vm._e()];
+      })], 2)]) : _vm._e()], 1);
+    })], 2)]);
+  };
+  var _sfc_staticRenderFns$4 = [];
+  _sfc_render$4._withStripped = true;
+  var __component__$4 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$4,
+    _sfc_render$4,
+    _sfc_staticRenderFns$4
+  );
+  __component__$4.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/BlockSettings.vue";
+  const BlockSettings = __component__$4.exports;
+  const _sfc_main$3 = {
+    props: {
+      fontDefaults: {
+        type: Object,
+        default: () => ({})
+      },
+      fontOverrides: {
+        type: Object,
+        default: () => ({})
+      }
+    },
+    data() {
+      return {
+        openSections: {}
+      };
+    },
+    computed: {
+      groups() {
+        const result = {};
+        for (const [key, val] of Object.entries(this.fontDefaults)) {
+          if (val && typeof val === "object" && val.vars) {
+            result[key] = val;
+          }
+        }
+        return result;
+      }
+    },
+    methods: {
+      toggle(key) {
+        this.$set(this.openSections, key, !this.isOpen(key));
+      },
+      isOpen(key) {
+        return this.openSections[key] !== false;
+      },
+      groupLabel(key) {
+        const tKey = "prw.fontgroup." + key;
+        const t = this.$t(tKey);
+        if (t && t !== tKey) return t;
+        return key.charAt(0).toUpperCase() + key.slice(1);
+      },
+      sizeLabel(varName) {
+        const match = varName.match(/-size-(.+)$/);
+        if (!match) return varName;
+        const size = match[1];
+        const tKey = "pw.option." + size;
+        const t = this.$t(tKey);
+        const label = t && t !== tKey ? t : size.toUpperCase();
+        return label + " (" + size.toUpperCase() + ")";
+      },
+      stripRem(val) {
+        if (!val) return "";
+        return val.replace(/rem$/, "");
+      },
+      setRemValue(bp, varName, value, defaultVal) {
+        const remVal = value === "" ? "" : value + "rem";
+        this.setValue(bp, varName, remVal, defaultVal);
+      },
+      remToPx(val) {
+        if (!val) return "";
+        const match = val.match(/^([\d.]+)rem$/);
+        if (!match) return "";
+        return Math.round(parseFloat(match[1]) * 16) + "px";
+      },
+      getOverrideValue(bp, varName) {
+        return ((this.fontOverrides.global || {})[bp] || {})[varName] || "";
+      },
+      setValue(bp, varName, value, defaultVal) {
+        const overrides = JSON.parse(JSON.stringify(this.fontOverrides));
+        if (value === "" || value === defaultVal) {
+          if (overrides.global && overrides.global[bp]) {
+            delete overrides.global[bp][varName];
+            if (Object.keys(overrides.global[bp]).length === 0) {
+              delete overrides.global[bp];
+            }
+            if (overrides.global && Object.keys(overrides.global).length === 0) {
+              delete overrides.global;
+            }
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          if (!overrides.global[bp]) overrides.global[bp] = {};
+          overrides.global[bp][varName] = value;
+        }
+        this.$emit("update:overrides", overrides);
+      }
+    }
+  };
+  var _sfc_render$3 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", [_c("div", { staticClass: "pw-font-help", staticStyle: { "margin-bottom": "var(--spacing-4)" } }, [_vm._v(' These sizes are used when the "sizes" option is enabled in block settings. Otherwise, the font-size from the Elements tab is used as fallback. ')]), _vm._l(_vm.groups, function(group, groupKey) {
+      return _c("section", { key: groupKey, staticClass: "pw-element-section" }, [_c("div", { staticClass: "pw-section-header" }, [_c("button", { staticClass: "pw-section-toggle", on: { "click": function($event) {
+        return _vm.toggle(groupKey);
+      } } }, [_c("span", [_vm._v(_vm._s(_vm.groupLabel(groupKey)))]), _c("k-icon", { attrs: { "type": _vm.isOpen(groupKey) ? "angle-down" : "angle-right" } })], 1)]), _c("transition", { attrs: { "name": "pw-slide" } }, [_c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isOpen(groupKey), expression: "isOpen(groupKey)" }], staticClass: "pw-element-list" }, [_c("div", { staticClass: "pw-group-header" }, [_c("div", { staticClass: "pw-field-row-label-col" }), _c("div", { staticClass: "pw-group-header-labels pw-group-type-responsive" }, [_c("span", { staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v("Mobile")])]), _c("span", { staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v("Tablet")])]), _c("span", { staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v("Desktop")])])])]), _vm._l(group.vars, function(value, varName) {
+        return _c("div", { key: varName, staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(_vm.sizeLabel(varName)))])]), _c("div", { staticClass: "pw-field-row-options pw-group-type-responsive" }, _vm._l(["default", "lg", "xl"], function(bp) {
+          return _c("span", { key: bp, staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getOverrideValue(bp, varName) }, attrs: { "type": "number", "step": group.step || 0.1, "min": "0.1", "max": "20" }, domProps: { "value": _vm.stripRem(_vm.getOverrideValue(bp, varName) || value[bp]) }, on: { "input": function($event) {
+            return _vm.setRemValue(bp, varName, $event.target.value, value[bp] || "");
+          } } }), _c("span", { staticClass: "pw-element-unit" }, [_vm._v("rem")])]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.remToPx(_vm.getOverrideValue(bp, varName) || value[bp])))])]);
+        }), 0)])])]);
+      }), _c("div", { staticClass: "pw-group-end" })], 2)])], 1);
+    })], 2);
+  };
+  var _sfc_staticRenderFns$3 = [];
+  _sfc_render$3._withStripped = true;
+  var __component__$3 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$3,
+    _sfc_render$3,
+    _sfc_staticRenderFns$3
+  );
+  __component__$3.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/GlobalFonts.vue";
+  const GlobalFonts = __component__$3.exports;
+  const _sfc_main$2 = {
+    props: {
+      elementDefaults: {
+        type: Object,
+        default: () => ({})
+      },
+      elementOverrides: {
+        type: Object,
+        default: () => ({})
+      },
+      fonts: {
+        type: Object,
+        default: () => ({})
+      },
+      fontDefaults: {
+        type: Object,
+        default: () => ({})
+      },
+      fontOverrides: {
+        type: Object,
+        default: () => ({})
+      },
+      bodyDefaultFont: {
+        type: String,
+        default: "Inter"
+      }
+    },
+    data() {
+      return {
+        openSections: {}
+      };
+    },
+    computed: {
+      groups() {
+        const result = {};
+        for (const [key, val] of Object.entries(this.elementDefaults)) {
+          if (val && typeof val === "object" && (val.vars || val.colors)) {
+            result[key] = val;
+          }
+        }
+        return result;
+      },
+      fontFamilyOptions() {
+        const allFonts = { ...this.fonts.builtin || {}, ...this.fonts.project || {} };
+        const seen = /* @__PURE__ */ new Set();
+        const options = [{ value: "default", text: "Default (" + this.bodyDefaultFont + ")" }];
+        for (const font of Object.values(allFonts)) {
+          if (!seen.has(font.family) && font.family !== this.bodyDefaultFont) {
+            seen.add(font.family);
+            options.push({ value: font.family, text: font.family });
+          }
+        }
+        return options;
+      }
+    },
+    methods: {
+      toggle(key) {
+        this.$set(this.openSections, key, !this.isOpen(key));
+      },
+      isOpen(key) {
+        return this.openSections[key] !== false;
+      },
+      groupLabel(key) {
+        const tKey = "prw.elementgroup." + key;
+        const t = this.$t(tKey);
+        if (t && t !== tKey) return t;
+        return key.charAt(0).toUpperCase() + key.slice(1);
+      },
+      propLabel(varName) {
+        const tKey = "prw.element." + varName;
+        const t = this.$t(tKey);
+        if (t && t !== tKey) return t;
+        const parts = varName.split("-");
+        const propParts = parts.slice(1);
+        return propParts.join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
+      },
+      // --- Field signature + grouping ---
+      fieldSignature(varName, def, isColor) {
+        if (isColor) {
+          return { type: "theme-color", labels: ["Default", "Variant", "Variant2"] };
+        }
+        if (Array.isArray(def.value) && def.labels) {
+          return { type: "multi-value", labels: def.labels };
+        }
+        if (def.default !== void 0 && def.lg !== void 0 && def.variant === void 0) {
+          return { type: "responsive", labels: ["Mobile", "Tablet", "Desktop"] };
+        }
+        return { type: "single", labels: null };
+      },
+      groupedFields(group) {
+        const allFields = [];
+        const colorFields = [];
+        if (group.colors) {
+          const colorKeys = Object.keys(group.colors);
+          for (let i = 0; i < colorKeys.length; i++) {
+            const varName = colorKeys[i];
+            const colorVal = group.colors[varName];
+            const sig = this.fieldSignature(varName, {}, true);
+            const nextKey = colorKeys[i + 1] || "";
+            const isState = varName.endsWith("-hover") || varName.endsWith("-active");
+            const isFollowedByState = nextKey.endsWith("-hover") || nextKey.endsWith("-active");
+            colorFields.push({
+              varName,
+              def: {},
+              colorVal,
+              label: this.colorLabel(varName),
+              isState,
+              isFollowedByState,
+              type: "theme-color",
+              sigLabels: sig.labels,
+              sigKey: sig.type + ":" + sig.labels.join(",")
+            });
+          }
+        }
+        if (group.vars) {
+          let colorsInserted = false;
+          for (const [varName, def] of Object.entries(group.vars)) {
+            const sig = this.fieldSignature(varName, def, false);
+            if (!colorsInserted && sig.type !== "single" && colorFields.length > 0) {
+              allFields.push(...colorFields);
+              colorsInserted = true;
+            }
+            allFields.push({
+              varName,
+              def,
+              label: this.propLabel(varName),
+              type: sig.type,
+              sigLabels: sig.labels,
+              sigKey: sig.type === "single" ? "single-" + varName : sig.type + ":" + (sig.labels || []).join(",")
+            });
+          }
+          if (!colorsInserted && colorFields.length > 0) {
+            allFields.push(...colorFields);
+          }
+        } else if (colorFields.length > 0) {
+          allFields.push(...colorFields);
+        }
+        const groups = [];
+        let currentGroup = null;
+        for (const field of allFields) {
+          if (field.type === "single") {
+            if (currentGroup) {
+              groups.push(currentGroup);
+              currentGroup = null;
+            }
+            groups.push({ header: null, fields: [field] });
+          } else if (currentGroup && currentGroup.sigKey === field.sigKey) {
+            currentGroup.fields.push(field);
+          } else {
+            if (currentGroup) groups.push(currentGroup);
+            currentGroup = {
+              sigKey: field.sigKey,
+              header: field.sigLabels,
+              fieldType: field.type,
+              fields: [field]
+            };
+          }
+        }
+        if (currentGroup) groups.push(currentGroup);
+        return groups;
+      },
+      filteredOptions(varName, options) {
+        if (!varName.endsWith("-font-weight")) {
+          return options.map((o) => ({ value: o, text: o }));
+        }
+        const prefix = varName.replace("-font-weight", "");
+        const fontFamilyVar = prefix + "-font-family";
+        let selectedFamily = this.getOverrideValue(fontFamilyVar);
+        if (!selectedFamily) {
+          for (const group of Object.values(this.elementDefaults)) {
+            if (group && group.vars && group.vars[fontFamilyVar]) {
+              selectedFamily = group.vars[fontFamilyVar].value;
+              break;
+            }
+          }
+        }
+        if (!selectedFamily || selectedFamily === "default") selectedFamily = this.bodyDefaultFont;
+        const font = this.getFontByFamily(selectedFamily);
+        if (!font || !font.files || !font.files.length) {
+          return options.map((o) => ({ value: o, text: o }));
+        }
+        const weight = font.files[0].weight || "400";
+        const parts = weight.split(" ");
+        if (parts.length === 2) {
+          const min = parseInt(parts[0]);
+          const max = parseInt(parts[1]);
+          return options.filter((o) => {
+            const n = parseInt(o);
+            return n >= min && n <= max;
+          }).map((o) => ({ value: o, text: o }));
+        }
+        return [{ value: parts[0], text: parts[0] }];
+      },
+      getFontByFamily(family) {
+        const allFonts = { ...this.fonts.builtin || {}, ...this.fonts.project || {} };
+        return Object.values(allFonts).find((f) => f.family === family) || null;
+      },
+      // --- Color methods ---
+      colorLabel(varName) {
+        const tKey = "prw.color." + varName;
+        const t = this.$t(tKey);
+        if (t && t !== tKey) return t;
+        return varName;
+      },
+      getColorOverrideValue(theme, varName) {
+        return ((this.elementOverrides.global || {})[theme] || {})[varName] || "";
+      },
+      setColorValue(theme, varName, value, defaultVal) {
+        const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
+        if (value === "" || value === defaultVal) {
+          if (overrides.global && overrides.global[theme]) {
+            delete overrides.global[theme][varName];
+            if (Object.keys(overrides.global[theme]).length === 0) {
+              delete overrides.global[theme];
+            }
+            if (overrides.global && Object.keys(overrides.global).length === 0) {
+              delete overrides.global;
+            }
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          if (!overrides.global[theme]) overrides.global[theme] = {};
+          overrides.global[theme][varName] = value;
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      // --- Quad methods ---
+      getQuadValue(varName, index) {
+        const override = (this.elementOverrides.global || {})[varName];
+        if (Array.isArray(override)) return override[index] || "";
+        return "";
+      },
+      setQuadValue(varName, index, value, def) {
+        const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
+        if (!overrides.global) overrides.global = {};
+        const current = Array.isArray(overrides.global[varName]) ? [...overrides.global[varName]] : [...def.value];
+        current[index] = value === "" ? def.value[index] : value + (def.unit || "");
+        const allDefault = current.every((v, i) => v === def.value[i]);
+        if (allDefault) {
+          delete overrides.global[varName];
+          if (Object.keys(overrides.global).length === 0) {
+            delete overrides.global;
+          }
+        } else {
+          overrides.global[varName] = current;
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      // --- Style methods ---
+      stripUnit(val) {
+        if (!val) return "";
+        return val.replace(/(rem|em|px)$/, "");
+      },
+      setUnitValue(varName, value, defaultVal, unit) {
+        const withUnit = value === "" ? "" : value + (unit || "");
+        this.setValue(varName, withUnit, defaultVal);
+      },
+      toPx(val, unit) {
+        if (!val) return "";
+        const num = parseFloat(val);
+        if (isNaN(num)) return "";
+        if (unit === "rem" || val.endsWith("rem")) return Math.round(num * 16) + "px";
+        if (unit === "em" || val.endsWith("em")) return Math.round(num * 16) + "px";
+        if (unit === "" && num > 0) return Math.round(num * 16) + "px";
+        return "";
+      },
+      helpText(key) {
+        const tKey = "prw.help." + key;
+        const t = this.$t(tKey);
+        return t && t !== tKey ? t : key;
+      },
+      fontSizesForGroup(groupKey) {
+        return this.fontDefaults[groupKey] || null;
+      },
+      getFontSizeOverride(bp, varName) {
+        return ((this.fontOverrides.global || {})[bp] || {})[varName] || "";
+      },
+      setFontSizeValue(bp, varName, value, defaultVal, unit) {
+        const withUnit = value === "" ? "" : value + (unit || "");
+        const overrides = JSON.parse(JSON.stringify(this.fontOverrides));
+        if (withUnit === "" || withUnit === defaultVal) {
+          if (overrides.global && overrides.global[bp]) {
+            delete overrides.global[bp][varName];
+            if (Object.keys(overrides.global[bp]).length === 0) delete overrides.global[bp];
+            if (overrides.global && Object.keys(overrides.global).length === 0) delete overrides.global;
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          if (!overrides.global[bp]) overrides.global[bp] = {};
+          overrides.global[bp][varName] = withUnit;
+        }
+        this.$emit("update:font-overrides", overrides);
+      },
+      getResponsiveOverride(varName, bp) {
+        return ((this.elementOverrides.global || {})[bp] || {})[varName] || "";
+      },
+      setResponsiveValue(varName, bp, value, defaultVal, unit) {
+        const withUnit = value === "" ? "" : value + (unit || "");
+        const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
+        if (withUnit === "" || withUnit === defaultVal) {
+          if (overrides.global && overrides.global[bp]) {
+            delete overrides.global[bp][varName];
+            if (Object.keys(overrides.global[bp]).length === 0) {
+              delete overrides.global[bp];
+            }
+            if (overrides.global && Object.keys(overrides.global).length === 0) {
+              delete overrides.global;
+            }
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          if (!overrides.global[bp]) overrides.global[bp] = {};
+          overrides.global[bp][varName] = withUnit;
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      getOverrideValue(varName) {
+        return (this.elementOverrides.global || {})[varName] || "";
+      },
+      fontSelectValue(varName, defValue) {
+        const ov = this.getOverrideValue(varName);
+        if (ov && ov === this.bodyDefaultFont) return "default";
+        return ov || defValue;
+      },
+      setValue(varName, value, defaultVal) {
+        const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
+        if (value === "" || value === defaultVal) {
+          if (overrides.global) {
+            delete overrides.global[varName];
+            if (Object.keys(overrides.global).length === 0) {
+              delete overrides.global;
+            }
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          overrides.global[varName] = value;
+        }
+        this.$emit("update:overrides", overrides);
+      }
+    }
+  };
+  var _sfc_render$2 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", _vm._l(_vm.groups, function(group, groupKey) {
+      return _c("section", { key: groupKey, staticClass: "pw-element-section" }, [_c("div", { staticClass: "pw-section-header" }, [_c("button", { staticClass: "pw-section-toggle", on: { "click": function($event) {
+        return _vm.toggle(groupKey);
+      } } }, [_c("span", [_vm._v(_vm._s(_vm.groupLabel(groupKey)))]), _c("k-icon", { attrs: { "type": _vm.isOpen(groupKey) ? "angle-down" : "angle-right" } })], 1)]), _c("transition", { attrs: { "name": "pw-slide" } }, [_c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isOpen(groupKey), expression: "isOpen(groupKey)" }], staticClass: "pw-element-list" }, [_vm._l(_vm.groupedFields(group), function(fieldGroup, gIdx) {
+        return [fieldGroup.header ? _c("div", { key: "gh-" + gIdx, staticClass: "pw-group-header" }, [_c("div", { staticClass: "pw-field-row-label-col" }), _c("div", { staticClass: "pw-group-header-labels", class: "pw-group-type-" + fieldGroup.fieldType }, _vm._l(fieldGroup.header, function(label) {
+          return _c("span", { key: label, staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v(_vm._s(label))])]);
+        }), 0)]) : _vm._e(), _vm._l(fieldGroup.fields, function(field, fIdx) {
+          return [_c("div", { key: "gf-" + gIdx + "-" + fIdx, staticClass: "pw-field-row", class: {
+            "pw-dual-first": field.isFollowedByState || field.varName.endsWith("-font-size") && _vm.fontSizesForGroup(groupKey) && _vm.openSections[groupKey + "-sizes"],
+            "pw-dual-next": field.isState
+          } }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [field.varName.endsWith("-font-size") && _vm.fontSizesForGroup(groupKey) ? [_c("button", { staticClass: "pw-sizes-toggle", attrs: { "type": "button" }, on: { "click": function($event) {
+            $event.preventDefault();
+            return _vm.$set(_vm.openSections, groupKey + "-sizes", !_vm.openSections[groupKey + "-sizes"]);
+          } } }, [_c("k-icon", { staticClass: "pw-sizes-chevron", attrs: { "type": _vm.openSections[groupKey + "-sizes"] ? "angle-down" : "angle-right" } }), _c("span", [_vm._v(_vm._s(field.label))])], 1)] : _c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(field.label))])], 2), _c("div", { staticClass: "pw-field-row-options", class: fieldGroup.header ? "pw-group-type-" + fieldGroup.fieldType : "" }, [field.def.type === "font-family" ? _c("select", { staticClass: "pw-element-input pw-font-select", domProps: { "value": _vm.fontSelectValue(field.varName, field.def.value) }, on: { "change": function($event) {
+            return _vm.setValue(field.varName, $event.target.value, field.def.value);
+          } } }, _vm._l(_vm.fontFamilyOptions, function(opt) {
+            return _c("option", { key: opt.value, domProps: { "value": opt.value } }, [_vm._v(_vm._s(opt.text))]);
+          }), 0) : field.def.options ? _c("k-toggles-input", { attrs: { "value": _vm.getOverrideValue(field.varName) || field.def.value, "options": _vm.filteredOptions(field.varName, field.def.options), "grow": false, "required": true }, on: { "input": function($event) {
+            return _vm.setValue(field.varName, $event, field.def.value);
+          } } }) : field.type === "multi-value" ? _vm._l(field.def.value, function(val, idx) {
+            return _c("span", { key: idx, staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getQuadValue(field.varName, idx) }, attrs: { "type": "number", "step": field.def.step || 0.1, "min": field.def.min, "max": field.def.max }, domProps: { "value": _vm.stripUnit(_vm.getQuadValue(field.varName, idx) || val) }, on: { "input": function($event) {
+              return _vm.setQuadValue(field.varName, idx, $event.target.value, field.def);
+            } } }), field.def.unit ? _c("span", { staticClass: "pw-element-unit" }, [_vm._v(_vm._s(field.def.unit))]) : _vm._e()]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getQuadValue(field.varName, idx) || val, field.def.unit)))])]);
+          }) : field.type === "responsive" ? _vm._l(["default", "lg", "xl"], function(bp) {
+            return _c("span", { key: bp, staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getResponsiveOverride(field.varName, bp) }, attrs: { "type": "number", "step": field.def.step || 0.1, "min": field.def.min, "max": field.def.max }, domProps: { "value": _vm.stripUnit(_vm.getResponsiveOverride(field.varName, bp) || field.def[bp]) }, on: { "input": function($event) {
+              return _vm.setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit);
+            } } }), field.def.unit ? _c("span", { staticClass: "pw-element-unit" }, [_vm._v(_vm._s(field.def.unit))]) : _vm._e()]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit)))])]);
+          }) : field.type === "theme-color" ? _vm._l(["default", "variant", "variant2"], function(theme) {
+            return _c("pw-color-field-row", { key: theme, attrs: { "group": theme, "var-name": field.varName, "default-value": field.colorVal[theme] || "", "override-value": _vm.getColorOverrideValue(theme, field.varName) }, on: { "update:value": function($event) {
+              return _vm.setColorValue(theme, field.varName, $event, field.colorVal[theme] || "");
+            } } });
+          }) : field.def.unit !== void 0 ? [_c("span", { staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getOverrideValue(field.varName) }, attrs: { "type": "number", "step": field.def.step || 0.1, "min": field.def.min, "max": field.def.max }, domProps: { "value": _vm.stripUnit(_vm.getOverrideValue(field.varName) || field.def.value) }, on: { "input": function($event) {
+            return _vm.setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit);
+          } } }), field.def.unit ? _c("span", { staticClass: "pw-element-unit" }, [_vm._v(_vm._s(field.def.unit))]) : _vm._e()]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getOverrideValue(field.varName) || field.def.value, field.def.unit)))])]), field.def.help ? _c("span", { staticClass: "pw-element-help" }, [_vm._v(_vm._s(_vm.helpText(field.def.help)))]) : _vm._e()] : [_c("input", { staticClass: "pw-element-input", attrs: { "type": "text", "placeholder": field.def.value }, domProps: { "value": _vm.getOverrideValue(field.varName) }, on: { "input": function($event) {
+            return _vm.setValue(field.varName, $event.target.value, field.def.value);
+          } } }), field.def.help ? _c("span", { staticClass: "pw-element-help" }, [_vm._v(_vm._s(_vm.helpText(field.def.help)))]) : _vm._e()]], 2)])])]), field.varName.endsWith("-font-size") && _vm.fontSizesForGroup(groupKey) && _vm.openSections[groupKey + "-sizes"] ? _vm._l(_vm.fontSizesForGroup(groupKey).vars, function(sizeVal, sizeName) {
+            return _c("div", { key: "size-" + sizeName, staticClass: "pw-field-row pw-dual-first pw-dual-next" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label pw-sizes-label" }, [_vm._v(_vm._s(sizeName.split("-").pop()))])]), _c("div", { staticClass: "pw-field-row-options pw-group-type-responsive" }, _vm._l(["default", "lg", "xl"], function(bp) {
+              return _c("span", { key: bp, staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getFontSizeOverride(bp, sizeName) }, attrs: { "type": "number", "step": _vm.fontSizesForGroup(groupKey).step || 0.1, "min": "0.1", "max": "20" }, domProps: { "value": _vm.stripUnit(_vm.getFontSizeOverride(bp, sizeName) || sizeVal[bp]) }, on: { "input": function($event) {
+                return _vm.setFontSizeValue(bp, sizeName, $event.target.value, sizeVal[bp], "rem");
+              } } }), _c("span", { staticClass: "pw-element-unit" }, [_vm._v("rem")])]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getFontSizeOverride(bp, sizeName) || sizeVal[bp], "rem")))])]);
+            }), 0)])])]);
+          }) : _vm._e()];
+        }), fieldGroup.header ? _c("div", { key: "ge-" + gIdx, staticClass: "pw-group-end" }) : _vm._e()];
+      })], 2)])], 1);
+    }), 0);
+  };
+  var _sfc_staticRenderFns$2 = [];
+  _sfc_render$2._withStripped = true;
+  var __component__$2 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$2,
+    _sfc_render$2,
+    _sfc_staticRenderFns$2
+  );
+  __component__$2.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/GlobalElementStyles.vue";
+  const GlobalElementStyles = __component__$2.exports;
+  const _sfc_main$1 = {
+    props: {
+      navDefaults: {
+        type: Object,
+        default: () => ({})
+      },
+      navOverrides: {
+        type: Object,
+        default: () => ({})
+      },
+      fonts: {
+        type: Object,
+        default: () => ({})
+      },
+      bodyDefaultFont: {
+        type: String,
+        default: "Inter"
+      }
+    },
+    data() {
+      return {
+        openSections: {},
+        inlineIcons: {
+          "arrow-down": '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>',
+          "chevron-down": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+          "caret-down": '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>',
+          "plus-minus": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg>'
+        }
+      };
+    },
+    computed: {
+      groups() {
+        const result = {};
+        for (const [key, val] of Object.entries(this.navDefaults)) {
+          if (val && typeof val === "object" && (val.vars || val.colors)) {
+            result[key] = val;
+          }
+        }
+        return result;
+      },
+      fontFamilyOptions() {
+        const allFonts = { ...this.fonts.builtin || {}, ...this.fonts.project || {} };
+        const seen = /* @__PURE__ */ new Set();
+        const hasBodyDefault = Object.values(this.navDefaults).some((g) => g && g.vars && g.vars["font-family-default"]);
+        const options = hasBodyDefault ? [] : [{ value: "default", text: "Default (" + this.bodyDefaultFont + ")" }];
+        for (const font of Object.values(allFonts)) {
+          if (!seen.has(font.family) && (hasBodyDefault || font.family !== this.bodyDefaultFont)) {
+            seen.add(font.family);
+            options.push({ value: font.family, text: font.family });
+          }
+        }
+        return options;
+      }
+    },
+    methods: {
+      toggle(key) {
+        this.$set(this.openSections, key, !this.isOpen(key));
+      },
+      isOpen(key) {
+        return this.openSections[key] !== false;
+      },
+      groupLabel(key) {
+        const tKey = "prw.navgroup." + key;
+        const t = this.$t(tKey);
+        if (t && t !== tKey) return t;
+        return key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, " ");
+      },
+      hasColors(group) {
+        return group.colors && Object.keys(group.colors).length > 0;
+      },
+      isFollowedByColorState(colors, index) {
+        const keys = Object.keys(colors);
+        const next = keys[index + 1];
+        return next && (next.endsWith("-hover") || next.endsWith("-active"));
+      },
+      // --- Field signature + grouping ---
+      fieldSignature(varName, def) {
+        if (def.type === "color-group" && def.fields && def.labels) {
+          return { type: "color-group", labels: def.labels };
+        }
+        if (Array.isArray(def.value) && def.labels) {
+          return { type: "multi-value", labels: def.labels };
+        }
+        if (def.default !== void 0 && def.lg !== void 0 && def.variant === void 0) {
+          return { type: "responsive", labels: ["Mobile", "Tablet", "Desktop"] };
+        }
+        return { type: "single", labels: null };
+      },
+      groupedFields(group) {
+        const allFields = [];
+        if (group.vars) {
+          for (const [varName, def] of Object.entries(group.vars)) {
+            if (def.type === "label") {
+              allFields.push({ isLabel: true, labelText: varName.replace("_label_", "") });
+              continue;
+            }
+            if (def.requires) {
+              if (def.requires.includes(":")) {
+                const [reqField, reqValue] = def.requires.split(":");
+                const currentValue = this.getOverrideValue(reqField) || this.getDefaultValue(group, reqField);
+                if (currentValue !== reqValue) continue;
+              } else {
+                if (!this.getOverrideValue(def.requires)) continue;
+                if (varName.endsWith("-display-height")) continue;
+              }
+            }
+            const sig = this.fieldSignature(varName, def);
+            const isState = varName.includes("-active-") || varName.endsWith("-active");
+            allFields.push({
+              varName,
+              def,
+              label: def.label || this.propLabel(varName),
+              type: sig.type,
+              sigLabels: sig.labels,
+              sigKey: sig.type === "single" ? "single-" + varName : sig.type + ":" + (sig.labels || []).join(","),
+              isDependent: !!def.requires,
+              isState
+            });
+          }
+        }
+        for (let i = 0; i < allFields.length; i++) {
+          const f = allFields[i];
+          f.isTightNext = f.isDependent || f.isState;
+          if (i < allFields.length - 1) {
+            const next = allFields[i + 1];
+            f.isTight = next.isDependent || next.isState;
+          }
+        }
+        const groups = [];
+        let currentGroup = null;
+        for (const field of allFields) {
+          if (field.isLabel) {
+            if (currentGroup) {
+              groups.push(currentGroup);
+              currentGroup = null;
+            }
+            groups.push({ isLabel: true, labelText: field.labelText });
+            continue;
+          }
+          if (field.type === "single") {
+            if (currentGroup) {
+              groups.push(currentGroup);
+              currentGroup = null;
+            }
+            groups.push({ header: null, fields: [field] });
+          } else if (currentGroup && currentGroup.sigKey === field.sigKey) {
+            currentGroup.fields.push(field);
+          } else {
+            if (currentGroup) groups.push(currentGroup);
+            currentGroup = {
+              sigKey: field.sigKey,
+              header: field.sigLabels,
+              fieldType: field.type,
+              fields: [field]
+            };
+          }
+        }
+        if (currentGroup) groups.push(currentGroup);
+        return groups;
+      },
+      getDefaultValue(group, varName) {
+        const def = group.vars ? group.vars[varName] : null;
+        if (!def) return "";
+        return def.value || "";
+      },
+      dependentField(svgVarName) {
+        for (const [, group] of Object.entries(this.navDefaults)) {
+          if (!group.vars) continue;
+          for (const [varName, def] of Object.entries(group.vars)) {
+            if (def.requires === svgVarName) {
+              return { varName, def };
+            }
+          }
+        }
+        return null;
+      },
+      toggleIcon(varName, icon, defaultVal) {
+        const current = this.getOverrideValue(varName) || defaultVal;
+        if (current === icon) {
+          this.setValue(varName, "none", defaultVal);
+        } else {
+          this.setValue(varName, icon, defaultVal);
+        }
+      },
+      sanitizeSvg(raw) {
+        if (!raw) return "";
+        let svg = raw.replace(/<\?xml[^?]*\?>\s*/gi, "").replace(/<!DOCTYPE[^>]*>\s*/gi, "").replace(/<!--[\s\S]*?-->\s*/g, "");
+        const match = svg.match(/<svg[\s\S]*<\/svg>/i);
+        if (!match) return "";
+        svg = match[0];
+        const vbMatch = svg.match(/viewBox=["'][\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)["']/);
+        if (vbMatch) {
+          const w = Math.round(parseFloat(vbMatch[1]));
+          const h = Math.round(parseFloat(vbMatch[2]));
+          svg = svg.replace(/(<svg[^>]*?)\s+width="[^"]*"/i, "$1");
+          svg = svg.replace(/(<svg[^>]*?)\s+height="[^"]*"/i, "$1");
+          svg = svg.replace(/<svg/, '<svg width="' + w + '" height="' + h + '"');
+        }
+        return svg.trim();
+      },
+      onSvgFileUpload(varName, event, defaultVal) {
+        const file = event.target.files[0];
+        event.target.value = "";
+        if (!file || !file.name.endsWith(".svg")) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const cleaned = this.sanitizeSvg(reader.result);
+          if (!cleaned) {
+            this.$panel.notification.error("No valid SVG found");
+            return;
+          }
+          const dims = this.parseSvgDimensions(cleaned);
+          if (!dims) {
+            this.$panel.notification.error("SVG must have a viewBox or width/height attributes");
+            return;
+          }
+          this.onSvgInput(varName, cleaned, defaultVal);
+        };
+        reader.readAsText(file);
+      },
+      removeSvg(varName) {
+        const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+        if (overrides.global) {
+          delete overrides.global[varName];
+          delete overrides.global[varName + "-width"];
+          delete overrides.global[varName + "-height"];
+          if (Object.keys(overrides.global).length === 0) {
+            delete overrides.global;
+          }
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      onSvgInput(varName, value, defaultVal) {
+        if (!value) {
+          this.setValue(varName, "", defaultVal);
+          return;
+        }
+        const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+        if (!overrides.global) overrides.global = {};
+        overrides.global[varName] = value;
+        const dims = this.parseSvgDimensions(value);
+        if (dims) {
+          overrides.global[varName + "-width"] = String(dims.width);
+          overrides.global[varName + "-height"] = String(dims.height);
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      parseSvgDimensions(svgCode) {
+        if (!svgCode || !svgCode.includes("<svg")) return null;
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(svgCode, "image/svg+xml");
+          const svg = doc.querySelector("svg");
+          if (!svg) return null;
+          const vb = svg.getAttribute("viewBox");
+          if (vb) {
+            const parts = vb.trim().split(/\s+/);
+            if (parts.length === 4) {
+              return { width: Math.round(parseFloat(parts[2])), height: Math.round(parseFloat(parts[3])) };
+            }
+          }
+          const w = parseFloat(svg.getAttribute("width"));
+          const h = parseFloat(svg.getAttribute("height"));
+          if (w && h) return { width: Math.round(w), height: Math.round(h) };
+          return null;
+        } catch (e) {
+          return null;
+        }
+      },
+      filteredOptions(varName, options) {
+        if (!varName.endsWith("font-weight")) {
+          return options.map((o) => ({ value: String(o), text: this.optionLabel(o) }));
+        }
+        const prefix = varName.replace("font-weight", "");
+        const fontFamilyVar = prefix + "font-family";
+        const selectedFamily = this.getOverrideValue(fontFamilyVar);
+        const font = this.getFontByFamily(selectedFamily);
+        if (!font || !font.files || !font.files.length) {
+          return options.map((o) => ({ value: String(o), text: this.optionLabel(o) }));
+        }
+        const weight = font.files[0].weight || "400";
+        const parts = weight.split(" ");
+        if (parts.length === 2) {
+          const min = parseInt(parts[0]);
+          const max = parseInt(parts[1]);
+          return options.filter((o) => {
+            const n = parseInt(o);
+            return n >= min && n <= max;
+          }).map((o) => ({ value: String(o), text: this.optionLabel(o) }));
+        }
+        return [{ value: parts[0], text: this.optionLabel(parts[0]) }];
+      },
+      getFontByFamily(family) {
+        if (!family) {
+          for (const group of Object.values(this.navDefaults)) {
+            if (group.vars && group.vars["font-family"]) {
+              family = group.vars["font-family"].value;
+              break;
+            }
+          }
+        }
+        const allFonts = { ...this.fonts.builtin || {}, ...this.fonts.project || {} };
+        return Object.values(allFonts).find((f) => f.family === family) || null;
+      },
+      optionLabel(val) {
+        const tKey = "prw.option." + val;
+        const t = this.$t(tKey);
+        return t && t !== tKey ? t : String(val);
+      },
+      propLabel(varName) {
+        const tKey = "prw.nav." + varName;
+        const t = this.$t(tKey);
+        if (t && t !== tKey) return t;
+        return varName;
+      },
+      getQuadValue(varName, index) {
+        const override = (this.navOverrides.global || {})[varName];
+        if (Array.isArray(override)) return override[index] || "";
+        return "";
+      },
+      setQuadValue(varName, index, value, def) {
+        const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+        if (!overrides.global) overrides.global = {};
+        const current = Array.isArray(overrides.global[varName]) ? [...overrides.global[varName]] : [...def.value];
+        current[index] = value === "" ? def.value[index] : value + (def.unit || "");
+        const allDefault = current.every((v, i) => v === def.value[i]);
+        if (allDefault) {
+          delete overrides.global[varName];
+          if (Object.keys(overrides.global).length === 0) {
+            delete overrides.global;
+          }
+        } else {
+          overrides.global[varName] = current;
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      stripUnit(val) {
+        if (!val) return "";
+        return val.replace(/(rem|em|px)$/, "");
+      },
+      setUnitValue(varName, value, defaultVal, unit) {
+        const withUnit = value === "" ? "" : value + (unit || "");
+        this.setValue(varName, withUnit, defaultVal);
+      },
+      toPx(val, unit) {
+        if (!val) return "";
+        const num = parseFloat(val);
+        if (isNaN(num)) return "";
+        if (unit === "rem" || val.endsWith("rem")) return Math.round(num * 16) + "px";
+        if (unit === "em" || val.endsWith("em")) return Math.round(num * 16) + "px";
+        if (unit === "" && num > 0) return Math.round(num * 16) + "px";
+        return "";
+      },
+      getColorOverrideValue(theme, varName) {
+        return ((this.navOverrides.global || {})[theme] || {})[varName] || "";
+      },
+      setColorValue(theme, varName, value, defaultVal) {
+        const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+        if (value === "" || value === defaultVal) {
+          if (overrides.global && overrides.global[theme]) {
+            delete overrides.global[theme][varName];
+            if (Object.keys(overrides.global[theme]).length === 0) {
+              delete overrides.global[theme];
+            }
+            if (overrides.global && Object.keys(overrides.global).length === 0) {
+              delete overrides.global;
+            }
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          if (!overrides.global[theme]) overrides.global[theme] = {};
+          overrides.global[theme][varName] = value;
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      getResponsiveOverride(varName, bp) {
+        return ((this.navOverrides.global || {})[bp] || {})[varName] || "";
+      },
+      setResponsiveValue(varName, bp, value, defaultVal, unit) {
+        const withUnit = value === "" ? "" : value + (unit || "");
+        const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+        if (withUnit === "" || withUnit === defaultVal) {
+          if (overrides.global && overrides.global[bp]) {
+            delete overrides.global[bp][varName];
+            if (Object.keys(overrides.global[bp]).length === 0) {
+              delete overrides.global[bp];
+            }
+            if (overrides.global && Object.keys(overrides.global).length === 0) {
+              delete overrides.global;
+            }
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          if (!overrides.global[bp]) overrides.global[bp] = {};
+          overrides.global[bp][varName] = withUnit;
+        }
+        this.$emit("update:overrides", overrides);
+      },
+      getOverrideValue(varName) {
+        return (this.navOverrides.global || {})[varName] || "";
+      },
+      fontSelectValue(varName, defValue) {
+        const ov = this.getOverrideValue(varName);
+        if (ov && ov === this.bodyDefaultFont) return "default";
+        return ov || defValue;
+      },
+      setValue(varName, value, defaultVal) {
+        const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+        if (value === "" || value === defaultVal || value === String(defaultVal)) {
+          if (overrides.global) {
+            delete overrides.global[varName];
+            if (Object.keys(overrides.global).length === 0) {
+              delete overrides.global;
+            }
+          }
+        } else {
+          if (!overrides.global) overrides.global = {};
+          overrides.global[varName] = value;
+        }
+        this.$emit("update:overrides", overrides);
+      }
+    }
+  };
+  var _sfc_render$1 = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", _vm._l(_vm.groups, function(group, groupKey) {
+      return _c("section", { key: groupKey, staticClass: "pw-element-section" }, [_c("div", { staticClass: "pw-section-header" }, [_c("button", { staticClass: "pw-section-toggle", on: { "click": function($event) {
+        return _vm.toggle(groupKey);
+      } } }, [_c("span", [_vm._v(_vm._s(_vm.groupLabel(groupKey)))]), _c("k-icon", { attrs: { "type": _vm.isOpen(groupKey) ? "angle-down" : "angle-right" } })], 1)]), _c("transition", { attrs: { "name": "pw-slide" } }, [_c("div", { directives: [{ name: "show", rawName: "v-show", value: _vm.isOpen(groupKey), expression: "isOpen(groupKey)" }], staticClass: "pw-element-list" }, [_vm._l(_vm.groupedFields(group), function(fieldGroup, gIdx) {
+        return [fieldGroup.isLabel ? _c("div", { key: "gl-" + gIdx, staticClass: "pw-nav-label" }, [_vm._v(" " + _vm._s(fieldGroup.labelText) + " ")]) : [fieldGroup.header ? _c("div", { key: "gh-" + gIdx, staticClass: "pw-group-header" }, [_c("div", { staticClass: "pw-field-row-label-col" }), _c("div", { staticClass: "pw-group-header-labels", class: "pw-group-type-" + fieldGroup.fieldType }, _vm._l(fieldGroup.header, function(label) {
+          return _c("span", { key: label, staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v(_vm._s(label))])]);
+        }), 0)]) : _vm._e(), _vm._l(fieldGroup.fields, function(field, fIdx) {
+          return [_c("div", { key: "gf-" + gIdx + "-" + fIdx, staticClass: "pw-field-row", class: { "pw-dual-first": field.isTight, "pw-dual-next": field.isTightNext } }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(field.label))])]), _c("div", { staticClass: "pw-field-row-options", class: fieldGroup.header ? "pw-group-type-" + fieldGroup.fieldType : "" }, [field.def.type === "visibility" ? _c("button", { staticClass: "pw-tab-visibility", attrs: { "type": "button" }, on: { "click": function($event) {
+            _vm.setValue(field.varName, (_vm.getOverrideValue(field.varName) || field.def.value) === "true" ? "false" : "true", field.def.value);
+          } } }, [_c("k-icon", { attrs: { "type": (_vm.getOverrideValue(field.varName) || field.def.value) === "true" ? "preview" : "hidden" } })], 1) : field.def.type === "icon-select" ? _c("div", { staticClass: "pw-icon-select" }, _vm._l(field.def.options, function(icon) {
+            return _c("button", { key: icon, staticClass: "pw-icon-option", class: { "is-active": (_vm.getOverrideValue(field.varName) || field.def.value) === icon && (_vm.getOverrideValue(field.varName) || field.def.value) !== "none" }, attrs: { "type": "button" }, domProps: { "innerHTML": _vm._s(_vm.inlineIcons[icon]) }, on: { "click": function($event) {
+              return _vm.toggleIcon(field.varName, icon, field.def.value);
+            } } });
+          }), 0) : field.def.type === "font-family" ? _c("select", { staticClass: "pw-element-input pw-font-select", domProps: { "value": _vm.fontSelectValue(field.varName, field.def.value) }, on: { "change": function($event) {
+            return _vm.setValue(field.varName, $event.target.value, field.def.value);
+          } } }, _vm._l(_vm.fontFamilyOptions, function(opt) {
+            return _c("option", { key: opt.value, domProps: { "value": opt.value } }, [_vm._v(_vm._s(opt.text))]);
+          }), 0) : field.def.options ? _c("k-toggles-input", { attrs: { "value": _vm.getOverrideValue(field.varName) || field.def.value, "options": _vm.filteredOptions(field.varName, field.def.options), "grow": false, "required": true }, on: { "input": function($event) {
+            return _vm.setValue(field.varName, $event, field.def.value);
+          } } }) : field.type === "color-group" ? _vm._l(field.def.fields, function(cgField, cgName) {
+            return _c("pw-color-field-row", { key: cgName, attrs: { "group": "nav", "var-name": cgName, "default-value": cgField.value, "override-value": _vm.getOverrideValue(cgName) }, on: { "update:value": function($event) {
+              return _vm.setValue(cgName, $event || "", cgField.value);
+            } } });
+          }) : field.def.type === "color" ? [_c("pw-color-field-row", { attrs: { "group": "nav", "var-name": field.varName, "default-value": field.def.value, "override-value": _vm.getOverrideValue(field.varName) }, on: { "update:value": function($event) {
+            return _vm.setValue(field.varName, $event || "", field.def.value);
+          } } })] : field.type === "multi-value" ? _vm._l(field.def.value, function(val, idx) {
+            return _c("span", { key: idx, staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getQuadValue(field.varName, idx) }, attrs: { "type": "number", "step": field.def.step || 0.1, "min": field.def.min, "max": field.def.max }, domProps: { "value": _vm.stripUnit(_vm.getQuadValue(field.varName, idx) || val) }, on: { "input": function($event) {
+              return _vm.setQuadValue(field.varName, idx, $event.target.value, field.def);
+            } } }), field.def.unit ? _c("span", { staticClass: "pw-element-unit" }, [_vm._v(_vm._s(field.def.unit))]) : _vm._e()]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getQuadValue(field.varName, idx) || val, field.def.unit)))])]);
+          }) : field.type === "responsive" ? _vm._l(["default", "lg", "xl"], function(bp) {
+            return _c("span", { key: bp, staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getResponsiveOverride(field.varName, bp) }, attrs: { "type": "number", "step": field.def.step || 0.1, "min": field.def.min, "max": field.def.max }, domProps: { "value": _vm.stripUnit(_vm.getResponsiveOverride(field.varName, bp) || field.def[bp]) }, on: { "input": function($event) {
+              return _vm.setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit);
+            } } }), field.def.unit ? _c("span", { staticClass: "pw-element-unit" }, [_vm._v(_vm._s(field.def.unit))]) : _vm._e()]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit)))])]);
+          }) : field.def.unit !== void 0 ? [_c("span", { staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getOverrideValue(field.varName) }, attrs: { "type": "number", "step": field.def.step || 0.1, "min": field.def.min, "max": field.def.max }, domProps: { "value": _vm.stripUnit(_vm.getOverrideValue(field.varName) || field.def.value) }, on: { "input": function($event) {
+            return _vm.setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit);
+          } } }), field.def.unit ? _c("span", { staticClass: "pw-element-unit" }, [_vm._v(_vm._s(field.def.unit))]) : _vm._e()]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getOverrideValue(field.varName) || field.def.value, field.def.unit)))])])] : field.def.type === "svg" ? [_vm.getOverrideValue(field.varName) ? [_c("label", { staticClass: "pw-svg-preview" }, [_c("div", { staticClass: "pw-svg-preview-checker", domProps: { "innerHTML": _vm._s(_vm.getOverrideValue(field.varName)) } }), _c("input", { staticStyle: { "display": "none" }, attrs: { "type": "file", "accept": ".svg" }, on: { "change": function($event) {
+            return _vm.onSvgFileUpload(field.varName, $event, field.def.value);
+          } } })]), _vm.dependentField(field.varName) ? [_c("span", { staticClass: "pw-element-field" }, [_c("span", { staticClass: "pw-group-column-label", staticStyle: { "margin-right": "var(--spacing-2)" } }, [_vm._v("Height")]), _c("span", { staticClass: "pw-element-input-wrap" }, [_c("input", { staticClass: "pw-element-input pw-element-input-number pw-px-calculator-input", class: { "is-default": !_vm.getOverrideValue(_vm.dependentField(field.varName).varName) }, attrs: { "type": "number", "step": _vm.dependentField(field.varName).def.step || 0.1, "min": _vm.dependentField(field.varName).def.min, "max": _vm.dependentField(field.varName).def.max }, domProps: { "value": _vm.stripUnit(_vm.getOverrideValue(_vm.dependentField(field.varName).varName) || _vm.dependentField(field.varName).def.value) }, on: { "input": function($event) {
+            _vm.setUnitValue(_vm.dependentField(field.varName).varName, $event.target.value, _vm.dependentField(field.varName).def.value, _vm.dependentField(field.varName).def.unit);
+          } } }), _c("span", { staticClass: "pw-element-unit" }, [_vm._v(_vm._s(_vm.dependentField(field.varName).def.unit))])]), _c("span", { staticClass: "pw-px-calculator" }, [_vm._v(_vm._s(_vm.toPx(_vm.getOverrideValue(_vm.dependentField(field.varName).varName) || _vm.dependentField(field.varName).def.value, _vm.dependentField(field.varName).def.unit)))])])] : _vm._e(), _c("k-button", { attrs: { "text": "Remove", "icon": "remove", "size": "xs" }, on: { "click": function($event) {
+            return _vm.removeSvg(field.varName);
+          } } })] : _c("label", { staticClass: "pw-svg-upload-btn" }, [_c("k-icon", { attrs: { "type": "upload" } }), _vm._v(" Upload SVG "), _c("input", { staticStyle: { "display": "none" }, attrs: { "type": "file", "accept": ".svg" }, on: { "change": function($event) {
+            return _vm.onSvgFileUpload(field.varName, $event, field.def.value);
+          } } })], 1)] : _c("input", { staticClass: "pw-element-input", attrs: { "type": "text", "placeholder": field.def.value }, domProps: { "value": _vm.getOverrideValue(field.varName) }, on: { "input": function($event) {
+            return _vm.setValue(field.varName, $event.target.value, field.def.value);
+          } } })], 2)])])])];
+        }), fieldGroup.header ? _c("div", { key: "ge-" + gIdx, staticClass: "pw-group-end" }) : _vm._e()]];
+      }), group.colors ? [_vm.hasColors(group) ? _c("div", { staticClass: "pw-group-header" }, [_c("div", { staticClass: "pw-field-row-label-col" }), _c("div", { staticClass: "pw-group-header-labels pw-group-type-theme-color" }, [_c("span", { staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v("Default")])]), _c("span", { staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v("Variant")])]), _c("span", { staticClass: "pw-group-column-cell" }, [_c("span", { staticClass: "pw-group-column-label" }, [_vm._v("Variant2")])])])]) : _vm._e(), _vm._l(group.colors, function(colorVal, varName, index) {
+        return _c("div", { key: "color-" + varName, staticClass: "pw-field-row", class: {
+          "pw-dual-first": _vm.isFollowedByColorState(group.colors, index),
+          "pw-dual-next": varName.endsWith("-hover") || varName.endsWith("-active")
+        } }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v(_vm._s(_vm.propLabel(varName)))])]), _c("div", { staticClass: "pw-field-row-options pw-group-type-theme-color" }, _vm._l(["default", "variant", "variant2"], function(theme) {
+          return _c("pw-color-field-row", { key: theme, attrs: { "group": theme, "var-name": varName, "default-value": colorVal[theme] || "", "override-value": _vm.getColorOverrideValue(theme, varName) }, on: { "update:value": function($event) {
+            return _vm.setColorValue(theme, varName, $event, colorVal[theme] || "");
+          } } });
+        }), 1)])])]);
+      }), _c("div", { staticClass: "pw-group-end" })] : _vm._e()], 2)])], 1);
+    }), 0);
+  };
+  var _sfc_staticRenderFns$1 = [];
+  _sfc_render$1._withStripped = true;
+  var __component__$1 = /* @__PURE__ */ normalizeComponent(
+    _sfc_main$1,
+    _sfc_render$1,
+    _sfc_staticRenderFns$1
+  );
+  __component__$1.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/GlobalNavigation.vue";
+  const GlobalNavigation = __component__$1.exports;
+  const _sfc_main = {
+    props: {
+      fonts: { type: Object, default: () => ({}) }
+    },
+    data() {
+      return {
+        showAddForm: false,
+        newFont: {
+          family: "",
+          category: "",
+          italic: null,
+          style: "normal",
+          weights: [],
+          files: []
+        },
+        pendingFiles: []
+      };
+    },
+    computed: {
+      allFonts() {
+        return { ...this.fonts.builtin || {}, ...this.fonts.project || {} };
+      },
+      defaultFont() {
+        return this.fonts.default || "Inter";
+      },
+      categoryOptions() {
+        return ["sans-serif", "serif", "monospace", "display", "cursive"].map((c) => ({
+          value: c,
+          text: this.categoryLabel(c)
+        }));
+      },
+      fontFamilyOptions() {
+        return Object.values(this.allFonts).map((f) => ({
+          value: f.family,
+          text: f.family
+        }));
+      },
+      canAddFont() {
+        return this.newFont.family.trim() && this.newFont.category && this.newFont.italic !== null && this.newFont.weights.length > 0 && this.newFont.files.length > 0;
+      },
+      computedWeight() {
+        if (this.newFont.weights.length === 0) return "";
+        const sorted = [...this.newFont.weights].sort((a, b) => Number(a) - Number(b));
+        if (sorted.length === 1) return sorted[0];
+        return sorted[0] + " " + sorted[sorted.length - 1];
+      }
+    },
+    methods: {
+      resetAddForm() {
+        this.newFont = { family: "", category: "", italic: null, style: "normal", weights: [], files: [] };
+      },
+      categoryLabel(cat) {
+        const tKey = "prw.fontcategory." + cat;
+        const t = this.$t(tKey);
+        return t && t !== tKey ? t : cat;
+      },
+      formatWeight(w) {
+        if (!w) return "";
+        const parts = w.split(" ");
+        return parts.length === 2 ? parts[0] + "–" + parts[1] : w;
+      },
+      isInWeightRange(w) {
+        if (this.newFont.weights.length < 2) return false;
+        const nums = this.newFont.weights.map(Number);
+        const n = Number(w);
+        return n > Math.min(...nums) && n < Math.max(...nums) && !this.newFont.weights.includes(w);
+      },
+      toggleWeight(w) {
+        if (this.newFont.weights.length === 1 && this.newFont.weights[0] === w) {
+          this.newFont.weights = [];
+        } else if (this.newFont.weights.length >= 2) {
+          this.newFont.weights = [w];
+        } else {
+          this.newFont.weights.push(w);
+        }
+      },
+      onFileSelect(e) {
+        const files = Array.from(e.target.files);
+        for (const file of files) {
+          if (!file.name.endsWith(".woff2")) continue;
+          this.newFont.files.push({
+            name: file.name,
+            file,
+            style: "normal"
+          });
+          this.pendingFiles.push(file);
+        }
+        e.target.value = "";
+      },
+      async addFont() {
+        if (!this.canAddFont) return;
+        for (const staged of this.newFont.files) {
+          const reader = new FileReader();
+          const base64 = await new Promise((resolve) => {
+            reader.onload = () => resolve(reader.result.split(",")[1]);
+            reader.readAsDataURL(staged.file);
+          });
+          await this.$api.post("projectwizard/fonts/upload", {
+            name: staged.name,
+            data: base64
+          });
+        }
+        await this.$api.post("projectwizard/fonts", {
+          family: this.newFont.family.trim(),
+          category: this.newFont.category,
+          italic: this.newFont.italic,
+          files: this.newFont.files.map((f) => ({
+            src: f.name,
+            weight: this.computedWeight,
+            style: this.newFont.italic ? "normal" : this.newFont.style
+          }))
+        });
+        this.resetAddForm();
+        this.pendingFiles = [];
+        this.showAddForm = false;
+        this.$emit("update");
+      },
+      async deleteFont(key) {
+        const font = this.allFonts[key];
+        const name = font ? font.family : key;
+        if (!window.confirm('Delete font "' + name + '"?')) return;
+        await this.$api.delete("projectwizard/fonts/" + key);
+        this.$emit("update");
+      },
+      async setDefaultFont(family) {
+        await this.$api.post("projectwizard/fonts/default", { family });
+        this.$emit("update");
+      }
+    }
+  };
+  var _sfc_render = function render() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-font-manager" }, [_c("section", { staticClass: "pw-element-section" }, [_c("div", { staticClass: "pw-section-header pw-font-header" }, [_c("span", { staticClass: "pw-section-title" }, [_vm._v(_vm._s(_vm.$t("prw.fonts.installed") || "Installed Fonts"))]), _c("k-button", { attrs: { "text": _vm.showAddForm ? "Cancel" : _vm.$t("prw.fonts.add") || "Add Font", "icon": _vm.showAddForm ? "cancel" : "add", "size": "xs" }, on: { "click": function($event) {
+      _vm.showAddForm = !_vm.showAddForm;
+      if (!_vm.showAddForm) _vm.resetAddForm();
+    } } })], 1), _c("div", { staticClass: "pw-element-list" }, [_vm._l(_vm.allFonts, function(font, key) {
+      return _vm._l(font.files, function(file, fIdx) {
+        return _c("div", { key: key + "-" + fIdx, staticClass: "pw-field-row", class: { "pw-dual-first": fIdx === 0 && font.files.length > 1, "pw-dual-next": fIdx > 0 } }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label pw-font-label-bold" }, [_vm._v(_vm._s(font.family))]), _c("span", { staticClass: "pw-quad-label" }, [_vm._v(_vm._s(_vm.categoryLabel(font.category)))])]), _c("div", { staticClass: "pw-field-row-options" }, [_c("span", { staticClass: "pw-font-file-name" }, [_vm._v(_vm._s(file.src) + " "), _c("span", { staticClass: "pw-font-weight-label" }, [_vm._v(_vm._s(font.italic && font.files.length === 1 ? "normal, italic" : file.style) + ", " + _vm._s(_vm.formatWeight(file.weight)))])]), !font.builtin ? _c("button", { staticClass: "pw-font-delete", attrs: { "type": "button" }, on: { "click": function($event) {
+          return _vm.deleteFont(key);
+        } } }, [_vm._v("×")]) : _vm._e()])])])]);
+      });
+    })], 2)]), _vm.showAddForm ? _c("section", { staticClass: "pw-element-section" }, [_c("div", { staticClass: "pw-section-header" }, [_c("span", { staticClass: "pw-section-toggle" }, [_c("span", [_vm._v(_vm._s(_vm.$t("prw.fonts.add") || "Add Font"))])])]), _c("div", { staticClass: "pw-element-list" }, [_c("div", { staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_vm._m(0), _c("div", { staticClass: "pw-field-row-options" }, [_c("label", { staticClass: "pw-font-upload-btn" }, [_c("k-icon", { attrs: { "type": "upload" } }), _vm._v(" Upload .woff2 "), _c("input", { staticStyle: { "display": "none" }, attrs: { "type": "file", "accept": ".woff2" }, on: { "change": _vm.onFileSelect } })], 1), _vm.newFont.files.length ? _c("span", { staticClass: "pw-font-file-selected" }, [_vm._v(_vm._s(_vm.newFont.files[0].name))]) : _vm._e()])])])]), _vm._m(1), _c("div", { staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_vm._m(2), _c("div", { staticClass: "pw-field-row-options" }, [_c("input", { directives: [{ name: "model", rawName: "v-model", value: _vm.newFont.family, expression: "newFont.family" }], staticClass: "pw-element-input pw-font-name-input", attrs: { "type": "text", "placeholder": "e.g. Acme, Roboto" }, domProps: { "value": _vm.newFont.family }, on: { "input": function($event) {
+      if ($event.target.composing) return;
+      _vm.$set(_vm.newFont, "family", $event.target.value);
+    } } })])])])]), _c("div", { staticClass: "pw-font-help" }, [_vm._v(" " + _vm._s(_vm.$t("prw.fonts.nameHelp") || 'Enter the exact font family name as specified by the font provider (e.g. "Roboto", "Open Sans", "Playfair Display").') + " ")]), _c("div", { staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_vm._m(3), _c("div", { staticClass: "pw-field-row-options" }, [_c("k-toggles-input", { attrs: { "value": _vm.newFont.category, "options": _vm.categoryOptions, "grow": false, "required": true }, on: { "input": function($event) {
+      _vm.newFont.category = $event;
+    } } })], 1)])])]), _c("div", { staticClass: "pw-font-help" }, [_vm._v(" " + _vm._s(_vm.$t("prw.fonts.categoryHelp") || "Select the font category. This is used as CSS fallback (e.g. sans-serif, serif) when the font is not yet loaded.") + " ")]), _c("div", { staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_vm._m(4), _c("div", { staticClass: "pw-field-row-options" }, [_c("k-toggles-input", { attrs: { "value": _vm.newFont.italic === null ? "" : _vm.newFont.italic ? "yes" : "no", "options": [{ value: "yes", text: "Yes" }, { value: "no", text: "No" }], "grow": false, "required": true }, on: { "input": function($event) {
+      _vm.newFont.italic = $event === "yes";
+    } } }), _vm.newFont.italic === false ? [_c("span", { staticClass: "pw-font-inline-label" }, [_vm._v("Choose Style")]), _c("k-toggles-input", { attrs: { "value": _vm.newFont.style, "options": [{ value: "normal", text: "Normal" }, { value: "italic", text: "Italic" }], "grow": false, "required": true }, on: { "input": function($event) {
+      _vm.newFont.style = $event;
+    } } })] : _vm._e()], 2)])])]), _c("div", { staticClass: "pw-font-help" }, [_vm._v(" " + _vm._s(_vm.$t("prw.fonts.italicHelp") || "Enable if the font includes italic styles. Some variable fonts include italic in a separate file, others have it built-in.") + " ")]), _c("div", { staticClass: "pw-field-row" }, [_c("div", { staticClass: "k-input", attrs: { "data-type": "text" } }, [_c("span", { staticClass: "k-input-element pw-field-row-inner" }, [_vm._m(5), _c("div", { staticClass: "pw-field-row-options" }, [_c("div", { staticClass: "pw-weight-toggles" }, _vm._l(["100", "200", "300", "400", "500", "600", "700", "800", "900"], function(w) {
+      return _c("button", { key: w, staticClass: "pw-weight-toggle", class: { "is-active": _vm.newFont.weights.includes(w), "is-in-range": _vm.isInWeightRange(w) }, attrs: { "type": "button" }, on: { "click": function($event) {
+        return _vm.toggleWeight(w);
+      } } }, [_vm._v(_vm._s(w))]);
+    }), 0)])])])]), _c("div", { staticClass: "pw-font-help" }, [_vm._v(" " + _vm._s(_vm.$t("prw.fonts.weightHelp") || "Select one weight for static fonts, or multiple for variable fonts (e.g. 100–900).") + " ")]), _c("div", { staticClass: "pw-font-actions" }, [_c("k-button", { attrs: { "disabled": !_vm.canAddFont, "text": "Add Font", "icon": "check", "theme": "positive", "variant": "filled", "size": "sm" }, on: { "click": _vm.addFont } })], 1)])]) : _vm._e()]);
+  };
+  var _sfc_staticRenderFns = [function() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v("Font File *")])]);
+  }, function() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-font-help" }, [_vm._v(" Upload a .woff2 font file. You can use "), _c("a", { attrs: { "href": "https://gwfh.mranftl.com/", "target": "_blank", "rel": "noopener" } }, [_vm._v("Google Webfonts Helper")]), _vm._v(" to download Google Fonts as .woff2. ")]);
+  }, function() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v("Font Family Name *")])]);
+  }, function() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v("Category *")])]);
+  }, function() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v("Supports Italic Automatically *")])]);
+  }, function() {
+    var _vm = this, _c = _vm._self._c;
+    return _c("div", { staticClass: "pw-field-row-label-col" }, [_c("label", { staticClass: "pw-field-row-label" }, [_vm._v("Weight *")])]);
+  }];
+  _sfc_render._withStripped = true;
+  var __component__ = /* @__PURE__ */ normalizeComponent(
+    _sfc_main,
+    _sfc_render,
+    _sfc_staticRenderFns
+  );
+  __component__.options.__file = "/Users/christian/Projects/kirbydesk/site/plugins/kirby-projectwizard/src/views/components/GlobalFontManager.vue";
+  const GlobalFontManager = __component__.exports;
+  panel.plugin("kirbydesk/kirby-projectwizard", {
+    components: {
+      "pw-wizard-overview": Overview,
+      "pw-field-row": FieldRow,
+      "pw-color-field-row": ColorFieldRow,
+      "pw-global-elements": GlobalElements,
+      "pw-global-fonts": GlobalFonts,
+      "pw-block-settings": BlockSettings,
+      "pw-global-elements-styles": GlobalElementStyles,
+      "pw-global-navigation": GlobalNavigation,
+      "pw-global-font-manager": GlobalFontManager
+    }
+  });
+})();

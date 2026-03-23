@@ -48,16 +48,13 @@
           class="k-field k-text-field pw-content-field"
           data-object="content-field"
         >
-          <label v-if="!getColumnBlocks()" class="pw-column-field-label pw-clickable">
-            <input
-              type="checkbox"
-              class="pw-field-enable-check"
-              :checked="isFieldEnabled(field)"
-              @change="toggleField(field, $event.target.checked)"
-            />
-            {{ fieldLabel(field.key) }}
-          </label>
-          <label v-else class="pw-column-field-label">{{ fieldLabel(field.key) }}</label>
+          <div v-if="!getColumnBlocks()" class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
+            <span class="pw-tab-visibility">
+              <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
+            </span>
+            <span>{{ fieldLabel(field.key) }}</span>
+          </div>
+          <div v-else class="pw-column-field-label"><span>{{ fieldLabel(field.key) }}</span></div>
 
           <!-- Property rows -->
           <div v-show="!getColumnBlocks() ? isFieldEnabled(field) : true" v-if="field.properties.length" class="pw-field-rows">
@@ -86,15 +83,12 @@
         class="k-field k-text-field pw-content-field"
         data-object="content-field"
       >
-        <label class="pw-column-field-label pw-clickable">
-          <input
-            type="checkbox"
-            class="pw-field-enable-check"
-            :checked="isFieldEnabled(getEditorField() || { key: 'editor', enabled: true })"
-            @change="toggleField(getEditorField() || { key: 'editor', enabled: true }, $event.target.checked)"
-          />
-          {{ fieldLabel('editor') }}
-        </label>
+        <div class="pw-column-field-label pw-clickable" @click="toggleField(getEditorField() || { key: 'editor', enabled: true }, !isFieldEnabled(getEditorField() || { key: 'editor', enabled: true }))">
+          <span class="pw-tab-visibility">
+            <k-icon :type="isFieldEnabled(getEditorField() || { key: 'editor', enabled: true }) ? 'preview' : 'hidden'" />
+          </span>
+          <span>{{ fieldLabel('editor') }}</span>
+        </div>
 
         <div v-show="isFieldEnabled(getEditorField() || { key: 'editor', enabled: true })" class="pw-field-rows">
           <!-- Editor content settings (mode, align, sizes) as FieldRows -->
@@ -163,15 +157,12 @@
             class="k-field k-text-field pw-content-field"
             data-object="content-field"
           >
-            <label class="pw-column-field-label pw-clickable">
-              <input
-                type="checkbox"
-                class="pw-field-enable-check"
-                :checked="isFieldEnabled(field)"
-                @change="toggleField(field, $event.target.checked)"
-              />
-              {{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}
-            </label>
+            <div class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
+              <span class="pw-tab-visibility">
+                <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
+              </span>
+              <span>{{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}</span>
+            </div>
 
             <div v-show="isFieldEnabled(field)" v-if="field.properties.length" class="pw-field-rows">
               <pw-field-row
@@ -985,7 +976,7 @@ export default {
 .pw-section-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: var(--spacing-1);
   margin-bottom: var(--spacing-3);
 }
 
@@ -1098,10 +1089,10 @@ export default {
 .pw-column-field-label {
   font-size: var(--text-sm);
   font-weight: 600;
-  padding: var(--spacing-2) var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3) var(--spacing-2) 0;
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: 0;
 }
 
 .pw-field-enable-check {

@@ -167,9 +167,10 @@ return [
 			'method'  => 'POST',
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
-				$key = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $data['family'] ?? 'font'));
+				$family = trim($data['family'] ?? 'font');
+				$key = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $family));
 				ProjectConfig::addFont($key, [
-					'family'   => $data['family'],
+					'family'   => $family,
 					'category' => $data['category'] ?? 'sans-serif',
 					'italic'   => ($data['italic'] ?? false) === true || $data['italic'] === 'true',
 					'files'    => $data['files'] ?? [],

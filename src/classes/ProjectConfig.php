@@ -428,7 +428,12 @@ class ProjectConfig
 	public static function addFont(string $key, array $fontData): void
 	{
 		$config = self::readJson(self::fontsConfigFile());
-		$config[$key] = $fontData;
+		if (isset($config[$key])) {
+			// Append new files to existing font
+			$config[$key]['files'] = array_merge($config[$key]['files'] ?? [], $fontData['files'] ?? []);
+		} else {
+			$config[$key] = $fontData;
+		}
 		self::saveFontsConfig($config);
 	}
 

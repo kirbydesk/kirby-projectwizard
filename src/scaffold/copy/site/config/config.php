@@ -21,6 +21,9 @@ return [
 
 	/** PLUGIN: Kirby Pagewizard ----------------------------------------*/
 	'kirbydesk.pagewizard.protected' => '',
+	'ready' => fn($kirby) => [
+		'kirbydesk.pagewizard.reloadOnSave' => $kirby->user() !== null,
+	],
 
 	/** Disable update checks for kirbydesk plugins (not on Kirby marketplace) */
 	'updates' => [

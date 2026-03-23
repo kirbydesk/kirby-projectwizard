@@ -48,7 +48,7 @@
                     <select
                       v-if="field.def.type === 'font-family'"
                       class="pw-element-input pw-font-select"
-                      :value="getOverrideValue(field.varName) || field.def.value"
+                      :value="fontSelectValue(field.varName, field.def.value)"
                       @change="setValue(field.varName, $event.target.value, field.def.value)"
                     >
                       <option v-for="opt in fontFamilyOptions" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
@@ -214,6 +214,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    bodyDefaultFont: {
+      type: String,
+      default: 'Inter',
+    },
   },
   data() {
     return {
@@ -233,9 +237,9 @@ export default {
     fontFamilyOptions() {
       const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
       const seen = new Set();
-      const options = [];
+      const options = [{ value: 'default', text: 'Default (' + this.bodyDefaultFont + ')' }];
       for (const font of Object.values(allFonts)) {
-        if (!seen.has(font.family)) {
+        if (!seen.has(font.family) && font.family !== this.bodyDefaultFont) {
           seen.add(font.family);
           options.push({ value: font.family, text: font.family });
         }
@@ -367,7 +371,17 @@ export default {
       }
       const prefix = varName.replace('-font-weight', '');
       const fontFamilyVar = prefix + '-font-family';
-      const selectedFamily = this.getOverrideValue(fontFamilyVar) || 'inherit';
+      let selectedFamily = this.getOverrideValue(fontFamilyVar);
+      if (!selectedFamily) {
+        // Read default from element config
+        for (const group of Object.values(this.elementDefaults)) {
+          if (group && group.vars && group.vars[fontFamilyVar]) {
+            selectedFamily = group.vars[fontFamilyVar].value;
+            break;
+          }
+        }
+      }
+      if (!selectedFamily || selectedFamily === 'default') selectedFamily = this.bodyDefaultFont;
       const font = this.getFontByFamily(selectedFamily);
       if (!font || !font.files || !font.files.length) {
         return options.map(o => ({ value: o, text: o }));
@@ -524,6 +538,11 @@ export default {
     },
     getOverrideValue(varName) {
       return (this.elementOverrides.global || {})[varName] || '';
+    },
+    fontSelectValue(varName, defValue) {
+      const ov = this.getOverrideValue(varName);
+      if (ov && ov === this.bodyDefaultFont) return 'default';
+      return ov || defValue;
     },
     setValue(varName, value, defaultVal) {
       const overrides = JSON.parse(JSON.stringify(this.elementOverrides));

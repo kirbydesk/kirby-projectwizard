@@ -27,7 +27,7 @@
                   </div>
                   <div class="pw-field-row-options">
                     <span class="pw-font-file-name">{{ file.src }} <span class="pw-font-weight-label">{{ font.italic && font.files.length === 1 ? 'normal, italic' : file.style }}, {{ formatWeight(file.weight) }}</span></span>
-                    <button v-if="!font.builtin && fIdx === 0" type="button" class="pw-font-delete" @click="deleteFont(key)">×</button>
+                    <button v-if="!font.builtin" type="button" class="pw-font-delete" @click="deleteFont(key)">×</button>
                   </div>
                 </span>
               </div>
@@ -500,6 +500,7 @@ export default {
 
 .pw-dual-next {
   padding-top: 1px;
+  padding-bottom: 1px;
 }
 
 .pw-quad-label {
