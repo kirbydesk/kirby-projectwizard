@@ -335,6 +335,19 @@ return [
         ],
     ],
 
+    /** Mehrsprachigkeit */
+    'languages' => true,
+
+    /** Lokale Mailhog-Konfiguration */
+    'email' => [
+        'transport' => [
+            'type'     => 'smtp',
+            'host'     => 'localhost',
+            'port'     => 1025,
+            'security' => false
+        ]
+    ]
+
 ];
 ```
 
