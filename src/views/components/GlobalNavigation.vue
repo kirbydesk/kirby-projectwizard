@@ -20,7 +20,7 @@
               <div v-if="fieldGroup.header" :key="'gh-' + gIdx" class="pw-group-header">
                 <div class="pw-field-row-label-col"></div>
                 <div class="pw-group-header-labels" :class="'pw-group-type-' + fieldGroup.fieldType">
-                  <span v-for="label in fieldGroup.header" :key="label" class="pw-group-column-cell"><span class="pw-group-column-label">{{ label }}</span></span>
+                  <span v-for="label in fieldGroup.header" :key="label" class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t(label) || label }}</span></span>
                 </div>
               </div>
               <!-- Field rows in group -->
@@ -33,7 +33,7 @@
                 <div class="k-input" data-type="text">
                   <span class="k-input-element pw-field-row-inner">
                     <div class="pw-field-row-label-col">
-                      <label class="pw-field-row-label">{{ field.label }}</label>
+                      <label class="pw-field-row-label" v-html="field.label"></label>
                     </div>
                     <div class="pw-field-row-options" :class="fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : ''">
                       <!-- Visibility toggle -->
@@ -161,7 +161,7 @@
                           <label class="pw-svg-preview"><div class="pw-svg-preview-checker" v-html="getOverrideValue(field.varName)"></div><input type="file" accept=".svg" style="display:none" @change="onSvgFileUpload(field.varName, $event, field.def.value)" /></label>
                           <template v-if="dependentField(field.varName)">
                             <span class="pw-element-field">
-                              <span class="pw-group-column-label" style="margin-right: var(--spacing-2)">Height</span>
+                              <span class="pw-group-column-label" style="margin-right: var(--spacing-2)">{{ $t('pw.field.height.label') }}</span>
                               <span class="pw-element-input-wrap">
                                 <input
                                   type="number"
@@ -179,7 +179,7 @@
                             </span>
                           </template>
                           <k-button
-                            text="Remove"
+                            :text="$t('prw.label.remove')"
                             icon="remove"
                             size="xs"
                             @click="removeSvg(field.varName)"
@@ -187,7 +187,7 @@
                         </template>
                         <label v-else class="pw-svg-upload-btn">
                           <k-icon type="upload" />
-                          Upload SVG
+                          {{ $t('prw.label.upload-svg') }}
                           <input type="file" accept=".svg" style="display:none" @change="onSvgFileUpload(field.varName, $event, field.def.value)" />
                         </label>
                       </template>
@@ -214,9 +214,9 @@
             <div v-if="hasColors(group)" class="pw-group-header">
               <div class="pw-field-row-label-col"></div>
               <div class="pw-group-header-labels pw-group-type-theme-color">
-                <span class="pw-group-column-cell"><span class="pw-group-column-label">Default</span></span>
-                <span class="pw-group-column-cell"><span class="pw-group-column-label">Variant</span></span>
-                <span class="pw-group-column-cell"><span class="pw-group-column-label">Variant2</span></span>
+                <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.default') }}</span></span>
+                <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant') }}</span></span>
+                <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant2') }}</span></span>
               </div>
             </div>
             <div
@@ -231,7 +231,7 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ propLabel(varName) }}</label>
+                    <label class="pw-field-row-label" v-html="propLabel(varName)"></label>
                   </div>
                   <div class="pw-field-row-options pw-group-type-theme-color">
                     <pw-color-field-row
@@ -319,10 +319,10 @@ export default {
       return this.openSections[key] !== false;
     },
     groupLabel(key) {
-      const tKey = 'prw.navgroup.' + key;
-      const t = this.$t(tKey);
-      if (t && t !== tKey) return t;
-      return key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ');
+      const prwKey = 'prw.prop.' + key;
+      const prwT = this.$t(prwKey);
+      if (prwT && prwT !== prwKey) return prwT;
+      return key;
     },
     hasColors(group) {
       return group.colors && Object.keys(group.colors).length > 0;
@@ -370,7 +370,7 @@ export default {
             }
           }
           const sig = this.fieldSignature(varName, def);
-          const isState = varName.includes('-active-') || varName.endsWith('-active');
+          const isState = varName.endsWith('-hover') || varName.includes('-hover-') || varName.endsWith('-active') || varName.includes('-active-');
           allFields.push({
             varName,
             def,
@@ -586,14 +586,21 @@ export default {
       return Object.values(allFonts).find(f => f.family === family) || null;
     },
     optionLabel(val) {
-      const tKey = 'prw.option.' + val;
-      const t = this.$t(tKey);
-      return (t && t !== tKey) ? t : String(val);
+      const pwKey = 'pw.option.' + val;
+      const pwT = this.$t(pwKey);
+      if (pwT && pwT !== pwKey) return pwT;
+      return String(val);
     },
     propLabel(varName) {
-      const tKey = 'prw.nav.' + varName;
+      const tKey = 'prw.prop.' + varName;
       const t = this.$t(tKey);
       if (t && t !== tKey) return t;
+      const firstDash = varName.indexOf('-');
+      if (firstDash > 0) {
+        const propKey = 'prw.prop.' + varName.substring(firstDash + 1);
+        const propT = this.$t(propKey);
+        if (propT && propT !== propKey) return propT;
+      }
       return varName;
     },
     getQuadValue(varName, index) {
@@ -825,5 +832,28 @@ export default {
 
 .pw-group-type-color-group .pw-group-column-cell {
   width: 160px;
+}
+
+.pw-state-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  padding: 1px var(--spacing-2);
+  border-radius: 999px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.pw-state-hover {
+  color: #5b21b6;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+}
+
+.pw-state-active {
+  color: #5b21b6;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
 }
 </style>

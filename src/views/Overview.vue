@@ -45,11 +45,11 @@
     <nav v-if="!loading && activeTab === 'global'" class="k-tabs k-model-tabs">
       <button
         v-for="tab in [
-          { key: 'blocks', icon: 'dashboard' },
+          { key: 'blocks', icon: 'prw-blocks' },
           { key: 'global', icon: 'globe' },
           { key: 'elements', icon: 'layers' },
-          { key: 'header', icon: 'header' },
-          { key: 'footer', icon: 'footer' },
+          { key: 'header', icon: 'prw-header' },
+          { key: 'footer', icon: 'prw-footer' },
         ]"
         :key="tab.key"
         type="button"
@@ -557,6 +557,7 @@ export default {
         this.$set(this.snapshots, 'global', JSON.stringify(this.activeBlocks));
         this.$set(this.dirtyTabs, 'global', false);
         this.$panel.notification.success('Blocks settings saved');
+        setTimeout(() => window.location.reload(), 100);
       } catch (e) {
         this.$panel.notification.error('Failed to save blocks settings');
       }

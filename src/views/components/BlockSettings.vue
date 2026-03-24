@@ -261,7 +261,7 @@
                       v-for="sub in field.subFields"
                       :key="sub.key"
                       :value="getVal('settings.fields.' + cat.key + '.' + sub.key + '.default', sub.defaultValue)"
-                      :text="$t('prw.option.' + sub.label) || sub.label"
+                      :text="toggleOptionLabel(sub.label)"
                       @input="setVal('settings.fields.' + cat.key + '.' + sub.key + '.default', $event)"
                     />
                   </div>
@@ -904,14 +904,14 @@ export default {
         const dotKey = 'pw.field.' + key.substring(0, lastDash) + '.' + key.substring(lastDash + 1);
         const dotT = this.$t(dotKey);
         if (dotT && dotT !== dotKey) return dotT;
+        const headlineKey = 'pw.headline.' + key.substring(0, lastDash) + '.' + key.substring(lastDash + 1);
+        const headlineT = this.$t(headlineKey);
+        if (headlineT && headlineT !== headlineKey) return headlineT;
       }
       return key;
     },
 
     toggleOptionLabel(val) {
-      const prwKey = 'prw.option.' + val;
-      const prwT = this.$t(prwKey);
-      if (prwT && prwT !== prwKey) return prwT;
       const pwKey = 'pw.option.' + val;
       const pwT = this.$t(pwKey);
       if (pwT && pwT !== pwKey) return pwT;

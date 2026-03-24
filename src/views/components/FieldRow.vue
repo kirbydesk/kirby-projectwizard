@@ -18,7 +18,7 @@
         </div>
         <div v-if="active" class="pw-field-row-options">
           <button
-            v-for="opt in allOptions"
+            v-for="opt in allOptions.filter(o => o !== '|')"
             :key="opt"
             type="button"
             class="pw-field-row-option"
@@ -91,10 +91,6 @@ export default {
       return (translated && translated !== tKey) ? translated : key;
     },
     optionLabel(opt) {
-      // Try prw.option.* first, then pw.option.* (pagewizard)
-      const prwKey = 'prw.option.' + opt;
-      const prwTranslated = this.$t(prwKey);
-      if (prwTranslated && prwTranslated !== prwKey) return prwTranslated;
       const pwKey = 'pw.option.' + opt;
       const pwTranslated = this.$t(pwKey);
       if (pwTranslated && pwTranslated !== pwKey) return pwTranslated;

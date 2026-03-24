@@ -15,7 +15,7 @@
             <div v-if="fieldGroup.header" :key="'gh-' + gIdx" class="pw-group-header">
               <div class="pw-field-row-label-col"></div>
               <div class="pw-group-header-labels" :class="'pw-group-type-' + fieldGroup.fieldType">
-                <span v-for="label in fieldGroup.header" :key="label" class="pw-group-column-cell"><span class="pw-group-column-label">{{ label }}</span></span>
+                <span v-for="label in fieldGroup.header" :key="label" class="pw-group-column-cell"><span class="pw-group-column-label">{{ translateLabel(label) }}</span></span>
               </div>
             </div>
             <!-- Field rows in group -->
@@ -41,7 +41,7 @@
                         <span>{{ field.label }}</span>
                       </button>
                     </template>
-                    <label v-else class="pw-field-row-label">{{ field.label }}</label>
+                    <label v-else class="pw-field-row-label" v-html="field.label"></label>
                   </div>
                   <div class="pw-field-row-options" :class="fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : ''">
                     <!-- Font family selector -->
@@ -157,7 +157,7 @@
                 <div class="k-input" data-type="text">
                   <span class="k-input-element pw-field-row-inner">
                     <div class="pw-field-row-label-col">
-                      <label class="pw-field-row-label pw-sizes-label">{{ sizeName.split('-').pop() }}</label>
+                      <label class="pw-field-row-label pw-sizes-label">{{ $t('pw.option.' + sizeName.split('-').pop()) }}</label>
                     </div>
                     <div class="pw-field-row-options pw-group-type-responsive">
                       <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
@@ -257,16 +257,19 @@ export default {
     groupLabel(key) {
       const tKey = 'prw.elementgroup.' + key;
       const t = this.$t(tKey);
-      if (t && t !== tKey) return t;
-      return key.charAt(0).toUpperCase() + key.slice(1);
+      return (t && t !== tKey) ? t : key;
     },
     propLabel(varName) {
       const tKey = 'prw.element.' + varName;
       const t = this.$t(tKey);
       if (t && t !== tKey) return t;
-      const parts = varName.split('-');
-      const propParts = parts.slice(1);
-      return propParts.join(' ').replace(/\b\w/g, c => c.toUpperCase());
+      const firstDash = varName.indexOf('-');
+      if (firstDash > 0) {
+        const propKey = 'prw.prop.' + varName.substring(firstDash + 1);
+        const propT = this.$t(propKey);
+        if (propT && propT !== propKey) return propT;
+      }
+      return varName;
     },
     // --- Field signature + grouping ---
     fieldSignature(varName, def, isColor) {
@@ -401,6 +404,16 @@ export default {
     getFontByFamily(family) {
       const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
       return Object.values(allFonts).find(f => f.family === family) || null;
+    },
+
+    translateLabel(label) {
+      const slug = label.toLowerCase().replace(/\s+/g, '-');
+      const pwKey = 'pw.option.' + slug;
+      const pwT = this.$t(pwKey);
+      if (pwT && pwT !== pwKey) return pwT;
+      const prwKey = 'prw.label.' + slug;
+      const prwT = this.$t(prwKey);
+      return (prwT && prwT !== prwKey) ? prwT : label;
     },
 
     // --- Color methods ---
