@@ -87,6 +87,7 @@ mkdir -p public/media
 # Storage (außerhalb des Web-Roots)
 mkdir -p storage/cache
 mkdir -p storage/sessions
+mkdir -p storage/logs
 mkdir -p storage/temp
 ```
 
@@ -288,6 +289,17 @@ Datei: `site/config/config.php`
 ```php
 <?php
 
+/** Env-Variablen aus .env laden */
+$env = [];
+$envFile = __DIR__ . '/../../.env';
+if (file_exists($envFile)) {
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        [$key, $value] = array_pad(explode('=', $line, 2), 2, '');
+        $env[trim($key)] = trim($value);
+    }
+}
+
 return [
 
     /** Panel settings */
@@ -472,6 +484,7 @@ projektname/
 ├── content/
 ├── storage/
 │   ├── cache/
+│   ├── logs/
 │   ├── sessions/
 │   └── temp/
 ├── public/                     ← Document Root (Valet)

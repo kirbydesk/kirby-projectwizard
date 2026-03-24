@@ -438,6 +438,33 @@ class ProjectConfig
 	}
 
 	/**
+	 * Remove a single file from a font entry. Removes the font if no files remain.
+	 */
+	public static function removeFontFile(string $key, int $fileIndex): void
+	{
+		$config = self::readJson(self::fontsConfigFile());
+		if (!isset($config[$key]['files'][$fileIndex])) return;
+
+		$fontsDir = kirby()->root('index') . '/assets/fonts';
+		$file = $config[$key]['files'][$fileIndex];
+		$path = $fontsDir . '/' . $file['src'];
+		if (file_exists($path)) unlink($path);
+
+		array_splice($config[$key]['files'], $fileIndex, 1);
+
+		if (empty($config[$key]['files'])) {
+			unset($config[$key]);
+		}
+
+		if (empty($config) || (count($config) === 1 && isset($config['_default']))) {
+			$cfgPath = self::fontsConfigFile();
+			if (file_exists($cfgPath)) unlink($cfgPath);
+		} else {
+			self::saveFontsConfig($config);
+		}
+	}
+
+	/**
 	 * Remove a font from the project fonts config and delete its files.
 	 */
 	public static function removeFont(string $key): void

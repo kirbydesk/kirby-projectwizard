@@ -701,7 +701,7 @@ export default {
     },
     fontSelectValue(varName, defValue) {
       const ov = this.getOverrideValue(varName);
-      if (ov && ov === this.bodyDefaultFont) return 'default';
+      if (ov && ov === this.bodyDefaultFont && this.fontFamilyOptions.some(o => o.value === 'default')) return 'default';
       return ov || defValue;
     },
     setValue(varName, value, defaultVal) {

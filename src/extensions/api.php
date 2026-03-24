@@ -199,7 +199,16 @@ return [
 				return ['uploaded' => [$name]];
 			}
 		],
-		// Delete a font
+		// Delete a single font file
+		[
+			'pattern' => 'projectwizard/fonts/(:any)/file/(:num)',
+			'method'  => 'DELETE',
+			'action'  => function (string $key, int $fileIndex) {
+				ProjectConfig::removeFontFile($key, $fileIndex);
+				return ProjectConfig::loadFonts();
+			}
+		],
+		// Delete an entire font
 		[
 			'pattern' => 'projectwizard/fonts/(:any)',
 			'method'  => 'DELETE',

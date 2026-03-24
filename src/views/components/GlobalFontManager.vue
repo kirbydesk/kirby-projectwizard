@@ -27,7 +27,7 @@
                   </div>
                   <div class="pw-field-row-options">
                     <span class="pw-font-file-name">{{ file.src }} <span class="pw-font-weight-label">{{ font.italic && font.files.length === 1 ? 'normal, italic' : file.style }}, {{ formatWeight(file.weight) }}</span></span>
-                    <button v-if="!font.builtin" type="button" class="pw-font-delete" @click="deleteFont(key)">×</button>
+                    <button v-if="!font.builtin" type="button" class="pw-font-delete" @click="deleteFontFile(key, fIdx, file)">×</button>
                   </div>
                 </span>
               </div>
@@ -305,11 +305,19 @@ export default {
 
       this.$emit('update');
     },
-    async deleteFont(key) {
+    async deleteFontFile(key, fileIndex, file) {
       const font = this.allFonts[key];
-      const name = font ? font.family : key;
-      if (!window.confirm('Delete font "' + name + '"?')) return;
-      await this.$api.delete('projectwizard/fonts/' + key);
+      const isLast = font && font.files && font.files.length <= 1;
+      const label = isLast
+        ? 'Delete font "' + font.family + '"?'
+        : 'Delete "' + file.src + '"?';
+      if (!window.confirm(label)) return;
+
+      if (isLast) {
+        await this.$api.delete('projectwizard/fonts/' + key);
+      } else {
+        await this.$api.delete('projectwizard/fonts/' + key + '/file/' + fileIndex);
+      }
       this.$emit('update');
     },
     async setDefaultFont(family) {

@@ -389,17 +389,20 @@ export default {
       if (!font || !font.files || !font.files.length) {
         return options.map(o => ({ value: o, text: o }));
       }
-      const weight = font.files[0].weight || '400';
-      const parts = weight.split(' ');
-      if (parts.length === 2) {
-        const min = parseInt(parts[0]);
-        const max = parseInt(parts[1]);
-        return options.filter(o => {
-          const n = parseInt(o);
-          return n >= min && n <= max;
-        }).map(o => ({ value: o, text: o }));
+      const weights = new Set();
+      for (const file of font.files) {
+        const parts = (file.weight || '400').split(' ');
+        if (parts.length === 2) {
+          const min = parseInt(parts[0]);
+          const max = parseInt(parts[1]);
+          return options.filter(o => {
+            const n = parseInt(o);
+            return n >= min && n <= max;
+          }).map(o => ({ value: o, text: o }));
+        }
+        weights.add(parts[0]);
       }
-      return [{ value: parts[0], text: parts[0] }];
+      return options.filter(o => weights.has(o)).map(o => ({ value: o, text: o }));
     },
     getFontByFamily(family) {
       const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
@@ -407,6 +410,9 @@ export default {
     },
 
     translateLabel(label) {
+      // If label is already an i18n key, try direct lookup first
+      const direct = this.$t(label);
+      if (direct && direct !== label) return direct;
       const slug = label.toLowerCase().replace(/\s+/g, '-');
       const pwKey = 'pw.option.' + slug;
       const pwT = this.$t(pwKey);
