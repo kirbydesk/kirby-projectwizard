@@ -12,8 +12,10 @@ $areas['pw-divider'] = [
 	'disabled' => true,
 ];
 
-// Detect blocks for views + menu entries
-$blocks = ProjectConfig::detectBlocks();
+// Detect blocks for views + menu entries (only activated blocks)
+$allBlocks  = ProjectConfig::detectBlocks();
+$active     = ProjectConfig::activeBlocks();
+$blocks     = array_filter($allBlocks, fn($type) => in_array($type, $active), ARRAY_FILTER_USE_KEY);
 
 // Read block labels directly from plugin i18n files
 $blockLabel = function(string $plugin, string $blockType): string {
