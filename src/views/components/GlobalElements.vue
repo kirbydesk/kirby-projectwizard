@@ -1,24 +1,39 @@
 <template>
-  <div class="pw-wizard-global-content">
-    <fieldset class="pw-wizard-fieldgroup">
-      <h3 class="pw-wizard-fieldgroup-title">Active Blocks</h3>
-      <p class="pw-wizard-hint">Select which blocks are available in the content editor.</p>
-      <div class="pw-wizard-checklist">
-        <label
-          v-for="block in blocks"
-          :key="block.blockType"
-          class="pw-wizard-check"
-        >
-          <input
-            type="checkbox"
-            :checked="block.active"
-            @change="$emit('toggle', { blockType: block.blockType, checked: $event.target.checked })"
-          />
-          <span class="pw-wizard-check-label">{{ blockLabel(block.blockType) }}</span>
-          <span class="pw-wizard-check-meta">{{ block.plugin }}</span>
-        </label>
+  <div>
+    <section class="pw-element-section">
+      <div class="pw-section-header">
+        <button class="pw-section-toggle" @click="open = !open">
+          <span>{{ $t('prw.headline.activeBlocks') || 'Active Blocks' }}</span>
+          <k-icon :type="open ? 'angle-down' : 'angle-right'" />
+        </button>
       </div>
-    </fieldset>
+      <transition name="pw-slide">
+        <div v-show="open" class="pw-element-list">
+          <div
+            v-for="block in blocks"
+            :key="block.blockType"
+            class="pw-field-row"
+          >
+            <div class="k-input" data-type="text">
+              <span class="k-input-element pw-field-row-inner">
+                <div class="pw-field-row-label-col">
+                  <label class="pw-field-row-label">{{ blockLabel(block.blockType) }}</label>
+                </div>
+                <div class="pw-field-row-options">
+                  <k-toggles-input
+                    :value="block.active ? 'true' : 'false'"
+                    :options="[{ value: 'true', text: $t('pw.option.enabled') || 'Enabled' }, { value: 'false', text: $t('pw.option.disabled') || 'Disabled' }]"
+                    :grow="false"
+                    :required="true"
+                    @input="$emit('toggle', { blockType: block.blockType, checked: $event === 'true' })"
+                  />
+                </div>
+              </span>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </section>
   </div>
 </template>
 
@@ -29,6 +44,9 @@ export default {
       type: Array,
       default: () => [],
     },
+  },
+  data() {
+    return { open: true };
   },
   methods: {
     blockLabel(blockType) {

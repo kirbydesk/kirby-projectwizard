@@ -2,21 +2,10 @@
   <k-panel-inside class="pw-wizard">
     <k-header>
       {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
-      <template v-if="isDirty || hasStoredOverrides" #buttons>
+      <template v-if="isDirty" #buttons>
         <div class="k-form-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
-              v-if="hasStoredOverrides && !isDirty"
-              :text="'Reset ' + (activeTab === 'global' ? ($t('prw.tab.' + globalActiveTab) || globalActiveTab) : blockLabel(activeTab)) + ' Settings'"
-              icon="undo"
-              variant="filled"
-              size="sm"
-              responsive="true"
-              class="k-form-controls-button"
-              @click="resetCurrentView"
-            />
-            <k-button
-              v-if="isDirty"
               text="Discard"
               icon="undo"
               theme="notice"
@@ -27,7 +16,6 @@
               @click="discardChanges"
             />
             <k-button
-              v-if="isDirty"
               text="Save"
               icon="check"
               theme="notice"
@@ -46,10 +34,11 @@
       <button
         v-for="tab in [
           { key: 'blocks', icon: 'prw-blocks' },
-          { key: 'global', icon: 'globe' },
           { key: 'elements', icon: 'layers' },
+          { key: 'fonts', icon: 'title' },
           { key: 'header', icon: 'prw-header' },
           { key: 'footer', icon: 'prw-footer' },
+          { key: 'settings', icon: 'settings' },
         ]"
         :key="tab.key"
         type="button"
@@ -73,25 +62,93 @@
         <!-- ==================== Global Settings ==================== -->
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
 
-          <!-- Elements -->
-          <div v-show="globalActiveTab === 'blocks'" class="pw-wizard-global-content">
+          <!-- Blocks -->
+          <!-- Settings -->
+          <div v-show="globalActiveTab === 'settings'" class="pw-wizard-global-content">
             <pw-global-elements
               :blocks="blocks"
               @toggle="toggleBlock($event.blockType, $event.checked)"
             />
           </div>
 
-          <!-- Global -->
-          <div v-show="globalActiveTab === 'global'" class="pw-wizard-global-content">
+          <!-- Blocks -->
+          <div v-show="globalActiveTab === 'blocks'" class="pw-wizard-global-content">
+            <!-- Block Preview -->
+            <div class="pw-block-preview-body" :style="blockPreviewBodyStyle">
+                  <div class="pw-block-preview-row">
+                    <div v-for="theme in ['default', 'variant', 'variant2']" :key="theme" class="pw-block-preview" :style="blockPreviewStyle(theme)">
+                      <p :style="blockPreviewElementStyle('tagline', theme)">Tagline goes here</p>
+                      <h2 :style="blockPreviewElementStyle('heading', theme)">The quick brown fox</h2>
+                      <p :style="blockPreviewElementStyle('editor', theme)">Pack my box with <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">five dozen liquor jugs</a>. How vexingly quick daft zebras jump. The five boxing wizards jump quickly at dawn.</p>
+                      <a :class="'pw-preview-btn-' + theme" :style="blockPreviewButtonStyle(theme, '')">Click here</a>
+                    </div>
+                  </div>
+            </div>
+
+            <!-- Layout / Colors subtabs -->
+            <div class="pw-element-subtabs">
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (blocksSubtab || 'layout') === 'layout' }" @click="blocksSubtab = 'layout'">Layout</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': blocksSubtab === 'colors' }" @click="blocksSubtab = 'colors'">Colors</button>
+            </div>
+
             <pw-global-navigation
+              v-show="(blocksSubtab || 'layout') === 'layout'"
+              :nav-defaults="globalDefaults"
+              :nav-overrides="globalOverrides"
+              :saved-overrides="originalGlobalOverrides"
+              :fonts="fontsData"
+              :body-default-font="bodyDefaultFont"
+              @update:overrides="onGlobalOverridesUpdate"
+              :show-only="['global-margin-top', 'global-margin-bottom', 'global-padding-left', 'global-padding-right', 'global-padding-top', 'global-padding-bottom', 'global-']"
+              :hide-section-headers="true"
+            />
+
+            <pw-global-navigation
+              v-show="blocksSubtab === 'colors'"
+              :nav-defaults="globalDefaults"
+              :nav-overrides="globalOverrides"
+              :saved-overrides="originalGlobalOverrides"
+              :fonts="fontsData"
+              :body-default-font="bodyDefaultFont"
+              @update:overrides="onGlobalOverridesUpdate"
+              :show-only="['body-background']"
+              :show-colors="true"
+              :hide-section-headers="true"
+            />
+          </div>
+
+          <!-- Fonts -->
+          <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
+            <!-- Font Preview -->
+            <div class="pw-default-font-preview" :style="defaultFontPreviewStyle">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</div>
+
+            <!-- Subtabs -->
+            <div class="pw-element-subtabs">
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (fontsSubtab || 'default') === 'default' }" @click="fontsSubtab = 'default'">Default Font</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'installed' }" @click="fontsSubtab = 'installed'">Installed Fonts</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'add' }" @click="fontsSubtab = 'add'">Add Font</button>
+            </div>
+
+            <pw-global-navigation
+              v-show="(fontsSubtab || 'default') === 'default'"
               :nav-defaults="globalDefaults"
               :nav-overrides="globalOverrides"
               :fonts="fontsData"
               :body-default-font="bodyDefaultFont"
               @update:overrides="onGlobalOverridesUpdate"
+              :show-only="['font-family-default']"
+              :hide-section-headers="true"
             />
             <pw-global-font-manager
+              v-show="fontsSubtab === 'installed'"
               :fonts="fontsData"
+              :mode="'installed'"
+              @update="loadFontsData"
+            />
+            <pw-global-font-manager
+              v-show="fontsSubtab === 'add'"
+              :fonts="fontsData"
+              :mode="'add'"
               @update="loadFontsData"
             />
           </div>
@@ -101,6 +158,9 @@
             <pw-global-elements-styles
               :element-defaults="elementDefaults"
               :element-overrides="elementOverrides"
+              :saved-overrides="originalElementOverrides"
+              :global-defaults="globalDefaults"
+              :global-overrides="globalOverrides"
               :fonts="fontsData"
               :font-defaults="fontDefaults"
               :font-overrides="fontOverrides"
@@ -172,6 +232,9 @@ export default {
   data() {
     return {
       loading: true,
+      blockPreviewOpen: true,
+      blocksSubtab: 'layout',
+      fontsSubtab: 'default',
       blocks: [],
       activeBlocks: [],
       activeTab: 'global',
@@ -203,18 +266,6 @@ export default {
     };
   },
   computed: {
-    hasStoredOverrides() {
-      if (this.activeTab === 'global') {
-        if (this.globalActiveTab === 'global') return Object.keys(this.originalGlobalOverrides).length > 0;
-        if (this.globalActiveTab === 'elements') return Object.keys(this.originalElementOverrides).length > 0 || Object.keys(this.originalFontOverrides).length > 0;
-        if (this.globalActiveTab === 'elements') return Object.keys(this.originalElementOverrides).length > 0;
-        if (this.globalActiveTab === 'header') return Object.keys(this.originalNavOverrides).length > 0;
-        if (this.globalActiveTab === 'footer') return Object.keys(this.originalFooterOverrides).length > 0;
-      } else if (this.activeTab && this.originalOverrides[this.activeTab]) {
-        return Object.keys(this.originalOverrides[this.activeTab]).length > 0;
-      }
-      return false;
-    },
     bodyDefaultFont() {
       // Resolve body default font from global defaults + overrides
       const groups = this.globalDefaults || {};
@@ -227,11 +278,49 @@ export default {
       const ov = this.globalOverrides && this.globalOverrides['global'];
       return (ov && ov['font-family-default']) || def;
     },
+    blockPreviewBodyStyle() {
+      const globalOv = this.globalOverrides.global || {};
+      const globalDef = this.globalDefaults.layout?.vars || {};
+      const get = (v) => globalOv[v] || globalDef[v]?.value || '';
+      return {
+        backgroundColor: this.bodyBackgroundColor,
+        paddingTop: get('global-margin-top') || '3rem',
+        paddingBottom: get('global-margin-bottom') || '3rem',
+      };
+    },
+    bodyBackgroundColor() {
+      const ov = (this.globalOverrides.global || {})['body-background'];
+      if (ov) return ov;
+      const def = this.globalDefaults.colors?.vars?.['body-background'];
+      if (def) return def.value || '#E8E8E8';
+      return '#E8E8E8';
+    },
+    blockPreviewFontInfo() {
+      const family = this.bodyDefaultFont;
+      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
+      let category = 'sans-serif';
+      for (const f of Object.values(allFonts)) {
+        if (f.family === family) { category = f.category || 'sans-serif'; break; }
+      }
+      return { family, category };
+    },
+    defaultFontPreviewStyle() {
+      const family = this.bodyDefaultFont;
+      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
+      let category = 'sans-serif';
+      for (const f of Object.values(allFonts)) {
+        if (f.family === family) { category = f.category || 'sans-serif'; break; }
+      }
+      return { fontFamily: "'" + family + "', " + category };
+    },
     isDirty() {
       if (this.activeTab === 'global') {
-        return this.dirtyTabs['global'] || this.dirtyTabs[this.globalActiveTab] || this.dirtyTabs[this.globalActiveTab + '-settings'];
+        const tab = this.globalActiveTab;
+        if (tab === 'settings') return !!this.dirtyTabs['global'];
+        if (tab === 'blocks' || tab === 'fonts') return !!this.dirtyTabs['global-settings'];
+        return !!this.dirtyTabs[tab];
       }
-      return this.dirtyTabs[this.activeTab];
+      return !!this.dirtyTabs[this.activeTab];
     },
   },
   watch: {
@@ -241,6 +330,8 @@ export default {
         this.activeTab = val || 'global';
       },
     },
+    globalOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
+    elementOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
   },
   async created() {
     await this.load();
@@ -421,9 +512,199 @@ export default {
     async loadFontsData() {
       try {
         this.fontsData = await this.$api.get('projectwizard/fonts');
+        this.injectFontFaces();
+        this.injectPreviewStyles();
       } catch (e) {
         console.error('Failed to load fonts', e);
       }
+    },
+    blockPreviewStyle(theme) {
+      const bg = ((this.globalOverrides.global || {})[theme] || {})['block-background'] ||
+        (this.globalDefaults.colors?.colors?.['block-background']?.[theme]) || '#ffffff';
+      const globalOv = this.globalOverrides.global || {};
+      const globalDef = this.globalDefaults.layout?.vars || {};
+      const getGlobal = (v) => globalOv[v] || globalDef[v]?.value || '';
+      const getGlobalQuad = (v) => {
+        const ov = globalOv[v];
+        if (Array.isArray(ov)) return ov;
+        return globalDef[v]?.value || [];
+      };
+      const radius = getGlobalQuad('global-');
+      let borderRadius = '0 0 0 0';
+      if (Array.isArray(radius) && radius.length === 4) {
+        if (theme === 'default') {
+          borderRadius = radius[0] + ' ' + radius[1] + ' 0 0';
+        } else if (theme === 'variant2') {
+          borderRadius = '0 0 ' + radius[3] + ' ' + radius[2];
+        } else {
+          borderRadius = '0';
+        }
+      }
+      return {
+        backgroundColor: bg,
+        paddingTop: getGlobal('global-padding-top') || '1.5rem',
+        paddingBottom: getGlobal('global-padding-bottom') || '1.5rem',
+        paddingLeft: getGlobal('global-padding-left') || '3rem',
+        paddingRight: getGlobal('global-padding-right') || '3rem',
+        borderRadius: borderRadius,
+      };
+    },
+    blockPreviewLabelColor(theme) {
+      const bg = ((this.globalOverrides.global || {})[theme] || {})['block-background'] ||
+        (this.globalDefaults.colors?.colors?.['block-background']?.[theme]) || '#ffffff';
+      if (!bg || bg.length < 7) return '';
+      const r = parseInt(bg.slice(1, 3), 16);
+      const g = parseInt(bg.slice(3, 5), 16);
+      const b = parseInt(bg.slice(5, 7), 16);
+      return (r * 299 + g * 587 + b * 114) / 1000 > 160 ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
+    },
+    blockPreviewElementStyle(element, theme) {
+      const elDef = this.elementDefaults[element] || {};
+      const elOv = this.elementOverrides.global || {};
+      const get = (v) => elOv[v] || '';
+      const def = (v) => {
+        const d = elDef.vars?.[v];
+        if (!d) return '';
+        if (d.default !== undefined) return d.default;
+        return d.value || '';
+      };
+      // Font
+      let fontFamily = get(element + '-font-family') || def(element + '-font-family');
+      if (!fontFamily || fontFamily === 'default') fontFamily = this.bodyDefaultFont;
+      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
+      let fontCategory = 'sans-serif';
+      for (const f of Object.values(allFonts)) {
+        if (f.family === fontFamily) { fontCategory = f.category || 'sans-serif'; break; }
+      }
+      // Color
+      const colorVar = 'element-' + element + '-text';
+      const colorOv = ((elOv)[theme] || {})[colorVar];
+      const colorDef = elDef.colors?.[colorVar]?.[theme] || '';
+      return {
+        fontFamily: "'" + fontFamily + "', " + fontCategory,
+        fontWeight: get(element + '-font-weight') || def(element + '-font-weight'),
+        fontStyle: get(element + '-font-style') || def(element + '-font-style'),
+        fontSize: def(element + '-font-size'),
+        lineHeight: def(element + '-line-height'),
+        letterSpacing: def(element + '-letter-spacing'),
+        textTransform: get(element + '-text-transform') || def(element + '-text-transform'),
+        color: colorOv || colorDef,
+        margin: 0,
+      };
+    },
+    blockPreviewLinkStyle(theme, state) {
+      const key = 'block-link' + (state || '');
+      const colorOv = ((this.globalOverrides.global || {})[theme] || {})[key];
+      const colorDef = this.globalDefaults.colors?.colors?.[key]?.[theme] || '#1D548B';
+      return {
+        color: colorOv || colorDef,
+        textDecoration: 'underline',
+        cursor: 'default',
+      };
+    },
+    blockPreviewButtonStyle(theme, state) {
+      const elDef = this.elementDefaults.button || {};
+      const elOv = this.elementOverrides.global || {};
+      const get = (v) => elOv[v] || '';
+      const def = (v) => {
+        const d = elDef.vars?.[v];
+        if (!d) return '';
+        return d.value || '';
+      };
+      let fontFamily = get('button-font-family') || def('button-font-family');
+      if (!fontFamily || fontFamily === 'default') fontFamily = this.bodyDefaultFont;
+      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
+      let fontCategory = 'sans-serif';
+      for (const f of Object.values(allFonts)) {
+        if (f.family === fontFamily) { fontCategory = f.category || 'sans-serif'; break; }
+      }
+      const colorVal = (name) => {
+        return ((elOv)[theme] || {})[name] || elDef.colors?.[name]?.[theme] || '';
+      };
+      const paddingOv = elOv['button-padding'];
+      const padding = Array.isArray(paddingOv) ? paddingOv : (elDef.vars?.['button-padding']?.value || []);
+      const radiusOv = elOv['button-border-radius'];
+      const radius = Array.isArray(radiusOv) ? radiusOv : (elDef.vars?.['button-border-radius']?.value || []);
+      return {
+        fontFamily: "'" + fontFamily + "', " + fontCategory,
+        fontWeight: get('button-font-weight') || def('button-font-weight'),
+        fontStyle: get('button-font-style') || def('button-font-style'),
+        fontSize: def('button-font-size'),
+        lineHeight: def('button-line-height'),
+        letterSpacing: def('button-letter-spacing'),
+        textTransform: get('button-text-transform') || def('button-text-transform'),
+        color: colorVal('element-button-text' + (state || '')),
+        backgroundColor: colorVal('element-button-background' + (state || '')),
+        borderColor: colorVal('element-button-border' + (state || '')),
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        padding: Array.isArray(padding) ? padding.join(' ') : padding,
+        borderRadius: Array.isArray(radius) ? radius.join(' ') : radius,
+        display: 'inline-block',
+        marginTop: '0.5rem',
+        cursor: 'default',
+      };
+    },
+    injectPreviewStyles() {
+      const id = 'pw-panel-preview-states';
+      let style = document.getElementById(id);
+      if (!style) {
+        style = document.createElement('style');
+        style.id = id;
+        document.head.appendChild(style);
+      }
+      const rules = [];
+      for (const theme of ['default', 'variant', 'variant2']) {
+        const linkHover = this.blockPreviewLinkColor(theme, '-hover');
+        const linkActive = this.blockPreviewLinkColor(theme, '-active');
+        rules.push('.pw-preview-link-' + theme + ':hover { color: ' + linkHover + ' !important; }');
+        rules.push('.pw-preview-link-' + theme + ':active { color: ' + linkActive + ' !important; }');
+
+        const btnHover = this.blockPreviewBtnColors(theme, '-hover');
+        const btnActive = this.blockPreviewBtnColors(theme, '-active');
+        rules.push('.pw-preview-btn-' + theme + ':hover { color: ' + btnHover.color + ' !important; background-color: ' + btnHover.bg + ' !important; border-color: ' + btnHover.border + ' !important; }');
+        rules.push('.pw-preview-btn-' + theme + ':active { color: ' + btnActive.color + ' !important; background-color: ' + btnActive.bg + ' !important; border-color: ' + btnActive.border + ' !important; }');
+      }
+      style.textContent = rules.join('\n');
+    },
+    blockPreviewLinkColor(theme, state) {
+      const key = 'block-link' + (state || '');
+      const colorOv = ((this.globalOverrides.global || {})[theme] || {})[key];
+      return colorOv || this.globalDefaults.colors?.colors?.[key]?.[theme] || '#1D548B';
+    },
+    blockPreviewBtnColors(theme, state) {
+      const elDef = this.elementDefaults.button || {};
+      const elOv = this.elementOverrides.global || {};
+      const colorVal = (name) => ((elOv)[theme] || {})[name] || elDef.colors?.[name]?.[theme] || '';
+      return {
+        color: colorVal('element-button-text' + (state || '')),
+        bg: colorVal('element-button-background' + (state || '')),
+        border: colorVal('element-button-border' + (state || '')),
+      };
+    },
+    injectFontFaces() {
+      const id = 'pw-panel-fontfaces';
+      let style = document.getElementById(id);
+      if (!style) {
+        style = document.createElement('style');
+        style.id = id;
+        document.head.appendChild(style);
+      }
+      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
+      const rules = [];
+      for (const font of Object.values(allFonts)) {
+        for (const file of (font.files || [])) {
+          rules.push(
+            '@font-face { ' +
+            "font-family: '" + font.family + "'; " +
+            "src: url('/assets/fonts/" + file.src + "') format('woff2'); " +
+            'font-weight: ' + (file.weight || '400') + '; ' +
+            'font-style: ' + (file.style || 'normal') + '; ' +
+            'font-display: swap; }'
+          );
+        }
+      }
+      style.textContent = rules.join('\n');
     },
 
     // --- Global: Navigation ---
@@ -456,63 +737,19 @@ export default {
     },
 
     // --- Save / Discard ---
-    async resetCurrentView() {
-      const name = this.activeTab === 'global' ? (this.$t('prw.tab.' + this.globalActiveTab) || this.globalActiveTab) : this.blockLabel(this.activeTab);
-      try {
-        await new Promise((resolve, reject) => {
-          this.$panel.dialog.open({
-            component: 'k-text-dialog',
-            props: {
-              text: 'Reset "' + name + '" to defaults? All saved overrides for this section will be removed.',
-              submitBtn: {
-                text: 'Reset',
-                icon: 'undo',
-                theme: 'negative',
-              },
-            },
-            on: {
-              submit: () => {
-                this.$panel.dialog.close();
-                resolve();
-              },
-              cancel: () => reject(),
-            },
-          });
-        });
-      } catch (e) {
-        return;
-      }
-      if (this.activeTab === 'global') {
-        if (this.globalActiveTab === 'global') {
-          this.globalOverrides = {};
-          await this.saveGlobalSettings();
-        } else if (this.globalActiveTab === 'elements') {
-          this.elementOverrides = {};
-          this.fontOverrides = {};
-          await this.saveElements();
-        } else if (this.globalActiveTab === 'header') {
-          this.navOverrides = {};
-          await this.saveNavigation();
-        } else if (this.globalActiveTab === 'footer') {
-          this.footerOverrides = {};
-          await this.saveFooter();
-        }
-      } else {
-        await this.resetBlock(this.activeTab);
-      }
-    },
     async saveCurrentView() {
       if (this.activeTab === 'global') {
-        if (this.globalActiveTab === 'global') {
-          await this.saveGlobalSettings();
-        } else if (this.globalActiveTab === 'elements') {
-          await this.saveElements();
-        } else if (this.globalActiveTab === 'header') {
-          await this.saveNavigation();
-        } else if (this.globalActiveTab === 'footer') {
-          await this.saveFooter();
-        } else {
+        const tab = this.globalActiveTab;
+        if (tab === 'settings') {
           await this.saveGlobal();
+        } else if (tab === 'blocks' || tab === 'fonts') {
+          await this.saveGlobalSettings();
+        } else if (tab === 'elements') {
+          await this.saveElements();
+        } else if (tab === 'header') {
+          await this.saveNavigation();
+        } else if (tab === 'footer') {
+          await this.saveFooter();
         }
       } else {
         await this.saveBlock(this.activeTab);
@@ -523,25 +760,26 @@ export default {
 
     discardChanges() {
       if (this.activeTab === 'global') {
-        if (this.globalActiveTab === 'global') {
-          this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
-          this.$set(this.dirtyTabs, 'global-settings', false);
-        } else if (this.globalActiveTab === 'elements') {
-          this.elementOverrides = JSON.parse(JSON.stringify(this.originalElementOverrides));
-          this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
-          this.$set(this.dirtyTabs, 'elements', false);
-        } else if (this.globalActiveTab === 'header') {
-          this.navOverrides = JSON.parse(JSON.stringify(this.originalNavOverrides));
-          this.$set(this.dirtyTabs, 'header', false);
-        } else if (this.globalActiveTab === 'footer') {
-          this.footerOverrides = JSON.parse(JSON.stringify(this.originalFooterOverrides));
-          this.$set(this.dirtyTabs, 'footer', false);
-        } else {
+        const tab = this.globalActiveTab;
+        if (tab === 'settings') {
           this.activeBlocks = [...this.originalActiveBlocks];
           for (const block of this.blocks) {
             block.active = this.activeBlocks.includes(block.blockType);
           }
           this.$set(this.dirtyTabs, 'global', false);
+        } else if (tab === 'blocks' || tab === 'fonts') {
+          this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
+          this.$set(this.dirtyTabs, 'global-settings', false);
+        } else if (tab === 'elements') {
+          this.elementOverrides = JSON.parse(JSON.stringify(this.originalElementOverrides));
+          this.fontOverrides = JSON.parse(JSON.stringify(this.originalFontOverrides));
+          this.$set(this.dirtyTabs, 'elements', false);
+        } else if (tab === 'header') {
+          this.navOverrides = JSON.parse(JSON.stringify(this.originalNavOverrides));
+          this.$set(this.dirtyTabs, 'header', false);
+        } else if (tab === 'footer') {
+          this.footerOverrides = JSON.parse(JSON.stringify(this.originalFooterOverrides));
+          this.$set(this.dirtyTabs, 'footer', false);
         }
       } else {
         const bt = this.activeTab;
@@ -596,21 +834,6 @@ export default {
       }
     },
 
-    async resetBlock(blockType) {
-      try {
-        const res = await this.$api.post('projectwizard/block/' + blockType + '/reset');
-        this.$set(this.blockConfigs, blockType, res);
-        this.$set(this.blockOverrides, blockType, {});
-        this.$set(this.originalOverrides, blockType, {});
-        this.$set(this.snapshots, blockType, '{}');
-        this.$set(this.dirtyTabs, blockType, false);
-        const block = this.blocks.find(b => b.blockType === blockType);
-        if (block) block.customized = false;
-        this.$panel.notification.success(this.blockLabel(blockType) + ' reset to defaults');
-      } catch (e) {
-        this.$panel.notification.error('Failed to reset ' + this.blockLabel(blockType) + ' settings');
-      }
-    },
     safeOverrides(ov) {
       return (ov && !Array.isArray(ov)) ? ov : {};
     },
@@ -645,6 +868,53 @@ export default {
   padding: var(--spacing-12);
   text-align: center;
   color: var(--color-text-dimmed);
+}
+
+.pw-block-preview-body {
+  margin-bottom: var(--spacing-6);
+}
+
+.pw-block-preview-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pw-block-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+[class^="pw-preview-link-"] {
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+[class^="pw-preview-btn-"] {
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+
+.pw-block-preview-label {
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-1);
+}
+
+.pw-default-font-preview {
+  background: #fff;
+  padding: var(--spacing-4) var(--spacing-6);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #262626;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  margin-bottom: var(--spacing-6);
 }
 
 .pw-wizard-content {

@@ -1,16 +1,224 @@
 <template>
   <div>
-    <section v-for="(group, groupKey) in groups" :key="groupKey" class="pw-element-section">
-      <div class="pw-section-header">
-        <button class="pw-section-toggle" @click="toggle(groupKey)">
-          <span>{{ groupLabel(groupKey) }}</span>
-          <k-icon :type="isOpen(groupKey) ? 'angle-down' : 'angle-right'" />
-        </button>
-      </div>
-      <transition name="pw-slide">
-        <div v-show="isOpen(groupKey)" class="pw-element-list">
-          <!-- Grouped fields -->
-          <template v-for="(fieldGroup, gIdx) in groupedFields(group)">
+    <!-- Element pill navigation -->
+    <div class="pw-element-pills">
+      <button
+        v-for="(group, groupKey) in pillGroups"
+        :key="'pill-' + groupKey"
+        type="button"
+        class="pw-element-pill"
+        :class="{ 'is-active': activeElement === groupKey }"
+        @click="activeElement = groupKey"
+      >{{ groupLabel(groupKey) }}</button>
+    </div>
+    <section v-for="(group, groupKey) in groups" :key="groupKey" v-show="isElementVisible(groupKey) && !isChildElement(groupKey)" class="pw-element-section">
+      <div class="pw-element-list">
+          <!-- Preview -->
+          <template v-if="previewText(groupKey) && !isChildElement(groupKey)">
+          <div class="pw-element-preview-header">
+            <span v-for="bp in ['default', 'lg', 'xl']" :key="'h-' + bp" class="pw-element-preview-header-label">{{ { default: 'Mobile', lg: 'Tablet', xl: 'Desktop' }[bp] }}</span>
+          </div>
+          <div class="pw-element-preview" :class="{ 'pw-element-preview-themed': previewThemed(groupKey) }">
+            <template v-for="theme in ['default', 'variant', 'variant2']">
+              <div v-for="bp in ['default', 'lg', 'xl']" :key="theme + '-' + bp" class="pw-element-preview-col" :style="{ backgroundColor: blockBackground(theme) }">
+                <template v-if="groupKey === 'media'">
+                  <div class="pw-media-preview-img" :style="mediaPreviewStyle(theme)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  </div>
+                  <div class="pw-media-preview-bullets">
+                    <span :style="{ backgroundColor: mediaColor(theme, 'element-slideshow-bullet') }"></span>
+                    <span :style="{ backgroundColor: mediaColor(theme, 'element-slideshow-bullet-active') }"></span>
+                    <span :style="{ backgroundColor: mediaColor(theme, 'element-slideshow-bullet') }"></span>
+                  </div>
+                  <template v-if="previewChildText(groupKey)">
+                    <span class="pw-element-preview-text" :style="previewStyle(previewChildKey(groupKey), bp, theme)">{{ previewChildText(groupKey) }}</span>
+                  </template>
+                </template>
+                <template v-else-if="previewThemed(groupKey)">
+                  <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)">{{ previewText(groupKey) }}</span>
+                </template>
+                <template v-else-if="previewParagraphs(groupKey)">
+                  <div class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)">
+                    <p v-for="(para, pIdx) in previewParagraphs(groupKey)" :key="pIdx" :style="pIdx > 0 ? { marginTop: previewParagraphGap(groupKey) } : {}">{{ para }}</p>
+                  </div>
+                </template>
+                <template v-else>
+                  <span class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)">{{ previewText(groupKey) }}</span>
+                </template>
+                <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
+                  <span class="pw-element-preview-text" :style="previewStyle(previewChildKey(groupKey), bp, theme)">{{ previewChildText(groupKey) }}</span>
+                </template>
+              </div>
+            </template>
+          </div>
+          </template>
+          <!-- Subtabs -->
+          <div class="pw-element-subtabs">
+            <button
+              v-for="st in combinedSubtabs(groupKey)"
+              :key="'st-' + st.key"
+              type="button"
+              class="pw-element-subtab"
+              :class="{ 'is-active': (openSections[groupKey + '-subtab'] || combinedSubtabs(groupKey)[0].key) === st.key }"
+              @click="$set(openSections, groupKey + '-subtab', st.key)"
+              v-html="st.label"
+            ></button>
+          </div>
+
+          <!-- Text / Sizes fields -->
+          <template v-if="activeSubtabInfo(groupKey).category !== 'colors'">
+          <template v-for="(fieldGroup, gIdx) in groupedVarFields(activeSubtabInfo(groupKey).group, activeSubtabInfo(groupKey).category)">
+            <!-- Group header row -->
+            <div v-if="fieldGroup.header" :key="'vgh-' + gIdx" class="pw-group-header">
+              <div class="pw-field-row-label-col"></div>
+              <div class="pw-group-header-labels" :class="'pw-group-type-' + fieldGroup.fieldType">
+                <span v-for="label in fieldGroup.header" :key="label" class="pw-group-column-cell"><span class="pw-group-column-label">{{ translateLabel(label) }}</span></span>
+              </div>
+            </div>
+            <!-- Field rows in group -->
+            <template v-for="(field, fIdx) in fieldGroup.fields">
+            <div
+              :key="'vf-' + gIdx + '-' + fIdx"
+              class="pw-field-row"
+              :class="{
+                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']),
+                'pw-dual-next': field.isState,
+              }"
+            >
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey)">
+                      <button
+                        type="button"
+                        class="pw-sizes-toggle"
+                        @click.prevent="$set(openSections, groupKey + '-sizes', !openSections[groupKey + '-sizes'])"
+                      >
+                        <k-icon class="pw-sizes-chevron" :type="openSections[groupKey + '-sizes'] ? 'angle-down' : 'angle-right'" />
+                        <span>{{ field.label }}</span>
+                      </button>
+                    </template>
+                    <label v-else class="pw-field-row-label" v-html="field.label"></label>
+                  </div>
+                  <div class="pw-field-row-options" :class="fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : ''">
+                    <!-- Font family selector -->
+                    <select
+                      v-if="field.def.type === 'font-family'"
+                      class="pw-element-input pw-font-select"
+                      :value="fontSelectValue(field.varName, field.def.value)"
+                      @change="setValue(field.varName, $event.target.value, field.def.value)"
+                    >
+                      <option v-for="opt in fontFamilyOptions" :key="opt.value" :value="opt.value">{{ opt.text }}</option>
+                    </select>
+                    <!-- Toggles for options -->
+                    <k-toggles-input
+                      v-else-if="field.def.options"
+                      :value="getOverrideValue(field.varName) || field.def.value"
+                      :options="filteredOptions(field.varName, field.def.options)"
+                      :grow="false"
+                      :required="true"
+                      @input="setValue(field.varName, $event, field.def.value)"
+                    />
+                    <!-- Multi-value -->
+                    <template v-else-if="field.type === 'multi-value'">
+                      <span v-for="(val, idx) in field.def.value" :key="idx" class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="number"
+                            :step="field.def.step || 0.1"
+                            :min="field.def.min"
+                            :max="field.def.max"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :value="stripUnit(getQuadValue(field.varName, idx) || val)"
+                            @input="setQuadValue(field.varName, idx, $event.target.value, field.def)"
+                          />
+                          <span class="pw-element-unit">{{ field.def.unit }}</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit) }}</span>
+                      </span>
+                    </template>
+                    <!-- Responsive -->
+                    <template v-else-if="field.type === 'responsive'">
+                      <span v-for="(bp, bpIdx) in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="number"
+                            :step="field.def.step || 0.1"
+                            :min="field.def.min"
+                            :max="field.def.max"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :value="stripUnit(getResponsiveOverride(field.varName, bp) || field.def[bp])"
+                            @input="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
+                          />
+                          <span class="pw-element-unit">{{ field.def.unit }}</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
+                      </span>
+                    </template>
+                    <!-- Single value with unit -->
+                    <template v-else-if="field.def.unit !== undefined">
+                      <span class="pw-element-input-wrap">
+                        <input
+                          type="number"
+                          :step="field.def.step || 0.1"
+                          :min="field.def.min"
+                          :max="field.def.max"
+                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                          :value="stripUnit(getOverrideValue(field.varName) || field.def.value)"
+                          @input="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
+                        />
+                        <span class="pw-element-unit">{{ field.def.unit }}</span>
+                      </span>
+                      <span class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
+                    </template>
+                  </div>
+                </span>
+              </div>
+              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
+            </div>
+            <!-- Sizes sub-rows -->
+            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']">
+              <div
+                v-for="(sizeEntry, sizeName) in (fontSizesForGroup(activeSubtabInfo(groupKey).elementKey).vars || fontSizesForGroup(activeSubtabInfo(groupKey).elementKey))"
+                :key="'sz-' + sizeName"
+                class="pw-field-row pw-dual-next"
+              >
+                <div class="k-input" data-type="text">
+                  <span class="k-input-element pw-field-row-inner">
+                    <div class="pw-field-row-label-col">
+                      <label class="pw-field-row-label pw-sizes-label">{{ $t('pw.option.' + sizeName.split('-').pop()) }}</label>
+                    </div>
+                    <div class="pw-field-row-options" :class="fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : ''">
+                      <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="number"
+                            :step="sizeEntry.step || 0.1"
+                            :min="sizeEntry.min"
+                            :max="sizeEntry.max"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :value="stripUnit(getFontSizeOverride(bp, sizeName) || sizeEntry[bp])"
+                            @input="setFontSizeValue(bp, sizeName, $event.target.value, sizeEntry[bp], sizeEntry.unit)"
+                          />
+                          <span class="pw-element-unit">{{ sizeEntry.unit }}</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getFontSizeOverride(bp, sizeName) || sizeEntry[bp], sizeEntry.unit || 'rem') }}</span>
+                      </span>
+                    </div>
+                  </span>
+                </div>
+              </div>
+            </template>
+            </template>
+            <!-- Group end spacing -->
+            <div v-if="fieldGroup.header" :key="'vge-' + gIdx" class="pw-group-end"></div>
+          </template>
+
+          </template>
+
+          <!-- Colors -->
+          <template v-if="activeSubtabInfo(groupKey).category === 'colors'">
+          <template v-for="(fieldGroup, gIdx) in groupedColorFields(activeSubtabInfo(groupKey).group)">
             <!-- Group header row -->
             <div v-if="fieldGroup.header" :key="'gh-' + gIdx" class="pw-group-header">
               <div class="pw-field-row-label-col"></div>
@@ -24,14 +232,14 @@
               :key="'gf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :class="{
-                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(groupKey) && openSections[groupKey + '-sizes']),
+                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']),
                 'pw-dual-next': field.isState,
               }"
             >
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(groupKey)">
+                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey)">
                       <button
                         type="button"
                         class="pw-sizes-toggle"
@@ -146,11 +354,12 @@
                   </div>
                 </span>
               </div>
+              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
             </div>
             <!-- Sizes rows (appear after font-size row when toggled) -->
-            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(groupKey) && openSections[groupKey + '-sizes']">
+            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']">
               <div
-                v-for="(sizeVal, sizeName) in fontSizesForGroup(groupKey).vars"
+                v-for="(sizeVal, sizeName) in fontSizesForGroup(activeSubtabInfo(groupKey).elementKey).vars"
                 :key="'size-' + sizeName"
                 class="pw-field-row pw-dual-first pw-dual-next"
               >
@@ -164,7 +373,7 @@
                         <span class="pw-element-input-wrap">
                           <input
                             type="number"
-                            :step="fontSizesForGroup(groupKey).step || 0.1"
+                            :step="fontSizesForGroup(activeSubtabInfo(groupKey).elementKey).step || 0.1"
                             min="0.1"
                             max="20"
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
@@ -185,8 +394,8 @@
             <!-- Group end spacing -->
             <div v-if="fieldGroup.header" :key="'ge-' + gIdx" class="pw-group-end"></div>
           </template>
+          </template>
         </div>
-      </transition>
     </section>
   </div>
 </template>
@@ -199,6 +408,14 @@ export default {
       default: () => ({}),
     },
     elementOverrides: {
+      type: Object,
+      default: () => ({}),
+    },
+    globalDefaults: {
+      type: Object,
+      default: () => ({}),
+    },
+    globalOverrides: {
       type: Object,
       default: () => ({}),
     },
@@ -218,17 +435,45 @@ export default {
       type: String,
       default: 'Inter',
     },
+    savedOverrides: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   data() {
     return {
+      activeElement: null,
       openSections: {},
     };
+  },
+  watch: {
+    pillGroups: {
+      immediate: true,
+      handler(g) {
+        if (!this.activeElement && g) {
+          const keys = Object.keys(g);
+          if (keys.length) this.activeElement = keys[0];
+        }
+      },
+    },
   },
   computed: {
     groups() {
       const result = {};
       for (const [key, val] of Object.entries(this.elementDefaults)) {
         if (val && typeof val === 'object' && (val.vars || val.colors)) {
+          result[key] = val;
+        }
+      }
+      return result;
+    },
+    elementGrouping() {
+      return { cite: 'quote', caption: 'media' };
+    },
+    pillGroups() {
+      const result = {};
+      for (const [key, val] of Object.entries(this.groups)) {
+        if (!this.elementGrouping[key]) {
           result[key] = val;
         }
       }
@@ -248,6 +493,14 @@ export default {
     },
   },
   methods: {
+    isElementVisible(groupKey) {
+      if (this.activeElement === groupKey) return true;
+      const parent = this.elementGrouping[groupKey];
+      return parent && this.activeElement === parent;
+    },
+    isChildElement(groupKey) {
+      return !!this.elementGrouping[groupKey];
+    },
     toggle(key) {
       this.$set(this.openSections, key, !this.isOpen(key));
     },
@@ -284,12 +537,18 @@ export default {
       }
       return { type: 'single', labels: null };
     },
-    groupedFields(group) {
+    groupedVarFields(group, category) {
+      return this.groupedFields(group, 'vars', category);
+    },
+    groupedColorFields(group) {
+      return this.groupedFields(group, 'colors');
+    },
+    groupedFields(group, only, category) {
       const allFields = [];
 
       // Build color fields
       const colorFields = [];
-      if (group.colors) {
+      if (group.colors && only !== 'vars') {
         const colorKeys = Object.keys(group.colors);
         for (let i = 0; i < colorKeys.length; i++) {
           const varName = colorKeys[i];
@@ -312,16 +571,11 @@ export default {
         }
       }
 
-      // Collect vars, insert colors after singles (before responsive/multi-value groups)
-      if (group.vars) {
-        let colorsInserted = false;
+      // Collect vars
+      if (group.vars && only !== 'colors') {
         for (const [varName, def] of Object.entries(group.vars)) {
+          if (category && this.varCategory(varName) !== category) continue;
           const sig = this.fieldSignature(varName, def, false);
-          // Insert colors before first non-single field
-          if (!colorsInserted && sig.type !== 'single' && colorFields.length > 0) {
-            allFields.push(...colorFields);
-            colorsInserted = true;
-          }
           allFields.push({
             varName,
             def,
@@ -331,11 +585,8 @@ export default {
             sigKey: sig.type === 'single' ? 'single-' + varName : sig.type + ':' + (sig.labels || []).join(','),
           });
         }
-        // If all fields were singles, append colors at end
-        if (!colorsInserted && colorFields.length > 0) {
-          allFields.push(...colorFields);
-        }
-      } else if (colorFields.length > 0) {
+      }
+      if (colorFields.length > 0) {
         allFields.push(...colorFields);
       }
 
@@ -506,6 +757,73 @@ export default {
       const t = this.$t(tKey);
       return (t && t !== tKey) ? t : key;
     },
+    hasFieldOverride(field) {
+      const varName = field.varName;
+      const saved = this.savedOverrides.global || {};
+      const current = this.elementOverrides.global || {};
+      if (field.type === 'theme-color') {
+        for (const theme of ['default', 'variant', 'variant2']) {
+          if ((saved[theme] || {})[varName] && (current[theme] || {})[varName]) return true;
+        }
+        return false;
+      }
+      if (field.type === 'responsive') {
+        for (const bp of ['default', 'lg', 'xl']) {
+          if ((saved[bp] || {})[varName] && (current[bp] || {})[varName]) return true;
+        }
+        return false;
+      }
+      if (field.type === 'multi-value') {
+        return Array.isArray(saved[varName]) && Array.isArray(current[varName]);
+      }
+      return !!saved[varName] && !!current[varName];
+    },
+    async resetField(field) {
+      const label = field.label.replace(/<[^>]*>/g, '');
+      try {
+        await new Promise((resolve, reject) => {
+          this.$panel.dialog.open({
+            component: 'k-text-dialog',
+            props: {
+              text: 'Reset "' + label + '" to default?',
+              submitBtn: {
+                text: 'Reset',
+                icon: 'undo',
+                theme: 'negative',
+              },
+            },
+            on: {
+              submit: () => { this.$panel.dialog.close(); resolve(); },
+              cancel: () => reject(),
+            },
+          });
+        });
+      } catch (e) { return; }
+      const varName = field.varName;
+      const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
+      if (!overrides.global) return;
+
+      if (field.type === 'theme-color') {
+        for (const theme of ['default', 'variant', 'variant2']) {
+          if (overrides.global[theme]) {
+            delete overrides.global[theme][varName];
+            if (Object.keys(overrides.global[theme]).length === 0) delete overrides.global[theme];
+          }
+        }
+      } else if (field.type === 'responsive') {
+        for (const bp of ['default', 'lg', 'xl']) {
+          if (overrides.global[bp]) {
+            delete overrides.global[bp][varName];
+            if (Object.keys(overrides.global[bp]).length === 0) delete overrides.global[bp];
+          }
+        }
+      } else {
+        delete overrides.global[varName];
+      }
+
+      if (overrides.global && Object.keys(overrides.global).length === 0) delete overrides.global;
+      this.$emit('update:overrides', overrides);
+    },
     fontSizesForGroup(groupKey) {
       return this.fontDefaults[groupKey] || null;
     },
@@ -580,11 +898,321 @@ export default {
 
       this.$emit('update:overrides', overrides);
     },
+
+    // --- Preview ---
+    previewText(groupKey) {
+      const texts = {
+        heading: 'The quick brown fox jumps over the lazy dog and keeps on running',
+        tagline: 'The quick brown fox jumps over the lazy dog and keeps on running through the field',
+        editor: 'The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump.',
+        quote: '\u201EThe quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.\u201C',
+        button: 'Click here',
+        caption: 'The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.',
+        breadcrumb: 'Home / Products / Category / Subcategory / Detail',
+        cite: '— The quick brown fox jumps over the lazy dog',
+      };
+      return texts[groupKey] || (groupKey === 'media' ? '__media__' : null);
+    },
+    elementSubtabs(groupKey) {
+      const tabs = {
+        heading:    ['text', 'sizes', 'colors'],
+        tagline:    ['text', 'sizes', 'colors'],
+        editor:     ['text', 'sizes', 'colors'],
+        quote:      ['text', 'sizes', 'colors'],
+        button:     ['text', 'sizes', 'colors'],
+        caption:    ['text', 'sizes', 'colors'],
+        breadcrumb: ['text', 'sizes', 'colors'],
+        media:      ['colors'],
+        cite:       ['text', 'sizes', 'colors'],
+      };
+      return tabs[groupKey] || ['text', 'sizes', 'colors'];
+    },
+    varCategory(varName) {
+      if (varName.endsWith('-font-family') || varName.endsWith('-font-weight') ||
+          varName.endsWith('-text-transform') || varName.endsWith('-font-style') ||
+          varName.endsWith('-paragraph-spacing') || varName.endsWith('-marks') ||
+          varName.endsWith('-gap')) return 'text';
+      if (varName.endsWith('-font-size') || varName.endsWith('-line-height') ||
+          varName.endsWith('-letter-spacing') || varName.endsWith('-padding') ||
+          varName.endsWith('-border-radius') || varName.endsWith('-radius')) return 'sizes';
+      return 'text';
+    },
+    combinedSubtabs(groupKey) {
+      const tabLabels = { text: 'Text', sizes: 'Sizes', colors: 'Colors' };
+      const result = [];
+      const childKey = this.previewChildKey(groupKey);
+      const hasChild = childKey && this.groups[childKey];
+      // Parent tabs
+      for (const st of this.elementSubtabs(groupKey)) {
+        const prefix = hasChild ? '<strong>' + this.groupLabel(groupKey) + ':</strong> ' : '';
+        result.push({ key: groupKey + ':' + st, label: prefix + tabLabels[st], elementKey: groupKey, category: st });
+      }
+      // Child tabs
+      if (hasChild) {
+        for (const st of this.elementSubtabs(childKey)) {
+          result.push({ key: childKey + ':' + st, label: '<strong>' + this.groupLabel(childKey) + ':</strong> ' + tabLabels[st], elementKey: childKey, category: st });
+        }
+      }
+      return result;
+    },
+    activeSubtabInfo(groupKey) {
+      const tabs = this.combinedSubtabs(groupKey);
+      const activeKey = this.openSections[groupKey + '-subtab'] || tabs[0].key;
+      const tab = tabs.find(t => t.key === activeKey) || tabs[0];
+      return { group: this.groups[tab.elementKey], category: tab.category, elementKey: tab.elementKey };
+    },
+    previewChildKey(groupKey) {
+      const children = {};
+      for (const [child, parent] of Object.entries(this.elementGrouping)) {
+        children[parent] = child;
+      }
+      return children[groupKey] || null;
+    },
+    previewChildText(groupKey) {
+      const childKey = this.previewChildKey(groupKey);
+      return childKey ? this.previewText(childKey) : null;
+    },
+    previewThemed(groupKey) {
+      return groupKey === 'button';
+    },
+    blockBackground(theme) {
+      const override = ((this.globalOverrides.global || {})[theme] || {})['block-background'];
+      if (override) return override;
+      const blocks = this.globalDefaults.colors || this.globalDefaults.layout || this.globalDefaults.blocks || {};
+      return blocks.colors?.['block-background']?.[theme] || '#ffffff';
+    },
+    previewButtonStyle(groupKey, theme, bp) {
+      const prefix = groupKey;
+      const get = (prop) => this.getOverrideValue(prefix + '-' + prop);
+      const defVal = (prop, breakpoint) => {
+        const group = this.elementDefaults[groupKey];
+        if (!group || !group.vars) return '';
+        const d = group.vars[prefix + '-' + prop];
+        if (!d) return '';
+        if (breakpoint && d[breakpoint] !== undefined) return d[breakpoint];
+        if (d.default !== undefined) return d.default;
+        return d.value || '';
+      };
+      const responsiveVal = (prop) => {
+        const override = this.getResponsiveOverride(prefix + '-' + prop, bp);
+        if (override) return override;
+        return defVal(prop, bp);
+      };
+
+      // Font properties
+      let fontFamily = get('font-family') || defVal('font-family');
+      if (!fontFamily || fontFamily === 'default') fontFamily = this.bodyDefaultFont;
+      const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
+      let fontCategory = 'sans-serif';
+      for (const f of Object.values(allFonts)) {
+        if (f.family === fontFamily) { fontCategory = f.category || 'sans-serif'; break; }
+      }
+
+      // Colors from theme
+      const colorVal = (colorName) => {
+        const override = ((this.elementOverrides.global || {})[theme] || {})[colorName];
+        if (override) return override;
+        return this.elementDefaults[groupKey]?.colors?.[colorName]?.[theme] || '';
+      };
+
+      // Padding
+      const paddingDef = this.elementDefaults[groupKey]?.vars?.[prefix + '-padding'];
+      const paddingOverride = (this.elementOverrides.global || {})[prefix + '-padding'];
+      const padding = Array.isArray(paddingOverride) ? paddingOverride : (paddingDef?.value || []);
+
+      // Border radius
+      const radiusDef = this.elementDefaults[groupKey]?.vars?.[prefix + '-border-radius'];
+      const radiusOverride = (this.elementOverrides.global || {})[prefix + '-border-radius'];
+      const radius = Array.isArray(radiusOverride) ? radiusOverride : (radiusDef?.value || []);
+
+      return {
+        fontFamily: "'" + fontFamily + "', " + fontCategory,
+        fontWeight: get('font-weight') || defVal('font-weight', 'value'),
+        fontStyle: get('font-style') || defVal('font-style', 'value'),
+        fontSize: responsiveVal('font-size'),
+        lineHeight: responsiveVal('line-height'),
+        letterSpacing: responsiveVal('letter-spacing'),
+        textTransform: get('text-transform') || defVal('text-transform', 'value'),
+        color: colorVal('element-button-text'),
+        backgroundColor: colorVal('element-button-background'),
+        borderColor: colorVal('element-button-border'),
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        padding: Array.isArray(padding) ? padding.join(' ') : padding,
+        borderRadius: Array.isArray(radius) ? radius.join(' ') : radius,
+      };
+    },
+    mediaPreviewStyle(theme) {
+      const elDef = this.elementDefaults.media || {};
+      const elOv = this.elementOverrides.global || {};
+      const bg = ((elOv)[theme] || {})['element-media-background'] || elDef.colors?.['element-media-background']?.[theme] || '#262626';
+      const radiusOv = elOv['media-radius'];
+      const radiusDef = elDef.vars?.['media-radius']?.value || [];
+      const r = Array.isArray(radiusOv) ? radiusOv : radiusDef;
+      return {
+        backgroundColor: bg,
+        borderRadius: r.length === 4 ? r[0] + ' ' + r[1] + ' ' + r[3] + ' ' + r[2] : '0',
+      };
+    },
+    mediaColor(theme, colorName) {
+      const elDef = this.elementDefaults.media || {};
+      const elOv = this.elementOverrides.global || {};
+      return ((elOv)[theme] || {})[colorName] || elDef.colors?.[colorName]?.[theme] || '#262626';
+    },
+    isLightColor(hex) {
+      if (!hex || hex.length < 7) return true;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return (r * 299 + g * 587 + b * 114) / 1000 > 160;
+    },
+    previewParagraphs(groupKey) {
+      if (groupKey !== 'editor') return null;
+      return [
+        'The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.',
+        'How vexingly quick daft zebras jump. The five boxing wizards jump quickly at dawn.',
+      ];
+    },
+    previewParagraphGap(groupKey) {
+      const override = this.getOverrideValue(groupKey + '-paragraph-spacing');
+      if (override) return override;
+      const group = this.elementDefaults[groupKey];
+      if (group && group.vars && group.vars[groupKey + '-paragraph-spacing']) {
+        return group.vars[groupKey + '-paragraph-spacing'].value || '';
+      }
+      return '';
+    },
+    previewStyle(groupKey, bp, theme) {
+      const prefix = groupKey;
+      const get = (prop) => {
+        return this.getOverrideValue(prefix + '-' + prop);
+      };
+      const defVal = (prop, breakpoint) => {
+        const group = this.elementDefaults[groupKey];
+        if (!group || !group.vars) return '';
+        const d = group.vars[prefix + '-' + prop];
+        if (!d) return '';
+        if (d[breakpoint] !== undefined) return d[breakpoint];
+        if (d.default !== undefined) return d.default;
+        return d.value || '';
+      };
+      const responsiveVal = (prop) => {
+        const override = this.getResponsiveOverride(prefix + '-' + prop, bp);
+        if (override) return override;
+        return defVal(prop, bp);
+      };
+
+      // Font family (not responsive)
+      let fontFamily = get('font-family') || defVal('font-family', 'value');
+      if (!fontFamily || fontFamily === 'default') fontFamily = this.bodyDefaultFont;
+      const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
+      let fontCategory = 'sans-serif';
+      for (const f of Object.values(allFonts)) {
+        if (f.family === fontFamily) { fontCategory = f.category || 'sans-serif'; break; }
+      }
+
+      // Color from theme
+      const t = theme || 'default';
+      const colorVar = 'element-' + prefix + '-text';
+      const colorOverride = ((this.elementOverrides.global || {})[t] || {})[colorVar];
+      const colorDefault = this.elementDefaults[groupKey]?.colors?.[colorVar]?.[t] || '';
+
+      return {
+        fontFamily: "'" + fontFamily + "', " + fontCategory,
+        fontWeight: get('font-weight') || defVal('font-weight', 'value'),
+        fontStyle: get('font-style') || defVal('font-style', 'value'),
+        fontSize: responsiveVal('font-size'),
+        lineHeight: responsiveVal('line-height'),
+        letterSpacing: responsiveVal('letter-spacing'),
+        textTransform: get('text-transform') || defVal('text-transform', 'value'),
+        color: colorOverride || colorDefault,
+      };
+    },
   },
 };
 </script>
 
 <style>
+.pw-element-pills {
+  display: flex;
+  gap: var(--spacing-1);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-10);
+}
+
+.pw-element-pill {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--text-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  background: var(--color-white);
+  cursor: pointer;
+  color: var(--color-text-dimmed);
+}
+
+.pw-element-pill:hover {
+  border-color: var(--color-gray-400);
+}
+
+.pw-element-pill.is-active {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+.pw-element-subtabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: var(--spacing-4);
+}
+
+.pw-element-subtab {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-dimmed);
+  position: relative;
+}
+
+.pw-element-subtab:hover {
+  color: var(--color-text);
+}
+
+.pw-element-subtab.is-active {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.pw-element-subtab.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-black);
+}
+
+.pw-field-row {
+  position: relative;
+}
+
+.pw-field-reset {
+  position: absolute;
+  right: var(--spacing-2);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  opacity: 0.6;
+}
+
+.pw-field-reset:hover {
+  opacity: 1;
+}
+
 .pw-element-section {
   margin-bottom: 0;
 }
@@ -594,6 +1222,78 @@ export default {
   flex-direction: column;
   margin-bottom: var(--spacing-10);
 }
+
+.pw-element-preview-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin-bottom: var(--spacing-2);
+}
+
+.pw-element-preview-header-label {
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  color: var(--color-text-dimmed);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--spacing-1) var(--spacing-4);
+}
+
+.pw-element-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin-bottom: var(--spacing-6);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.pw-element-preview-col {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  padding: var(--spacing-4) var(--spacing-4);
+  overflow: hidden;
+}
+
+
+.pw-element-preview-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pw-media-preview-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.pw-media-preview-img svg {
+  width: 32px;
+  height: 32px;
+}
+
+.pw-media-preview-bullets {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: var(--spacing-2) 0;
+}
+
+.pw-media-preview-bullets span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.pw-element-preview-button {
+  display: inline-block;
+  width: fit-content;
+  cursor: default;
+}
+
 
 
 .pw-group-header {
@@ -618,13 +1318,14 @@ export default {
 }
 
 .pw-group-column-label {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-family: var(--font-mono);
-  color: var(--color-black);
-  background: var(--color-yellow-300);
-  border: 1px solid var(--color-yellow-600);
-  padding: 2px var(--spacing-2);
-  border-radius: 999px;
+  color: var(--color-text-dimmed);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: none;
+  border: none;
+  padding: 0;
   white-space: nowrap;
   width: fit-content;
 }

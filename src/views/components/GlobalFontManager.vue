@@ -1,8 +1,8 @@
 <template>
   <div class="pw-font-manager">
     <!-- Installed Fonts -->
-    <section class="pw-element-section">
-      <div class="pw-section-header pw-font-header">
+    <section v-if="mode === 'all' || mode === 'installed'" class="pw-element-section">
+      <div v-if="mode === 'all'" class="pw-section-header pw-font-header">
         <span class="pw-section-title">{{ $t('prw.fonts.installed') || 'Installed Fonts' }}</span>
         <k-button
           :text="showAddForm ? 'Cancel' : ($t('prw.fonts.add') || 'Add Font')"
@@ -37,8 +37,8 @@
     </section>
 
     <!-- Add Font Form -->
-    <section v-if="showAddForm" class="pw-element-section">
-        <div class="pw-section-header">
+    <section v-if="mode === 'add' || (mode === 'all' && showAddForm)" class="pw-element-section">
+        <div v-if="mode === 'all'" class="pw-section-header">
           <span class="pw-section-toggle"><span>{{ $t('prw.fonts.add') || 'Add Font' }}</span></span>
         </div>
         <div class="pw-element-list">
@@ -184,6 +184,7 @@
 export default {
   props: {
     fonts: { type: Object, default: () => ({}) },
+    mode: { type: String, default: 'all' },
   },
   data() {
     return {

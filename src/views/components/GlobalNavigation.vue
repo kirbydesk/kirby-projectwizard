@@ -1,14 +1,61 @@
 <template>
   <div>
     <section v-for="(group, groupKey) in groups" :key="groupKey" class="pw-element-section">
-      <div class="pw-section-header">
+      <div v-if="!hideSectionHeaders" class="pw-section-header">
         <button class="pw-section-toggle" @click="toggle(groupKey)">
           <span>{{ groupLabel(groupKey) }}</span>
           <k-icon :type="isOpen(groupKey) ? 'angle-down' : 'angle-right'" />
         </button>
       </div>
       <transition name="pw-slide">
-        <div v-show="isOpen(groupKey)" class="pw-element-list">
+        <div v-show="hideSectionHeaders || isOpen(groupKey)" class="pw-element-list">
+          <!-- Desktop navigation preview -->
+          <div v-if="groupKey === 'desktop'" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle()">
+            <div v-if="navPreviewLogo()" class="pw-nav-preview-logo" :style="navPreviewLogoStyle()"><div :style="{ height: navPreviewLogoSvgHeight() }" v-html="navPreviewLogo()"></div></div>
+            <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle()">
+              <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:'Home',fly:false,home:true},{t:'About',fly:false},{t:'Services',fly:true,flyout:'services'},{t:'Portfolio',fly:true,flyout:'portfolio'},{t:'Contact',fly:false}]" v-if="!item.home || (navGet('home-desktop') || navDef('desktop', 'home-desktop')) === 'true'" :key="idx" :style="navPreviewItemStyle()">
+                <span @click.stop="openFlyout = openFlyout === item.flyout ? null : item.flyout" style="cursor:pointer;display:flex;align-items:center;gap:var(--spacing-1)">{{ item.t }}<span v-if="item.fly" class="pw-nav-preview-flyout-icon" :style="{ color: navPreviewTextColor() }" v-html="navFlyoutIconPath()"></span></span>
+                <div v-if="item.flyout && openFlyout === item.flyout" class="pw-nav-preview-flyout" :style="navPreviewFlyoutStyle()">
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu A</div>
+                  <div class="pw-nav-preview-flyout-item pw-nav-preview-flyout-item-hover" :style="navPreviewFlyoutItemHoverStyle()">Submenu B</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu C</div>
+                </div>
+              </span>
+            </div>
+          </div>
+          <!-- Tablet navigation preview -->
+          <div v-if="groupKey === 'tablet'" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle('tablet')">
+            <div v-if="navPreviewLogo('tablet')" class="pw-nav-preview-logo" :style="navPreviewLogoStyle('tablet')"><div :style="{ height: navPreviewLogoSvgHeight('tablet') }" v-html="navPreviewLogo('tablet')"></div></div>
+            <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle('tablet')">
+              <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:'Home',fly:false,home:true},{t:'About',fly:false},{t:'Services',fly:true,flyout:'t-services'},{t:'Portfolio',fly:true,flyout:'t-portfolio'},{t:'Contact',fly:false}]" v-if="!item.home || (navGet('home-tablet') || navDef('tablet', 'home-tablet')) === 'true'" :key="idx" :style="navPreviewItemStyle('tablet')">
+                <span @click.stop="openFlyout = openFlyout === item.flyout ? null : item.flyout" style="cursor:pointer;display:flex;align-items:center;gap:var(--spacing-1)">{{ item.t }}<span v-if="item.fly" class="pw-nav-preview-flyout-icon" :style="{ color: navPreviewTextColor('tablet') }" v-html="navFlyoutIconPath()"></span></span>
+                <div v-if="item.flyout && openFlyout === item.flyout" class="pw-nav-preview-flyout" :style="navPreviewFlyoutStyle()">
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu A</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemHoverStyle()">Submenu B</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu C</div>
+                </div>
+              </span>
+            </div>
+          </div>
+          <!-- Mobile navigation preview -->
+          <div v-if="groupKey === 'mobile'" class="pw-nav-preview-mobile">
+            <div class="pw-nav-preview-mobile-bar" :style="mobileBarStyle()">
+              <div v-if="navPreviewLogo('mobile')" :style="{ height: navPreviewLogoSvgHeight('mobile') }" v-html="navPreviewLogo('mobile')"></div>
+              <svg viewBox="0 0 24 24" width="20" height="20" :style="{ fill: mobileColorField('mobile-title-color', 'mobile-title-textcolor') }"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
+            </div>
+            <div class="pw-nav-preview-mobile-menu">
+              <div v-for="(item, idx) in [{t:'Home',l2:false,active:false,home:true},{t:'About',l2:false,active:false},{t:'Services',l2:true,active:true},{t:'Portfolio',l2:false,active:false},{t:'Contact',l2:false,active:false}]" v-if="!item.home || (navGet('home-mobile') || navDef('mobile', 'home-mobile')) === 'true'" :key="idx">
+                <div class="pw-nav-preview-mobile-l1" :style="mobileL1Style(item.active)" :class="{ 'pw-mobile-border': idx > 0 }">
+                  {{ item.t }}
+                </div>
+                <template v-if="item.l2">
+                  <div v-for="(sub, sIdx) in [{t:'Submenu A',active:false},{t:'Submenu B',active:true},{t:'Submenu C',active:false}]" :key="'s'+sIdx" class="pw-nav-preview-mobile-l2" :style="mobileL2Style(sub.active)" :class="{ 'pw-mobile-border-l2': true }">
+                    {{ sub.t }}
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
           <!-- Grouped fields -->
           <template v-for="(fieldGroup, gIdx) in groupedFields(group)">
             <!-- Section label -->
@@ -203,6 +250,7 @@
                     </div>
                   </span>
                 </div>
+                <k-button v-if="hasFieldOverride(field.varName, false)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetNavField(field.varName, false)" />
               </div>
               </template>
               <!-- Group end spacing -->
@@ -246,6 +294,7 @@
                   </div>
                 </span>
               </div>
+              <k-button v-if="hasFieldOverride(varName, true)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetNavField(varName, true)" />
             </div>
             <div class="pw-group-end"></div>
           </template>
@@ -274,10 +323,35 @@ export default {
       type: String,
       default: 'Inter',
     },
+    showOnly: {
+      type: Array,
+      default: null,
+    },
+    hideVars: {
+      type: Array,
+      default: null,
+    },
+    groupLabels: {
+      type: Object,
+      default: null,
+    },
+    hideSectionHeaders: {
+      type: Boolean,
+      default: false,
+    },
+    savedOverrides: {
+      type: Object,
+      default: null,
+    },
+    showColors: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
       openSections: {},
+      openFlyout: null,
       inlineIcons: {
         'arrow-down': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>',
         'chevron-down': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
@@ -291,7 +365,23 @@ export default {
       const result = {};
       for (const [key, val] of Object.entries(this.navDefaults)) {
         if (val && typeof val === 'object' && (val.vars || val.colors)) {
-          result[key] = val;
+          if (this.showOnly || this.hideVars) {
+            const filtered = { ...val };
+            if (val.vars) {
+              const vars = {};
+              for (const [vk, vv] of Object.entries(val.vars)) {
+                if (this.showOnly && !this.showOnly.includes(vk)) continue;
+                if (this.hideVars && this.hideVars.includes(vk)) continue;
+                vars[vk] = vv;
+              }
+              if (Object.keys(vars).length === 0 && (!val.colors || !this.showColors)) continue;
+              filtered.vars = vars;
+            }
+            if (val.colors && this.showOnly && !this.showColors) continue;
+            result[key] = filtered;
+          } else {
+            result[key] = val;
+          }
         }
       }
       return result;
@@ -319,6 +409,7 @@ export default {
       return this.openSections[key] !== false;
     },
     groupLabel(key) {
+      if (this.groupLabels && this.groupLabels[key]) return this.groupLabels[key];
       const prwKey = 'prw.prop.' + key;
       const prwT = this.$t(prwKey);
       if (prwT && prwT !== prwKey) return prwT;
@@ -696,6 +787,196 @@ export default {
 
       this.$emit('update:overrides', overrides);
     },
+    hasFieldOverride(varName, isColor) {
+      if (!this.savedOverrides) return false;
+      const saved = this.savedOverrides.global || {};
+      const current = this.navOverrides.global || {};
+      if (isColor) {
+        for (const theme of ['default', 'variant', 'variant2']) {
+          if ((saved[theme] || {})[varName] && (current[theme] || {})[varName]) return true;
+        }
+        return false;
+      }
+      for (const bp of ['default', 'lg', 'xl']) {
+        if ((saved[bp] || {})[varName] && (current[bp] || {})[varName]) return true;
+      }
+      if (saved[varName] && current[varName]) return true;
+      return false;
+    },
+    async resetNavField(varName, isColor) {
+      try {
+        await new Promise((resolve, reject) => {
+          this.$panel.dialog.open({
+            component: 'k-text-dialog',
+            props: {
+              text: 'Reset to default?',
+              submitBtn: { text: 'Reset', icon: 'undo', theme: 'negative' },
+            },
+            on: {
+              submit: () => { this.$panel.dialog.close(); resolve(); },
+              cancel: () => reject(),
+            },
+          });
+        });
+      } catch (e) { return; }
+      const overrides = JSON.parse(JSON.stringify(this.navOverrides));
+      if (!overrides.global) return;
+      if (isColor) {
+        for (const theme of ['default', 'variant', 'variant2']) {
+          if (overrides.global[theme]) {
+            delete overrides.global[theme][varName];
+            if (Object.keys(overrides.global[theme]).length === 0) delete overrides.global[theme];
+          }
+        }
+      } else {
+        delete overrides.global[varName];
+        for (const bp of ['default', 'lg', 'xl']) {
+          if (overrides.global[bp]) {
+            delete overrides.global[bp][varName];
+            if (Object.keys(overrides.global[bp]).length === 0) delete overrides.global[bp];
+          }
+        }
+      }
+      if (overrides.global && Object.keys(overrides.global).length === 0) delete overrides.global;
+      this.$emit('update:overrides', overrides);
+    },
+    navGet(v) { return this.getOverrideValue(v); },
+    navDef(groupKey, varName) {
+      const group = this.navDefaults[groupKey];
+      if (!group || !group.vars) return '';
+      const d = group.vars[varName];
+      if (!d) return '';
+      if (d.default !== undefined) return d.default;
+      return d.value || '';
+    },
+    navColorField(groupKey, colorGroupVar, fieldName) {
+      return this.navGet(fieldName) ||
+        (this.navDefaults[groupKey]?.vars?.[colorGroupVar]?.fields?.[fieldName]?.value) || '';
+    },
+    navQuadValue(varName) {
+      const override = (this.navOverrides.global || {})[varName];
+      if (Array.isArray(override)) return override.join(' ');
+      const group = this.navDefaults.desktop;
+      if (group?.vars?.[varName]?.value) return group.vars[varName].value.join(' ');
+      return '0';
+    },
+    navPreviewBarStyle(device) {
+      const d = device || 'desktop';
+      const bgColor = this.navColorField(d, d + '-color', d + '-bgcolor') ||
+        (d === 'tablet' ? this.navColorField('desktop', 'desktop-color', 'desktop-bgcolor') : '') || '#FFFFFF';
+      const height = this.navGet(d + '-height') || this.navDef(d, d + '-height');
+      return { backgroundColor: bgColor, height: height };
+    },
+    navPreviewLogo(device) {
+      const d = device || 'desktop';
+      return this.navGet(d + '-logo-src') || '';
+    },
+    navPreviewLogoStyle(device) {
+      const d = device || 'desktop';
+      const align = this.navGet(d + '-logo-align') || this.navDef(d, d + '-logo-align');
+      const padding = this.navQuadValue(d + '-logo-padding');
+      return { alignSelf: align, padding: padding };
+    },
+    navPreviewLogoSvgHeight(device) {
+      const d = device || 'desktop';
+      return this.navGet(d + '-logo-display-height') ||
+        (this.navDefaults[d]?.vars?.[d + '-logo-display-height']?.value) || '2rem';
+    },
+    navPreviewItemsWrapStyle(device) {
+      const d = device || 'desktop';
+      const align = this.navGet(d + '-items-align') || this.navDef(d, d + '-items-align');
+      const padding = this.navQuadValue(d + '-items-padding');
+      return { alignItems: align, padding: padding };
+    },
+    navPreviewTextColor(device) {
+      const d = device || 'desktop';
+      return this.navColorField(d, d + '-color', d + '-textcolor') ||
+        (d === 'tablet' ? this.navColorField('desktop', 'desktop-color', 'desktop-textcolor') : '') || '#101828';
+    },
+    navPreviewItemStyle(device) {
+      const bp = device === 'tablet' ? 'lg' : 'xl';
+      const getResponsive = (varName) => {
+        const override = ((this.navOverrides.global || {})[bp] || {})[varName];
+        if (override) return override;
+        return this.navDef('general', varName);
+      };
+      let fontFamily = this.navGet('font-family') || this.navDef('general', 'font-family');
+      if (!fontFamily || fontFamily === 'default') fontFamily = this.bodyDefaultFont;
+      const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
+      let fontCategory = 'sans-serif';
+      for (const f of Object.values(allFonts)) {
+        if (f.family === fontFamily) { fontCategory = f.category || 'sans-serif'; break; }
+      }
+      return {
+        fontFamily: "'" + fontFamily + "', " + fontCategory,
+        fontWeight: this.navGet('font-weight') || this.navDef('general', 'font-weight'),
+        fontSize: getResponsive('font-size'),
+        lineHeight: getResponsive('line-height'),
+        letterSpacing: getResponsive('letter-spacing'),
+        textTransform: this.navGet('text-transform') || this.navDef('general', 'text-transform'),
+        color: this.navPreviewTextColor(device),
+      };
+    },
+    mobileColorField(colorGroup, field) {
+      return this.navColorField('mobile', colorGroup, field) || '#101828';
+    },
+    mobileBarStyle() {
+      const bg = this.mobileColorField('mobile-title-color', 'mobile-title-bgcolor');
+      const height = this.navGet('mobile-height') || this.navDef('mobile', 'mobile-height');
+      return { backgroundColor: bg, height: height };
+    },
+    mobileL1Style(active) {
+      const group = active ? 'mobile-l1-active-color' : 'mobile-l1-color';
+      const textField = active ? 'mobile-l1-active-textcolor' : 'mobile-l1-textcolor';
+      const bgField = active ? 'mobile-l1-active-bgcolor' : 'mobile-l1-bgcolor';
+      return {
+        color: this.mobileColorField(group, textField),
+        backgroundColor: this.mobileColorField(group, bgField),
+        borderColor: this.navGet('mobile-l1-bordercolor') ||
+          (this.navDefaults.mobile?.vars?.['mobile-l1-bordercolor']?.value) || '#00000025',
+      };
+    },
+    mobileL2Style(active) {
+      const group = active ? 'mobile-l2-active-color' : 'mobile-l2-color';
+      const textField = active ? 'mobile-l2-active-textcolor' : 'mobile-l2-textcolor';
+      const bgField = active ? 'mobile-l2-active-bgcolor' : 'mobile-l2-bgcolor';
+      return {
+        color: this.mobileColorField(group, textField),
+        backgroundColor: this.mobileColorField(group, bgField),
+        borderColor: this.navGet('mobile-l2-bordercolor') ||
+          (this.navDefaults.mobile?.vars?.['mobile-l2-bordercolor']?.value) || '#00000015',
+      };
+    },
+    navPreviewFlyoutStyle() {
+      const bg = this.navColorField('desktop', 'flyout-color', 'flyout-bgcolor') || '#ffffff';
+      const border = this.navColorField('desktop', 'flyout-color', 'flyout-bordercolor') || '#00000025';
+      const minWidth = this.navGet('desktop-flyout-min-width') || this.navDef('desktop', 'desktop-flyout-min-width') || '10rem';
+      return {
+        backgroundColor: bg,
+        borderColor: border,
+        minWidth: minWidth,
+      };
+    },
+    navPreviewFlyoutItemStyle() {
+      const color = this.navColorField('desktop', 'flyout-color', 'flyout-textcolor') || '#101828';
+      const bg = this.navColorField('desktop', 'flyout-color', 'flyout-bgcolor') || '#ffffff';
+      return { color: color, backgroundColor: bg };
+    },
+    navPreviewFlyoutItemHoverStyle() {
+      const color = this.navColorField('desktop', 'flyout-hover-color', 'flyout-textcolor-hover') || '#ffffff';
+      const bg = this.navColorField('desktop', 'flyout-hover-color', 'flyout-bgcolor-hover') || '#1D548B';
+      return { color: color, backgroundColor: bg };
+    },
+    navFlyoutIconPath() {
+      const icon = this.navGet('desktop-flyout-icon') || this.navDef('desktop', 'desktop-flyout-icon') || 'arrow-down';
+      const paths = {
+        'arrow-down': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12z"/></svg>',
+        'chevron-down': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+        'caret-down': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 10l4 4 4-4z"/></svg>',
+        'plus-minus': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg>',
+      };
+      return paths[icon] || paths['arrow-down'];
+    },
     getOverrideValue(varName) {
       return (this.navOverrides.global || {})[varName] || '';
     },
@@ -727,6 +1008,108 @@ export default {
 
 <style>
 /* Uses pw-element-* and pw-group-* classes from GlobalElementStyles */
+
+/* pw-field-reset is defined in GlobalElementStyles but we need pw-field-row position:relative here too */
+
+.pw-nav-preview {
+  display: flex;
+  padding: 0 var(--spacing-6);
+  margin-bottom: var(--spacing-2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.pw-nav-preview-items {
+  display: flex;
+  flex: 1;
+  gap: var(--spacing-6);
+}
+
+.pw-nav-preview-item {
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  position: relative;
+}
+
+.pw-nav-preview-flyout-icon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.pw-nav-preview-flyout-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pw-nav-preview-flyout {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  border: 1px solid;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  z-index: 1;
+}
+
+.pw-nav-preview-flyout-item {
+  padding: var(--spacing-2) var(--spacing-3);
+  white-space: nowrap;
+}
+
+.pw-nav-preview-mobile {
+  margin-bottom: var(--spacing-2);
+  max-width: 320px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.pw-nav-preview-mobile-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-4);
+}
+
+.pw-nav-preview-mobile-bar > svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.pw-nav-preview-mobile-menu {
+  font-size: 0.875rem;
+}
+
+.pw-nav-preview-mobile-l1 {
+  padding: var(--spacing-3) var(--spacing-4);
+}
+
+.pw-mobile-border {
+  border-top: 1px solid;
+}
+
+.pw-nav-preview-mobile-l2 {
+  padding: var(--spacing-2) var(--spacing-4) var(--spacing-2) var(--spacing-8);
+}
+
+.pw-mobile-border-l2 {
+  border-top: 1px solid;
+}
+
+.pw-nav-preview-logo {
+  display: flex;
+  align-items: center;
+  margin-right: var(--spacing-6);
+  flex-shrink: 0;
+}
+
+.pw-nav-preview-logo svg {
+  height: 100%;
+  width: auto;
+}
 
 .pw-svg-preview {
   height: 30px;

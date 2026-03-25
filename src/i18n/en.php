@@ -15,8 +15,10 @@
 	'prw.label.remove' => 'Remove',
 
 	/* -------------- Tabs --------------*/
+	'prw.tab.settings' => 'Settings',
 	'prw.tab.global' => 'Global',
 	'prw.tab.blocks' => 'Blocks',
+	'prw.tab.fonts' => 'Fonts',
 	'prw.tab.elements' => 'Elements',
 	'prw.tab.header' => 'Header',
 	'prw.tab.footer' => 'Footer',
@@ -33,9 +35,11 @@
 
 	/* -------------- Headlines --------------*/
 	'prw.headline.columnBlocks' => 'Allowed Blocks',
+	'prw.headline.activeBlocks' => 'Active Blocks',
 
 	/* -------------- Props: Navigation groups --------------*/
 	'prw.prop.body' => 'Body',
+	'prw.prop.layout' => 'DefaultLayout',
 	'prw.prop.blocks' => 'Blocks',
 	'prw.prop.general' => 'General',
 	'prw.prop.desktop' => 'Desktop',
@@ -54,8 +58,9 @@
 	'prw.elementgroup.cite' => 'Cite',
 
 	/* -------------- Props: Body / Blocks --------------*/
-	'prw.prop.body-background' => 'Body Background',
-	'prw.prop.font-family-default' => 'Default Font',
+	'prw.prop.body-background' => 'Page Background',
+	'prw.prop.font-family-default' => 'Font Family',
+	'prw.headline.defaultFont' => 'Default Font',
 	'prw.prop.global-margin-top' => 'Margin Top',
 	'prw.prop.global-margin-bottom' => 'Margin Bottom',
 	'prw.prop.global-padding-top' => 'Padding Top',
