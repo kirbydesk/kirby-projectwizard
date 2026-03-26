@@ -10,21 +10,23 @@
       <transition name="pw-slide">
         <div v-show="hideSectionHeaders || isOpen(groupKey)" class="pw-element-list">
           <!-- Desktop navigation preview -->
-          <div v-if="groupKey === 'desktop'" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle()">
+          <div v-if="groupKey === 'desktop' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">Desktop</span></div>
+          <div v-if="groupKey === 'desktop' && !hidePreview" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle()">
             <div v-if="navPreviewLogo()" class="pw-nav-preview-logo" :style="navPreviewLogoStyle()"><div :style="{ height: navPreviewLogoSvgHeight() }" v-html="navPreviewLogo()"></div></div>
             <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle()">
               <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:'Home',fly:false,home:true},{t:'About',fly:false},{t:'Services',fly:true,flyout:'services'},{t:'Portfolio',fly:true,flyout:'portfolio'},{t:'Contact',fly:false}]" v-if="!item.home || (navGet('home-desktop') || navDef('desktop', 'home-desktop')) === 'true'" :key="idx" :style="navPreviewItemStyle()">
-                <span @click.stop="openFlyout = openFlyout === item.flyout ? null : item.flyout" style="cursor:pointer;display:flex;align-items:center;gap:var(--spacing-1)">{{ item.t }}<span v-if="item.fly" class="pw-nav-preview-flyout-icon" :style="{ color: navPreviewTextColor() }" v-html="navFlyoutIconPath()"></span></span>
-                <div v-if="item.flyout && openFlyout === item.flyout" class="pw-nav-preview-flyout" :style="navPreviewFlyoutStyle()">
+                <span style="display:flex;align-items:center;gap:var(--spacing-1)">{{ item.t }}<span v-if="item.fly" class="pw-nav-preview-flyout-icon" :style="{ color: navPreviewTextColor() }" v-html="navFlyoutIconPath()"></span></span>
+                <div v-if="item.flyout && showFlyout && item.flyout === 'services'" class="pw-nav-preview-flyout" :style="navPreviewFlyoutStyle()">
                   <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu A</div>
-                  <div class="pw-nav-preview-flyout-item pw-nav-preview-flyout-item-hover" :style="navPreviewFlyoutItemHoverStyle()">Submenu B</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu B</div>
                   <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu C</div>
                 </div>
               </span>
             </div>
           </div>
           <!-- Tablet navigation preview -->
-          <div v-if="groupKey === 'tablet'" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle('tablet')">
+          <div v-if="groupKey === 'tablet' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">Tablet</span></div>
+          <div v-if="groupKey === 'tablet' && !hidePreview" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle('tablet')">
             <div v-if="navPreviewLogo('tablet')" class="pw-nav-preview-logo" :style="navPreviewLogoStyle('tablet')"><div :style="{ height: navPreviewLogoSvgHeight('tablet') }" v-html="navPreviewLogo('tablet')"></div></div>
             <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle('tablet')">
               <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:'Home',fly:false,home:true},{t:'About',fly:false},{t:'Services',fly:true,flyout:'t-services'},{t:'Portfolio',fly:true,flyout:'t-portfolio'},{t:'Contact',fly:false}]" v-if="!item.home || (navGet('home-tablet') || navDef('tablet', 'home-tablet')) === 'true'" :key="idx" :style="navPreviewItemStyle('tablet')">
@@ -38,7 +40,8 @@
             </div>
           </div>
           <!-- Mobile navigation preview -->
-          <div v-if="groupKey === 'mobile'" class="pw-nav-preview-mobile">
+          <div v-if="groupKey === 'mobile' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">Mobile</span></div>
+          <div v-if="groupKey === 'mobile' && !hidePreview" class="pw-nav-preview-mobile">
             <div class="pw-nav-preview-mobile-bar" :style="mobileBarStyle()">
               <div v-if="navPreviewLogo('mobile')" :style="{ height: navPreviewLogoSvgHeight('mobile') }" v-html="navPreviewLogo('mobile')"></div>
               <svg viewBox="0 0 24 24" width="20" height="20" :style="{ fill: mobileColorField('mobile-title-color', 'mobile-title-textcolor') }"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
@@ -57,7 +60,7 @@
             </div>
           </div>
           <!-- Grouped fields -->
-          <template v-for="(fieldGroup, gIdx) in groupedFields(group)">
+          <template v-if="!showPreview" v-for="(fieldGroup, gIdx) in groupedFields(group)">
             <!-- Section label -->
             <div v-if="fieldGroup.isLabel" :key="'gl-' + gIdx" class="pw-nav-label">
               {{ fieldGroup.labelText }}
@@ -225,12 +228,6 @@
                               <span class="pw-px-calculator">{{ toPx(getOverrideValue(dependentField(field.varName).varName) || dependentField(field.varName).def.value, dependentField(field.varName).def.unit) }}</span>
                             </span>
                           </template>
-                          <k-button
-                            :text="$t('prw.label.remove')"
-                            icon="remove"
-                            size="xs"
-                            @click="removeSvg(field.varName)"
-                          />
                         </template>
                         <label v-else class="pw-svg-upload-btn">
                           <k-icon type="upload" />
@@ -250,7 +247,8 @@
                     </div>
                   </span>
                 </div>
-                <k-button v-if="hasFieldOverride(field.varName, false)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetNavField(field.varName, false)" />
+                <k-button v-if="field.def.type === 'svg' && getOverrideValue(field.varName)" class="pw-field-reset" :text="$t('prw.label.remove')" icon="remove" size="xs" variant="filled" @click="removeSvg(field.varName)" />
+                <k-button v-else-if="field.def.type !== 'svg' && hasFieldOverride(field.varName, false)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetNavField(field.varName, false, field.label)" />
               </div>
               </template>
               <!-- Group end spacing -->
@@ -258,7 +256,7 @@
             </template>
           </template>
           <!-- Multi-theme colors -->
-          <template v-if="group.colors">
+          <template v-if="group.colors && !showPreview">
             <div v-if="hasColors(group)" class="pw-group-header">
               <div class="pw-field-row-label-col"></div>
               <div class="pw-group-header-labels pw-group-type-theme-color">
@@ -294,7 +292,7 @@
                   </div>
                 </span>
               </div>
-              <k-button v-if="hasFieldOverride(varName, true)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetNavField(varName, true)" />
+              <k-button v-if="hasFieldOverride(varName, true)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetNavField(varName, true, propLabel(varName))" />
             </div>
             <div class="pw-group-end"></div>
           </template>
@@ -343,7 +341,27 @@ export default {
       type: Object,
       default: null,
     },
+    discardKey: {
+      type: Number,
+      default: 0,
+    },
     showColors: {
+      type: Boolean,
+      default: false,
+    },
+    showGroup: {
+      type: String,
+      default: null,
+    },
+    showPreview: {
+      type: Boolean,
+      default: false,
+    },
+    hidePreview: {
+      type: Boolean,
+      default: false,
+    },
+    showFlyout: {
       type: Boolean,
       default: false,
     },
@@ -352,6 +370,7 @@ export default {
     return {
       openSections: {},
       openFlyout: null,
+      resetFields: new Set(),
       inlineIcons: {
         'arrow-down': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>',
         'chevron-down': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
@@ -360,10 +379,15 @@ export default {
       },
     };
   },
+  watch: {
+    savedOverrides() { this.resetFields = new Set(); },
+    discardKey() { this.resetFields = new Set(); },
+  },
   computed: {
     groups() {
       const result = {};
       for (const [key, val] of Object.entries(this.navDefaults)) {
+        if (this.showGroup && key !== this.showGroup) continue;
         if (val && typeof val === 'object' && (val.vars || val.colors)) {
           if (this.showOnly || this.hideVars) {
             const filtered = { ...val };
@@ -456,8 +480,6 @@ export default {
               if (currentValue !== reqValue) continue;
             } else {
               if (!this.getOverrideValue(def.requires)) continue;
-              // Height fields are rendered inline in SVG row via dependentField
-              if (varName.endsWith('-display-height')) continue;
             }
           }
           const sig = this.fieldSignature(varName, def);
@@ -527,16 +549,7 @@ export default {
       if (!def) return '';
       return def.value || '';
     },
-    dependentField(svgVarName) {
-      // Find the field that has requires: svgVarName
-      for (const [, group] of Object.entries(this.navDefaults)) {
-        if (!group.vars) continue;
-        for (const [varName, def] of Object.entries(group.vars)) {
-          if (def.requires === svgVarName) {
-            return { varName, def };
-          }
-        }
-      }
+    dependentField() {
       return null;
     },
     toggleIcon(varName, icon, defaultVal) {
@@ -789,28 +802,28 @@ export default {
     },
     hasFieldOverride(varName, isColor) {
       if (!this.savedOverrides) return false;
+      if (this.resetFields.has(varName)) return false;
       const saved = this.savedOverrides.global || {};
-      const current = this.navOverrides.global || {};
       if (isColor) {
         for (const theme of ['default', 'variant', 'variant2']) {
-          if ((saved[theme] || {})[varName] && (current[theme] || {})[varName]) return true;
+          if ((saved[theme] || {})[varName]) return true;
         }
         return false;
       }
       for (const bp of ['default', 'lg', 'xl']) {
-        if ((saved[bp] || {})[varName] && (current[bp] || {})[varName]) return true;
+        if ((saved[bp] || {})[varName]) return true;
       }
-      if (saved[varName] && current[varName]) return true;
-      return false;
+      return !!saved[varName];
     },
-    async resetNavField(varName, isColor) {
+    async resetNavField(varName, isColor, label) {
+      const name = label ? label.replace(/<[^>]*>/g, '') : varName;
       try {
         await new Promise((resolve, reject) => {
           this.$panel.dialog.open({
             component: 'k-text-dialog',
             props: {
-              text: 'Reset to default?',
-              submitBtn: { text: 'Reset', icon: 'undo', theme: 'negative' },
+              text: (this.$t('prw.label.reset-confirm') || 'Reset "{field}" to default?').replace('{field}', name),
+              submitBtn: { text: this.$t('prw.label.reset'), icon: 'undo', theme: 'negative' },
             },
             on: {
               submit: () => { this.$panel.dialog.close(); resolve(); },
@@ -819,6 +832,7 @@ export default {
           });
         });
       } catch (e) { return; }
+      this.resetFields.add(varName);
       const overrides = JSON.parse(JSON.stringify(this.navOverrides));
       if (!overrides.global) return;
       if (isColor) {
@@ -862,8 +876,9 @@ export default {
     },
     navPreviewBarStyle(device) {
       const d = device || 'desktop';
-      const bgColor = this.navColorField(d, d + '-color', d + '-bgcolor') ||
-        (d === 'tablet' ? this.navColorField('desktop', 'desktop-color', 'desktop-bgcolor') : '') || '#FFFFFF';
+      const bgColor = this.navGet(d + '-background') || this.navDef(d, d + '-background') ||
+        this.navColorField(d, d + '-color', d + '-bgcolor') ||
+        (d === 'tablet' ? (this.navGet('desktop-background') || this.navDef('desktop', 'desktop-background')) : '') || '#FFFFFF';
       const height = this.navGet(d + '-height') || this.navDef(d, d + '-height');
       return { backgroundColor: bgColor, height: height };
     },
@@ -890,8 +905,9 @@ export default {
     },
     navPreviewTextColor(device) {
       const d = device || 'desktop';
-      return this.navColorField(d, d + '-color', d + '-textcolor') ||
-        (d === 'tablet' ? this.navColorField('desktop', 'desktop-color', 'desktop-textcolor') : '') || '#101828';
+      return this.navGet(d + '-textcolor') || this.navDef(d, d + '-textcolor') ||
+        this.navColorField(d, d + '-color', d + '-textcolor') ||
+        (d === 'tablet' ? (this.navGet('desktop-textcolor') || this.navDef('desktop', 'desktop-textcolor')) : '') || '#101828';
     },
     navPreviewItemStyle(device) {
       const bp = device === 'tablet' ? 'lg' : 'xl';
@@ -947,25 +963,28 @@ export default {
           (this.navDefaults.mobile?.vars?.['mobile-l2-bordercolor']?.value) || '#00000015',
       };
     },
+    navPreviewFlyoutColor(name) {
+      return this.navGet(name) || this.navDef('desktop', name) || '';
+    },
     navPreviewFlyoutStyle() {
-      const bg = this.navColorField('desktop', 'flyout-color', 'flyout-bgcolor') || '#ffffff';
-      const border = this.navColorField('desktop', 'flyout-color', 'flyout-bordercolor') || '#00000025';
-      const minWidth = this.navGet('desktop-flyout-min-width') || this.navDef('desktop', 'desktop-flyout-min-width') || '10rem';
       return {
-        backgroundColor: bg,
-        borderColor: border,
-        minWidth: minWidth,
+        backgroundColor: this.navPreviewFlyoutColor('flyout-bgcolor') || '#ffffff',
+        borderColor: 'transparent',
+        minWidth: this.navGet('desktop-flyout-min-width') || this.navDef('desktop', 'desktop-flyout-min-width') || '10rem',
       };
     },
     navPreviewFlyoutItemStyle() {
-      const color = this.navColorField('desktop', 'flyout-color', 'flyout-textcolor') || '#101828';
-      const bg = this.navColorField('desktop', 'flyout-color', 'flyout-bgcolor') || '#ffffff';
-      return { color: color, backgroundColor: bg };
+      return {
+        color: this.navPreviewFlyoutColor('flyout-textcolor') || '#101828',
+        backgroundColor: this.navPreviewFlyoutColor('flyout-bgcolor') || '#ffffff',
+        borderBottomColor: this.navPreviewFlyoutColor('flyout-bordercolor') || '#00000025',
+      };
     },
     navPreviewFlyoutItemHoverStyle() {
-      const color = this.navColorField('desktop', 'flyout-hover-color', 'flyout-textcolor-hover') || '#ffffff';
-      const bg = this.navColorField('desktop', 'flyout-hover-color', 'flyout-bgcolor-hover') || '#1D548B';
-      return { color: color, backgroundColor: bg };
+      return {
+        color: this.navPreviewFlyoutColor('flyout-textcolor-hover') || '#ffffff',
+        backgroundColor: this.navPreviewFlyoutColor('flyout-bgcolor-hover') || '#1D548B',
+      };
     },
     navFlyoutIconPath() {
       const icon = this.navGet('desktop-flyout-icon') || this.navDef('desktop', 'desktop-flyout-icon') || 'arrow-down';
@@ -1025,11 +1044,12 @@ export default {
 }
 
 .pw-nav-preview-item {
-  cursor: default;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: var(--spacing-1);
   position: relative;
+  transition: color 0.15s;
 }
 
 .pw-nav-preview-flyout-icon {
@@ -1048,7 +1068,7 @@ export default {
   position: absolute;
   top: 100%;
   left: 0;
-  border: 1px solid;
+  border: none;
   border-radius: 4px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -1058,6 +1078,13 @@ export default {
 .pw-nav-preview-flyout-item {
   padding: var(--spacing-2) var(--spacing-3);
   white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+  border-bottom: 1px solid transparent;
+}
+
+.pw-nav-preview-flyout-item:last-child {
+  border-bottom: none;
 }
 
 .pw-nav-preview-mobile {

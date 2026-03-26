@@ -87,8 +87,8 @@
 
             <!-- Layout / Colors subtabs -->
             <div class="pw-element-subtabs">
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (blocksSubtab || 'layout') === 'layout' }" @click="blocksSubtab = 'layout'">Layout</button>
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': blocksSubtab === 'colors' }" @click="blocksSubtab = 'colors'">Colors</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (blocksSubtab || 'layout') === 'layout' }" @click="blocksSubtab = 'layout'">{{ $t('prw.subtab.layout') }}</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': blocksSubtab === 'colors' }" @click="blocksSubtab = 'colors'">{{ $t('prw.subtab.colors') }}</button>
             </div>
 
             <pw-global-navigation
@@ -96,6 +96,7 @@
               :nav-defaults="globalDefaults"
               :nav-overrides="globalOverrides"
               :saved-overrides="originalGlobalOverrides"
+              :discard-key="discardKey"
               :fonts="fontsData"
               :body-default-font="bodyDefaultFont"
               @update:overrides="onGlobalOverridesUpdate"
@@ -108,6 +109,7 @@
               :nav-defaults="globalDefaults"
               :nav-overrides="globalOverrides"
               :saved-overrides="originalGlobalOverrides"
+              :discard-key="discardKey"
               :fonts="fontsData"
               :body-default-font="bodyDefaultFont"
               @update:overrides="onGlobalOverridesUpdate"
@@ -124,9 +126,9 @@
 
             <!-- Subtabs -->
             <div class="pw-element-subtabs">
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (fontsSubtab || 'default') === 'default' }" @click="fontsSubtab = 'default'">Default Font</button>
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'installed' }" @click="fontsSubtab = 'installed'">Installed Fonts</button>
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'add' }" @click="fontsSubtab = 'add'">Add Font</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (fontsSubtab || 'default') === 'default' }" @click="fontsSubtab = 'default'">{{ $t('prw.subtab.default-font') }}</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'installed' }" @click="fontsSubtab = 'installed'">{{ $t('prw.subtab.installed-fonts') }}</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'add' }" @click="fontsSubtab = 'add'">{{ $t('prw.subtab.add-font') }}</button>
             </div>
 
             <pw-global-navigation
@@ -159,6 +161,7 @@
               :element-defaults="elementDefaults"
               :element-overrides="elementOverrides"
               :saved-overrides="originalElementOverrides"
+              :discard-key="discardKey"
               :global-defaults="globalDefaults"
               :global-overrides="globalOverrides"
               :fonts="fontsData"
@@ -172,13 +175,68 @@
 
           <!-- Header -->
           <div v-show="globalActiveTab === 'header'" class="pw-wizard-global-content">
+            <!-- Pills: General / Desktop / Tablet / Mobile -->
+            <div class="pw-element-pills">
+              <button v-for="pill in ['general', 'desktop', 'tablet', 'mobile']" :key="pill" type="button" class="pw-element-pill" :class="{ 'is-active': (headerPill || 'general') === pill }" @click="headerPill = pill; headerSubtab = null">{{ $t('prw.prop.' + pill) || pill }}</button>
+            </div>
+
+            <!-- General: no preview, no subtabs -->
             <pw-global-navigation
+              v-show="(headerPill || 'general') === 'general'"
               :nav-defaults="navDefaults"
               :nav-overrides="navOverrides"
+              :saved-overrides="originalNavOverrides"
+              :discard-key="discardKey"
               :fonts="fontsData"
               :body-default-font="bodyDefaultFont"
               @update:overrides="onNavOverridesUpdate"
+              :show-group="'general'"
+              :hide-section-headers="true"
             />
+
+            <!-- Desktop / Tablet / Mobile: preview + subtabs -->
+            <template v-if="headerPill && headerPill !== 'general'">
+              <!-- Preview -->
+              <pw-global-navigation
+                :nav-defaults="navDefaults"
+                :nav-overrides="navOverrides"
+                :fonts="fontsData"
+                :body-default-font="bodyDefaultFont"
+                @update:overrides="onNavOverridesUpdate"
+                :show-group="headerPill"
+                :show-preview="true"
+                :show-flyout="headerSubtab === 'flyout' || headerSubtab === 'flyout-colors'"
+                :hide-section-headers="true"
+              />
+
+              <!-- Subtabs -->
+              <div class="pw-element-subtabs">
+                <button
+                  v-for="st in headerSubtabs"
+                  :key="st.key"
+                  type="button"
+                  class="pw-element-subtab"
+                  :class="{ 'is-active': (headerSubtab || headerSubtabs[0].key) === st.key }"
+                  @click="headerSubtab = st.key"
+                >{{ st.label }}</button>
+              </div>
+
+              <!-- Fields -->
+              <pw-global-navigation
+                :nav-defaults="navDefaults"
+                :nav-overrides="navOverrides"
+                :saved-overrides="originalNavOverrides"
+                :discard-key="discardKey"
+                :fonts="fontsData"
+                :body-default-font="bodyDefaultFont"
+                @update:overrides="onNavOverridesUpdate"
+                :show-group="headerPill"
+                :show-only="headerNavShowOnly"
+                :show-colors="true"
+                :hide-section-headers="true"
+                :hide-preview="true"
+              />
+            </template>
           </div>
 
           <!-- Footer -->
@@ -234,7 +292,10 @@ export default {
       loading: true,
       blockPreviewOpen: true,
       blocksSubtab: 'layout',
+      discardKey: 0,
       fontsSubtab: 'default',
+      headerPill: 'general',
+      headerSubtab: 'layout',
       blocks: [],
       activeBlocks: [],
       activeTab: 'global',
@@ -288,6 +349,33 @@ export default {
         paddingBottom: get('global-margin-bottom') || '3rem',
       };
     },
+    headerSubtabs() {
+      const pill = this.headerPill || 'general';
+      const tabs = {
+        desktop: [
+          { key: 'logo', label: this.$t('prw.subtab.logo'), vars: ['desktop-logo-src', 'desktop-logo-display-height', 'desktop-logo-align', 'desktop-logo-padding'] },
+          { key: 'navigation', label: this.$t('prw.subtab.navigation'), vars: ['home-desktop', 'desktop-height', 'desktop-items-align', 'desktop-items-padding', 'desktop-font-size', 'desktop-line-height', 'desktop-letter-spacing'] },
+          { key: 'navigation-colors', label: this.$t('prw.subtab.navigation-colors'), vars: ['desktop-background', 'desktop-textcolor', 'desktop-textcolor-hover', 'desktop-textcolor-active'] },
+          { key: 'flyout', label: this.$t('prw.subtab.flyout'), vars: ['desktop-flyout-icon', 'desktop-flyout-flip-from', 'desktop-flyout-min-width'] },
+          { key: 'flyout-colors', label: this.$t('prw.subtab.flyout-colors'), vars: ['flyout-bordercolor', 'flyout-bgcolor', 'flyout-bgcolor-hover', 'flyout-bgcolor-active', 'flyout-textcolor', 'flyout-textcolor-hover', 'flyout-textcolor-active'] },
+        ],
+        tablet: [
+          { key: 'logo', label: this.$t('prw.subtab.logo'), vars: ['tablet-logo-src', 'tablet-logo-display-height', 'tablet-logo-align', 'tablet-logo-padding'] },
+          { key: 'navigation', label: this.$t('prw.subtab.navigation'), vars: ['home-tablet', 'tablet-height', 'tablet-items-align', 'tablet-items-padding', 'tablet-font-size', 'tablet-line-height', 'tablet-letter-spacing'] },
+        ],
+        mobile: [
+          { key: 'layout', label: this.$t('prw.subtab.layout'), vars: ['home-mobile', 'mobile-height', 'mobile-logo-src', 'mobile-logo-display-height', 'mobile-font-size', 'mobile-line-height', 'mobile-letter-spacing'] },
+          { key: 'colors', label: this.$t('prw.subtab.colors'), vars: ['mobile-title-color', 'mobile-language-color', 'mobile-l1-color', 'mobile-l1-active-color', 'mobile-l2-color', 'mobile-l2-active-color', 'mobile-l1-bordercolor', 'mobile-l2-bordercolor'] },
+        ],
+      };
+      return tabs[pill] || [];
+    },
+    headerNavShowOnly() {
+      const subtabs = this.headerSubtabs;
+      if (!subtabs.length) return null;
+      const active = subtabs.find(t => t.key === this.headerSubtab) || subtabs[0];
+      return active.vars;
+    },
     bodyBackgroundColor() {
       const ov = (this.globalOverrides.global || {})['body-background'];
       if (ov) return ov;
@@ -332,6 +420,7 @@ export default {
     },
     globalOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
     elementOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
+    navOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
   },
   async created() {
     await this.load();
@@ -665,6 +754,18 @@ export default {
         rules.push('.pw-preview-btn-' + theme + ':hover { color: ' + btnHover.color + ' !important; background-color: ' + btnHover.bg + ' !important; border-color: ' + btnHover.border + ' !important; }');
         rules.push('.pw-preview-btn-' + theme + ':active { color: ' + btnActive.color + ' !important; background-color: ' + btnActive.bg + ' !important; border-color: ' + btnActive.border + ' !important; }');
       }
+
+      // Nav preview hover/active
+      const navOv = this.navOverrides.global || {};
+      const navDef = this.navDefaults.desktop?.vars || {};
+      const navColor = (name, fallback) => navOv[name] || navDef[name]?.value || fallback;
+      rules.push('.pw-nav-preview-item span:hover { color: ' + navColor('desktop-textcolor-hover', '#101828') + ' !important; }');
+      rules.push('.pw-nav-preview-item span:active { color: ' + navColor('desktop-textcolor-active', '#101828') + ' !important; }');
+
+      // Flyout preview hover/active
+      rules.push('.pw-nav-preview-flyout-item:hover { color: ' + navColor('flyout-textcolor-hover', '#ffffff') + ' !important; background-color: ' + navColor('flyout-bgcolor-hover', '#1D548B') + ' !important; }');
+      rules.push('.pw-nav-preview-flyout-item:active { color: ' + navColor('flyout-textcolor-active', '#ffffff') + ' !important; background-color: ' + navColor('flyout-bgcolor-active', '#164073') + ' !important; }');
+
       style.textContent = rules.join('\n');
     },
     blockPreviewLinkColor(theme, state) {
@@ -786,6 +887,7 @@ export default {
         this.$set(this.blockOverrides, bt, JSON.parse(JSON.stringify(this.originalOverrides[bt] || {})));
         this.$set(this.dirtyTabs, this.activeTab, false);
       }
+      this.discardKey++;
     },
 
     async saveGlobal() {

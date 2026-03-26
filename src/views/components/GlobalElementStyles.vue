@@ -174,7 +174,7 @@
                   </div>
                 </span>
               </div>
-              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
+              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
             </div>
             <!-- Sizes sub-rows -->
             <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']">
@@ -354,7 +354,7 @@
                   </div>
                 </span>
               </div>
-              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" text="Reset" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
+              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
             </div>
             <!-- Sizes rows (appear after font-size row when toggled) -->
             <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']">
@@ -439,14 +439,23 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    discardKey: {
+      type: Number,
+      default: 0,
+    },
   },
   data() {
     return {
       activeElement: null,
       openSections: {},
+      resetFields: new Set(),
     };
   },
   watch: {
+    savedOverrides: {
+      handler() { this.resetFields = new Set(); },
+    },
+    discardKey() { this.resetFields = new Set(); },
     pillGroups: {
       immediate: true,
       handler(g) {
@@ -759,24 +768,24 @@ export default {
     },
     hasFieldOverride(field) {
       const varName = field.varName;
+      if (this.resetFields.has(varName)) return false;
       const saved = this.savedOverrides.global || {};
-      const current = this.elementOverrides.global || {};
       if (field.type === 'theme-color') {
         for (const theme of ['default', 'variant', 'variant2']) {
-          if ((saved[theme] || {})[varName] && (current[theme] || {})[varName]) return true;
+          if ((saved[theme] || {})[varName]) return true;
         }
         return false;
       }
       if (field.type === 'responsive') {
         for (const bp of ['default', 'lg', 'xl']) {
-          if ((saved[bp] || {})[varName] && (current[bp] || {})[varName]) return true;
+          if ((saved[bp] || {})[varName]) return true;
         }
         return false;
       }
       if (field.type === 'multi-value') {
-        return Array.isArray(saved[varName]) && Array.isArray(current[varName]);
+        return Array.isArray(saved[varName]);
       }
-      return !!saved[varName] && !!current[varName];
+      return !!saved[varName];
     },
     async resetField(field) {
       const label = field.label.replace(/<[^>]*>/g, '');
@@ -785,9 +794,9 @@ export default {
           this.$panel.dialog.open({
             component: 'k-text-dialog',
             props: {
-              text: 'Reset "' + label + '" to default?',
+              text: (this.$t('prw.label.reset-confirm') || 'Reset "{field}" to default?').replace('{field}', label),
               submitBtn: {
-                text: 'Reset',
+                text: this.$t('prw.label.reset'),
                 icon: 'undo',
                 theme: 'negative',
               },
@@ -799,6 +808,7 @@ export default {
           });
         });
       } catch (e) { return; }
+      this.resetFields.add(field.varName);
       const varName = field.varName;
       const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
       if (!overrides.global) return;
@@ -938,7 +948,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: 'Text', sizes: 'Sizes', colors: 'Colors' };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), colors: this.$t('prw.subtab.colors') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
