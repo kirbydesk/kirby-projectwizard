@@ -1,6 +1,38 @@
 <?php
 
 /* -------------- Areas --------------*/
+
+// If setup is needed, show only the setup wizard
+if (SetupWizard::isNeeded()) {
+	return [
+		'projectwizard' => [
+			'label' => 'Project Wizard',
+			'icon'  => 'wand',
+			'menu'  => true,
+			'dialogs' => [
+				'projectwizard/setup' => [
+					'pattern' => 'projectwizard/setup',
+					'load'    => fn() => [
+						'component' => 'pw-setup-dialog',
+						'props'     => SetupWizard::detect(),
+					],
+					'submit'  => fn() => true,
+				],
+			],
+			'views' => [
+				[
+					'pattern' => 'projectwizard',
+					'action'  => fn() => [
+						'component' => 'pw-wizard-setup',
+						'title'     => 'Project Setup',
+						'props'     => [],
+					],
+				],
+			],
+		],
+	];
+}
+
 $areas = [];
 
 // Divider before Project Wizard section

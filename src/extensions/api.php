@@ -3,6 +3,50 @@
 /* -------------- API Routes --------------*/
 return [
 	'routes' => [
+		// Setup wizard: check status
+		[
+			'pattern' => 'projectwizard/setup/status',
+			'method'  => 'GET',
+			'action'  => function () {
+				return [
+					'needed'   => SetupWizard::isNeeded(),
+					'defaults' => SetupWizard::detect(),
+				];
+			}
+		],
+		// Setup wizard: run all steps
+		[
+			'pattern' => 'projectwizard/setup/run',
+			'method'  => 'POST',
+			'action'  => function () {
+				set_time_limit(300);
+				$defaults = SetupWizard::detect();
+				$projectName = $defaults['projectName'];
+				$valetHost = $defaults['valetHost'];
+				$results = [];
+
+				$steps = [
+					'clean'          => fn() => SetupWizard::cleanSlate(),
+					'directories'    => fn() => SetupWizard::createDirectories(),
+					'files'          => fn() => SetupWizard::generateFiles($projectName, $valetHost),
+					'finalize'       => fn() => SetupWizard::finalize(),
+				];
+
+				foreach ($steps as $key => $fn) {
+					try {
+						$result = $fn();
+						if (isset($result['success']) && $result['success'] === false) {
+							return ['success' => false, 'failedStep' => $key, 'error' => $result['output'] ?? 'Unknown error', 'results' => $results];
+						}
+						$results[$key] = $result;
+					} catch (Exception $e) {
+						return ['success' => false, 'failedStep' => $key, 'error' => $e->getMessage(), 'results' => $results];
+					}
+				}
+
+				return ['success' => true, 'results' => $results];
+			}
+		],
 		// List all detected blocks with their defaults and current overrides
 		[
 			'pattern' => 'projectwizard/blocks',

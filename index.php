@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/src/classes/ProjectConfig.php';
+require_once __DIR__ . '/src/classes/SetupWizard.php';
 
 Kirby::plugin('kirbydesk/kirby-projectwizard', [
 	/* -------------- Extensions --------------*/
@@ -9,7 +10,9 @@ Kirby::plugin('kirbydesk/kirby-projectwizard', [
 	'translations' => require_once 'src/extensions/translations.php',
 	'hooks'        => [
 		'route:before' => function () {
-			ProjectConfig::scaffold();
+			if (!SetupWizard::isNeeded()) {
+				ProjectConfig::scaffold();
+			}
 		},
 	],
 ]);

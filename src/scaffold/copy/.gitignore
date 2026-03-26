@@ -1,0 +1,44 @@
+# General
+Icon
+.DS_Store
+
+# Editors
+*.sublime-workspace
+/.vscode
+/.idea
+
+# Composer
+/vendor
+/site/plugins/*
+!/site/plugins/site-*
+
+# Node
+node_modules/
+package-lock.json
+
+# Plugin Stub files
+site/patches/css/*/_*.css
+site/patches/js/_*.js
+site/snippets/_*.php
+site/snippets/blocks/_*.php
+site/templates/_*.php
+
+# Temporary files
+/public/media/*
+!/public/media/index.html
+
+# Lock files
+.lock
+
+# Content
+/content
+
+# Cache / Storage
+/storage/*
+
+# Accounts
+/site/accounts/*
+!/site/accounts/index.html
+
+# Env
+.env

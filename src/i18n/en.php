@@ -1,5 +1,15 @@
 <?php return [
 
+	/* -------------- Setup Wizard --------------*/
+	'prw.setup.title' => 'Setup Project Wizard',
+	'prw.setup.warning' => 'This will delete all existing project files and set up a clean project structure. This cannot be undone.',
+	'prw.setup.run' => 'Run Setup',
+	'prw.setup.complete' => 'Setup Complete',
+	'prw.setup.completeHint' => 'Run <strong>npm install</strong> in the terminal to finish setup and <strong>npm run dev</strong> to start developing.',
+	'prw.setup.reload' => 'Reload Panel',
+	'prw.setup.step.running' => 'Setting up your project. This may take a moment...',
+	'prw.setup.publicRequired' => 'The Project Wizard requires a public/ folder structure. Please move your index.php into a public/ directory and point your web server (e.g. Valet) to the public/ folder, then reload this page.',
+
 	/* -------------- Labels --------------*/
 	'prw.label.item' => 'Item',
 	'prw.label.text' => 'Text',
