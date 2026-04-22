@@ -227,10 +227,11 @@ class SetupWizard
 			if (!file_exists($hookFile)) {
 				return ['success' => false, 'output' => 'projectbuilder.php not found'];
 			}
-			// The projectbuilder returns a hooks array; we need to call the route:before hook
+			// The projectbuilder returns a hooks array; invoke the route:after hook
+			// to generate storage/temp/tailwind.css during setup
 			$hooks = require $hookFile;
-			if (isset($hooks['route:before']) && is_callable($hooks['route:before'])) {
-				$hooks['route:before']();
+			if (isset($hooks['route:after']) && is_callable($hooks['route:after'])) {
+				$hooks['route:after']();
 			}
 			return ['success' => true];
 		} catch (Exception $e) {
