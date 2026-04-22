@@ -43,7 +43,7 @@
                   </div>
                 </template>
                 <template v-else>
-                  <span class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)">{{ previewText(groupKey) }}</span>
+                  <span class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)" v-html="previewHtml(groupKey, theme)"></span>
                 </template>
                 <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
                   <span class="pw-element-preview-text" :style="previewStyle(previewChildKey(groupKey), bp, theme)">{{ previewChildText(groupKey) }}</span>
@@ -912,7 +912,7 @@ export default {
     // --- Preview ---
     previewText(groupKey) {
       const texts = {
-        heading: 'The quick brown fox jumps over the lazy dog and keeps on running',
+        heading: 'The quick __marked__brown fox__/marked__ jumps over the lazy dog and keeps on running',
         tagline: 'The quick brown fox jumps over the lazy dog and keeps on running through the field',
         editor: 'The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump.',
         quote: '\u201EThe quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.\u201C',
@@ -981,6 +981,22 @@ export default {
     previewChildText(groupKey) {
       const childKey = this.previewChildKey(groupKey);
       return childKey ? this.previewText(childKey) : null;
+    },
+    previewHtml(groupKey, theme) {
+      let text = this.previewText(groupKey);
+      if (!text) return '';
+      const elDef = this.elementDefaults[groupKey] || {};
+      const elOv = this.elementOverrides.global || {};
+      // Replace __marked__...__/marked__ with styled span
+      text = text.replace(/__marked__(.+?)__\/marked__/g, (match, content) => {
+        const markedTextColor = ((elOv)[theme] || {})['element-' + groupKey + '-marked-text'] || elDef.colors?.['element-' + groupKey + '-marked-text']?.[theme] || '';
+        const markedBgColor = ((elOv)[theme] || {})['element-' + groupKey + '-marked-background'] || elDef.colors?.['element-' + groupKey + '-marked-background']?.[theme] || '';
+        let style = '';
+        if (markedTextColor) style += 'color:' + markedTextColor + ';';
+        if (markedBgColor) style += 'background:' + markedBgColor + ';';
+        return style ? '<mark style="' + style + '">' + content + '</mark>' : content;
+      });
+      return text;
     },
     previewThemed(groupKey) {
       return groupKey === 'button';
