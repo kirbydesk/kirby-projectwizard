@@ -89,6 +89,7 @@ return [
 			'action'  => function (string $blockType) {
 				$data = kirby()->request()->body()->toArray();
 				ProjectConfig::saveBlockConfig($blockType, $data);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::blockConfig($blockType);
 			}
 		],
@@ -98,6 +99,7 @@ return [
 			'method'  => 'POST',
 			'action'  => function (string $blockType) {
 				ProjectConfig::resetBlockConfig($blockType);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::blockConfig($blockType);
 			}
 		],
@@ -115,7 +117,9 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				$blocks = $data['blocks'] ?? [];
-				return ['blocks' => ProjectConfig::activeBlocks($blocks)];
+				$result = ProjectConfig::activeBlocks($blocks);
+				SetupWizard::triggerProjectbuilder();
+				return ['blocks' => $result];
 			}
 		],
 		// Get full stored config
@@ -141,6 +145,7 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				ProjectConfig::saveGlobal($data);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadGlobal();
 			}
 		],
@@ -159,6 +164,7 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				ProjectConfig::saveElements($data);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadElements();
 			}
 		],
@@ -177,6 +183,7 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				ProjectConfig::saveFooter($data);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadFooter();
 			}
 		],
@@ -195,6 +202,7 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				ProjectConfig::saveNavigation($data);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadNavigation();
 			}
 		],
@@ -220,6 +228,7 @@ return [
 					'italic'   => ($data['italic'] ?? false) === true || $data['italic'] === 'true',
 					'files'    => $data['files'] ?? [],
 				]);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadFonts();
 			}
 		],
@@ -250,6 +259,7 @@ return [
 			'method'  => 'DELETE',
 			'action'  => function (string $key, int $fileIndex) {
 				ProjectConfig::removeFontFile($key, $fileIndex);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadFonts();
 			}
 		],
@@ -259,6 +269,7 @@ return [
 			'method'  => 'DELETE',
 			'action'  => function (string $key) {
 				ProjectConfig::removeFont($key);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadFonts();
 			}
 		],
@@ -269,6 +280,7 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				ProjectConfig::setDefaultFont($data['family'] ?? 'Inter');
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadFonts();
 			}
 		],
@@ -287,6 +299,7 @@ return [
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				ProjectConfig::saveFontsizes($data);
+				SetupWizard::triggerProjectbuilder();
 				return ProjectConfig::loadFontsizes();
 			}
 		],
