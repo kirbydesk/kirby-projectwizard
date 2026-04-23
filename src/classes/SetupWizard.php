@@ -112,6 +112,23 @@ class SetupWizard
 			}
 		}
 
+		// Within storage/, keep only sessions/ — cache and temp hold stale
+		// plugin registrations and build artefacts that must be invalidated
+		// when the project config is regenerated.
+		$storageDir = $root . '/storage';
+		if (is_dir($storageDir)) {
+			foreach (scandir($storageDir) as $item) {
+				if ($item === '.' || $item === '..' || $item === 'sessions') continue;
+				$path = $storageDir . '/' . $item;
+				if (is_dir($path)) {
+					static::deleteDir($path);
+				} else {
+					unlink($path);
+				}
+				$deleted[] = 'storage/' . $item;
+			}
+		}
+
 		return ['deleted' => $deleted];
 	}
 
