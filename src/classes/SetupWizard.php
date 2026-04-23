@@ -2,6 +2,9 @@
 
 class SetupWizard
 {
+	/** @var array<string,string> Session files preserved across cleanSlate */
+	private static array $preservedSessions = [];
+
 	/**
 	 * Check if setup is needed (no .initialized lock file).
 	 */
@@ -53,6 +56,18 @@ class SetupWizard
 		$root = static::projectRoot();
 		$keep = ['kirby', 'vendor', 'site', 'public', 'content', 'storage', 'composer.json', 'composer.lock', '.git', '.kirbydesk'];
 		$deleted = [];
+
+		// Preserve existing sessions before we delete anything. Kirby's default
+		// session root is site/sessions/, but the new public/index.php points
+		// to storage/sessions/ — restore the files to the new location so the
+		// admin stays logged in across the bootstrap change.
+		self::$preservedSessions = [];
+		$sessionsRoot = kirby()->root('sessions');
+		if ($sessionsRoot && is_dir($sessionsRoot)) {
+			foreach (glob($sessionsRoot . '/*.sess') ?: [] as $sessFile) {
+				self::$preservedSessions[basename($sessFile)] = file_get_contents($sessFile);
+			}
+		}
 
 		foreach (scandir($root) as $item) {
 			if ($item === '.' || $item === '..') continue;
@@ -129,7 +144,18 @@ class SetupWizard
 			}
 		}
 
-		return ['created' => $created];
+		// Restore sessions preserved in cleanSlate into the new storage/sessions/ root
+		$newSessionsDir = $root . '/storage/sessions';
+		foreach (self::$preservedSessions as $name => $content) {
+			$target = $newSessionsDir . '/' . $name;
+			if (!file_exists($target)) {
+				file_put_contents($target, $content);
+			}
+		}
+		$restored = count(self::$preservedSessions);
+		self::$preservedSessions = [];
+
+		return ['created' => $created, 'sessionsRestored' => $restored];
 	}
 
 	/**
