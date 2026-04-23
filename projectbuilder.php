@@ -46,7 +46,9 @@ return [
 				}
 
 				// Temp directory for temporary css file
-				$tempDir = kirby()->root('temp');
+				// Fallback for first-run setup when the current Kirby bootstrap
+				// has no 'temp' root defined yet (new public/index.php not loaded).
+				$tempDir = kirby()->root('temp') ?? kirby()->root('site') . '/../storage/temp';
 				if (!is_dir($tempDir)) {
 						mkdir($tempDir, 0777, true);
 				}
