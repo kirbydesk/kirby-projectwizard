@@ -51,7 +51,7 @@ class SetupWizard
 	public static function cleanSlate(): array
 	{
 		$root = static::projectRoot();
-		$keep = ['kirby', 'vendor', 'site', 'public', 'content', 'composer.json', 'composer.lock', '.git', '.kirbydesk'];
+		$keep = ['kirby', 'vendor', 'site', 'public', 'content', 'storage', 'composer.json', 'composer.lock', '.git', '.kirbydesk'];
 		$deleted = [];
 
 		foreach (scandir($root) as $item) {
