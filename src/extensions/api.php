@@ -29,6 +29,7 @@ return [
 					'clean'          => fn() => SetupWizard::cleanSlate(),
 					'directories'    => fn() => SetupWizard::createDirectories(),
 					'files'          => fn() => SetupWizard::generateFiles($projectName, $valetHost),
+					'projectbuilder' => fn() => SetupWizard::triggerProjectbuilder(),
 					'finalize'       => fn() => SetupWizard::finalize(),
 				];
 
