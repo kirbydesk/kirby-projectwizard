@@ -219,6 +219,7 @@ class SetupWizard
 			'content/error/error.txt' => 'content/error/error.txt',
 			'build-js.config.js'    => 'build-js.config.js',
 			'kirbyup-sync.config.js' => 'kirbyup-sync.config.js',
+			'projectbuilder.php'    => 'projectbuilder.php',
 		];
 
 		foreach ($copyMap as $source => $dest) {
@@ -266,19 +267,24 @@ class SetupWizard
 	public static function triggerProjectbuilder(): array
 	{
 		try {
-			$hookFile = kirby()->root('plugins') . '/kirby-projectwizard/projectbuilder.php';
+			$hookFile = static::projectRoot() . '/projectbuilder.php';
 			if (!file_exists($hookFile)) {
-				return ['success' => false, 'output' => 'projectbuilder.php not found'];
+				return ['success' => false, 'output' => 'projectbuilder.php not found at ' . $hookFile];
 			}
+
 			// The projectbuilder returns a hooks array; invoke the route:after hook
-			// to generate storage/temp/tailwind.css during setup
+			// to generate storage/temp/tailwind.css and storage/temp/vars.css
 			$hooks = require $hookFile;
-			if (isset($hooks['route:after']) && is_callable($hooks['route:after'])) {
-				$hooks['route:after']();
+			if (!isset($hooks['route:after']) || !is_callable($hooks['route:after'])) {
+				return ['success' => false, 'output' => 'route:after hook missing in ' . $hookFile];
 			}
+			$hooks['route:after']();
 			return ['success' => true];
-		} catch (Exception $e) {
-			return ['success' => false, 'output' => $e->getMessage()];
+		} catch (\Throwable $e) {
+			return [
+				'success' => false,
+				'output'  => $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine(),
+			];
 		}
 	}
 

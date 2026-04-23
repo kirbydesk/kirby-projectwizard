@@ -4,7 +4,7 @@ return [
 
 	/** Dev settings -------------------------------------------------------------*/
 	'debug' => true,
-	'hooks' => require __DIR__ . '/../plugins/kirby-projectwizard/projectbuilder.php',
+	'hooks' => require __DIR__ . '/../../projectbuilder.php',
 	'cache' => [
 		'pages' => [
 			'active' => false,
