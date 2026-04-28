@@ -739,7 +739,8 @@ export default {
       return val.replace(/(rem|em|px)$/, '');
     },
     setUnitValue(varName, value, defaultVal, unit) {
-      const withUnit = value === '' ? '' : value + (unit || '');
+      const num = parseFloat(String(value).replace(',', '.'));
+      const withUnit = (value === '' || isNaN(num)) ? '' : num + (unit || '');
       this.setValue(varName, withUnit, defaultVal);
     },
     toPx(val, unit) {

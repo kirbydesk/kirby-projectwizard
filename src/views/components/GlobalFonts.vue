@@ -114,7 +114,8 @@ export default {
       return val.replace(/rem$/, '');
     },
     setRemValue(bp, varName, value, defaultVal) {
-      const remVal = value === '' ? '' : value + 'rem';
+      const num = parseFloat(String(value).replace(',', '.'));
+      const remVal = (value === '' || isNaN(num)) ? '' : num + 'rem';
       this.setValue(bp, varName, remVal, defaultVal);
     },
     remToPx(val) {
