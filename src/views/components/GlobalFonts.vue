@@ -42,7 +42,7 @@
                         class="pw-element-input pw-element-input-number pw-px-calculator-input"
                         :class="{ 'is-default': !getOverrideValue(bp, varName) }"
                         :value="stripRem(getOverrideValue(bp, varName) || value[bp])"
-                        @input="setRemValue(bp, varName, $event.target.value, value[bp] || '')"
+                        @change="setRemValue(bp, varName, $event.target.value, value[bp] || '')"
                       />
                       <span class="pw-element-unit">rem</span>
                     </span>

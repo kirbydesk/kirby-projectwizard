@@ -161,7 +161,7 @@
                               class="pw-element-input pw-element-input-number pw-px-calculator-input"
                               :class="{ 'is-default': !getQuadValue(field.varName, idx) }"
                               :value="stripUnit(getQuadValue(field.varName, idx) || val)"
-                              @input="setQuadValue(field.varName, idx, $event.target.value, field.def)"
+                              @change="setQuadValue(field.varName, idx, $event.target.value, field.def)"
                             />
                             <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                           </span>
@@ -181,7 +181,7 @@
                               class="pw-element-input pw-element-input-number pw-px-calculator-input"
                               :class="{ 'is-default': !getResponsiveOverride(field.varName, bp) }"
                               :value="stripUnit(getResponsiveOverride(field.varName, bp) || field.def[bp])"
-                              @input="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
+                              @change="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
                             />
                             <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                           </span>
@@ -201,7 +201,7 @@
                               class="pw-element-input pw-element-input-number pw-px-calculator-input"
                               :class="{ 'is-default': !getOverrideValue(field.varName) }"
                               :value="stripUnit(getOverrideValue(field.varName) || field.def.value)"
-                              @input="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
+                              @change="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
                             />
                             <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                           </span>
@@ -225,7 +225,7 @@
                                   class="pw-element-input pw-element-input-number pw-px-calculator-input"
                                   :class="{ 'is-default': !getOverrideValue(dependentField(field.varName).varName) }"
                                   :value="stripUnit(getOverrideValue(dependentField(field.varName).varName) || dependentField(field.varName).def.value)"
-                                  @input="setUnitValue(dependentField(field.varName).varName, $event.target.value, dependentField(field.varName).def.value, dependentField(field.varName).def.unit)"
+                                  @change="setUnitValue(dependentField(field.varName).varName, $event.target.value, dependentField(field.varName).def.value, dependentField(field.varName).def.unit)"
                                 />
                                 <span class="pw-element-unit">{{ dependentField(field.varName).def.unit }}</span>
                               </span>

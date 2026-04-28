@@ -131,7 +131,7 @@
                             :max="field.def.max"
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :value="stripUnit(getQuadValue(field.varName, idx) || val)"
-                            @input="setQuadValue(field.varName, idx, $event.target.value, field.def)"
+                            @change="setQuadValue(field.varName, idx, $event.target.value, field.def)"
                           />
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
@@ -150,7 +150,7 @@
                             :max="field.def.max"
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :value="stripUnit(getResponsiveOverride(field.varName, bp) || field.def[bp])"
-                            @input="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
+                            @change="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
                           />
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
@@ -168,7 +168,7 @@
                           :max="field.def.max"
                           class="pw-element-input pw-element-input-number pw-px-calculator-input"
                           :value="stripUnit(getOverrideValue(field.varName) || field.def.value)"
-                          @input="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
+                          @change="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
                         />
                         <span class="pw-element-unit">{{ field.def.unit }}</span>
                       </span>
@@ -202,7 +202,7 @@
                             :max="sizeEntry.max"
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :value="stripUnit(getFontSizeOverride(bp, sizeName) || sizeEntry[bp])"
-                            @input="setFontSizeValue(bp, sizeName, $event.target.value, sizeEntry[bp], sizeEntry.unit)"
+                            @change="setFontSizeValue(bp, sizeName, $event.target.value, sizeEntry[bp], sizeEntry.unit)"
                           />
                           <span class="pw-element-unit">{{ sizeEntry.unit }}</span>
                         </span>
@@ -287,7 +287,7 @@
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :class="{ 'is-default': !getQuadValue(field.varName, idx) }"
                             :value="stripUnit(getQuadValue(field.varName, idx) || val)"
-                            @input="setQuadValue(field.varName, idx, $event.target.value, field.def)"
+                            @change="setQuadValue(field.varName, idx, $event.target.value, field.def)"
                           />
                           <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
@@ -307,7 +307,7 @@
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :class="{ 'is-default': !getResponsiveOverride(field.varName, bp) }"
                             :value="stripUnit(getResponsiveOverride(field.varName, bp) || field.def[bp])"
-                            @input="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
+                            @change="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
                           />
                           <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
@@ -339,7 +339,7 @@
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :class="{ 'is-default': !getOverrideValue(field.varName) }"
                             :value="stripUnit(getOverrideValue(field.varName) || field.def.value)"
-                            @input="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
+                            @change="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
                           />
                           <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
@@ -387,7 +387,7 @@
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :class="{ 'is-default': !getFontSizeOverride(bp, sizeName) }"
                             :value="stripUnit(getFontSizeOverride(bp, sizeName) || sizeVal[bp])"
-                            @input="setFontSizeValue(bp, sizeName, $event.target.value, sizeVal[bp], 'rem')"
+                            @change="setFontSizeValue(bp, sizeName, $event.target.value, sizeVal[bp], 'rem')"
                           />
                           <span class="pw-element-unit">rem</span>
                         </span>
