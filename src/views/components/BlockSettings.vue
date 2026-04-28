@@ -308,7 +308,8 @@
                     <!-- Number: number input -->
                     <input
                       v-else-if="field.defaultValue !== null && typeof field.defaultValue === 'number'"
-                      type="number"
+                      type="text"
+                      inputmode="decimal"
                       class="pw-category-input"
                       :placeholder="String(field.defaultValue)"
                       :value="getOverrideOnly('settings.fields.' + cat.key + '.' + field.key + '.default')"

@@ -124,7 +124,8 @@
                       <span v-for="(val, idx) in field.def.value" :key="idx" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
                             :step="field.def.step || 0.1"
                             :min="field.def.min"
                             :max="field.def.max"
@@ -142,7 +143,8 @@
                       <span v-for="(bp, bpIdx) in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
                             :step="field.def.step || 0.1"
                             :min="field.def.min"
                             :max="field.def.max"
@@ -159,7 +161,8 @@
                     <template v-else-if="field.def.unit !== undefined">
                       <span class="pw-element-input-wrap">
                         <input
-                          type="number"
+                          type="text"
+                          inputmode="decimal"
                           :step="field.def.step || 0.1"
                           :min="field.def.min"
                           :max="field.def.max"
@@ -192,7 +195,8 @@
                       <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
                             :step="sizeEntry.step || 0.1"
                             :min="sizeEntry.min"
                             :max="sizeEntry.max"
@@ -275,7 +279,8 @@
                       <span v-for="(val, idx) in field.def.value" :key="idx" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
                             :step="field.def.step || 0.1"
                             :min="field.def.min"
                             :max="field.def.max"
@@ -294,7 +299,8 @@
                       <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
                             :step="field.def.step || 0.1"
                             :min="field.def.min"
                             :max="field.def.max"
@@ -325,7 +331,8 @@
                       <span class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
                             :step="field.def.step || 0.1"
                             :min="field.def.min"
                             :max="field.def.max"
@@ -372,7 +379,8 @@
                       <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
                             :step="fontSizesForGroup(activeSubtabInfo(groupKey).elementKey).step || 0.1"
                             min="0.1"
                             max="20"

@@ -153,7 +153,8 @@
                         <span v-for="(val, idx) in field.def.value" :key="idx" class="pw-element-field">
                           <span class="pw-element-input-wrap">
                             <input
-                              type="number"
+                              type="text"
+                              inputmode="decimal"
                               :step="field.def.step || 0.1"
                               :min="field.def.min"
                               :max="field.def.max"
@@ -172,7 +173,8 @@
                         <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                           <span class="pw-element-input-wrap">
                             <input
-                              type="number"
+                              type="text"
+                              inputmode="decimal"
                               :step="field.def.step || 0.1"
                               :min="field.def.min"
                               :max="field.def.max"
@@ -191,7 +193,8 @@
                         <span class="pw-element-field">
                           <span class="pw-element-input-wrap">
                             <input
-                              type="number"
+                              type="text"
+                              inputmode="decimal"
                               :step="field.def.step || 0.1"
                               :min="field.def.min"
                               :max="field.def.max"
@@ -214,7 +217,8 @@
                               <span class="pw-group-column-label" style="margin-right: var(--spacing-2)">{{ $t('pw.field.height.label') }}</span>
                               <span class="pw-element-input-wrap">
                                 <input
-                                  type="number"
+                                  type="text"
+                                  inputmode="decimal"
                                   :step="dependentField(field.varName).def.step || 0.1"
                                   :min="dependentField(field.varName).def.min"
                                   :max="dependentField(field.varName).def.max"
