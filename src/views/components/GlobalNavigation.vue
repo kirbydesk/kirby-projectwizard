@@ -724,7 +724,8 @@ export default {
         ? [...overrides.global[varName]]
         : [...def.value];
 
-      current[index] = value === '' ? def.value[index] : value + (def.unit || '');
+      const quadNum = parseFloat(String(value).replace(',', '.'));
+      current[index] = (value === '' || isNaN(quadNum)) ? def.value[index] : quadNum + (def.unit || '');
 
       const allDefault = current.every((v, i) => v === def.value[i]);
       if (allDefault) {
@@ -784,7 +785,8 @@ export default {
       return ((this.navOverrides.global || {})[bp] || {})[varName] || '';
     },
     setResponsiveValue(varName, bp, value, defaultVal, unit) {
-      const withUnit = value === '' ? '' : value + (unit || '');
+      const num = parseFloat(String(value).replace(',', '.'));
+      const withUnit = (value === '' || isNaN(num)) ? '' : num + (unit || '');
       const overrides = JSON.parse(JSON.stringify(this.navOverrides));
 
       if (withUnit === '' || withUnit === defaultVal) {

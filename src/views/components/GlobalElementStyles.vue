@@ -736,7 +736,8 @@ export default {
         ? [...overrides.global[varName]]
         : [...def.value];
 
-      current[index] = value === '' ? def.value[index] : value + (def.unit || '');
+      const quadNum = parseFloat(String(value).replace(',', '.'));
+      current[index] = (value === '' || isNaN(quadNum)) ? def.value[index] : quadNum + (def.unit || '');
 
       const allDefault = current.every((v, i) => v === def.value[i]);
       if (allDefault) {
@@ -850,7 +851,9 @@ export default {
       return ((this.fontOverrides.global || {})[bp] || {})[varName] || '';
     },
     setFontSizeValue(bp, varName, value, defaultVal, unit) {
-      const withUnit = value === '' ? '' : value + (unit || '');
+      const num = parseFloat(String(value).replace(',', '.'));
+      const effectiveUnit = unit || 'rem';
+      const withUnit = (value === '' || isNaN(num)) ? '' : num + effectiveUnit;
       const overrides = JSON.parse(JSON.stringify(this.fontOverrides));
 
       if (withUnit === '' || withUnit === defaultVal) {
@@ -871,7 +874,8 @@ export default {
       return ((this.elementOverrides.global || {})[bp] || {})[varName] || '';
     },
     setResponsiveValue(varName, bp, value, defaultVal, unit) {
-      const withUnit = value === '' ? '' : value + (unit || '');
+      const num = parseFloat(String(value).replace(',', '.'));
+      const withUnit = (value === '' || isNaN(num)) ? '' : num + (unit || '');
       const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
 
       if (withUnit === '' || withUnit === defaultVal) {
