@@ -127,9 +127,10 @@
             <!-- Number -->
             <k-input
               v-else-if="typeof value === 'number'"
-              type="number"
+              type="text"
+              inputmode="decimal"
               :value="getOverrideOrDefault('defaults.' + category + '.' + key, value)"
-              @input="setOverride('defaults.' + category + '.' + key, Number($event))"
+              @input="setNumberOverride('defaults.' + category + '.' + key, $event)"
             />
 
             <!-- Object (nested content defaults like heading: {align, level, size}) -->
@@ -257,6 +258,10 @@ export default {
     },
     setOverride(path, value) {
       this.setNestedValue(this.localOverrides, path, value);
+    },
+    setNumberOverride(path, value) {
+      const num = parseFloat(String(value).replace(',', '.'));
+      if (!isNaN(num)) this.setNestedValue(this.localOverrides, path, num);
     },
     getFieldCategory(category) {
       return this.merged.settings?.fields?.[category] || {};

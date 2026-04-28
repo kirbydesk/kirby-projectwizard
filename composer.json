@@ -1,7 +1,7 @@
 {
 	"name": "kirbydesk/kirby-projectwizard",
 	"description": "Project Wizard for Kirby CMS — installation, configuration & update tool",
-	"version": "1.0.18",
+	"version": "1.0.19",
 	"type": "kirby-plugin",
 	"keywords": [
 		"kirby",
