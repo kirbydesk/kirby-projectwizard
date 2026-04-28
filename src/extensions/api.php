@@ -30,6 +30,7 @@ return [
 					'directories'    => fn() => SetupWizard::createDirectories(),
 					'files'          => fn() => SetupWizard::generateFiles($projectName, $valetHost),
 					'projectbuilder' => fn() => SetupWizard::triggerProjectbuilder(),
+					'npmBuild'       => fn() => SetupWizard::npmBuild(),
 					'finalize'       => fn() => SetupWizard::finalize(),
 				];
 

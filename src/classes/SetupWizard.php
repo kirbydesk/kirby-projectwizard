@@ -289,6 +289,55 @@ class SetupWizard
 	}
 
 	/**
+	 * Step 5b: Run npm install (if node_modules missing) + npm run build.
+	 * Builds public/assets/css/site.min.css and public/assets/js/site.min.js.
+	 */
+	public static function npmBuild(): array
+	{
+		$root = static::projectRoot();
+
+		// PHP under php-fpm/valet often has a minimal PATH — locate npm explicitly.
+		$npm = trim(shell_exec('command -v npm 2>/dev/null') ?? '');
+		if ($npm === '') {
+			foreach (['/opt/homebrew/bin/npm', '/usr/local/bin/npm'] as $candidate) {
+				if (is_executable($candidate)) {
+					$npm = $candidate;
+					break;
+				}
+			}
+		}
+		if ($npm === '') {
+			return ['success' => false, 'output' => 'npm not found in PATH'];
+		}
+
+		$cdRoot = 'cd ' . escapeshellarg($root) . ' && ';
+		$npmCmd = escapeshellarg($npm);
+		$logs = [];
+
+		if (!is_dir($root . '/node_modules')) {
+			$installOut = [];
+			$installCode = 0;
+			exec($cdRoot . $npmCmd . ' install --silent 2>&1', $installOut, $installCode);
+			$logs[] = '$ npm install';
+			$logs = array_merge($logs, $installOut);
+			if ($installCode !== 0) {
+				return ['success' => false, 'output' => implode("\n", $logs)];
+			}
+		}
+
+		$buildOut = [];
+		$buildCode = 0;
+		exec($cdRoot . $npmCmd . ' run build 2>&1', $buildOut, $buildCode);
+		$logs[] = '$ npm run build';
+		$logs = array_merge($logs, $buildOut);
+		if ($buildCode !== 0) {
+			return ['success' => false, 'output' => implode("\n", $logs)];
+		}
+
+		return ['success' => true, 'output' => implode("\n", $logs)];
+	}
+
+	/**
 	 * Step 6: Finalize — write lock file.
 	 */
 	public static function finalize(): array
