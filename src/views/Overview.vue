@@ -59,7 +59,7 @@
       <button
         v-for="tab in [
           { key: 'defaults', icon: 'settings' },
-          { key: 'layout', icon: 'layout' },
+          { key: 'layout', icon: 'layout-top' },
         ]"
         :key="tab.key"
         type="button"
