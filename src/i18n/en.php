@@ -71,7 +71,8 @@
 
 	/* -------------- Headlines --------------*/
 	'prw.headline.columnBlocks' => 'Allowed Blocks',
-	'prw.headline.activeBlocks' => 'Active Blocks',
+	'prw.headline.pagewizard' => 'Pagewizard',
+	'prw.headline.projectRelated' => 'Project Related',
 
 	/* -------------- Props: Navigation groups --------------*/
 	'prw.prop.body' => 'Body',
