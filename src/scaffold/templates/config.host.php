@@ -11,9 +11,6 @@ return [
 		],
 	],
 
-	/** Language settings -------------------------------------------------------------*/
-	'languages' => true,
-
 	/** Local Mailhog configuration -------------------------------------------------------------*/
 	'email' => [
 		'transport' => [

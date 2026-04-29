@@ -19,6 +19,9 @@ return [
 		'css' => 'assets/css/panel.min.css'
 	],
 
+	/** Language settings -------------------------------------------------------------*/
+	'languages' => true,
+
 	/** PLUGIN: Kirby Pagewizard ----------------------------------------*/
 	'kirbydesk.pagewizard.protected' => '',
 	'ready' => fn($kirby) => [
