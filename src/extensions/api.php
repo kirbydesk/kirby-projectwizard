@@ -62,6 +62,8 @@ return [
 					$blocks[] = [
 						'blockType'  => $blockType,
 						'plugin'     => $info['plugin'],
+						'name'       => $info['name'] ?? null,
+						'icon'       => $info['icon'] ?? null,
 						'active'     => in_array($blockType, $activeBlocks),
 						'customized' => !empty($blockOverrides),
 						'settings'   => $info['settings'],

@@ -28,18 +28,34 @@ class ProjectConfig
 			}
 			if (!$blockType) continue;
 
-			// Extract icon from blueprints.php (first match wins)
-			$icon = 'box';
-			$bpFile = $dir . '/src/extensions/blueprints.php';
-			if (file_exists($bpFile)) {
-				$bpContent = file_get_contents($bpFile);
-				if (preg_match("/'icon'\s*=>\s*'([^']+)'/", $bpContent, $iconMatch)) {
-					$icon = $iconMatch[1];
+			$plugin = basename($dir);
+
+			// Optional package.json — Kirby's panel reads it too; we use it for name + icon.
+			$pkg     = self::readJson($dir . '/package.json');
+			$pkgName = is_string($pkg['name'] ?? null) ? trim($pkg['name']) : '';
+			$pkgIcon = is_string($pkg['icon'] ?? null) ? trim($pkg['icon']) : '';
+
+			// Resolve display name: package.json.name → i18n <plugin>.name → auto-slug
+			$name = $pkgName !== '' ? $pkgName : self::resolveBlockNameFromI18n($dir, $plugin);
+			if ($name === '') {
+				$name = preg_replace('/([a-z])([A-Z])/', '$1 $2', ucfirst(preg_replace('/^pw/', '', $blockType)));
+			}
+
+			// Resolve icon: package.json.icon → blueprints.php → 'box'
+			$icon = $pkgIcon !== '' ? $pkgIcon : 'box';
+			if ($pkgIcon === '') {
+				$bpFile = $dir . '/src/extensions/blueprints.php';
+				if (file_exists($bpFile)) {
+					$bpContent = file_get_contents($bpFile);
+					if (preg_match("/'icon'\s*=>\s*'([^']+)'/", $bpContent, $iconMatch)) {
+						$icon = $iconMatch[1];
+					}
 				}
 			}
 
 			$blocks[$blockType] = [
-				'plugin'   => basename($dir),
+				'plugin'   => $plugin,
+				'name'     => $name,
 				'icon'     => $icon,
 				'settings' => self::readJson($configDir . '/settings.json'),
 				'editor'   => self::readJson($configDir . '/editor.json'),
@@ -47,6 +63,23 @@ class ProjectConfig
 		}
 
 		return $blocks;
+	}
+
+	/**
+	 * Look up the legacy '<plugin-folder>.name' translation in src/i18n/en.php.
+	 * Returns '' if no key is found — caller falls back to an auto-slug.
+	 */
+	private static function resolveBlockNameFromI18n(string $dir, string $plugin): string
+	{
+		$i18nFile = $dir . '/src/i18n/en.php';
+		if (!file_exists($i18nFile)) return '';
+
+		$content = file_get_contents($i18nFile);
+		$key = preg_quote($plugin . '.name', '/');
+		if (preg_match("/'$key'\s*=>\s*'([^']+)'/", $content, $m)) {
+			return $m[1];
+		}
+		return '';
 	}
 
 	/**

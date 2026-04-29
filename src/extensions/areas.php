@@ -49,19 +49,12 @@ $allBlocks  = ProjectConfig::detectBlocks();
 $active     = ProjectConfig::activeBlocks();
 $blocks     = array_filter($allBlocks, fn($type) => in_array($type, $active), ARRAY_FILTER_USE_KEY);
 
-// Read block labels directly from plugin i18n files
-$blockLabel = function(string $plugin, string $blockType): string {
+// Per-block display label — prefer the resolved name from detectBlocks()
+// (which already merged package.json.name → i18n → fallback).
+$blockLabel = function(array $info, string $blockType): string {
+	if (!empty($info['name'])) return $info['name'];
 	$fallback = ucfirst(preg_replace('/^pw/', '', $blockType));
-	$fallback = preg_replace('/([a-z])([A-Z])/', '$1 $2', $fallback);
-
-	$i18nFile = kirby()->root('plugins') . '/' . $plugin . '/src/i18n/en.php';
-	if (file_exists($i18nFile)) {
-		$content = file_get_contents($i18nFile);
-		if (preg_match("/'$plugin\.name'\s*=>\s*'([^']+)'/", $content, $m)) {
-			return $m[1];
-		}
-	}
-	return $fallback;
+	return preg_replace('/([a-z])([A-Z])/', '$1 $2', $fallback);
 };
 
 // Main projectwizard area (global settings only)
@@ -91,7 +84,7 @@ foreach ($blocks as $blockType => $info) {
 	if (!str_starts_with($blockType, 'pw')) continue;
 
 	$plugin = $info['plugin'];
-	$label  = $blockLabel($plugin, $blockType);
+	$label  = $blockLabel($info, $blockType);
 	$slug   = strtolower($blockType);
 
 	$areas['pw-block-' . $slug] = [

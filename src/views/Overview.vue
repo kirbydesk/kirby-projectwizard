@@ -532,6 +532,7 @@ export default {
 
     blockLabel(blockType) {
       const block = this.blocks.find(b => b.blockType === blockType);
+      if (block && block.name) return block.name;
       if (block) {
         const translated = this.$t(block.plugin + '.name');
         if (translated && translated !== block.plugin + '.name') return translated;
