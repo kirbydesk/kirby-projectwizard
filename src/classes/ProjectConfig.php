@@ -3,18 +3,30 @@
 class ProjectConfig
 {
 	/**
-	 * Detect all blocks that registered themselves via pwConfig::register().
-	 * Folder-name agnostic — picks up kirbyblock-*, site-*, custom-* alike.
+	 * Detect every plugin that exposes a block via pwConfig::register().
+	 * Filesystem scan (folder-name agnostic) so detection works during
+	 * plugin boot — calling pwConfig::registered() here would fire before
+	 * later-loaded plugins have run their register() call.
 	 */
 	public static function detectBlocks(): array
 	{
+		$pluginsDir = kirby()->root('plugins');
 		$blocks = [];
 
-		foreach (\pwConfig::registered() as $blockType => $configDir) {
-			if (!is_dir($configDir)) continue;
+		foreach (glob($pluginsDir . '/*', GLOB_ONLYDIR) ?: [] as $dir) {
+			$configDir = $dir . '/src/config';
+			if (!is_file($configDir . '/settings.json')) continue;
 
-			// Plugin folder is two levels above src/config/ (e.g. .../plugins/site-foo/src/config → site-foo)
-			$dir = dirname(dirname($configDir));
+			// Extract block type from pwConfig::register() call in index.php
+			$indexFile = $dir . '/index.php';
+			$blockType = null;
+			if (file_exists($indexFile)) {
+				$content = file_get_contents($indexFile);
+				if (preg_match("/pwConfig::register\('([^']+)'/", $content, $m)) {
+					$blockType = $m[1];
+				}
+			}
+			if (!$blockType) continue;
 
 			// Extract icon from blueprints.php (first match wins)
 			$icon = 'box';
