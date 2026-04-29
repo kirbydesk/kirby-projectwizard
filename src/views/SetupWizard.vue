@@ -74,7 +74,9 @@ export default {
         },
         on: {
           submit: () => {
-            this.$panel.dialog.close();
+            // Don't close the confirm dialog here — dialog.open() in runSetup()
+            // replaces the active dialog. Closing first races with the open
+            // and leaves the panel blank until the API call returns.
             this.runSetup();
           },
           cancel: () => { this.$panel.dialog.close(); window.location.href = '/panel'; },
@@ -84,11 +86,27 @@ export default {
     async runSetup() {
       this.running = true;
 
-      // Show running dialog
+      // Show running dialog (replaces the confirm dialog)
+      const stepsHtml = [
+        'prw.setup.step.clean',
+        'prw.setup.step.directories',
+        'prw.setup.step.files',
+        'prw.setup.step.projectbuilder',
+        'prw.setup.step.npmBuild',
+        'prw.setup.step.finalize',
+      ].map(k => '<li>' + (this.$t(k) || k) + '</li>').join('');
+
       this.$panel.dialog.open({
         component: 'k-text-dialog',
         props: {
-          text: '<div style="text-align:center;padding:var(--spacing-6)"><div class="pw-setup-spinner" style="width:32px;height:32px;border:3px solid var(--color-gray-300);border-top-color:var(--color-blue-600);border-radius:50%;animation:pw-spin 0.6s linear infinite;margin:0 auto var(--spacing-4)"></div><p>' + this.$t('prw.setup.step.running') + '</p></div><style>@keyframes pw-spin{to{transform:rotate(360deg)}}</style>',
+          text:
+            '<div style="text-align:center;padding:var(--spacing-6)">' +
+              '<div class="pw-setup-spinner" style="width:32px;height:32px;border:3px solid var(--color-gray-300);border-top-color:var(--color-blue-600);border-radius:50%;animation:pw-spin 0.6s linear infinite;margin:0 auto var(--spacing-4)"></div>' +
+              '<p style="margin-bottom:var(--spacing-2)">' + this.$t('prw.setup.step.running') + '</p>' +
+              '<p style="color:var(--color-text-dimmed);font-size:var(--text-xs);margin-bottom:var(--spacing-4)">' + (this.$t('prw.setup.step.hint') || 'This may take 30–60 seconds. Please don\'t close this tab.') + '</p>' +
+              '<ul style="text-align:left;display:inline-block;color:var(--color-text-dimmed);font-size:var(--text-xs);list-style:disc;padding-left:var(--spacing-4);margin:0">' + stepsHtml + '</ul>' +
+            '</div>' +
+            '<style>@keyframes pw-spin{to{transform:rotate(360deg)}}</style>',
           cancelButton: false,
           submitButton: false,
         },

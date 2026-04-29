@@ -8,6 +8,13 @@
 	'prw.setup.completeHint' => 'Run <strong>npm install</strong> in the terminal to finish setup and <strong>npm run dev</strong> to start developing.',
 	'prw.setup.reload' => 'Reload Panel',
 	'prw.setup.step.running' => 'Setting up your project. This may take a moment...',
+	'prw.setup.step.hint' => 'This may take 30–60 seconds. Please don\'t close this tab.',
+	'prw.setup.step.clean' => 'Cleaning project files',
+	'prw.setup.step.directories' => 'Creating directory structure',
+	'prw.setup.step.files' => 'Generating scaffold files',
+	'prw.setup.step.projectbuilder' => 'Building CSS variables',
+	'prw.setup.step.npmBuild' => 'Installing dependencies and compiling assets',
+	'prw.setup.step.finalize' => 'Finalizing setup',
 	'prw.setup.publicRequired' => 'The Project Wizard requires a public/ folder structure. Please move your index.php into a public/ directory and point your web server (e.g. Valet) to the public/ folder, then reload this page.',
 
 	/* -------------- Labels --------------*/
