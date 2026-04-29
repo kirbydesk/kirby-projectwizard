@@ -55,6 +55,9 @@
 	'prw.tab.elements' => 'Elements',
 	'prw.tab.header' => 'Header',
 	'prw.tab.footer' => 'Footer',
+	'prw.tab.defaults' => 'Defaults',
+	'prw.tab.layout' => 'Layout',
+	'prw.tab.layout.placeholder' => 'Layout configuration for this block will appear here.',
 
 	/* -------------- Properties --------------*/
 	'prw.property.align' => 'Alignment',

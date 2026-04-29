@@ -54,6 +54,27 @@
       </button>
     </nav>
 
+    <!-- Kirby-native tab navigation (per-block view) -->
+    <nav v-if="!loading && activeTab !== 'global'" class="k-tabs k-model-tabs">
+      <button
+        v-for="tab in [
+          { key: 'defaults', icon: 'settings' },
+          { key: 'layout', icon: 'layout' },
+        ]"
+        :key="tab.key"
+        type="button"
+        class="k-tabs-button k-button"
+        :aria-current="blockViewTab === tab.key ? 'true' : null"
+        data-has-icon="true"
+        data-has-text="true"
+        data-variant="dimmed"
+        @click="blockViewTab = tab.key"
+      >
+        <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
+        <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+      </button>
+    </nav>
+
 
     <div v-if="loading" class="pw-wizard-loading">Loading...</div>
 
@@ -260,8 +281,8 @@
           class="pw-wizard-panel"
         >
 
-          <!-- Settings tab -->
-          <div v-show="blockViewTab === 'settings'" v-if="blockConfigs[block.blockType]">
+          <!-- Defaults tab -->
+          <div v-show="blockViewTab === 'defaults'" v-if="blockConfigs[block.blockType]">
             <pw-block-settings
               :block="block"
               :config="blockConfigs[block.blockType]"
@@ -272,6 +293,10 @@
             />
           </div>
 
+          <!-- Layout tab (placeholder) -->
+          <div v-show="blockViewTab === 'layout'" class="pw-wizard-empty">
+            <p>{{ $t('prw.tab.layout.placeholder') || 'Layout configuration for this block will appear here.' }}</p>
+          </div>
 
         </div>
 
@@ -307,7 +332,7 @@ export default {
       dirtyTabs: {},
       snapshots: {},
       writerActive: {},
-      blockViewTab: 'settings',
+      blockViewTab: 'defaults',
       globalDefaults: {},
       globalOverrides: {},
       originalGlobalOverrides: {},
