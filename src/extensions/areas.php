@@ -83,8 +83,13 @@ $areas['projectwizard'] = [
 	],
 ];
 
-// Block areas — each with its own view so Kirby highlights the active menu entry
+// Block areas — each with its own view so Kirby highlights the active menu entry.
+// Project-related blocks (non-pw prefix, e.g. site-*) are static and have no
+// configurable defaults — they're available in the wizard's Blocks tab as a
+// toggle and in the page editor's block picker, but get no panel menu entry.
 foreach ($blocks as $blockType => $info) {
+	if (!str_starts_with($blockType, 'pw')) continue;
+
 	$plugin = $info['plugin'];
 	$label  = $blockLabel($plugin, $blockType);
 	$slug   = strtolower($blockType);

@@ -3,29 +3,20 @@
 class ProjectConfig
 {
 	/**
-	 * Detect all installed kirbyblock-* plugins and read their config files.
+	 * Detect all blocks that registered themselves via pwConfig::register().
+	 * Folder-name agnostic — picks up kirbyblock-*, site-*, custom-* alike.
 	 */
 	public static function detectBlocks(): array
 	{
-		$pluginsDir = kirby()->root('plugins');
 		$blocks = [];
 
-		foreach (glob($pluginsDir . '/kirbyblock-*') as $dir) {
-			$configDir = $dir . '/src/config';
+		foreach (\pwConfig::registered() as $blockType => $configDir) {
 			if (!is_dir($configDir)) continue;
 
-			// Extract block type from pwConfig::register() call
-			$indexFile = $dir . '/index.php';
-			$blockType = null;
-			if (file_exists($indexFile)) {
-				$content = file_get_contents($indexFile);
-				if (preg_match("/pwConfig::register\('([^']+)'/", $content, $m)) {
-					$blockType = $m[1];
-				}
-			}
-			if (!$blockType) continue;
+			// Plugin folder is two levels above src/config/ (e.g. .../plugins/site-foo/src/config → site-foo)
+			$dir = dirname(dirname($configDir));
 
-			// Extract icon from blueprints.php
+			// Extract icon from blueprints.php (first match wins)
 			$icon = 'box';
 			$bpFile = $dir . '/src/extensions/blueprints.php';
 			if (file_exists($bpFile)) {
