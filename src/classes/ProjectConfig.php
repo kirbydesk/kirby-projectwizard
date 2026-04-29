@@ -30,13 +30,16 @@ class ProjectConfig
 
 			$plugin = basename($dir);
 
-			// Optional package.json — Kirby's panel reads it too; we use it for name + icon.
+			// Optional package.json — Kirby's panel reads it too; we use it for
+			// the human-readable label + icon. `description` is the npm-standard
+			// field for a display name; `name` is the package id (e.g. "kirbyblock-heading")
+			// and explicitly NOT used here.
 			$pkg     = self::readJson($dir . '/package.json');
-			$pkgName = is_string($pkg['name'] ?? null) ? trim($pkg['name']) : '';
+			$pkgDesc = is_string($pkg['description'] ?? null) ? trim($pkg['description']) : '';
 			$pkgIcon = is_string($pkg['icon'] ?? null) ? trim($pkg['icon']) : '';
 
-			// Resolve display name: package.json.name → i18n <plugin>.name → auto-slug
-			$name = $pkgName !== '' ? $pkgName : self::resolveBlockNameFromI18n($dir, $plugin);
+			// Resolve display name: package.json.description → i18n <plugin>.name → auto-slug
+			$name = $pkgDesc !== '' ? $pkgDesc : self::resolveBlockNameFromI18n($dir, $plugin);
 			if ($name === '') {
 				$name = preg_replace('/([a-z])([A-Z])/', '$1 $2', ucfirst(preg_replace('/^pw/', '', $blockType)));
 			}
