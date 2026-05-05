@@ -304,40 +304,17 @@
               @update:writer-active="$set(writerActive, block.blockType, $event)"
             />
 
-            <!-- Values section: collapsible wrapper around the Layout / Colors sub-tabs -->
+            <!-- Defaults section (radius toggles, link-style, border) -->
             <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
               <div class="pw-section-header">
-                <button class="pw-section-toggle" @click="$set(valuesSectionOpen, block.blockType, !isValuesSectionOpen(block.blockType))">
-                  <span>{{ $t('prw.headline.values') || 'Values' }}</span>
-                  <k-icon :type="isValuesSectionOpen(block.blockType) ? 'angle-down' : 'angle-right'" />
+                <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'defaults')">
+                  <span>{{ $t('prw.tab.defaults') || 'Defaults' }}</span>
+                  <k-icon :type="isItemSectionOpen(block.blockType, 'defaults') ? 'angle-down' : 'angle-right'" />
                 </button>
               </div>
               <transition name="pw-slide">
-                <div v-show="isValuesSectionOpen(block.blockType)">
-                  <!-- Defaults / Layout / Colors sub-tabs -->
-                  <div class="pw-element-subtabs">
-                    <button
-                      type="button"
-                      class="pw-element-subtab"
-                      :class="{ 'is-active': (itemsValuesSubtab[block.blockType] || 'defaults') === 'defaults' }"
-                      @click="$set(itemsValuesSubtab, block.blockType, 'defaults')"
-                    >{{ $t('prw.tab.defaults') || 'Defaults' }}</button>
-                    <button
-                      type="button"
-                      class="pw-element-subtab"
-                      :class="{ 'is-active': itemsValuesSubtab[block.blockType] === 'layout' }"
-                      @click="$set(itemsValuesSubtab, block.blockType, 'layout')"
-                    >{{ $t('prw.subtab.layout') || 'Layout' }}</button>
-                    <button
-                      type="button"
-                      class="pw-element-subtab"
-                      :class="{ 'is-active': itemsValuesSubtab[block.blockType] === 'colors' }"
-                      @click="$set(itemsValuesSubtab, block.blockType, 'colors')"
-                    >{{ $t('prw.subtab.colors') || 'Colors' }}</button>
-                  </div>
-
+                <div v-show="isItemSectionOpen(block.blockType, 'defaults')">
                   <pw-block-settings
-                    v-show="(itemsValuesSubtab[block.blockType] || 'defaults') === 'defaults'"
                     view="items-defaults"
                     :block="block"
                     :config="blockConfigs[block.blockType]"
@@ -346,16 +323,42 @@
                     @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
+                </div>
+              </transition>
+            </section>
+
+            <!-- Layout section (padding, radius, border-width) -->
+            <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
+              <div class="pw-section-header">
+                <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'layout')">
+                  <span>{{ $t('prw.subtab.layout') || 'Layout' }}</span>
+                  <k-icon :type="isItemSectionOpen(block.blockType, 'layout') ? 'angle-down' : 'angle-right'" />
+                </button>
+              </div>
+              <transition name="pw-slide">
+                <div v-show="isItemSectionOpen(block.blockType, 'layout')">
                   <pw-block-values
-                    v-show="itemsValuesSubtab[block.blockType] === 'layout'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-padding-top','item-padding-right','item-padding-bottom','item-padding-left','item-radius','item-border-width']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
+                </div>
+              </transition>
+            </section>
+
+            <!-- Colors section (multi-theme) -->
+            <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
+              <div class="pw-section-header">
+                <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'colors')">
+                  <span>{{ $t('prw.subtab.colors') || 'Colors' }}</span>
+                  <k-icon :type="isItemSectionOpen(block.blockType, 'colors') ? 'angle-down' : 'angle-right'" />
+                </button>
+              </div>
+              <transition name="pw-slide">
+                <div v-show="isItemSectionOpen(block.blockType, 'colors')">
                   <pw-block-values
-                    v-show="itemsValuesSubtab[block.blockType] === 'colors'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-background','item-text','item-link','item-link-hover','item-link-active','item-border-color']"
@@ -407,8 +410,7 @@ export default {
       blockValueDefaults: {},
       blockValueOverrides: {},
       originalBlockValueOverrides: {},
-      itemsValuesSubtab: {},
-      valuesSectionOpen: {},
+      itemSectionOpen: {},
       originalActiveBlocks: [],
       dirtyTabs: {},
       snapshots: {},
@@ -635,8 +637,11 @@ export default {
       const name = blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
       return name.charAt(0).toUpperCase() + name.slice(1);
     },
-    isValuesSectionOpen(blockType) {
-      return this.valuesSectionOpen[blockType] !== false;
+    isItemSectionOpen(blockType, key) {
+      return this.itemSectionOpen[blockType + ':' + key] !== false;
+    },
+    toggleItemSection(blockType, key) {
+      this.$set(this.itemSectionOpen, blockType + ':' + key, !this.isItemSectionOpen(blockType, key));
     },
     hasItemFields(blockType) {
       // Show the Items tab only for blocks that define a `blocks` content field
