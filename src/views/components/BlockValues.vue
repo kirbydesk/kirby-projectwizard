@@ -13,6 +13,37 @@
       <transition name="pw-slide">
         <div v-show="isOpen(groupKey)" class="pw-element-list">
 
+          <!-- Multi-theme colors (default / variant / variant2) -->
+          <div
+            v-for="(themes, varName) in group.colors"
+            :key="'color-' + varName"
+            class="pw-field-row"
+          >
+            <div class="k-input" data-type="text">
+              <span class="k-input-element pw-field-row-inner">
+                <div class="pw-field-row-label-col">
+                  <label class="pw-field-row-label">{{ varLabel(varName) }}</label>
+                </div>
+                <div class="pw-field-row-options pw-group-type-theme-color">
+                  <span
+                    v-for="(themeValue, themeKey) in themes"
+                    :key="themeKey"
+                    class="pw-element-field"
+                  >
+                    <pw-color-field-row
+                      :group="'block-values-' + themeKey"
+                      :var-name="varName"
+                      :default-value="themeValue"
+                      :override-value="getThemeOverride(themeKey, varName) || ''"
+                      @update:value="setThemeColor(themeKey, varName, $event || '', themeValue)"
+                    />
+                  </span>
+                </div>
+              </span>
+            </div>
+          </div>
+
+          <!-- Plain vars (single / multi-value / quad) -->
           <div
             v-for="(def, varName) in group.vars"
             :key="varName"
@@ -124,17 +155,27 @@ export default {
     groups() {
       const out = {};
       for (const [k, v] of Object.entries(this.defaults || {})) {
-        if (!v || typeof v !== 'object' || !v.vars) continue;
+        if (!v || typeof v !== 'object') continue;
+        const hasVars = !!v.vars;
+        const hasColors = !!v.colors;
+        if (!hasVars && !hasColors) continue;
+
+        let filteredVars = v.vars || {};
+        let filteredColors = v.colors || {};
+
         if (Array.isArray(this.showOnly)) {
-          const filteredVars = {};
-          for (const [vn, def] of Object.entries(v.vars)) {
+          filteredVars = {};
+          for (const [vn, def] of Object.entries(v.vars || {})) {
             if (this.showOnly.includes(vn)) filteredVars[vn] = def;
           }
-          if (Object.keys(filteredVars).length === 0) continue;
-          out[k] = { ...v, vars: filteredVars };
-        } else {
-          out[k] = v;
+          filteredColors = {};
+          for (const [vn, def] of Object.entries(v.colors || {})) {
+            if (this.showOnly.includes(vn)) filteredColors[vn] = def;
+          }
         }
+
+        if (Object.keys(filteredVars).length === 0 && Object.keys(filteredColors).length === 0) continue;
+        out[k] = { ...v, vars: filteredVars, colors: filteredColors };
       }
       return out;
     },
@@ -182,6 +223,21 @@ export default {
     overrideAt(varName, idx) {
       const v = this.overrides[varName];
       return Array.isArray(v) ? v[idx] : undefined;
+    },
+    getThemeOverride(theme, varName) {
+      const t = this.overrides[theme];
+      return (t && typeof t === 'object') ? t[varName] : undefined;
+    },
+    setThemeColor(theme, varName, value, defaultVal) {
+      const next = JSON.parse(JSON.stringify(this.overrides || {}));
+      if (!next[theme] || typeof next[theme] !== 'object') next[theme] = {};
+      if (value === '' || value === defaultVal) {
+        delete next[theme][varName];
+        if (Object.keys(next[theme]).length === 0) delete next[theme];
+      } else {
+        next[theme][varName] = value;
+      }
+      this.$emit('update:overrides', next);
     },
     setSingle(varName, value, defaultVal) {
       const next = JSON.parse(JSON.stringify(this.overrides || {}));
