@@ -393,9 +393,8 @@
         </transition>
       </section>
 
-      <!-- Defaults: rendered as the first sub-tab inside the Values section
-           in Overview.vue. No outer section wrapper here — the sub-tab
-           strip already provides the framing. -->
+      <!-- Defaults: rendered inside the Defaults section in Overview.vue.
+           Holds the radius corner toggle group. -->
       <div v-if="view === 'items-defaults' && getItemRadiusFields().length" class="pw-field-block">
         <div
           v-for="field in getItemRadiusFields()"
@@ -411,19 +410,36 @@
                 class="pw-field-row-options"
                 :class="{ 'pw-toggle-group': field.type === 'toggle-group' }"
               >
-                <!-- Quad of corner toggles (Radius) -->
-                <template v-if="field.type === 'toggle-group'">
-                  <k-toggle-input
-                    v-for="sub in field.subFields"
-                    :key="sub.key"
-                    :value="getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue)"
-                    :text="toggleOptionLabel(sub.label)"
-                    @input="setVal('settings.fields.layout.' + sub.key + '.default', $event)"
-                  />
-                </template>
+                <k-toggle-input
+                  v-for="sub in field.subFields"
+                  :key="sub.key"
+                  :value="getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue)"
+                  :text="toggleOptionLabel(sub.label)"
+                  @input="setVal('settings.fields.layout.' + sub.key + '.default', $event)"
+                />
+              </div>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout settings: rendered inside the Layout section in Overview.vue,
+           above the BlockValues editor. Holds link-style, border, … -->
+      <div v-if="view === 'items-layout' && getItemLayoutSettings().length" class="pw-field-block">
+        <div
+          v-for="field in getItemLayoutSettings()"
+          :key="field.key"
+          class="pw-field-row"
+        >
+          <div class="k-input" data-type="text">
+            <span class="k-input-element pw-field-row-inner">
+              <div class="pw-field-row-label-col">
+                <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
+              </div>
+              <div class="pw-field-row-options">
                 <!-- Select with options -->
                 <k-toggles-input
-                  v-else-if="field.type === 'select'"
+                  v-if="field.type === 'select'"
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
                   :options="field.options.map(o => ({ value: o, text: $t('pw.option.' + o) || o }))"
                   :grow="false"
@@ -470,7 +486,7 @@ export default {
     view: {
       type: String,
       default: 'defaults',
-      validator: v => ['defaults', 'items', 'items-defaults', 'layout'].includes(v),
+      validator: v => ['defaults', 'items', 'items-defaults', 'items-layout', 'layout'].includes(v),
     },
   },
   data() {
@@ -542,31 +558,39 @@ export default {
     },
     getItemRadiusFields() {
       // Per-corner radius toggles get grouped into one row (toggle-group with
-      // four sub-toggles), other item-level field defaults (link-style, border)
-      // stay as individual rows. Mirrors how block-level radius is rendered in
+      // four sub-toggles). Mirrors how block-level radius is rendered in
       // the Defaults tab's layout category.
       const settings = this.getDefault('settings.fields.layout') || {};
       const fields = [];
       let radiusGroup = null;
 
       for (const [key, settingVal] of Object.entries(settings)) {
-        if (!key.startsWith('item-')) continue;
+        if (!key.startsWith('item-radius-')) continue;
         if (settingVal === false || settingVal === 'enabled') continue;
 
-        // Per-corner radius toggles → collect into one toggle-group row
-        if (key.startsWith('item-radius-')) {
-          if (!radiusGroup) {
-            radiusGroup = { key: 'item-radius', displayKey: 'radius', type: 'toggle-group', subFields: [] };
-            fields.push(radiusGroup);
-          }
-          const defaultValue = this.isObject(settingVal) && 'default' in settingVal ? settingVal.default : false;
-          radiusGroup.subFields.push({
-            key,
-            label: key.replace(/^item-radius-/, ''),
-            defaultValue,
-          });
-          continue;
+        if (!radiusGroup) {
+          radiusGroup = { key: 'item-radius', displayKey: 'radius', type: 'toggle-group', subFields: [] };
+          fields.push(radiusGroup);
         }
+        const defaultValue = this.isObject(settingVal) && 'default' in settingVal ? settingVal.default : false;
+        radiusGroup.subFields.push({
+          key,
+          label: key.replace(/^item-radius-/, ''),
+          defaultValue,
+        });
+      }
+      return fields;
+    },
+    getItemLayoutSettings() {
+      // Item-level layout-tab field defaults that are NOT radius corners
+      // (link-style, border, …). Rendered in the Items > Layout section.
+      const settings = this.getDefault('settings.fields.layout') || {};
+      const fields = [];
+
+      for (const [key, settingVal] of Object.entries(settings)) {
+        if (!key.startsWith('item-')) continue;
+        if (key === 'item-radius' || key.startsWith('item-radius-')) continue;
+        if (settingVal === false || settingVal === 'enabled') continue;
 
         const displayKey = key.replace(/^item-/, '');
 

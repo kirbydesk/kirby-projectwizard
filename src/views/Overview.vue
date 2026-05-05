@@ -327,7 +327,7 @@
               </transition>
             </section>
 
-            <!-- Layout section (padding, radius, border-width) -->
+            <!-- Layout section (link-style, border toggles + padding, radius, border-width values) -->
             <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
               <div class="pw-section-header">
                 <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'layout')">
@@ -337,10 +337,19 @@
               </div>
               <transition name="pw-slide">
                 <div v-show="isItemSectionOpen(block.blockType, 'layout')" class="pw-field-block" data-collapsible="true">
+                  <pw-block-settings
+                    view="items-layout"
+                    :block="block"
+                    :config="blockConfigs[block.blockType]"
+                    :overrides="blockOverrides[block.blockType] || {}"
+                    :writer-active="writerActive[block.blockType] !== false"
+                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                    @update:writer-active="$set(writerActive, block.blockType, $event)"
+                  />
                   <pw-block-values
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-padding-top','item-padding-right','item-padding-bottom','item-padding-left','item-radius','item-border-width']"
+                    :show-only="['item-padding','item-radius','item-border-width']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />

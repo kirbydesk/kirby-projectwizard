@@ -88,14 +88,14 @@
                         <input
                           type="text"
                           inputmode="decimal"
-                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
-                          :class="{ 'is-default': !overrideAt(varName, idx) }"
+                          class="pw-element-input pw-element-input-number"
+                          :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !overrideAt(varName, idx) }"
                           :value="stripUnit(overrideAt(varName, idx) || def.value[idx], def.unit)"
                           @change="setMulti(varName, idx, $event.target.value, def.value, def.unit)"
                         />
                         <span class="pw-element-unit">{{ def.unit }}</span>
                       </span>
-                      <span class="pw-px-calculator">{{ toPx(overrideAt(varName, idx) || def.value[idx], def.unit) }}</span>
+                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(overrideAt(varName, idx) || def.value[idx], def.unit) }}</span>
                     </span>
                   </template>
 
@@ -110,13 +110,14 @@
                         <input
                           type="text"
                           inputmode="decimal"
-                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                          class="pw-element-input pw-element-input-number"
+                          :class="{ 'pw-px-calculator-input': showCalculator(def.unit) }"
                           :value="stripUnit(overrideAt(varName, idx) || def.value[idx], def.unit)"
                           @change="setMulti(varName, idx, $event.target.value, def.value, def.unit)"
                         />
                         <span class="pw-element-unit">{{ def.unit }}</span>
                       </span>
-                      <span class="pw-px-calculator">{{ toPx(overrideAt(varName, idx) || def.value[idx], def.unit) }}</span>
+                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(overrideAt(varName, idx) || def.value[idx], def.unit) }}</span>
                     </span>
                   </template>
 
@@ -127,14 +128,14 @@
                         <input
                           type="text"
                           inputmode="decimal"
-                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
-                          :class="{ 'is-default': !getOverride(varName) }"
+                          class="pw-element-input pw-element-input-number"
+                          :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !getOverride(varName) }"
                           :value="stripUnit(getOverride(varName) || def.value, def.unit)"
                           @change="setSingleUnit(varName, $event.target.value, def.value, def.unit)"
                         />
                         <span v-if="def.unit" class="pw-element-unit">{{ def.unit }}</span>
                       </span>
-                      <span class="pw-px-calculator">{{ toPx(getOverride(varName) || def.value, def.unit) }}</span>
+                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(getOverride(varName) || def.value, def.unit) }}</span>
                     </span>
                   </template>
 
@@ -226,6 +227,9 @@ export default {
       if (u === 'rem' || u === 'em') return Math.round(n * 16) + 'px';
       if (u === 'px') return Math.round(n) + 'px';
       return '';
+    },
+    showCalculator(unit) {
+      return unit !== 'px';
     },
     getOverride(varName) {
       return this.overrides[varName];
