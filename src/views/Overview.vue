@@ -552,9 +552,12 @@ export default {
       return name.charAt(0).toUpperCase() + name.slice(1);
     },
     hasItemFields(blockType) {
+      // Show the Items tab only for blocks that define a `blocks` content field
+      // (inner-blocks pattern → cardlets, featurelist). Plugins using `column-blocks`
+      // (multicolumn) or static layouts (monstercards, monstercall) don't get one.
       const cfg = this.blockConfigs[blockType];
       const content = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields && cfg.defaults.settings.fields.content || {};
-      return Object.keys(content).some(k => k.startsWith('item-'));
+      return content.blocks !== undefined && content.blocks !== false;
     },
     blockTabs(blockType) {
       const tabs = [{ key: 'defaults', icon: 'settings' }];
