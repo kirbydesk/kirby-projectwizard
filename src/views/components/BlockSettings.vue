@@ -391,12 +391,12 @@
         </transition>
       </section>
 
-      <!-- Layout sub-section: per-corner radius toggles. No visibility eye —
+      <!-- Defaults sub-section: per-corner radius toggles. No visibility eye —
            the section is structurally always visible when radius fields exist. -->
       <section v-if="view === 'items' && getItemRadiusFields().length" class="pw-wizard-section">
         <div class="pw-section-header">
           <button class="pw-section-toggle" @click="toggleSection('items-radius')">
-            <span>{{ $t('prw.tab.layout') || 'Layout' }}</span>
+            <span>{{ $t('prw.tab.defaults') || 'Defaults' }}</span>
             <k-icon :type="isSectionOpen('items-radius') ? 'angle-down' : 'angle-right'" />
           </button>
         </div>
