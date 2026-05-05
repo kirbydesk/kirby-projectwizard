@@ -2,7 +2,7 @@
   <div class="pw-wizard-block-sections">
 
     <!-- ===== Content ===== -->
-    <div class="pw-wizard-tab-content">
+    <div v-if="view === 'defaults'" class="pw-wizard-tab-content">
 
       <!-- Content Fields -->
       <section class="pw-wizard-section">
@@ -148,42 +148,6 @@
           </template>
         </div>
       </div>
-      <!-- Item fields -->
-      <div v-if="getItemFields().length" class="pw-item-section">
-        <div class="pw-field-block">
-          <div
-            v-for="field in getItemFields()"
-            :key="field.key"
-            class="k-field k-text-field pw-content-field"
-            data-object="content-field"
-          >
-            <div class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
-              <span class="pw-tab-visibility">
-                <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
-              </span>
-              <span>{{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}</span>
-            </div>
-
-            <div v-show="isFieldEnabled(field)" v-if="field.properties.length" class="pw-field-rows">
-              <pw-field-row
-                v-for="prop in field.properties"
-                :key="field.key + '-' + prop.key"
-                :uid="blockType + '-' + field.key + '-' + prop.key"
-                :label="prop.key"
-                :all-options="prop.allOptions"
-                :active-options="getActiveOptions(field.key, prop.key, prop)"
-                :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
-                :plugin-default="prop.pluginDefault"
-                :enabled="true"
-                :required="prop.required === true"
-                :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
-                @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
-                @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
       </div>
       </transition>
 
@@ -326,6 +290,62 @@
 
     </div>
 
+    <!-- ===== Items ===== -->
+    <div v-if="view === 'items'" class="pw-wizard-tab-content">
+
+      <section class="pw-wizard-section">
+        <div class="pw-section-header">
+          <span class="pw-tab-visibility pw-tab-visibility-static">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"/></svg>
+          </span>
+          <button class="pw-section-toggle" @click="toggleSection('items')">
+            <span>{{ $t('prw.headline.items') || 'Items' }}</span>
+            <k-icon :type="isSectionOpen('items') ? 'angle-down' : 'angle-right'" />
+          </button>
+        </div>
+        <transition name="pw-slide">
+          <div v-show="isSectionOpen('items')" class="pw-field-block" data-collapsible="true">
+            <div v-if="getItemFields().length" class="pw-item-section">
+              <div class="pw-field-block">
+                <div
+                  v-for="field in getItemFields()"
+                  :key="field.key"
+                  class="k-field k-text-field pw-content-field"
+                  data-object="content-field"
+                >
+                  <div class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
+                    <span class="pw-tab-visibility">
+                      <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
+                    </span>
+                    <span>{{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}</span>
+                  </div>
+
+                  <div v-show="isFieldEnabled(field)" v-if="field.properties.length" class="pw-field-rows">
+                    <pw-field-row
+                      v-for="prop in field.properties"
+                      :key="field.key + '-' + prop.key"
+                      :uid="blockType + '-' + field.key + '-' + prop.key"
+                      :label="prop.key"
+                      :all-options="prop.allOptions"
+                      :active-options="getActiveOptions(field.key, prop.key, prop)"
+                      :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
+                      :plugin-default="prop.pluginDefault"
+                      :enabled="true"
+                      :required="prop.required === true"
+                      :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
+                      @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
+                      @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </section>
+
+    </div>
+
   </div>
 </template>
 
@@ -347,6 +367,11 @@ export default {
     writerActive: {
       type: Boolean,
       default: true,
+    },
+    view: {
+      type: String,
+      default: 'defaults',
+      validator: v => ['defaults', 'items'].includes(v),
     },
   },
   data() {

@@ -57,10 +57,7 @@
     <!-- Kirby-native tab navigation (per-block view) -->
     <nav v-if="!loading && activeTab !== 'global'" class="k-tabs k-model-tabs">
       <button
-        v-for="tab in [
-          { key: 'defaults', icon: 'settings' },
-          { key: 'layout', icon: 'layout-top' },
-        ]"
+        v-for="tab in blockTabs(activeTab)"
         :key="tab.key"
         type="button"
         class="k-tabs-button k-button"
@@ -284,6 +281,20 @@
           <!-- Defaults tab -->
           <div v-show="blockViewTab === 'defaults'" v-if="blockConfigs[block.blockType]">
             <pw-block-settings
+              view="defaults"
+              :block="block"
+              :config="blockConfigs[block.blockType]"
+              :overrides="blockOverrides[block.blockType] || {}"
+              :writer-active="writerActive[block.blockType] !== false"
+              @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+              @update:writer-active="$set(writerActive, block.blockType, $event)"
+            />
+          </div>
+
+          <!-- Items tab (only when block has item fields) -->
+          <div v-show="blockViewTab === 'items'" v-if="blockConfigs[block.blockType] && hasItemFields(block.blockType)">
+            <pw-block-settings
+              view="items"
               :block="block"
               :config="blockConfigs[block.blockType]"
               :overrides="blockOverrides[block.blockType] || {}"
@@ -539,6 +550,17 @@ export default {
       }
       const name = blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
       return name.charAt(0).toUpperCase() + name.slice(1);
+    },
+    hasItemFields(blockType) {
+      const cfg = this.blockConfigs[blockType];
+      const content = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields && cfg.defaults.settings.fields.content || {};
+      return Object.keys(content).some(k => k.startsWith('item-'));
+    },
+    blockTabs(blockType) {
+      const tabs = [{ key: 'defaults', icon: 'settings' }];
+      if (this.hasItemFields(blockType)) tabs.push({ key: 'items', icon: 'list-bullet' });
+      tabs.push({ key: 'layout', icon: 'layout-top' });
+      return tabs;
     },
 
     // --- Global: Elements ---
