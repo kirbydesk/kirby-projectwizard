@@ -148,6 +148,43 @@
           </template>
         </div>
       </div>
+
+      <!-- Item-* content fields (item-tagline, item-heading, item-editor) —
+           rendered AFTER the editor section so block-level fields and the
+           editor come before per-item field defaults. -->
+      <div v-if="getItemDefaultsContentFields().length" class="pw-field-block">
+        <div
+          v-for="field in getItemDefaultsContentFields()"
+          :key="field.key"
+          class="k-field k-text-field pw-content-field"
+          data-object="content-field"
+        >
+          <div class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
+            <span class="pw-tab-visibility">
+              <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
+            </span>
+            <span>{{ fieldLabel(field.key) }}</span>
+          </div>
+
+          <div v-show="isFieldEnabled(field)" v-if="field.properties.length" class="pw-field-rows">
+            <pw-field-row
+              v-for="prop in field.properties"
+              :key="field.key + '-' + prop.key"
+              :uid="blockType + '-' + field.key + '-' + prop.key"
+              :label="prop.key"
+              :all-options="prop.allOptions"
+              :active-options="getActiveOptions(field.key, prop.key, prop)"
+              :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
+              :plugin-default="prop.pluginDefault"
+              :enabled="true"
+              :required="prop.required === true"
+              :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
+              @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
+              @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
+            />
+          </div>
+        </div>
+      </div>
       </div>
       </transition>
 
@@ -291,7 +328,7 @@
     </div>
 
     <!-- ===== Items ===== -->
-    <div v-if="view === 'items' || view === 'items-defaults'" class="pw-wizard-tab-content">
+    <div v-if="view === 'items' || view === 'items-defaults' || view === 'items-layout'" class="pw-wizard-tab-content">
 
       <!-- Content sub-section (legacy — kept for backwards compat with custom plugins
            that still split items.content out, otherwise unused now that item-*
@@ -502,6 +539,15 @@ export default {
   methods: {
     // --- Content fields ---
     getContentFields() {
+      return this.collectContentFields({ items: false });
+    },
+    getItemDefaultsContentFields() {
+      // item-* content fields (item-tagline, item-heading, item-editor) — rendered
+      // in the Defaults tab AFTER the editor section so block-level fields and the
+      // editor come before per-item field defaults.
+      return this.collectContentFields({ items: true });
+    },
+    collectContentFields({ items }) {
       const settings = this.getDefault('settings.fields.content') || {};
       const fields = [];
 
@@ -510,9 +556,11 @@ export default {
         //  - editor:        rendered in its own section (with marks/nodes/etc.)
         //  - column-blocks: handled by the column-blocks selector above
         //  - blocks:        the inner-blocks container — has no own defaults
-        // item-* fields (item-tagline, item-heading, item-editor) ARE rendered here —
-        // they are content defaults like the block-level ones, just for inner items.
         if (key === 'editor' || key === 'column-blocks' || key === 'blocks') continue;
+        // Split block-level vs item-* into two passes
+        const isItemKey = key.startsWith('item-');
+        if (items && !isItemKey) continue;
+        if (!items && isItemKey) continue;
 
         if (settingVal === 'enabled') {
           fields.push({ key, enabled: true, properties: [] });
