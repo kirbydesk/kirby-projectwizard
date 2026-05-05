@@ -1,11 +1,11 @@
 <template>
   <div class="pw-wizard-block-sections">
 
-    <!-- ===== Content ===== -->
-    <div v-if="view === 'defaults'" class="pw-wizard-tab-content">
+    <!-- ===== Content + Categories (defaults) / Layout (layout) ===== -->
+    <div v-if="view === 'defaults' || view === 'layout'" class="pw-wizard-tab-content">
 
-      <!-- Content Fields -->
-      <section class="pw-wizard-section">
+      <!-- Content Fields (defaults view only) -->
+      <section v-if="view === 'defaults'" class="pw-wizard-section">
       <div class="pw-section-header">
         <span class="pw-tab-visibility pw-tab-visibility-static">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"/></svg>
@@ -418,7 +418,7 @@ export default {
     view: {
       type: String,
       default: 'defaults',
-      validator: v => ['defaults', 'items'].includes(v),
+      validator: v => ['defaults', 'items', 'layout'].includes(v),
     },
   },
   data() {
@@ -697,6 +697,9 @@ export default {
     getCategories() {
       const cats = [];
       for (const catKey of ['layout', 'style', 'effects', 'grid', 'settings']) {
+        // In Layout view, only the layout category with item-* keys is shown.
+        if (this.view === 'layout' && catKey !== 'layout') continue;
+
         const settingsFields = this.getDefault('settings.fields.' + catKey) || {};
 
         if (Object.keys(settingsFields).length === 0) continue;
@@ -705,20 +708,29 @@ export default {
         const grouped = {};
 
         for (const [key, val] of Object.entries(settingsFields)) {
-          if (key === 'padding' || key === 'radius') continue;
+          // Layout-tab filter: only item-* keys
+          if (this.view === 'layout' && catKey === 'layout' && !key.startsWith('item-')) continue;
+          // Defaults-tab filter: hide item-* layout keys (they live on the Layout tab)
+          if (this.view === 'defaults' && catKey === 'layout' && key.startsWith('item-')) continue;
+
+          // Strip item- prefix for grouping (item-radius → radius, item-padding-top → padding-top)
+          // so the existing radius/padding-* group rules below catch them.
+          const lookupKey = this.view === 'layout' && key.startsWith('item-') ? key.slice(5) : key;
+
+          if (lookupKey === 'padding' || lookupKey === 'radius') continue;
           if (val === 'enabled') continue;
 
-          if (key.startsWith('radius-')) {
+          if (lookupKey.startsWith('radius-')) {
             if (!grouped['radius']) {
               grouped['radius'] = { key: 'radius', type: 'toggle-group', subFields: [] };
             }
-            const subLabel = key.replace('radius-', '');
+            const subLabel = lookupKey.replace('radius-', '');
             const defaultValue = this.isObject(val) && 'default' in val ? val.default : false;
             grouped['radius'].subFields.push({ key, label: subLabel, defaultValue });
             continue;
           }
 
-          if (key === 'padding-top' || key === 'padding-bottom') {
+          if (lookupKey === 'padding-top' || lookupKey === 'padding-bottom') {
             const defaultValue = this.isObject(val) && 'default' in val ? val.default : 'large';
             fields.push({
               key,

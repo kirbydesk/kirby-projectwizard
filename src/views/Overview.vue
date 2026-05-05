@@ -304,9 +304,22 @@
             />
           </div>
 
-          <!-- Layout tab (placeholder) -->
-          <div v-show="blockViewTab === 'layout'" class="pw-wizard-empty">
-            <p>{{ $t('prw.tab.layout.placeholder') || 'Layout configuration for this block will appear here.' }}</p>
+          <!-- Layout tab — for items-blocks shows item-* layout overrides,
+               for other blocks falls back to the placeholder. -->
+          <div v-show="blockViewTab === 'layout'">
+            <pw-block-settings
+              v-if="hasItemFields(block.blockType) && blockConfigs[block.blockType]"
+              view="layout"
+              :block="block"
+              :config="blockConfigs[block.blockType]"
+              :overrides="blockOverrides[block.blockType] || {}"
+              :writer-active="writerActive[block.blockType] !== false"
+              @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+              @update:writer-active="$set(writerActive, block.blockType, $event)"
+            />
+            <div v-else class="pw-wizard-empty">
+              <p>{{ $t('prw.tab.layout.placeholder') || 'Layout configuration for this block will appear here.' }}</p>
+            </div>
           </div>
 
         </div>
@@ -562,12 +575,9 @@ export default {
     blockTabs(blockType) {
       const tabs = [{ key: 'defaults', icon: 'settings' }];
       if (this.hasItemFields(blockType)) {
-        // Items tab covers content + layout for the inner blocks, so no
-        // separate top-level Layout tab is needed.
         tabs.push({ key: 'items', icon: 'list-bullet' });
-      } else {
-        tabs.push({ key: 'layout', icon: 'layout-top' });
       }
+      tabs.push({ key: 'layout', icon: 'layout-top' });
       return tabs;
     },
 
