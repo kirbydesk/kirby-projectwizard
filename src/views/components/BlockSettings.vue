@@ -358,39 +358,33 @@
         </div>
         <transition name="pw-slide">
           <div v-show="isSectionOpen('items-layout')" class="pw-field-block" data-collapsible="true">
-            <div class="pw-item-section">
-              <div class="pw-field-block">
-                <div
-                  v-for="field in getItemLayoutFields()"
-                  :key="field.key"
-                  class="k-field k-text-field pw-content-field"
-                  data-object="content-field"
-                >
-                  <div class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
-                    <span class="pw-tab-visibility">
-                      <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
-                    </span>
-                    <span>{{ fieldLabel(field.displayKey) }}</span>
+            <div
+              v-for="field in getItemLayoutFields()"
+              :key="field.key"
+              class="pw-field-row"
+            >
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
                   </div>
-
-                  <div v-show="isFieldEnabled(field)" v-if="field.properties.length" class="pw-field-rows">
-                    <pw-field-row
-                      v-for="prop in field.properties"
-                      :key="field.key + '-' + prop.key"
-                      :uid="blockType + '-' + field.key + '-' + prop.key"
-                      :label="prop.key"
-                      :all-options="prop.allOptions"
-                      :active-options="getActiveOptions(field.key, prop.key, prop)"
-                      :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
-                      :plugin-default="prop.pluginDefault"
-                      :enabled="true"
-                      :required="prop.required === true"
-                      :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
-                      @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
-                      @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
+                  <div class="pw-field-row-options">
+                    <k-toggle-input
+                      v-if="typeof field.defaultValue === 'boolean'"
+                      :value="getVal('settings.fields.content.' + field.key + '.default', field.defaultValue)"
+                      :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
+                      @input="setVal('settings.fields.content.' + field.key + '.default', $event)"
+                    />
+                    <input
+                      v-else
+                      type="text"
+                      class="pw-category-input"
+                      :placeholder="String(field.defaultValue)"
+                      :value="getOverrideOnly('settings.fields.content.' + field.key + '.default') || ''"
+                      @input="setValOrClear('settings.fields.content.' + field.key + '.default', $event.target.value, field.defaultValue)"
                     />
                   </div>
-                </div>
+                </span>
               </div>
             </div>
           </div>
@@ -492,7 +486,25 @@ export default {
       return this.getItemFieldsRaw().filter(f => !this.isItemLayoutKey(f.key));
     },
     getItemLayoutFields() {
-      return this.getItemFieldsRaw().filter(f => this.isItemLayoutKey(f.key));
+      // Layout fields are simple {default: bool|...} entries that getItemFieldsRaw()
+      // filters out (no nested props). Iterate the raw content settings so we can
+      // render them as standalone toggles / selects, similar to category fields.
+      const settings = this.getDefault('settings.fields.content') || {};
+      const fields = [];
+      for (const [key, settingVal] of Object.entries(settings)) {
+        if (!this.isItemLayoutKey(key)) continue;
+        if (settingVal === false || settingVal === 'enabled') continue;
+
+        const displayKey = key.replace(/^item-/, '');
+        let defaultValue = false;
+        if (this.isObject(settingVal) && 'default' in settingVal) {
+          defaultValue = settingVal.default;
+        } else if (typeof settingVal === 'boolean' || typeof settingVal === 'string' || typeof settingVal === 'number') {
+          defaultValue = settingVal;
+        }
+        fields.push({ key, displayKey, defaultValue });
+      }
+      return fields;
     },
     getItemFields() {
       // Kept for backwards compatibility (e.g. Overview.vue's hasItemFields detection
