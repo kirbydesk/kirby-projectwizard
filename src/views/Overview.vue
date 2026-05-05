@@ -307,16 +307,25 @@
           <!-- Layout tab — for items-blocks shows item-* layout overrides,
                for other blocks falls back to the placeholder. -->
           <div v-show="blockViewTab === 'layout'">
-            <pw-block-settings
-              v-if="hasItemFields(block.blockType) && blockConfigs[block.blockType]"
-              view="layout"
-              :block="block"
-              :config="blockConfigs[block.blockType]"
-              :overrides="blockOverrides[block.blockType] || {}"
-              :writer-active="writerActive[block.blockType] !== false"
-              @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-              @update:writer-active="$set(writerActive, block.blockType, $event)"
-            />
+            <template v-if="hasItemFields(block.blockType) && blockConfigs[block.blockType]">
+              <!-- Werte: per-block CSS variables (rem inputs) -->
+              <pw-block-values
+                v-if="blockValueDefaults[block.blockType]"
+                :defaults="blockValueDefaults[block.blockType]"
+                :overrides="blockValueOverrides[block.blockType] || {}"
+                @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+              />
+              <!-- Defaults: field-defaults from layout category (item-* keys) -->
+              <pw-block-settings
+                view="layout"
+                :block="block"
+                :config="blockConfigs[block.blockType]"
+                :overrides="blockOverrides[block.blockType] || {}"
+                :writer-active="writerActive[block.blockType] !== false"
+                @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                @update:writer-active="$set(writerActive, block.blockType, $event)"
+              />
+            </template>
             <div v-else class="pw-wizard-empty">
               <p>{{ $t('prw.tab.layout.placeholder') || 'Layout configuration for this block will appear here.' }}</p>
             </div>
@@ -352,6 +361,9 @@ export default {
       blockConfigs: {},
       blockOverrides: {},
       originalOverrides: {},
+      blockValueDefaults: {},
+      blockValueOverrides: {},
+      originalBlockValueOverrides: {},
       originalActiveBlocks: [],
       dirtyTabs: {},
       snapshots: {},
@@ -503,6 +515,20 @@ export default {
           this.$set(this.blockOverrides, block.blockType, JSON.parse(JSON.stringify(overrides)));
           this.$set(this.originalOverrides, block.blockType, JSON.parse(JSON.stringify(overrides)));
           this.$set(this.snapshots, block.blockType, JSON.stringify(overrides));
+
+          // Load per-block CSS-variable defaults + overrides (only useful for items-blocks)
+          if (this.hasItemFields(block.blockType)) {
+            try {
+              const valuesRes = await this.$api.get('projectwizard/values/' + block.blockType);
+              this.$set(this.blockValueDefaults, block.blockType, valuesRes.defaults || {});
+              const vov = (valuesRes.overrides && !Array.isArray(valuesRes.overrides)) ? valuesRes.overrides : {};
+              this.$set(this.blockValueOverrides, block.blockType, JSON.parse(JSON.stringify(vov)));
+              this.$set(this.originalBlockValueOverrides, block.blockType, JSON.parse(JSON.stringify(vov)));
+              this.$set(this.snapshots, block.blockType + ':values', JSON.stringify(vov));
+            } catch (e) {
+              // Block has no values defined — silently skip
+            }
+          }
         }
 
         // Load global
@@ -996,10 +1022,31 @@ export default {
         if (block) block.customized = Object.keys(this.safeOverrides(res.overrides)).length > 0;
         this.$set(this.snapshots, blockType, JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, blockType, false);
+
+        // Items-blocks: also persist the per-block CSS-variable overrides
+        // (the rem-inputs in the Layout tab).
+        if (this.hasItemFields(blockType)) {
+          const valuesRes = await this.$api.post(
+            'projectwizard/values/' + blockType,
+            this.blockValueOverrides[blockType] || {}
+          );
+          const ov = (valuesRes.overrides && !Array.isArray(valuesRes.overrides)) ? valuesRes.overrides : {};
+          this.$set(this.blockValueOverrides, blockType, JSON.parse(JSON.stringify(ov)));
+          this.$set(this.originalBlockValueOverrides, blockType, JSON.parse(JSON.stringify(ov)));
+          this.$set(this.snapshots, blockType + ':values', JSON.stringify(ov));
+        }
+
         this.$panel.notification.success(this.blockLabel(blockType) + ' settings saved');
       } catch (e) {
         this.$panel.notification.error('Failed to save ' + this.blockLabel(blockType) + ' settings');
       }
+    },
+
+    onBlockValueOverridesUpdate(blockType, overrides) {
+      this.$set(this.blockValueOverrides, blockType, overrides);
+      const valuesDirty = JSON.stringify(overrides) !== this.snapshots[blockType + ':values'];
+      const settingsDirty = JSON.stringify(this.blockOverrides[blockType] || {}) !== this.snapshots[blockType];
+      this.$set(this.dirtyTabs, blockType, valuesDirty || settingsDirty);
     },
 
     safeOverrides(ov) {
