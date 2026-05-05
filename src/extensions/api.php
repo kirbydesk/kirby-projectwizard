@@ -152,6 +152,25 @@ return [
 				return ProjectConfig::loadGlobal();
 			}
 		],
+		// Get per-block CSS-variable defaults + overrides
+		[
+			'pattern' => 'projectwizard/values/(:any)',
+			'method'  => 'GET',
+			'action'  => function (string $blockType) {
+				return ProjectConfig::loadBlockValues($blockType);
+			}
+		],
+		// Save per-block CSS-variable overrides
+		[
+			'pattern' => 'projectwizard/values/(:any)',
+			'method'  => 'POST',
+			'action'  => function (string $blockType) {
+				$data = kirby()->request()->body()->toArray();
+				ProjectConfig::saveBlockValues($blockType, $data);
+				SetupWizard::triggerProjectbuilder();
+				return ProjectConfig::loadBlockValues($blockType);
+			}
+		],
 		// Get element style defaults + overrides
 		[
 			'pattern' => 'projectwizard/elements',

@@ -247,6 +247,15 @@ class ProjectConfig
 		return self::configDir() . '/global.json';
 	}
 
+	private static function blockValuesFile(string $blockType): string
+	{
+		// Per-block CSS-variable overrides live next to the global.json, one file
+		// per block type. Pattern: site/config/projectwizard/<blockType>.json.
+		// The slash-stripping protects against blockTypes with unusual chars.
+		$safe = preg_replace('/[^a-zA-Z0-9_-]/', '', $blockType);
+		return self::configDir() . '/' . $safe . '.json';
+	}
+
 	private static function fontsizesFile(): string
 	{
 		return self::configDir() . '/fontsizes.json';
@@ -416,6 +425,33 @@ class ProjectConfig
 	public static function saveGlobal(array $overrides): void
 	{
 		$path = self::globalFile();
+
+		if (empty($overrides)) {
+			if (file_exists($path)) unlink($path);
+			return;
+		}
+
+		$dir = dirname($path);
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($path, json_encode($overrides, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+	}
+
+	/**
+	 * Load per-block CSS-variable defaults (from the plugin's settings.json
+	 * 'values' section) plus user overrides from site/config/projectwizard/<blockType>.json.
+	 */
+	public static function loadBlockValues(string $blockType): array
+	{
+		// pwConfig::loadValues already merges plugin defaults + the override file.
+		return \pwConfig::loadValues($blockType);
+	}
+
+	/**
+	 * Save per-block CSS-variable overrides to site/config/projectwizard/<blockType>.json.
+	 */
+	public static function saveBlockValues(string $blockType, array $overrides): void
+	{
+		$path = self::blockValuesFile($blockType);
 
 		if (empty($overrides)) {
 			if (file_exists($path)) unlink($path);
