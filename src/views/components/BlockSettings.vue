@@ -407,15 +407,30 @@
               <div class="pw-field-row-label-col">
                 <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
               </div>
-              <div class="pw-field-row-options">
+              <div
+                class="pw-field-row-options"
+                :class="{ 'pw-toggle-group': field.type === 'toggle-group' }"
+              >
+                <!-- Quad of corner toggles (Radius) -->
+                <template v-if="field.type === 'toggle-group'">
+                  <k-toggle-input
+                    v-for="sub in field.subFields"
+                    :key="sub.key"
+                    :value="getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue)"
+                    :text="toggleOptionLabel(sub.label)"
+                    @input="setVal('settings.fields.layout.' + sub.key + '.default', $event)"
+                  />
+                </template>
+                <!-- Select with options -->
                 <k-toggles-input
-                  v-if="field.type === 'select'"
+                  v-else-if="field.type === 'select'"
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
                   :options="field.options.map(o => ({ value: o, text: $t('pw.option.' + o) || o }))"
                   :grow="false"
                   :required="true"
                   @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
                 />
+                <!-- Plain boolean toggle -->
                 <k-toggle-input
                   v-else
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
@@ -526,14 +541,32 @@ export default {
       return key === 'item-radius' || key.startsWith('item-radius-');
     },
     getItemRadiusFields() {
-      // Per-corner radius toggles + other item-level field defaults (link-style,
-      // border, …) defined in fields.layout. Differentiates between booleans
-      // (toggle), selects with options and the radius quad.
+      // Per-corner radius toggles get grouped into one row (toggle-group with
+      // four sub-toggles), other item-level field defaults (link-style, border)
+      // stay as individual rows. Mirrors how block-level radius is rendered in
+      // the Defaults tab's layout category.
       const settings = this.getDefault('settings.fields.layout') || {};
       const fields = [];
+      let radiusGroup = null;
+
       for (const [key, settingVal] of Object.entries(settings)) {
         if (!key.startsWith('item-')) continue;
         if (settingVal === false || settingVal === 'enabled') continue;
+
+        // Per-corner radius toggles → collect into one toggle-group row
+        if (key.startsWith('item-radius-')) {
+          if (!radiusGroup) {
+            radiusGroup = { key: 'item-radius', displayKey: 'radius', type: 'toggle-group', subFields: [] };
+            fields.push(radiusGroup);
+          }
+          const defaultValue = this.isObject(settingVal) && 'default' in settingVal ? settingVal.default : false;
+          radiusGroup.subFields.push({
+            key,
+            label: key.replace(/^item-radius-/, ''),
+            defaultValue,
+          });
+          continue;
+        }
 
         const displayKey = key.replace(/^item-/, '');
 
