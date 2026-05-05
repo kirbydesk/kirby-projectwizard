@@ -391,6 +391,41 @@
         </transition>
       </section>
 
+      <!-- Layout sub-section: per-corner radius toggles. No visibility eye —
+           the section is structurally always visible when radius fields exist. -->
+      <section v-if="view === 'items' && getItemRadiusFields().length" class="pw-wizard-section">
+        <div class="pw-section-header">
+          <button class="pw-section-toggle" @click="toggleSection('items-radius')">
+            <span>{{ $t('prw.tab.layout') || 'Layout' }}</span>
+            <k-icon :type="isSectionOpen('items-radius') ? 'angle-down' : 'angle-right'" />
+          </button>
+        </div>
+        <transition name="pw-slide">
+          <div v-show="isSectionOpen('items-radius')" class="pw-field-block" data-collapsible="true">
+            <div
+              v-for="field in getItemRadiusFields()"
+              :key="field.key"
+              class="pw-field-row"
+            >
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
+                  </div>
+                  <div class="pw-field-row-options">
+                    <k-toggle-input
+                      :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
+                      :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
+                      @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
+                    />
+                  </div>
+                </span>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </section>
+
     </div>
 
   </div>
@@ -481,6 +516,24 @@ export default {
     isItemLayoutKey(key) {
       // Layout area inside the Items tab: master radius toggle + per-corner radius toggles.
       return key === 'item-radius' || key.startsWith('item-radius-');
+    },
+    getItemRadiusFields() {
+      // Per-corner radius toggles for cards. Plugin defines them under
+      // settings.fields.layout (after migration), so we read them straight
+      // from there for the Items tab's Layout sub-section.
+      const settings = this.getDefault('settings.fields.layout') || {};
+      const fields = [];
+      for (const [key, settingVal] of Object.entries(settings)) {
+        if (!key.startsWith('item-radius-')) continue;
+        if (settingVal === false || settingVal === 'enabled') continue;
+        let defaultValue = false;
+        if (this.isObject(settingVal) && 'default' in settingVal) {
+          defaultValue = settingVal.default;
+        }
+        const displayKey = key.replace(/^item-/, '');
+        fields.push({ key, displayKey, defaultValue });
+      }
+      return fields;
     },
     getItemContentFields() {
       return this.getItemFieldsRaw().filter(f => !this.isItemLayoutKey(f.key));
@@ -708,8 +761,9 @@ export default {
         const grouped = {};
 
         for (const [key, val] of Object.entries(settingsFields)) {
-          // Layout-tab filter: only item-* keys
+          // Layout-tab filter: only item-* keys, but radius toggles move to the Items tab
           if (this.view === 'layout' && catKey === 'layout' && !key.startsWith('item-')) continue;
+          if (this.view === 'layout' && catKey === 'layout' && (key === 'item-radius' || key.startsWith('item-radius-'))) continue;
           // Defaults-tab filter: hide item-* layout keys (they live on the Layout tab)
           if (this.view === 'defaults' && catKey === 'layout' && key.startsWith('item-')) continue;
 
