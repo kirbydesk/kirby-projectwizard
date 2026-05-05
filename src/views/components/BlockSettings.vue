@@ -413,7 +413,16 @@
                     <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
                   </div>
                   <div class="pw-field-row-options">
+                    <k-toggles-input
+                      v-if="field.type === 'select'"
+                      :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
+                      :options="field.options.map(o => ({ value: o, text: $t('pw.option.' + o) || o }))"
+                      :grow="false"
+                      :required="true"
+                      @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
+                    />
                     <k-toggle-input
+                      v-else
                       :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
                       :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
                       @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
@@ -518,20 +527,32 @@ export default {
       return key === 'item-radius' || key.startsWith('item-radius-');
     },
     getItemRadiusFields() {
-      // Per-corner radius toggles for cards. Plugin defines them under
-      // settings.fields.layout (after migration), so we read them straight
-      // from there for the Items tab's Layout sub-section.
+      // Per-corner radius toggles + other item-level field defaults (link-style,
+      // border, …) defined in fields.layout. Differentiates between booleans
+      // (toggle), selects with options and the radius quad.
       const settings = this.getDefault('settings.fields.layout') || {};
       const fields = [];
       for (const [key, settingVal] of Object.entries(settings)) {
-        if (!key.startsWith('item-radius-')) continue;
+        if (!key.startsWith('item-')) continue;
         if (settingVal === false || settingVal === 'enabled') continue;
+
+        const displayKey = key.replace(/^item-/, '');
+
+        if (this.isObject(settingVal) && Array.isArray(settingVal.options)) {
+          fields.push({
+            key, displayKey,
+            type: 'select',
+            options: settingVal.options,
+            defaultValue: settingVal.default !== undefined ? settingVal.default : settingVal.options[0],
+          });
+          continue;
+        }
+
         let defaultValue = false;
         if (this.isObject(settingVal) && 'default' in settingVal) {
           defaultValue = settingVal.default;
         }
-        const displayKey = key.replace(/^item-/, '');
-        fields.push({ key, displayKey, defaultValue });
+        fields.push({ key, displayKey, type: 'toggle', defaultValue });
       }
       return fields;
     },

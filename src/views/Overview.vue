@@ -334,7 +334,7 @@
                     v-show="(itemsValuesSubtab[block.blockType] || 'layout') === 'layout'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-padding', 'item-radius']"
+                    :show-only="['item-padding-top','item-padding-right','item-padding-bottom','item-padding-left','item-radius','item-border-width']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -342,7 +342,7 @@
                     v-show="itemsValuesSubtab[block.blockType] === 'colors'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-background', 'item-text', 'item-link', 'item-link-hover', 'item-link-active']"
+                    :show-only="['item-background','item-text','item-link','item-link-hover','item-link-active','item-border-color']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
