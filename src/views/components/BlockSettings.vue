@@ -473,7 +473,12 @@ export default {
       const fields = [];
 
       for (const [key, settingVal] of Object.entries(settings)) {
-        if (key === 'editor' || key === 'column-blocks' || key.startsWith('item-')) continue;
+        // Skip structural fields handled elsewhere or with no defaults to edit:
+        //  - editor:        rendered in its own section (with marks/nodes/etc.)
+        //  - column-blocks: handled by the column-blocks selector above
+        //  - blocks:        the inner-blocks container — has no own defaults
+        //  - item-*:        rendered in the Items tab
+        if (key === 'editor' || key === 'column-blocks' || key === 'blocks' || key.startsWith('item-')) continue;
 
         if (settingVal === 'enabled') {
           fields.push({ key, enabled: true, properties: [] });
