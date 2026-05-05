@@ -291,7 +291,8 @@
             />
           </div>
 
-          <!-- Items tab (only when block has item fields) -->
+          <!-- Items tab — content + defaults sub-sections plus the Layout/Colors
+               value editor (only when block has item fields). -->
           <div v-show="blockViewTab === 'items'" v-if="blockConfigs[block.blockType] && hasItemFields(block.blockType)">
             <pw-block-settings
               view="items"
@@ -302,31 +303,46 @@
               @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
               @update:writer-active="$set(writerActive, block.blockType, $event)"
             />
+
+            <!-- Layout / Colors sub-tabs -->
+            <div v-if="blockValueDefaults[block.blockType]" class="pw-element-subtabs">
+              <button
+                type="button"
+                class="pw-element-subtab"
+                :class="{ 'is-active': (itemsValuesSubtab[block.blockType] || 'layout') === 'layout' }"
+                @click="$set(itemsValuesSubtab, block.blockType, 'layout')"
+              >{{ $t('prw.subtab.layout') || 'Layout' }}</button>
+              <button
+                type="button"
+                class="pw-element-subtab"
+                :class="{ 'is-active': itemsValuesSubtab[block.blockType] === 'colors' }"
+                @click="$set(itemsValuesSubtab, block.blockType, 'colors')"
+              >{{ $t('prw.subtab.colors') || 'Colors' }}</button>
+            </div>
+
+            <pw-block-values
+              v-if="blockValueDefaults[block.blockType]"
+              v-show="(itemsValuesSubtab[block.blockType] || 'layout') === 'layout'"
+              :defaults="blockValueDefaults[block.blockType]"
+              :overrides="blockValueOverrides[block.blockType] || {}"
+              :show-only="['item-padding', 'item-radius']"
+              :hide-section-headers="true"
+              @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+            />
+            <pw-block-values
+              v-if="blockValueDefaults[block.blockType]"
+              v-show="itemsValuesSubtab[block.blockType] === 'colors'"
+              :defaults="blockValueDefaults[block.blockType]"
+              :overrides="blockValueOverrides[block.blockType] || {}"
+              :show-only="['item-background']"
+              :hide-section-headers="true"
+              @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+            />
           </div>
 
-          <!-- Layout tab — for items-blocks shows item-* layout overrides,
-               for other blocks falls back to the placeholder. -->
+          <!-- Layout tab — only used by non-items blocks (placeholder). -->
           <div v-show="blockViewTab === 'layout'">
-            <template v-if="hasItemFields(block.blockType) && blockConfigs[block.blockType]">
-              <!-- Werte: per-block CSS variables (rem inputs) -->
-              <pw-block-values
-                v-if="blockValueDefaults[block.blockType]"
-                :defaults="blockValueDefaults[block.blockType]"
-                :overrides="blockValueOverrides[block.blockType] || {}"
-                @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-              />
-              <!-- Defaults: field-defaults from layout category (item-* keys) -->
-              <pw-block-settings
-                view="layout"
-                :block="block"
-                :config="blockConfigs[block.blockType]"
-                :overrides="blockOverrides[block.blockType] || {}"
-                :writer-active="writerActive[block.blockType] !== false"
-                @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                @update:writer-active="$set(writerActive, block.blockType, $event)"
-              />
-            </template>
-            <div v-else class="pw-wizard-empty">
+            <div class="pw-wizard-empty">
               <p>{{ $t('prw.tab.layout.placeholder') || 'Layout configuration for this block will appear here.' }}</p>
             </div>
           </div>
@@ -364,6 +380,7 @@ export default {
       blockValueDefaults: {},
       blockValueOverrides: {},
       originalBlockValueOverrides: {},
+      itemsValuesSubtab: {},
       originalActiveBlocks: [],
       dirtyTabs: {},
       snapshots: {},
@@ -601,9 +618,12 @@ export default {
     blockTabs(blockType) {
       const tabs = [{ key: 'defaults', icon: 'settings' }];
       if (this.hasItemFields(blockType)) {
+        // Items tab now hosts both content fields, defaults and the layout/colors
+        // value editors — no separate top-level Layout tab.
         tabs.push({ key: 'items', icon: 'list-bullet' });
+      } else {
+        tabs.push({ key: 'layout', icon: 'layout-top' });
       }
-      tabs.push({ key: 'layout', icon: 'layout-top' });
       return tabs;
     },
 

@@ -109,6 +109,7 @@ export default {
     overrides: { type: Object, default: () => ({}) },
     groupLabels: { type: Object, default: null },
     hideSectionHeaders: { type: Boolean, default: false },
+    showOnly: { type: Array, default: null },
   },
   data() {
     return { open: {} };
@@ -117,7 +118,17 @@ export default {
     groups() {
       const out = {};
       for (const [k, v] of Object.entries(this.defaults || {})) {
-        if (v && typeof v === 'object' && v.vars) out[k] = v;
+        if (!v || typeof v !== 'object' || !v.vars) continue;
+        if (Array.isArray(this.showOnly)) {
+          const filteredVars = {};
+          for (const [vn, def] of Object.entries(v.vars)) {
+            if (this.showOnly.includes(vn)) filteredVars[vn] = def;
+          }
+          if (Object.keys(filteredVars).length === 0) continue;
+          out[k] = { ...v, vars: filteredVars };
+        } else {
+          out[k] = v;
+        }
       }
       return out;
     },
