@@ -561,8 +561,13 @@ export default {
     },
     blockTabs(blockType) {
       const tabs = [{ key: 'defaults', icon: 'settings' }];
-      if (this.hasItemFields(blockType)) tabs.push({ key: 'items', icon: 'list-bullet' });
-      tabs.push({ key: 'layout', icon: 'layout-top' });
+      if (this.hasItemFields(blockType)) {
+        // Items tab covers content + layout for the inner blocks, so no
+        // separate top-level Layout tab is needed.
+        tabs.push({ key: 'items', icon: 'list-bullet' });
+      } else {
+        tabs.push({ key: 'layout', icon: 'layout-top' });
+      }
       return tabs;
     },
 
