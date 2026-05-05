@@ -291,10 +291,10 @@
     </div>
 
     <!-- ===== Items ===== -->
-    <div v-if="view === 'items'" class="pw-wizard-tab-content">
+    <div v-if="view === 'items' || view === 'items-defaults'" class="pw-wizard-tab-content">
 
       <!-- Content sub-section -->
-      <section class="pw-wizard-section">
+      <section v-if="view === 'items'" class="pw-wizard-section">
         <div class="pw-section-header">
           <span class="pw-tab-visibility pw-tab-visibility-static">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"/></svg>
@@ -391,49 +391,40 @@
         </transition>
       </section>
 
-      <!-- Defaults sub-section: per-corner radius toggles. No visibility eye —
-           the section is structurally always visible when radius fields exist. -->
-      <section v-if="view === 'items' && getItemRadiusFields().length" class="pw-wizard-section">
-        <div class="pw-section-header">
-          <button class="pw-section-toggle" @click="toggleSection('items-radius')">
-            <span>{{ $t('prw.tab.defaults') || 'Defaults' }}</span>
-            <k-icon :type="isSectionOpen('items-radius') ? 'angle-down' : 'angle-right'" />
-          </button>
-        </div>
-        <transition name="pw-slide">
-          <div v-show="isSectionOpen('items-radius')" class="pw-field-block" data-collapsible="true">
-            <div
-              v-for="field in getItemRadiusFields()"
-              :key="field.key"
-              class="pw-field-row"
-            >
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <k-toggles-input
-                      v-if="field.type === 'select'"
-                      :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
-                      :options="field.options.map(o => ({ value: o, text: $t('pw.option.' + o) || o }))"
-                      :grow="false"
-                      :required="true"
-                      @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
-                    />
-                    <k-toggle-input
-                      v-else
-                      :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
-                      :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                      @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
-                    />
-                  </div>
-                </span>
+      <!-- Defaults: rendered as the first sub-tab inside the Values section
+           in Overview.vue. No outer section wrapper here — the sub-tab
+           strip already provides the framing. -->
+      <div v-if="view === 'items-defaults' && getItemRadiusFields().length" class="pw-field-block">
+        <div
+          v-for="field in getItemRadiusFields()"
+          :key="field.key"
+          class="pw-field-row"
+        >
+          <div class="k-input" data-type="text">
+            <span class="k-input-element pw-field-row-inner">
+              <div class="pw-field-row-label-col">
+                <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
               </div>
-            </div>
+              <div class="pw-field-row-options">
+                <k-toggles-input
+                  v-if="field.type === 'select'"
+                  :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
+                  :options="field.options.map(o => ({ value: o, text: $t('pw.option.' + o) || o }))"
+                  :grow="false"
+                  :required="true"
+                  @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
+                />
+                <k-toggle-input
+                  v-else
+                  :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
+                  :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
+                  @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
+                />
+              </div>
+            </span>
           </div>
-        </transition>
-      </section>
+        </div>
+      </div>
 
     </div>
 
@@ -462,7 +453,7 @@ export default {
     view: {
       type: String,
       default: 'defaults',
-      validator: v => ['defaults', 'items', 'layout'].includes(v),
+      validator: v => ['defaults', 'items', 'items-defaults', 'layout'].includes(v),
     },
   },
   data() {

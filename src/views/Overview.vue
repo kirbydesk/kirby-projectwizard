@@ -314,12 +314,18 @@
               </div>
               <transition name="pw-slide">
                 <div v-show="isValuesSectionOpen(block.blockType)">
-                  <!-- Layout / Colors sub-tabs -->
+                  <!-- Defaults / Layout / Colors sub-tabs -->
                   <div class="pw-element-subtabs">
                     <button
                       type="button"
                       class="pw-element-subtab"
-                      :class="{ 'is-active': (itemsValuesSubtab[block.blockType] || 'layout') === 'layout' }"
+                      :class="{ 'is-active': (itemsValuesSubtab[block.blockType] || 'defaults') === 'defaults' }"
+                      @click="$set(itemsValuesSubtab, block.blockType, 'defaults')"
+                    >{{ $t('prw.tab.defaults') || 'Defaults' }}</button>
+                    <button
+                      type="button"
+                      class="pw-element-subtab"
+                      :class="{ 'is-active': itemsValuesSubtab[block.blockType] === 'layout' }"
                       @click="$set(itemsValuesSubtab, block.blockType, 'layout')"
                     >{{ $t('prw.subtab.layout') || 'Layout' }}</button>
                     <button
@@ -330,8 +336,18 @@
                     >{{ $t('prw.subtab.colors') || 'Colors' }}</button>
                   </div>
 
+                  <pw-block-settings
+                    v-show="(itemsValuesSubtab[block.blockType] || 'defaults') === 'defaults'"
+                    view="items-defaults"
+                    :block="block"
+                    :config="blockConfigs[block.blockType]"
+                    :overrides="blockOverrides[block.blockType] || {}"
+                    :writer-active="writerActive[block.blockType] !== false"
+                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                    @update:writer-active="$set(writerActive, block.blockType, $event)"
+                  />
                   <pw-block-values
-                    v-show="(itemsValuesSubtab[block.blockType] || 'layout') === 'layout'"
+                    v-show="itemsValuesSubtab[block.blockType] === 'layout'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-padding-top','item-padding-right','item-padding-bottom','item-padding-left','item-radius','item-border-width']"
