@@ -22,7 +22,7 @@
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">{{ varLabel(varName) }}</label>
+                  <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
                 </div>
                 <div class="pw-field-row-options pw-group-type-theme-color">
                   <span
@@ -52,7 +52,7 @@
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">{{ varLabel(varName) }}</label>
+                  <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
                 </div>
                 <div class="pw-field-row-options">
 

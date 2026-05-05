@@ -342,7 +342,7 @@
                     v-show="itemsValuesSubtab[block.blockType] === 'colors'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-background']"
+                    :show-only="['item-background', 'item-text', 'item-link', 'item-link-hover', 'item-link-active']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
