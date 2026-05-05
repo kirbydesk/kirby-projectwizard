@@ -313,7 +313,7 @@
                 </button>
               </div>
               <transition name="pw-slide">
-                <div v-show="isItemSectionOpen(block.blockType, 'defaults')">
+                <div v-show="isItemSectionOpen(block.blockType, 'defaults')" class="pw-field-block" data-collapsible="true">
                   <pw-block-settings
                     view="items-defaults"
                     :block="block"
@@ -336,7 +336,7 @@
                 </button>
               </div>
               <transition name="pw-slide">
-                <div v-show="isItemSectionOpen(block.blockType, 'layout')">
+                <div v-show="isItemSectionOpen(block.blockType, 'layout')" class="pw-field-block" data-collapsible="true">
                   <pw-block-values
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
@@ -357,7 +357,7 @@
                 </button>
               </div>
               <transition name="pw-slide">
-                <div v-show="isItemSectionOpen(block.blockType, 'colors')">
+                <div v-show="isItemSectionOpen(block.blockType, 'colors')" class="pw-field-block" data-collapsible="true">
                   <pw-block-values
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
