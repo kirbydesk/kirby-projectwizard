@@ -13,6 +13,16 @@
       <transition name="pw-slide">
         <div v-show="isOpen(groupKey)" class="pw-element-list">
 
+          <!-- Multi-theme colors header (Default / Variant / Variant2) -->
+          <div v-if="Object.keys(group.colors || {}).length" class="pw-group-header">
+            <div class="pw-field-row-label-col"></div>
+            <div class="pw-group-header-labels pw-group-type-theme-color">
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.default') || 'Default' }}</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant') || 'Variant' }}</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant2') || 'Variant 2' }}</span></span>
+            </div>
+          </div>
+
           <!-- Multi-theme colors (default / variant / variant2) -->
           <div
             v-for="(themes, varName) in group.colors"
