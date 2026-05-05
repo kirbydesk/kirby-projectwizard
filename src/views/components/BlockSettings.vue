@@ -293,8 +293,10 @@
     <!-- ===== Items ===== -->
     <div v-if="view === 'items' || view === 'items-defaults'" class="pw-wizard-tab-content">
 
-      <!-- Content sub-section -->
-      <section v-if="view === 'items'" class="pw-wizard-section">
+      <!-- Content sub-section (legacy — kept for backwards compat with custom plugins
+           that still split items.content out, otherwise unused now that item-*
+           fields are rendered alongside block-level fields in the Defaults tab) -->
+      <section v-if="view === 'items' && getItemContentFields().length" class="pw-wizard-section">
         <div class="pw-section-header">
           <span class="pw-tab-visibility pw-tab-visibility-static">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"/></svg>
@@ -477,8 +479,9 @@ export default {
         //  - editor:        rendered in its own section (with marks/nodes/etc.)
         //  - column-blocks: handled by the column-blocks selector above
         //  - blocks:        the inner-blocks container — has no own defaults
-        //  - item-*:        rendered in the Items tab
-        if (key === 'editor' || key === 'column-blocks' || key === 'blocks' || key.startsWith('item-')) continue;
+        // item-* fields (item-tagline, item-heading, item-editor) ARE rendered here —
+        // they are content defaults like the block-level ones, just for inner items.
+        if (key === 'editor' || key === 'column-blocks' || key === 'blocks') continue;
 
         if (settingVal === 'enabled') {
           fields.push({ key, enabled: true, properties: [] });
@@ -553,7 +556,11 @@ export default {
       return fields;
     },
     getItemContentFields() {
-      return this.getItemFieldsRaw().filter(f => !this.isItemLayoutKey(f.key));
+      // After v1.0.51 item-* content fields are rendered in the Defaults tab
+      // (alongside block-level fields). This getter stays empty unless a plugin
+      // intentionally exposes item-* keys NOT also handled by getContentFields,
+      // for backwards compat.
+      return [];
     },
     getItemLayoutFields() {
       // Layout fields are simple {default: bool|...} entries that getItemFieldsRaw()
