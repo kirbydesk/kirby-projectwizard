@@ -327,7 +327,10 @@
               </transition>
             </section>
 
-            <!-- Layout section (link-style, border toggles + padding, radius, border-width values) -->
+            <!-- Layout section. Order is fixed:
+                 padding → radius → border (toggle) → border-width (only if border on) → link-style.
+                 Each row uses its own component so we can interleave field-default toggles
+                 with css-variable inputs in the desired sequence. -->
             <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
               <div class="pw-section-header">
                 <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'layout')">
@@ -337,21 +340,47 @@
               </div>
               <transition name="pw-slide">
                 <div v-show="isItemSectionOpen(block.blockType, 'layout')" class="pw-field-block" data-collapsible="true">
+                  <pw-block-values
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-padding']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-radius']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
                   <pw-block-settings
                     view="items-layout"
                     :block="block"
                     :config="blockConfigs[block.blockType]"
                     :overrides="blockOverrides[block.blockType] || {}"
                     :writer-active="writerActive[block.blockType] !== false"
+                    :layout-keys="['item-border']"
                     @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                   <pw-block-values
+                    v-if="isItemBorderEnabled(block.blockType)"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-padding','item-radius','item-border-width']"
+                    :show-only="['item-border-width']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-settings
+                    view="items-layout"
+                    :block="block"
+                    :config="blockConfigs[block.blockType]"
+                    :overrides="blockOverrides[block.blockType] || {}"
+                    :writer-active="writerActive[block.blockType] !== false"
+                    :layout-keys="['item-link-style']"
+                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                    @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                 </div>
               </transition>
@@ -651,6 +680,20 @@ export default {
     },
     toggleItemSection(blockType, key) {
       this.$set(this.itemSectionOpen, blockType + ':' + key, !this.isItemSectionOpen(blockType, key));
+    },
+    isItemBorderEnabled(blockType) {
+      // Read current item-border default (override → plugin default).
+      const ov = this.blockOverrides[blockType];
+      const ovVal = ov && ov.settings && ov.settings.fields && ov.settings.fields.layout
+        && ov.settings.fields.layout['item-border']
+        && ov.settings.fields.layout['item-border'].default;
+      if (ovVal !== undefined) return ovVal === true;
+      const cfg = this.blockConfigs[blockType];
+      const def = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields
+        && cfg.defaults.settings.fields.layout
+        && cfg.defaults.settings.fields.layout['item-border']
+        && cfg.defaults.settings.fields.layout['item-border'].default;
+      return def === true;
     },
     hasItemFields(blockType) {
       // Show the Items tab only for blocks that define a `blocks` content field

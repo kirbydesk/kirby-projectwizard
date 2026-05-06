@@ -525,6 +525,10 @@ export default {
       default: 'defaults',
       validator: v => ['defaults', 'items', 'items-defaults', 'items-layout', 'layout'].includes(v),
     },
+    layoutKeys: {
+      type: Array,
+      default: null,
+    },
   },
   data() {
     return {
@@ -632,13 +636,17 @@ export default {
     getItemLayoutSettings() {
       // Item-level layout-tab field defaults that are NOT radius corners
       // (link-style, border, …). Rendered in the Items > Layout section.
+      // When `layoutKeys` is set, only those keys are returned (lets the
+      // parent interleave individual settings with value editors).
       const settings = this.getDefault('settings.fields.layout') || {};
       const fields = [];
+      const filter = Array.isArray(this.layoutKeys) ? this.layoutKeys : null;
 
       for (const [key, settingVal] of Object.entries(settings)) {
         if (!key.startsWith('item-')) continue;
         if (key === 'item-radius' || key.startsWith('item-radius-')) continue;
         if (settingVal === false || settingVal === 'enabled') continue;
+        if (filter && !filter.includes(key)) continue;
 
         const displayKey = key.replace(/^item-/, '');
 
