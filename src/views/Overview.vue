@@ -410,7 +410,7 @@
                   <pw-block-values
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-background','item-text','item-link','item-link-hover','item-link-active','item-border-color']"
+                    :show-only="itemColorsShowOnly(block.blockType)"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -697,6 +697,16 @@ export default {
     },
     isItemLinkStyleButton(blockType) {
       return this.itemLayoutDefault(blockType, 'item-link-style') === 'button';
+    },
+    itemColorsShowOnly(blockType) {
+      // Link colors only matter when link-style="text". When the CTA renders as
+      // a button, it pulls from the global element-button-* colors instead.
+      const list = ['item-background', 'item-text'];
+      if (!this.isItemLinkStyleButton(blockType)) {
+        list.push('item-link', 'item-link-hover', 'item-link-active');
+      }
+      list.push('item-border-color');
+      return list;
     },
     itemLayoutDefault(blockType, key) {
       // Resolve current default for a settings.fields.layout.<key>: override wins,
