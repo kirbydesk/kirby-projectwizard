@@ -339,7 +339,7 @@
                 </button>
               </div>
               <transition name="pw-slide">
-                <div v-show="isItemSectionOpen(block.blockType, 'layout')" class="pw-field-block" data-collapsible="true">
+                <div v-show="isItemSectionOpen(block.blockType, 'layout')" class="pw-field-block pw-items-layout-stack" data-collapsible="true">
                   <pw-block-values
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1278,4 +1278,9 @@ export default {
 }
 
 .pw-wizard-block-sections { display: flex; flex-direction: column; }
+
+/* Items > Layout: padding/radius/border-width/link-style/button-style stack
+   directly on top of each other. Each pw-element-list inside a BlockValues
+   adds spacing-10 by default — collapse that here so the rows flow as one list. */
+.pw-items-layout-stack .pw-element-list { margin-bottom: 0; }
 </style>
