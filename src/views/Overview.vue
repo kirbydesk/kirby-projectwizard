@@ -699,13 +699,15 @@ export default {
       return this.itemLayoutDefault(blockType, 'item-link-style') === 'button';
     },
     itemColorsShowOnly(blockType) {
-      // Link colors only matter when link-style="text". When the CTA renders as
-      // a button, it pulls from the global element-button-* colors instead.
+      // Link colors only matter when link-style="text" (button mode pulls from
+      // global element-button-*). Border color only matters when border is on.
       const list = ['item-background', 'item-text'];
       if (!this.isItemLinkStyleButton(blockType)) {
         list.push('item-link', 'item-link-hover', 'item-link-active');
       }
-      list.push('item-border-color');
+      if (this.isItemBorderEnabled(blockType)) {
+        list.push('item-border-color');
+      }
       return list;
     },
     itemLayoutDefault(blockType, key) {
