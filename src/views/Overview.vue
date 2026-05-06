@@ -382,6 +382,17 @@
                     @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
+                  <pw-block-settings
+                    v-if="isItemLinkStyleButton(block.blockType)"
+                    view="items-layout"
+                    :block="block"
+                    :config="blockConfigs[block.blockType]"
+                    :overrides="blockOverrides[block.blockType] || {}"
+                    :writer-active="writerActive[block.blockType] !== false"
+                    :layout-keys="['item-button-style']"
+                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                    @update:writer-active="$set(writerActive, block.blockType, $event)"
+                  />
                 </div>
               </transition>
             </section>
@@ -682,18 +693,22 @@ export default {
       this.$set(this.itemSectionOpen, blockType + ':' + key, !this.isItemSectionOpen(blockType, key));
     },
     isItemBorderEnabled(blockType) {
-      // Read current item-border default (override → plugin default).
+      return this.itemLayoutDefault(blockType, 'item-border') === true;
+    },
+    isItemLinkStyleButton(blockType) {
+      return this.itemLayoutDefault(blockType, 'item-link-style') === 'button';
+    },
+    itemLayoutDefault(blockType, key) {
+      // Resolve current default for a settings.fields.layout.<key>: override wins,
+      // otherwise fall back to the plugin's default.
       const ov = this.blockOverrides[blockType];
       const ovVal = ov && ov.settings && ov.settings.fields && ov.settings.fields.layout
-        && ov.settings.fields.layout['item-border']
-        && ov.settings.fields.layout['item-border'].default;
-      if (ovVal !== undefined) return ovVal === true;
+        && ov.settings.fields.layout[key] && ov.settings.fields.layout[key].default;
+      if (ovVal !== undefined) return ovVal;
       const cfg = this.blockConfigs[blockType];
-      const def = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields
-        && cfg.defaults.settings.fields.layout
-        && cfg.defaults.settings.fields.layout['item-border']
-        && cfg.defaults.settings.fields.layout['item-border'].default;
-      return def === true;
+      return cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields
+        && cfg.defaults.settings.fields.layout && cfg.defaults.settings.fields.layout[key]
+        && cfg.defaults.settings.fields.layout[key].default;
     },
     hasItemFields(blockType) {
       // Show the Items tab only for blocks that define a `blocks` content field
