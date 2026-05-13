@@ -702,9 +702,15 @@ export default {
       // Link colors only matter when link-style="text" (button mode pulls from
       // global element-button-*). Border color only matters when border is on.
       // Tagline color only shows when the item-tagline content field is enabled.
-      const list = ['item-background', 'item-text'];
+      const list = ['item-background'];
       if (this.isItemContentFieldEnabled(blockType, 'item-tagline')) {
         list.push('item-tagline-text');
+      }
+      if (this.isItemContentFieldEnabled(blockType, 'item-heading')) {
+        list.push('item-heading-text');
+      }
+      if (this.isItemContentFieldEnabled(blockType, 'item-editor')) {
+        list.push('item-editor-text');
       }
       if (!this.isItemLinkStyleButton(blockType)) {
         list.push('item-link', 'item-link-hover', 'item-link-active');
