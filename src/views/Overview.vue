@@ -706,6 +706,12 @@ export default {
       if (this.isItemContentFieldEnabled(blockType, 'item-tagline')) {
         list.push('item-tagline-text');
       }
+      if (this.isItemContentFieldEnabled(blockType, 'item-heading')) {
+        list.push('item-heading-text');
+      }
+      if (this.isItemContentFieldEnabled(blockType, 'item-editor')) {
+        list.push('item-editor-text');
+      }
       if (!this.isItemLinkStyleButton(blockType)) {
         list.push('item-link', 'item-link-hover', 'item-link-active');
       }
