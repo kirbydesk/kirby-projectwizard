@@ -701,7 +701,11 @@ export default {
     itemColorsShowOnly(blockType) {
       // Link colors only matter when link-style="text" (button mode pulls from
       // global element-button-*). Border color only matters when border is on.
+      // Tagline color only shows when the item-tagline content field is enabled.
       const list = ['item-background', 'item-text'];
+      if (this.isItemContentFieldEnabled(blockType, 'item-tagline')) {
+        list.push('item-tagline-text');
+      }
       if (!this.isItemLinkStyleButton(blockType)) {
         list.push('item-link', 'item-link-hover', 'item-link-active');
       }
@@ -709,6 +713,15 @@ export default {
         list.push('item-border-color');
       }
       return list;
+    },
+    isItemContentFieldEnabled(blockType, fieldKey) {
+      // Reads settings.fields.content.<fieldKey>._disabled (override). If absent
+      // or false, the field is enabled (which is the default state).
+      const ov = this.blockOverrides[blockType];
+      const disabled = ov && ov.settings && ov.settings.fields && ov.settings.fields.content
+        && ov.settings.fields.content[fieldKey]
+        && ov.settings.fields.content[fieldKey]._disabled;
+      return disabled !== true;
     },
     itemLayoutDefault(blockType, key) {
       // Resolve current default for a settings.fields.layout.<key>: override wins,
