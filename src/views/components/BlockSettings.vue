@@ -474,9 +474,21 @@
                 <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
               </div>
               <div class="pw-field-row-options">
+                <!-- Icon-select: SVG buttons -->
+                <div v-if="field.type === 'icon-select'" class="pw-icon-select">
+                  <button
+                    v-for="opt in field.options"
+                    :key="opt.value"
+                    type="button"
+                    class="pw-icon-option"
+                    :class="{ 'is-active': (getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)) === opt.value }"
+                    @click="setVal('settings.fields.layout.' + field.key + '.default', opt.value)"
+                    v-html="'<svg viewBox=&quot;0 0 24 24&quot; aria-hidden=&quot;true&quot;>' + opt.svg + '</svg>'"
+                  ></button>
+                </div>
                 <!-- Select with options -->
                 <k-toggles-input
-                  v-if="field.type === 'select'"
+                  v-else-if="field.type === 'select'"
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
                   :options="field.options.map(o => ({ value: o, text: $t('pw.option.' + o) || o }))"
                   :grow="false"
@@ -649,6 +661,17 @@ export default {
         if (filter && !filter.includes(key)) continue;
 
         const displayKey = key.replace(/^item-/, '');
+
+        // Icon select: options are [{value, svg}, ...] — rendered as SVG buttons
+        if (this.isObject(settingVal) && settingVal.type === 'icon-select' && Array.isArray(settingVal.options)) {
+          fields.push({
+            key, displayKey,
+            type: 'icon-select',
+            options: settingVal.options,
+            defaultValue: settingVal.default !== undefined ? settingVal.default : (settingVal.options[0] && settingVal.options[0].value),
+          });
+          continue;
+        }
 
         if (this.isObject(settingVal) && Array.isArray(settingVal.options)) {
           fields.push({
@@ -1407,6 +1430,36 @@ export default {
 .pw-field-enable-check {
   accent-color: var(--color-black);
   cursor: pointer;
+}
+
+.pw-icon-select {
+  display: flex;
+  gap: var(--spacing-1);
+}
+.pw-icon-select .pw-icon-option {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  background: var(--color-white);
+  color: var(--color-text-dimmed);
+  cursor: pointer;
+  padding: 0;
+}
+.pw-icon-select .pw-icon-option svg {
+  width: 18px;
+  height: 18px;
+}
+.pw-icon-select .pw-icon-option:hover {
+  color: var(--color-text);
+}
+.pw-icon-select .pw-icon-option.is-active {
+  background: var(--color-blue-600);
+  border-color: var(--color-blue-600);
+  color: var(--color-white);
 }
 
 .pw-content-field .k-label-text {
