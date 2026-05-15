@@ -400,7 +400,7 @@
                     :config="blockConfigs[block.blockType]"
                     :overrides="blockOverrides[block.blockType] || {}"
                     :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="['item-link-decoration', 'item-link-icon']"
+                    :layout-keys="['item-link-icon']"
                     @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
