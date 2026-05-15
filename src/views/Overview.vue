@@ -729,6 +729,9 @@ export default {
       if (this.isItemBorderEnabled(blockType)) {
         list.push('item-border-color');
       }
+      // Generic item-icon-fill — blocks that don't define it (e.g. cardlets)
+      // are filtered out by BlockValues' own showOnly check.
+      list.push('item-icon-fill');
       return list;
     },
     isItemContentFieldEnabled(blockType, fieldKey) {
