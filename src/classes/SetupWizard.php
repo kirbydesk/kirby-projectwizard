@@ -10,9 +10,7 @@ class SetupWizard
 	 */
 	public static function isNeeded(): bool
 	{
-		return !file_exists(
-			kirby()->root('site') . '/config/projectwizard/.initialized'
-		);
+		return !file_exists(pwConfig::projectDir() . '/.initialized');
 	}
 
 	/**
@@ -346,7 +344,7 @@ class SetupWizard
 	 */
 	public static function finalize(): array
 	{
-		$configDir = kirby()->root('site') . '/config/projectwizard';
+		$configDir = pwConfig::projectDir();
 		if (!is_dir($configDir)) mkdir($configDir, 0755, true);
 		file_put_contents($configDir . '/.initialized', date('Y-m-d H:i:s'));
 		return ['success' => true];

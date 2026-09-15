@@ -292,7 +292,7 @@ class ProjectConfig
 	private static function blockValuesFile(string $blockType): string
 	{
 		// Per-block CSS-variable overrides live next to the global.json, one file
-		// per block type. Pattern: site/config/projectwizard/<blockType>.json.
+		// per block type. Pattern: content/.projectwizard/<blockType>.json.
 		// The slash-stripping protects against blockTypes with unusual chars.
 		$safe = preg_replace('/[^a-zA-Z0-9_-]/', '', $blockType);
 		return self::configDir() . '/' . $safe . '.json';
@@ -475,7 +475,7 @@ class ProjectConfig
 
 	/**
 	 * Load per-block CSS-variable defaults (from the plugin's settings.json
-	 * 'values' section) plus user overrides from site/config/projectwizard/<blockType>.json.
+	 * 'values' section) plus user overrides from content/.projectwizard/<blockType>.json.
 	 */
 	public static function loadBlockValues(string $blockType): array
 	{
@@ -484,7 +484,7 @@ class ProjectConfig
 	}
 
 	/**
-	 * Save per-block CSS-variable overrides to site/config/projectwizard/<blockType>.json.
+	 * Save per-block CSS-variable overrides to content/.projectwizard/<blockType>.json.
 	 */
 	public static function saveBlockValues(string $blockType, array $overrides): void
 	{
