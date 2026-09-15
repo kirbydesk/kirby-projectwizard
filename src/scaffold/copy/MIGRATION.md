@@ -10,7 +10,7 @@ Kirbydesk-Projekte laufen oft auf älteren Plugin-Versionen (composer.lock pinnt
 
 **Zusätzliche Komplikation:** Live-Server wurden früher manchmal von Dev-Rechnern mit unreleaseten Dev-Snapshots gebaut. Die entstehende `site.min.css` wird ins Repo committet, aber:
 - Die Plugin-Sources sind auf Live per `.gitignore` (`/site/plugins/*`) ausgeschlossen
-- Die `site/config/projectwizard/*.json`-Overrides sind meist **nur auf Live** und nicht committet
+- Die `content/.projectwizard/*.json`-Overrides sind meist **nur auf Live** und nicht committet
 
 **Ergebnis:** Nach einem `git pull` auf einem neuen Rechner hat man die Live-`site.min.css`, aber alte Plugin-Versionen und fehlende JSON-Overrides. Ein `npm run build` würde das Design brechen.
 
@@ -40,8 +40,8 @@ scp -P <PORT> <USER>@<SERVER>:<TARGET_PATH>/public/assets/css/site.min.css \
   public/assets/css/site.min.live.css
 
 # Alle projectwizard-JSONs
-scp -P <PORT> <USER>@<SERVER>:<TARGET_PATH>/site/config/projectwizard/*.json \
-  site/config/projectwizard/
+scp -P <PORT> <USER>@<SERVER>:<TARGET_PATH>/content/.projectwizard/*.json \
+  content/.projectwizard/
 ```
 
 Typischerweise fehlen im Repo: `overrides.json`, `<blockType>.json`, `fontsizes.json`.
@@ -111,7 +111,7 @@ Nach jedem Plugin-Update können projekt-lokale Dateien, die aus einer älteren 
    ```
    Falls dort noch die ~230 Zeilen aus dem alten Scaffold stehen (Reflection-Workarounds, `method_exists()`-Checks etc.), ersetzen. Der aktuelle Wrapper delegiert an die Plugin-Version, die immer synchron mit dem installierten Plugin bleibt.
 
-4. **Alte projectwizard-Overrides** in `site/config/projectwizard/`
+4. **Alte projectwizard-Overrides** in `content/.projectwizard/`
    - Separates `defaults.json` neben `settings.json` in Custom-Plugins → in `settings.json` unter Top-Level-Key `"defaults"` konsolidieren, dann löschen (ab kirby-pagewizard v1.1.39).
    - Flat overrides in `overrides.json` (z.B. `pwtext.editor: {...}`) → unter `pwtext.settings.editor` schieben. Ab kirby-pagewizard v1.1.40 werden Flat-Keys nicht mehr gelesen.
 
@@ -133,7 +133,7 @@ rm public/assets/css/site.min.live.css
 
 **Commit + push:**
 ```bash
-git add composer.lock composer.json site/config/projectwizard/ public/assets/
+git add composer.lock composer.json content/.projectwizard/ public/assets/
 git commit -m "Update kirbydesk plugins to Packagist versions"
 git push
 ```
