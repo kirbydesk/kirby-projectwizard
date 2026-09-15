@@ -3,69 +3,91 @@
 class ProjectConfig
 {
 	/**
-	 * Detect every plugin that exposes a block via pwConfig::register().
-	 * Filesystem scan (folder-name agnostic) so detection works during
-	 * plugin boot — calling pwConfig::registered() here would fire before
-	 * later-loaded plugins have run their register() call.
+	 * Detect every plugin that exposes a block. Registry is the primary
+	 * source (pwConfig::register() runs during plugin boot, so by the time
+	 * any panel-facing code calls detectBlocks() every block is registered).
+	 * A filesystem scan runs afterwards as a fallback that only picks up
+	 * blocks not yet in the registry — useful for very early boot calls or
+	 * legacy plugins that expose a settings.json without calling register().
+	 *
+	 * Cached per request: the underlying JSON files don't change mid-request
+	 * and this is called from multiple areas of the panel API.
 	 */
 	public static function detectBlocks(): array
 	{
-		$pluginsDir = kirby()->root('plugins');
+		static $cache = null;
+		if ($cache !== null) return $cache;
+
 		$blocks = [];
 
+		// Primary: registered blocks — configDir is known, no filesystem scan.
+		foreach (pwConfig::registered() as $blockType => $configDir) {
+			$dir = dirname($configDir, 2); // <plugin>/src/config → <plugin>
+			$blocks[$blockType] = self::buildBlockInfo($blockType, $dir, $configDir);
+		}
+
+		// Fallback: filesystem scan for any plugin with settings.json that
+		// isn't in the registry (e.g. wasn't loaded yet, or doesn't call register()).
+		$pluginsDir = kirby()->root('plugins');
 		foreach (glob($pluginsDir . '/*', GLOB_ONLYDIR) ?: [] as $dir) {
 			$configDir = $dir . '/src/config';
 			if (!is_file($configDir . '/settings.json')) continue;
 
-			// Extract block type from pwConfig::register() call in index.php
 			$indexFile = $dir . '/index.php';
-			$blockType = null;
-			if (file_exists($indexFile)) {
-				$content = file_get_contents($indexFile);
-				if (preg_match("/pwConfig::register\('([^']+)'/", $content, $m)) {
-					$blockType = $m[1];
-				}
-			}
-			if (!$blockType) continue;
+			if (!file_exists($indexFile)) continue;
+			$content = file_get_contents($indexFile);
+			if (!preg_match("/pwConfig::register\('([^']+)'/", $content, $m)) continue;
+			$blockType = $m[1];
 
-			$plugin = basename($dir);
-
-			// Optional package.json — Kirby's panel reads it too; we use it for
-			// the human-readable label + icon. `description` is the npm-standard
-			// field for a display name; `name` is the package id (e.g. "kirbyblock-heading")
-			// and explicitly NOT used here.
-			$pkg     = self::readJson($dir . '/package.json');
-			$pkgDesc = is_string($pkg['description'] ?? null) ? trim($pkg['description']) : '';
-			$pkgIcon = is_string($pkg['icon'] ?? null) ? trim($pkg['icon']) : '';
-
-			// Resolve display name: package.json.description → i18n <plugin>.name → auto-slug
-			$name = $pkgDesc !== '' ? $pkgDesc : self::resolveBlockNameFromI18n($dir, $plugin);
-			if ($name === '') {
-				$name = preg_replace('/([a-z])([A-Z])/', '$1 $2', ucfirst(preg_replace('/^pw/', '', $blockType)));
-			}
-
-			// Resolve icon: package.json.icon → blueprints.php → 'box'
-			$icon = $pkgIcon !== '' ? $pkgIcon : 'box';
-			if ($pkgIcon === '') {
-				$bpFile = $dir . '/src/extensions/blueprints.php';
-				if (file_exists($bpFile)) {
-					$bpContent = file_get_contents($bpFile);
-					if (preg_match("/'icon'\s*=>\s*'([^']+)'/", $bpContent, $iconMatch)) {
-						$icon = $iconMatch[1];
-					}
-				}
-			}
-
-			$blocks[$blockType] = [
-				'plugin'   => $plugin,
-				'name'     => $name,
-				'icon'     => $icon,
-				'settings' => self::readJson($configDir . '/settings.json'),
-				'editor'   => self::readJson($configDir . '/editor.json'),
-			];
+			if (isset($blocks[$blockType])) continue; // already picked up via registry
+			$blocks[$blockType] = self::buildBlockInfo($blockType, $dir, $configDir);
 		}
 
-		return $blocks;
+		return $cache = $blocks;
+	}
+
+	/**
+	 * Assemble the metadata array for a single block (plugin folder name,
+	 * display name, icon, plus its settings + editor JSON). Same shape the
+	 * detectBlocks() foreach used to build inline.
+	 */
+	private static function buildBlockInfo(string $blockType, string $dir, string $configDir): array
+	{
+		$plugin = basename($dir);
+
+		// Optional package.json — Kirby's panel reads it too; we use it for
+		// the human-readable label + icon. `description` is the npm-standard
+		// field for a display name; `name` is the package id (e.g.
+		// "kirbyblock-heading") and explicitly NOT used here.
+		$pkg     = self::readJson($dir . '/package.json');
+		$pkgDesc = is_string($pkg['description'] ?? null) ? trim($pkg['description']) : '';
+		$pkgIcon = is_string($pkg['icon'] ?? null) ? trim($pkg['icon']) : '';
+
+		// Resolve display name: package.json.description → i18n <plugin>.name → auto-slug
+		$name = $pkgDesc !== '' ? $pkgDesc : self::resolveBlockNameFromI18n($dir, $plugin);
+		if ($name === '') {
+			$name = preg_replace('/([a-z])([A-Z])/', '$1 $2', ucfirst(preg_replace('/^pw/', '', $blockType)));
+		}
+
+		// Resolve icon: package.json.icon → blueprints.php → 'box'
+		$icon = $pkgIcon !== '' ? $pkgIcon : 'box';
+		if ($pkgIcon === '') {
+			$bpFile = $dir . '/src/extensions/blueprints.php';
+			if (file_exists($bpFile)) {
+				$bpContent = file_get_contents($bpFile);
+				if (preg_match("/'icon'\s*=>\s*'([^']+)'/", $bpContent, $iconMatch)) {
+					$icon = $iconMatch[1];
+				}
+			}
+		}
+
+		return [
+			'plugin'   => $plugin,
+			'name'     => $name,
+			'icon'     => $icon,
+			'settings' => self::readJson($configDir . '/settings.json'),
+			'editor'   => self::readJson($configDir . '/editor.json'),
+		];
 	}
 
 	/**
