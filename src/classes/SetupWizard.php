@@ -147,6 +147,7 @@ class SetupWizard
 			'storage/temp',
 			'content/home',
 			'content/error',
+			'content/.projectwizard',
 			'site/config',
 		];
 
