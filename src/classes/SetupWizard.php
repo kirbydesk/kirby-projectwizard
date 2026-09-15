@@ -310,8 +310,12 @@ class SetupWizard
 			return ['success' => false, 'output' => 'npm not found in PATH'];
 		}
 
-		$cdRoot = 'cd ' . escapeshellarg($root) . ' && ';
-		$npmCmd = escapeshellarg($npm);
+		// npm invokes node internally; without an explicit PATH the node binary
+		// is not found because php-fpm/valet runs with a minimal PATH.
+		// Prepend the npm directory (node is typically installed alongside).
+		$nodeDir = dirname($npm);
+		$cdRoot  = 'PATH=' . escapeshellarg($nodeDir . ':/usr/bin:/bin') . ' cd ' . escapeshellarg($root) . ' && ';
+		$npmCmd  = escapeshellarg($npm);
 		$logs = [];
 
 		if (!is_dir($root . '/node_modules')) {
