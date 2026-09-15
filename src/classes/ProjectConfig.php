@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * Panel-side config management for kirby-projectwizard.
+ *
+ * Companion to pwConfig (in kirby-pagewizard). Split of concerns:
+ *
+ *   - pwConfig      — runtime reads used during Kirby's boot + Blueprint
+ *                     assembly + CSS-var generation (loadValues, load,
+ *                     settings, tailwindSetup, panelColorsSetup). Also
+ *                     hosts the public I/O helpers readJson(),
+ *                     pluginConfig(), projectOverride(), pluginDir(),
+ *                     projectDir() — this class delegates every file
+ *                     read to those.
+ *
+ *   - ProjectConfig — Panel-facing CRUD + Setup: detect blocks, load/save
+ *                     per-section overrides (footer, navigation, global,
+ *                     elements, fontsizes, blockValues), font management,
+ *                     first-run scaffold.
+ *
+ * Rule of thumb: reads → pwConfig; writes + panel-API glue → ProjectConfig.
+ */
 class ProjectConfig
 {
 	/**
@@ -59,7 +79,7 @@ class ProjectConfig
 		// the human-readable label + icon. `description` is the npm-standard
 		// field for a display name; `name` is the package id (e.g.
 		// "kirbyblock-heading") and explicitly NOT used here.
-		$pkg     = self::readJson($dir . '/package.json');
+		$pkg     = pwConfig::readJson($dir . '/package.json');
 		$pkgDesc = is_string($pkg['description'] ?? null) ? trim($pkg['description']) : '';
 		$pkgIcon = is_string($pkg['icon'] ?? null) ? trim($pkg['icon']) : '';
 
@@ -85,8 +105,8 @@ class ProjectConfig
 			'plugin'   => $plugin,
 			'name'     => $name,
 			'icon'     => $icon,
-			'settings' => self::readJson($configDir . '/settings.json'),
-			'editor'   => self::readJson($configDir . '/editor.json'),
+			'settings' => pwConfig::readJson($configDir . '/settings.json'),
+			'editor'   => pwConfig::readJson($configDir . '/editor.json'),
 		];
 	}
 
@@ -112,7 +132,7 @@ class ProjectConfig
 	 */
 	public static function loadBlockOverrides(string $blockType): array
 	{
-		$allOverrides = self::readJson(self::overridesFile());
+		$allOverrides = pwConfig::readJson(self::overridesFile());
 		return $allOverrides[$blockType] ?? [];
 	}
 
@@ -122,7 +142,7 @@ class ProjectConfig
 	public static function saveBlockOverrides(string $blockType, array $config): void
 	{
 		$path = self::overridesFile();
-		$allOverrides = self::readJson($path);
+		$allOverrides = pwConfig::readJson($path);
 
 		if (empty($config)) {
 			unset($allOverrides[$blockType]);
@@ -211,7 +231,7 @@ class ProjectConfig
 		$config['blocks'] = self::activeBlocks();
 		$config['kirbyblocks'] = [];
 
-		$allOverrides = self::readJson(self::overridesFile());
+		$allOverrides = pwConfig::readJson(self::overridesFile());
 		foreach ($allOverrides as $blockType => $overrides) {
 			if (!empty($overrides)) {
 				$config['kirbyblocks'][$blockType] = $overrides;
@@ -256,7 +276,7 @@ class ProjectConfig
 
 	private static function configDir(): string
 	{
-		return kirby()->root('site') . '/config/projectwizard';
+		return pwConfig::projectDir();
 	}
 
 	private static function overridesFile(): string
@@ -303,9 +323,8 @@ class ProjectConfig
 	 */
 	public static function loadFooter(): array
 	{
-		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
-		$defaults = self::readJson($pluginDir . '/config/footer.json');
-		$overrides = self::readJson(self::footerFile());
+		$defaults  = pwConfig::pluginConfig('footer');
+		$overrides = pwConfig::readJson(self::footerFile());
 
 		return [
 			'defaults'  => $defaults,
@@ -335,9 +354,8 @@ class ProjectConfig
 	 */
 	public static function loadNavigation(): array
 	{
-		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
-		$defaults = self::readJson($pluginDir . '/config/navigation.json');
-		$overrides = self::readJson(self::navigationFile());
+		$defaults  = pwConfig::pluginConfig('navigation');
+		$overrides = pwConfig::readJson(self::navigationFile());
 
 		return [
 			'defaults'  => $defaults,
@@ -367,9 +385,8 @@ class ProjectConfig
 	 */
 	public static function loadElements(): array
 	{
-		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
-		$defaults = self::readJson($pluginDir . '/config/elements.json');
-		$overrides = self::readJson(self::elementsFile());
+		$defaults  = pwConfig::pluginConfig('elements');
+		$overrides = pwConfig::readJson(self::elementsFile());
 
 		return [
 			'defaults'  => $defaults,
@@ -399,9 +416,8 @@ class ProjectConfig
 	 */
 	public static function loadFontsizes(): array
 	{
-		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
-		$defaults = self::readJson($pluginDir . '/config/fontsizes.json');
-		$overrides = self::readJson(self::fontsizesFile());
+		$defaults  = pwConfig::pluginConfig('fontsizes');
+		$overrides = pwConfig::readJson(self::fontsizesFile());
 
 		return [
 			'defaults'  => $defaults,
@@ -431,9 +447,8 @@ class ProjectConfig
 	 */
 	public static function loadGlobal(): array
 	{
-		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
-		$defaults = self::readJson($pluginDir . '/config/global.json');
-		$overrides = self::readJson(self::globalFile());
+		$defaults  = pwConfig::pluginConfig('global');
+		$overrides = pwConfig::readJson(self::globalFile());
 
 		return [
 			'defaults'  => $defaults,
@@ -495,9 +510,8 @@ class ProjectConfig
 	 */
 	public static function loadFonts(): array
 	{
-		$pluginDir = kirby()->root('plugins') . '/kirby-pagewizard';
-		$builtinFonts = self::readJson($pluginDir . '/config/fonts.json');
-		$projectFonts = self::readJson(self::fontsConfigFile());
+		$builtinFonts = pwConfig::pluginConfig('fonts');
+		$projectFonts = pwConfig::readJson(self::fontsConfigFile());
 		$defaultFont = $projectFonts['_default'] ?? 'Inter';
 		unset($projectFonts['_default']);
 
@@ -524,7 +538,7 @@ class ProjectConfig
 	 */
 	public static function addFont(string $key, array $fontData): void
 	{
-		$config = self::readJson(self::fontsConfigFile());
+		$config = pwConfig::readJson(self::fontsConfigFile());
 		if (isset($config[$key])) {
 			// Append new files to existing font
 			$config[$key]['files'] = array_merge($config[$key]['files'] ?? [], $fontData['files'] ?? []);
@@ -539,7 +553,7 @@ class ProjectConfig
 	 */
 	public static function removeFontFile(string $key, int $fileIndex): void
 	{
-		$config = self::readJson(self::fontsConfigFile());
+		$config = pwConfig::readJson(self::fontsConfigFile());
 		if (!isset($config[$key]['files'][$fileIndex])) return;
 
 		$fontsDir = kirby()->root('index') . '/assets/fonts';
@@ -566,7 +580,7 @@ class ProjectConfig
 	 */
 	public static function removeFont(string $key): void
 	{
-		$config = self::readJson(self::fontsConfigFile());
+		$config = pwConfig::readJson(self::fontsConfigFile());
 		$fontsDir = kirby()->root('index') . '/assets/fonts';
 
 		// Delete font files
@@ -592,17 +606,12 @@ class ProjectConfig
 	 */
 	public static function setDefaultFont(string $family): void
 	{
-		$config = self::readJson(self::fontsConfigFile());
+		$config = pwConfig::readJson(self::fontsConfigFile());
 		$config['_default'] = $family;
 		self::saveFontsConfig($config);
 	}
 
-	private static function readJson(string $path): array
-	{
-		if (!file_exists($path)) return [];
-		$data = json_decode(file_get_contents($path), true);
-		return is_array($data) ? $data : [];
-	}
+	// I/O helpers moved to pwConfig::readJson()/pluginConfig()/projectOverride().
 
 	/**
 	 * Run scaffold once on first panel access.
@@ -615,7 +624,7 @@ class ProjectConfig
 
 		$projectRoot = kirby()->root('index') . '/..';
 		$wizardDir   = __DIR__ . '/../..';
-		$pwDir       = kirby()->root('plugins') . '/kirby-pagewizard';
+		$pwDir       = pwConfig::pluginDir();
 
 		// --- Projectwizard: copy files (only if not existing) ---
 		$copyDir = $wizardDir . '/src/scaffold/copy';
