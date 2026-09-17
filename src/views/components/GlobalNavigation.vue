@@ -267,6 +267,7 @@
                 <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.default') }}</span></span>
                 <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant') }}</span></span>
                 <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant2') }}</span></span>
+                <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant3') }}</span></span>
               </div>
             </div>
             <div
@@ -285,7 +286,7 @@
                   </div>
                   <div class="pw-field-row-options pw-group-type-theme-color">
                     <pw-color-field-row
-                      v-for="theme in ['default', 'variant', 'variant2']"
+                      v-for="theme in ['default', 'variant', 'variant2', 'variant3']"
                       :key="theme"
                       :group="theme"
                       :var-name="varName"
@@ -812,7 +813,7 @@ export default {
       if (this.resetFields.has(varName)) return false;
       const saved = this.savedOverrides.global || {};
       if (isColor) {
-        for (const theme of ['default', 'variant', 'variant2']) {
+        for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
           if ((saved[theme] || {})[varName]) return true;
         }
         return false;
@@ -843,7 +844,7 @@ export default {
       const overrides = JSON.parse(JSON.stringify(this.navOverrides));
       if (!overrides.global) return;
       if (isColor) {
-        for (const theme of ['default', 'variant', 'variant2']) {
+        for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
           if (overrides.global[theme]) {
             delete overrides.global[theme][varName];
             if (Object.keys(overrides.global[theme]).length === 0) delete overrides.global[theme];

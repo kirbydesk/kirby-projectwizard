@@ -94,7 +94,7 @@
             <!-- Block Preview -->
             <div class="pw-block-preview-body" :style="blockPreviewBodyStyle">
                   <div class="pw-block-preview-row">
-                    <div v-for="theme in ['default', 'variant', 'variant2']" :key="theme" class="pw-block-preview" :style="blockPreviewStyle(theme)">
+                    <div v-for="theme in ['default', 'variant', 'variant2', 'variant3']" :key="theme" class="pw-block-preview" :style="blockPreviewStyle(theme)">
                       <p :style="blockPreviewElementStyle('tagline', theme)">Tagline goes here</p>
                       <h2 :style="blockPreviewElementStyle('heading', theme)">The quick brown fox</h2>
                       <p :style="blockPreviewElementStyle('editor', theme)">Pack my box with <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">five dozen liquor jugs</a>. How vexingly quick daft zebras jump. The five boxing wizards jump quickly at dawn.</p>
@@ -907,7 +907,7 @@ export default {
       if (Array.isArray(radius) && radius.length === 4) {
         if (theme === 'default') {
           borderRadius = radius[0] + ' ' + radius[1] + ' 0 0';
-        } else if (theme === 'variant2') {
+        } else if (theme === 'variant3') {
           borderRadius = '0 0 ' + radius[3] + ' ' + radius[2];
         } else {
           borderRadius = '0';
@@ -1027,7 +1027,7 @@ export default {
         document.head.appendChild(style);
       }
       const rules = [];
-      for (const theme of ['default', 'variant', 'variant2']) {
+      for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
         const linkHover = this.blockPreviewLinkColor(theme, '-hover');
         const linkActive = this.blockPreviewLinkColor(theme, '-active');
         rules.push('.pw-preview-link-' + theme + ':hover { color: ' + linkHover + ' !important; }');

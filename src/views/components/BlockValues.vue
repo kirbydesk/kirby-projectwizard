@@ -20,6 +20,7 @@
               <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.default') || 'Default' }}</span></span>
               <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant') || 'Variant' }}</span></span>
               <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant2') || 'Variant 2' }}</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.variant3') || 'Variant 3' }}</span></span>
             </div>
           </div>
 
@@ -278,7 +279,7 @@ export default {
       return this.overrides[varName] !== undefined;
     },
     hasColorOverride(varName) {
-      for (const theme of ['default', 'variant', 'variant2']) {
+      for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
         const t = this.overrides[theme];
         if (t && typeof t === 'object' && t[varName] !== undefined) return true;
       }
@@ -291,7 +292,7 @@ export default {
     },
     resetColor(varName) {
       const next = JSON.parse(JSON.stringify(this.overrides || {}));
-      for (const theme of ['default', 'variant', 'variant2']) {
+      for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
         if (next[theme] && typeof next[theme] === 'object') {
           delete next[theme][varName];
           if (Object.keys(next[theme]).length === 0) delete next[theme];

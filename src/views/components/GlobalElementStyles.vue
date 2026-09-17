@@ -19,7 +19,7 @@
             <span v-for="bp in ['default', 'lg', 'xl']" :key="'h-' + bp" class="pw-element-preview-header-label">{{ { default: 'Mobile', lg: 'Tablet', xl: 'Desktop' }[bp] }}</span>
           </div>
           <div class="pw-element-preview" :class="{ 'pw-element-preview-themed': previewThemed(groupKey) }">
-            <template v-for="theme in ['default', 'variant', 'variant2']">
+            <template v-for="theme in ['default', 'variant', 'variant2', 'variant3']">
               <div v-for="bp in ['default', 'lg', 'xl']" :key="theme + '-' + bp" class="pw-element-preview-col" :style="{ backgroundColor: blockBackground(theme) }">
                 <template v-if="groupKey === 'media'">
                   <div class="pw-media-preview-img" :style="mediaPreviewStyle(theme)">
@@ -319,7 +319,7 @@
                     <!-- Theme colors (default/variant/variant2) -->
                     <template v-else-if="field.type === 'theme-color'">
                       <pw-color-field-row
-                        v-for="theme in ['default', 'variant', 'variant2']"
+                        v-for="theme in ['default', 'variant', 'variant2', 'variant3']"
                         :key="theme"
                         :group="theme"
                         :var-name="field.varName"
@@ -546,7 +546,7 @@ export default {
     // --- Field signature + grouping ---
     fieldSignature(varName, def, isColor) {
       if (isColor) {
-        return { type: 'theme-color', labels: ['Default', 'Variant', 'Variant2'] };
+        return { type: 'theme-color', labels: ['Default', 'Variant', 'Variant2', 'Variant3'] };
       }
       if (Array.isArray(def.value) && def.labels) {
         return { type: 'multi-value', labels: def.labels };
@@ -783,7 +783,7 @@ export default {
       if (this.resetFields.has(varName)) return false;
       const saved = this.savedOverrides.global || {};
       if (field.type === 'theme-color') {
-        for (const theme of ['default', 'variant', 'variant2']) {
+        for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
           if ((saved[theme] || {})[varName]) return true;
         }
         return false;
@@ -826,7 +826,7 @@ export default {
       if (!overrides.global) return;
 
       if (field.type === 'theme-color') {
-        for (const theme of ['default', 'variant', 'variant2']) {
+        for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
           if (overrides.global[theme]) {
             delete overrides.global[theme][varName];
             if (Object.keys(overrides.global[theme]).length === 0) delete overrides.global[theme];
