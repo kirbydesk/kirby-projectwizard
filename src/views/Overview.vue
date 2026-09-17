@@ -305,7 +305,7 @@
             />
 
             <!-- Defaults section (radius toggles, link-style, border) -->
-            <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
+            <section v-if="blockValueDefaults[block.blockType] && hasItemDefaultFields(block.blockType)" class="pw-wizard-section">
               <div class="pw-section-header">
                 <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'defaults')">
                   <span>{{ $t('prw.tab.defaults') || 'Defaults' }}</span>
@@ -351,6 +351,13 @@
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-radius']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-number-size', 'item-gap', 'item-content-gap', 'item-connector-width']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -732,6 +739,12 @@ export default {
       // Generic item-icon-fill — blocks that don't define it (e.g. cardlets)
       // are filtered out by BlockValues' own showOnly check.
       list.push('item-icon-fill');
+      // Steplist-specific colors (filtered out by BlockValues when not defined)
+      list.push(
+        'item-number-background',
+        'item-number-text',
+        'item-connector'
+      );
       return list;
     },
     isItemContentFieldEnabled(blockType, fieldKey) {
@@ -762,6 +775,17 @@ export default {
       const cfg = this.blockConfigs[blockType];
       const content = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields && cfg.defaults.settings.fields.content || {};
       return content.blocks !== undefined && content.blocks !== false;
+    },
+    hasItemDefaultFields(blockType) {
+      // The Defaults sub-section inside Items only makes sense when the plugin
+      // exposes per-corner item-radius toggles or item-link-style. Empty for
+      // simple item-blocks (steplist, featurelist).
+      const cfg = this.blockConfigs[blockType];
+      const layout = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields && cfg.defaults.settings.fields.layout || {};
+      for (const key of Object.keys(layout)) {
+        if (key.startsWith('item-radius-') || key === 'item-link-style') return true;
+      }
+      return false;
     },
     blockTabs(blockType) {
       const tabs = [{ key: 'defaults', icon: 'settings' }];

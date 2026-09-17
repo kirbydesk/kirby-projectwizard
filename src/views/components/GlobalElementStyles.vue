@@ -35,7 +35,7 @@
                   </template>
                 </template>
                 <template v-else-if="previewThemed(groupKey)">
-                  <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)">{{ previewText(groupKey) }}</span>
+                  <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>{{ previewText(groupKey) }}</span>
                 </template>
                 <template v-else-if="previewParagraphs(groupKey)">
                   <div class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)">
@@ -159,20 +159,22 @@
                     </template>
                     <!-- Single value with unit -->
                     <template v-else-if="field.def.unit !== undefined">
-                      <span class="pw-element-input-wrap">
-                        <input
-                          type="text"
-                          inputmode="decimal"
-                          :step="field.def.step || 0.1"
-                          :min="field.def.min"
-                          :max="field.def.max"
-                          class="pw-element-input pw-element-input-number pw-px-calculator-input"
-                          :value="stripUnit(getOverrideValue(field.varName) || field.def.value)"
-                          @change="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
-                        />
-                        <span class="pw-element-unit">{{ field.def.unit }}</span>
+                      <span class="pw-element-field">
+                        <span class="pw-element-input-wrap">
+                          <input
+                            type="text"
+                            inputmode="decimal"
+                            :step="field.def.step || 0.1"
+                            :min="field.def.min"
+                            :max="field.def.max"
+                            class="pw-element-input pw-element-input-number pw-px-calculator-input"
+                            :value="stripUnit(getOverrideValue(field.varName) || field.def.value)"
+                            @change="setUnitValue(field.varName, $event.target.value, field.def.value, field.def.unit)"
+                          />
+                          <span class="pw-element-unit">{{ field.def.unit }}</span>
+                        </span>
+                        <span class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
                       </span>
-                      <span class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
                     </template>
                   </div>
                 </span>
@@ -938,7 +940,7 @@ export default {
     },
     elementSubtabs(groupKey) {
       const tabs = {
-        heading:    ['text', 'sizes', 'colors'],
+        heading:    ['text', 'sizes', 'flourish', 'colors'],
         tagline:    ['text', 'sizes', 'colors'],
         editor:     ['text', 'sizes', 'colors'],
         quote:      ['text', 'sizes', 'colors'],
@@ -951,17 +953,20 @@ export default {
       return tabs[groupKey] || ['text', 'sizes', 'colors'];
     },
     varCategory(varName) {
+      if (varName.endsWith('-flourish-width') || varName.endsWith('-flourish-height') ||
+          varName.endsWith('-flourish-margin-top') || varName.endsWith('-flourish-margin-bottom')) return 'flourish';
       if (varName.endsWith('-font-family') || varName.endsWith('-font-weight') ||
           varName.endsWith('-text-transform') || varName.endsWith('-font-style') ||
           varName.endsWith('-paragraph-spacing') || varName.endsWith('-marks') ||
-          varName.endsWith('-gap')) return 'text';
+          (varName.endsWith('-gap') && !varName.endsWith('-icon-gap'))) return 'text';
       if (varName.endsWith('-font-size') || varName.endsWith('-line-height') ||
           varName.endsWith('-letter-spacing') || varName.endsWith('-padding') ||
-          varName.endsWith('-border-radius') || varName.endsWith('-radius')) return 'sizes';
+          varName.endsWith('-border-radius') || varName.endsWith('-radius') ||
+          varName.endsWith('-icon-size') || varName.endsWith('-icon-gap')) return 'sizes';
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), colors: this.$t('prw.subtab.colors') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
@@ -1079,6 +1084,27 @@ export default {
         borderStyle: 'solid',
         padding: Array.isArray(padding) ? padding.join(' ') : padding,
         borderRadius: Array.isArray(radius) ? radius.join(' ') : radius,
+      };
+    },
+    previewButtonIconStyle(theme, bp) {
+      const groupKey = 'button';
+      const iconSizeOv = this.getResponsiveOverride('button-icon-size', bp);
+      const iconGapOv  = this.getResponsiveOverride('button-icon-gap',  bp);
+      const iconSizeDef = this.elementDefaults[groupKey]?.vars?.['button-icon-size']?.[bp]
+        ?? this.elementDefaults[groupKey]?.vars?.['button-icon-size']?.default
+        ?? this.elementDefaults[groupKey]?.vars?.['button-icon-size']?.value
+        ?? '1em';
+      const iconGapDef = this.elementDefaults[groupKey]?.vars?.['button-icon-gap']?.[bp]
+        ?? this.elementDefaults[groupKey]?.vars?.['button-icon-gap']?.default
+        ?? this.elementDefaults[groupKey]?.vars?.['button-icon-gap']?.value
+        ?? '0.4em';
+      const iconColor = ((this.elementOverrides.global || {})[theme] || {})['element-button-icon']
+        || this.elementDefaults[groupKey]?.colors?.['element-button-icon']?.[theme]
+        || 'currentColor';
+      return {
+        fontSize: iconSizeOv || iconSizeDef,
+        marginRight: iconGapOv || iconGapDef,
+        color: iconColor,
       };
     },
     mediaPreviewStyle(theme) {
@@ -1328,9 +1354,21 @@ export default {
 }
 
 .pw-element-preview-button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   width: fit-content;
   cursor: default;
+}
+
+.pw-preview-link-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.pw-preview-link-icon svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
 }
 
 

@@ -50,6 +50,7 @@
                   </span>
                 </div>
               </span>
+              <k-button v-if="hasColorOverride(varName)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetColor(varName)" />
             </div>
           </div>
 
@@ -141,6 +142,7 @@
 
                 </div>
               </span>
+              <k-button v-if="hasVarOverride(varName)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetVar(varName)" />
             </div>
           </div>
 
@@ -269,6 +271,31 @@ export default {
         const composed = num + (unit || '');
         if (composed === defaultVal) delete next[varName];
         else next[varName] = composed;
+      }
+      this.$emit('update:overrides', next);
+    },
+    hasVarOverride(varName) {
+      return this.overrides[varName] !== undefined;
+    },
+    hasColorOverride(varName) {
+      for (const theme of ['default', 'variant', 'variant2']) {
+        const t = this.overrides[theme];
+        if (t && typeof t === 'object' && t[varName] !== undefined) return true;
+      }
+      return false;
+    },
+    resetVar(varName) {
+      const next = JSON.parse(JSON.stringify(this.overrides || {}));
+      delete next[varName];
+      this.$emit('update:overrides', next);
+    },
+    resetColor(varName) {
+      const next = JSON.parse(JSON.stringify(this.overrides || {}));
+      for (const theme of ['default', 'variant', 'variant2']) {
+        if (next[theme] && typeof next[theme] === 'object') {
+          delete next[theme][varName];
+          if (Object.keys(next[theme]).length === 0) delete next[theme];
+        }
       }
       this.$emit('update:overrides', next);
     },
