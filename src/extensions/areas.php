@@ -5,8 +5,8 @@
 // If setup is needed, show only the setup wizard
 if (SetupWizard::isNeeded()) {
 	return [
-		'projectwizard' => [
-			'label' => 'Project Wizard',
+		'projectwizard' => fn() => [
+			'label' => t('prw.area.title', 'Project Wizard'),
 			'icon'  => 'wand',
 			'menu'  => true,
 			'dialogs' => [
@@ -24,7 +24,7 @@ if (SetupWizard::isNeeded()) {
 					'pattern' => 'projectwizard',
 					'action'  => fn() => [
 						'component' => 'pw-wizard-setup',
-						'title'     => 'Project Setup',
+						'title'     => t('prw.area.setup', 'Project Setup'),
 						'props'     => [],
 					],
 				],
@@ -58,8 +58,8 @@ $blockLabel = function(array $info, string $blockType): string {
 };
 
 // Main projectwizard area (global settings only)
-$areas['projectwizard'] = [
-	'label' => 'Project Wizard',
+$areas['projectwizard'] = fn() => [
+	'label' => t('prw.area.title', 'Project Wizard'),
 	'icon'  => 'wand',
 	'menu'  => true,
 	'views' => [
@@ -67,7 +67,7 @@ $areas['projectwizard'] = [
 			'pattern' => 'projectwizard',
 			'action'  => fn() => [
 				'component' => 'pw-wizard-overview',
-				'title'     => 'Project Wizard',
+				'title'     => t('prw.area.title', 'Project Wizard'),
 				'props'     => [
 					'blockType' => null,
 				],

@@ -951,8 +951,8 @@ export default {
               type: 'toggles',
               defaultValue,
               options: [
-                { value: 'small', text: 'Small' },
-                { value: 'large', text: 'Large' },
+                { value: 'small', text: this.$t('pw.option.small') },
+                { value: 'large', text: this.$t('pw.option.large') },
               ],
             });
             continue;

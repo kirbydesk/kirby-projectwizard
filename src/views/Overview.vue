@@ -1,12 +1,12 @@
 <template>
   <k-panel-inside class="pw-wizard">
     <k-header>
-      {{ blockType ? blockLabel(blockType) : 'Project Wizard' }}
+      {{ blockType ? blockLabel(blockType) : $t('prw.area.title') }}
       <template v-if="isDirty" #buttons>
         <div class="k-form-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
-              text="Discard"
+              :text="$t('discard')"
               icon="undo"
               theme="notice"
               variant="filled"
@@ -16,7 +16,7 @@
               @click="discardChanges"
             />
             <k-button
-              text="Save"
+              :text="$t('save')"
               icon="check"
               theme="notice"
               variant="filled"
@@ -73,7 +73,7 @@
     </nav>
 
 
-    <div v-if="loading" class="pw-wizard-loading">Loading...</div>
+    <div v-if="loading" class="pw-wizard-loading">{{ $t('loading') }} …</div>
 
     <div v-else class="pw-wizard-content">
 
@@ -836,7 +836,7 @@ export default {
         this.originalFontOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.snapshots, 'fontsizes', JSON.stringify(this.safeOverrides(res.overrides)));
       } catch (e) {
-        this.$panel.notification.error('Failed to save font sizes');
+        this.$panel.notification.error(this.$t('prw.notify.fontsizes.error'));
       }
     },
 
@@ -854,9 +854,9 @@ export default {
         this.originalFooterOverrides = JSON.parse(JSON.stringify(ov));
         this.$set(this.snapshots, 'footer', JSON.stringify(ov));
         this.$set(this.dirtyTabs, 'footer', false);
-        this.$panel.notification.success('Footer settings saved');
+        this.$panel.notification.success(this.$t('prw.notify.footer.success'));
       } catch (e) {
-        this.$panel.notification.error('Failed to save footer settings');
+        this.$panel.notification.error(this.$t('prw.notify.footer.error'));
       }
     },
 
@@ -875,9 +875,9 @@ export default {
         // Also save font sizes
         await this.saveFonts();
         this.$set(this.dirtyTabs, 'elements', false);
-        this.$panel.notification.success('Elements settings saved');
+        this.$panel.notification.success(this.$t('prw.notify.elements.success'));
       } catch (e) {
-        this.$panel.notification.error('Failed to save elements settings');
+        this.$panel.notification.error(this.$t('prw.notify.elements.error'));
       }
     },
 
@@ -1105,9 +1105,9 @@ export default {
         this.originalNavOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.snapshots, 'header', JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, 'header', false);
-        this.$panel.notification.success('Header settings saved');
+        this.$panel.notification.success(this.$t('prw.notify.header.success'));
       } catch (e) {
-        this.$panel.notification.error('Failed to save header settings');
+        this.$panel.notification.error(this.$t('prw.notify.header.error'));
       }
     },
 
@@ -1180,10 +1180,10 @@ export default {
         this.originalActiveBlocks = [...this.activeBlocks];
         this.$set(this.snapshots, 'global', JSON.stringify(this.activeBlocks));
         this.$set(this.dirtyTabs, 'global', false);
-        this.$panel.notification.success('Blocks settings saved');
+        this.$panel.notification.success(this.$t('prw.notify.blocks.success'));
         setTimeout(() => window.location.reload(), 100);
       } catch (e) {
-        this.$panel.notification.error('Failed to save blocks settings');
+        this.$panel.notification.error(this.$t('prw.notify.blocks.error'));
       }
     },
 
@@ -1194,10 +1194,10 @@ export default {
         this.originalGlobalOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.snapshots, 'global-settings', JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, 'global-settings', false);
-        this.$panel.notification.success('Global settings saved');
+        this.$panel.notification.success(this.$t('prw.notify.global.success'));
 
       } catch (e) {
-        this.$panel.notification.error('Failed to save global settings');
+        this.$panel.notification.error(this.$t('prw.notify.global.error'));
       }
     },
 
@@ -1228,9 +1228,9 @@ export default {
           this.$set(this.snapshots, blockType + ':values', JSON.stringify(ov));
         }
 
-        this.$panel.notification.success(this.blockLabel(blockType) + ' settings saved');
+        this.$panel.notification.success(this.$t('prw.notify.block.success', { block: this.blockLabel(blockType) }));
       } catch (e) {
-        this.$panel.notification.error('Failed to save ' + this.blockLabel(blockType) + ' settings');
+        this.$panel.notification.error(this.$t('prw.notify.block.error', { block: this.blockLabel(blockType) }));
       }
     },
 

@@ -264,7 +264,7 @@ return [
 				$base64 = $data['data'] ?? '';
 
 				if (!$name || !str_ends_with(strtolower($name), '.woff2') || !$base64) {
-					return ['error' => 'Invalid file'];
+					return ['error' => t('prw.error.invalidFile', 'Invalid file')];
 				}
 
 				$fontsDir = kirby()->root('index') . '/assets/fonts';

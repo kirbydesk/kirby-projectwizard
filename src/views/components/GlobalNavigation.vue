@@ -10,7 +10,7 @@
       <transition name="pw-slide">
         <div v-show="hideSectionHeaders || isOpen(groupKey)" class="pw-element-list">
           <!-- Desktop navigation preview -->
-          <div v-if="groupKey === 'desktop' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">Desktop</span></div>
+          <div v-if="groupKey === 'desktop' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">{{ $t('prw.label.desktop') }}</span></div>
           <div v-if="groupKey === 'desktop' && !hidePreview" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle()">
             <div v-if="navPreviewLogo()" class="pw-nav-preview-logo" :style="navPreviewLogoStyle()"><div :style="{ height: navPreviewLogoSvgHeight() }" v-html="navPreviewLogo()"></div></div>
             <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle()">
@@ -25,7 +25,7 @@
             </div>
           </div>
           <!-- Tablet navigation preview -->
-          <div v-if="groupKey === 'tablet' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">Tablet</span></div>
+          <div v-if="groupKey === 'tablet' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">{{ $t('prw.label.tablet') }}</span></div>
           <div v-if="groupKey === 'tablet' && !hidePreview" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle('tablet')">
             <div v-if="navPreviewLogo('tablet')" class="pw-nav-preview-logo" :style="navPreviewLogoStyle('tablet')"><div :style="{ height: navPreviewLogoSvgHeight('tablet') }" v-html="navPreviewLogo('tablet')"></div></div>
             <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle('tablet')">
@@ -40,7 +40,7 @@
             </div>
           </div>
           <!-- Mobile navigation preview -->
-          <div v-if="groupKey === 'mobile' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">Mobile</span></div>
+          <div v-if="groupKey === 'mobile' && !hidePreview" class="pw-element-preview-header"><span class="pw-element-preview-header-label">{{ $t('prw.label.mobile') }}</span></div>
           <div v-if="groupKey === 'mobile' && !hidePreview" class="pw-nav-preview-mobile">
             <div class="pw-nav-preview-mobile-bar" :style="mobileBarStyle()">
               <div v-if="navPreviewLogo('mobile')" :style="{ height: navPreviewLogoSvgHeight('mobile') }" v-html="navPreviewLogo('mobile')"></div>
@@ -420,7 +420,7 @@ export default {
       const seen = new Set();
       // Show "Default" option only if this section doesn't define the body default itself
       const hasBodyDefault = Object.values(this.navDefaults).some(g => g && g.vars && g.vars['font-family-default']);
-      const options = hasBodyDefault ? [] : [{ value: 'default', text: 'Default (' + this.bodyDefaultFont + ')' }];
+      const options = hasBodyDefault ? [] : [{ value: 'default', text: this.$t('prw.label.defaultFont', { font: this.bodyDefaultFont }) }];
       for (const font of Object.values(allFonts)) {
         if (!seen.has(font.family) && (hasBodyDefault || font.family !== this.bodyDefaultFont)) {
           seen.add(font.family);
@@ -596,12 +596,12 @@ export default {
       reader.onload = () => {
         const cleaned = this.sanitizeSvg(reader.result);
         if (!cleaned) {
-          this.$panel.notification.error('No valid SVG found');
+          this.$panel.notification.error(this.$t('prw.notify.svg.invalid'));
           return;
         }
         const dims = this.parseSvgDimensions(cleaned);
         if (!dims) {
-          this.$panel.notification.error('SVG must have a viewBox or width/height attributes');
+          this.$panel.notification.error(this.$t('prw.notify.svg.dimensions'));
           return;
         }
         this.onSvgInput(varName, cleaned, defaultVal);

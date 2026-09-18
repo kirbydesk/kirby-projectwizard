@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="pw-font-help" style="margin-bottom: var(--spacing-4)">
-      These sizes are used when the "sizes" option is enabled in block settings. Otherwise, the font-size from the Elements tab is used as fallback.
+      {{ $t('prw.fonts.sizesHelp') }}
     </div>
     <section v-for="(group, groupKey) in groups" :key="groupKey" class="pw-element-section">
       <div class="pw-section-header">
@@ -15,9 +15,9 @@
           <div class="pw-group-header">
             <div class="pw-field-row-label-col"></div>
             <div class="pw-group-header-labels pw-group-type-responsive">
-              <span class="pw-group-column-cell"><span class="pw-group-column-label">Mobile</span></span>
-              <span class="pw-group-column-cell"><span class="pw-group-column-label">Tablet</span></span>
-              <span class="pw-group-column-cell"><span class="pw-group-column-label">Desktop</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.mobile') }}</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.tablet') }}</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.desktop') }}</span></span>
             </div>
           </div>
           <div

@@ -5,7 +5,7 @@
       <div v-if="mode === 'all'" class="pw-section-header pw-font-header">
         <span class="pw-section-title">{{ $t('prw.fonts.installed') || 'Installed Fonts' }}</span>
         <k-button
-          :text="showAddForm ? 'Cancel' : ($t('prw.fonts.add') || 'Add Font')"
+          :text="showAddForm ? $t('cancel') : ($t('prw.fonts.add') || 'Add Font')"
           :icon="showAddForm ? 'cancel' : 'add'"
           size="xs"
           @click="showAddForm = !showAddForm; if (!showAddForm) resetAddForm()"
@@ -47,12 +47,12 @@
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">Font File *</label>
+                  <label class="pw-field-row-label">{{ $t('prw.fonts.file') }} *</label>
                 </div>
                 <div class="pw-field-row-options">
                   <label class="pw-font-upload-btn">
                     <k-icon type="upload" />
-                    Upload .woff2
+                    {{ $t('prw.fonts.upload') }}
                     <input type="file" accept=".woff2" @change="onFileSelect" style="display:none" />
                   </label>
                   <span v-if="newFont.files.length" class="pw-font-file-selected">{{ newFont.files[0].name }}</span>
@@ -60,19 +60,17 @@
               </span>
             </div>
           </div>
-          <div class="pw-font-help">
-            Upload a .woff2 font file. You can use <a href="https://gwfh.mranftl.com/" target="_blank" rel="noopener">Google Webfonts Helper</a> to download Google Fonts as .woff2.
-          </div>
+          <div class="pw-font-help" v-html="$t('prw.fonts.uploadHelp')"></div>
 
             <!-- Family Name -->
             <div class="pw-field-row">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">Font Family Name *</label>
+                    <label class="pw-field-row-label">{{ $t('prw.fonts.family') }} *</label>
                   </div>
                   <div class="pw-field-row-options">
-                    <input type="text" class="pw-element-input pw-font-name-input" v-model="newFont.family" placeholder="e.g. Acme, Roboto" />
+                    <input type="text" class="pw-element-input pw-font-name-input" v-model="newFont.family" :placeholder="$t('prw.fonts.familyPlaceholder')" />
                   </div>
                 </span>
               </div>
@@ -86,7 +84,7 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">Category *</label>
+                    <label class="pw-field-row-label">{{ $t('prw.fonts.category') }} *</label>
                   </div>
                   <div class="pw-field-row-options">
                     <k-toggles-input
@@ -109,21 +107,21 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">Supports Italic Automatically *</label>
+                    <label class="pw-field-row-label">{{ $t('prw.fonts.italic') }} *</label>
                   </div>
                   <div class="pw-field-row-options">
                     <k-toggles-input
                       :value="newFont.italic === null ? '' : (newFont.italic ? 'yes' : 'no')"
-                      :options="[{ value: 'yes', text: 'Yes' }, { value: 'no', text: 'No' }]"
+                      :options="[{ value: 'yes', text: $t('pw.option.yes') }, { value: 'no', text: $t('pw.option.no') }]"
                       :grow="false"
                       :required="true"
                       @input="newFont.italic = $event === 'yes'"
                     />
                     <template v-if="newFont.italic === false">
-                      <span class="pw-font-inline-label">Choose Style</span>
+                      <span class="pw-font-inline-label">{{ $t('prw.fonts.style') }}</span>
                       <k-toggles-input
                         :value="newFont.style"
-                        :options="[{ value: 'normal', text: 'Normal' }, { value: 'italic', text: 'Italic' }]"
+                        :options="[{ value: 'normal', text: $t('pw.option.normal') }, { value: 'italic', text: $t('pw.option.italic') }]"
                         :grow="false"
                         :required="true"
                         @input="newFont.style = $event"
@@ -142,7 +140,7 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">Weight *</label>
+                    <label class="pw-field-row-label">{{ $t('prw.fonts.weight') }} *</label>
                   </div>
                   <div class="pw-field-row-options">
                     <div class="pw-weight-toggles">
@@ -167,7 +165,7 @@
             <div class="pw-font-actions">
               <k-button
                 :disabled="!canAddFont"
-                text="Add Font"
+                :text="$t('prw.fonts.add')"
                 icon="check"
                 theme="positive"
                 variant="filled"
@@ -310,8 +308,8 @@ export default {
       const font = this.allFonts[key];
       const isLast = font && font.files && font.files.length <= 1;
       const label = isLast
-        ? 'Delete font "' + font.family + '"?'
-        : 'Delete "' + file.src + '"?';
+        ? this.$t('prw.fonts.delete.font', { family: font.family })
+        : this.$t('prw.fonts.delete.file', { file: file.src });
       if (!window.confirm(label)) return;
 
       if (isLast) {

@@ -16,7 +16,7 @@
           <!-- Preview -->
           <template v-if="previewText(groupKey) && !isChildElement(groupKey)">
           <div class="pw-element-preview-header">
-            <span v-for="bp in ['default', 'lg', 'xl']" :key="'h-' + bp" class="pw-element-preview-header-label">{{ { default: 'Mobile', lg: 'Tablet', xl: 'Desktop' }[bp] }}</span>
+            <span v-for="bp in ['default', 'lg', 'xl']" :key="'h-' + bp" class="pw-element-preview-header-label">{{ { default: $t('prw.label.mobile'), lg: $t('prw.label.tablet'), xl: $t('prw.label.desktop') }[bp] }}</span>
           </div>
           <div class="pw-element-preview" :class="{ 'pw-element-preview-themed': previewThemed(groupKey) }">
             <template v-for="theme in ['default', 'variant', 'variant2', 'variant3']">
@@ -501,7 +501,7 @@ export default {
     fontFamilyOptions() {
       const allFonts = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
       const seen = new Set();
-      const options = [{ value: 'default', text: 'Default (' + this.bodyDefaultFont + ')' }];
+      const options = [{ value: 'default', text: this.$t('prw.label.defaultFont', { font: this.bodyDefaultFont }) }];
       for (const font of Object.values(allFonts)) {
         if (!seen.has(font.family) && font.family !== this.bodyDefaultFont) {
           seen.add(font.family);
