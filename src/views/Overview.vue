@@ -262,50 +262,61 @@
           </div>
 
           <!-- AI (kirbydesk AI plugins: contentwizard settings, API keys) -->
-          <div v-if="hasAiTab" v-show="globalActiveTab === 'ai'" class="pw-wizard-global-content pw-ai-settings">
-            <!-- API keys (admins only) — written to the project's .env -->
-            <section v-if="aiSecrets && aiSecrets.length" class="pw-ai-secrets">
-              <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.ai.keys') }}</h2>
-              <p class="pw-ai-secrets-help">{{ $t('prw.ai.keys.help') }}</p>
-              <k-box v-if="!aiSecretsWritable" theme="negative" :text="$t('prw.ai.keys.readonly')" />
-              <div v-for="secret in aiSecrets" :key="secret.env" class="pw-ai-secret">
-                <label class="k-label" :for="'pw-secret-' + secret.env">{{ secret.label }}</label>
-                <div class="pw-ai-secret-row">
-                  <input
-                    :id="'pw-secret-' + secret.env"
-                    type="password"
-                    autocomplete="new-password"
-                    class="pw-ai-secret-input"
-                    :disabled="!aiSecretsWritable || secret.source === 'config'"
-                    :placeholder="secret.masked ? secret.masked : $t('prw.ai.keys.empty')"
-                    :value="aiSecretInputs[secret.env] || ''"
-                    @input="onSecretInput(secret.env, $event.target.value)"
-                  />
-                  <k-button
-                    v-if="secret.source === 'env' && aiSecretsWritable"
-                    icon="trash"
-                    size="sm"
-                    variant="filled"
-                    :title="$t('prw.ai.keys.remove')"
-                    @click="removeSecret(secret)"
-                  />
-                </div>
-                <p class="pw-ai-secret-status">
-                  <template v-if="secret.source === 'config'">{{ $t('prw.ai.keys.config') }}</template>
-                  <template v-else-if="secret.source === 'env'">{{ $t('prw.ai.keys.set') }}</template>
-                  <template v-else>{{ $t('prw.ai.keys.notset') }}</template>
-                  <template v-if="secret.help"> · {{ secret.help }}</template>
-                </p>
-              </div>
-            </section>
+          <div
+            v-if="hasAiTab"
+            v-show="globalActiveTab === 'ai'"
+            class="pw-wizard-global-content pw-ai-settings"
+            :class="{ 'pw-ai-single': !aiForm || !(aiSecrets && aiSecrets.length) }"
+          >
+            <!-- 2/3: AI defaults (contentwizard) -->
+            <div v-if="aiForm" class="pw-ai-main">
+              <k-form
+                v-if="aiForm"
+                :key="'ai-' + discardKey"
+                :fields="aiForm.fields"
+                :value="aiValues"
+                @input="onAiInput"
+              />
+            </div>
 
-            <k-form
-              v-if="aiForm"
-              :key="'ai-' + discardKey"
-              :fields="aiForm.fields"
-              :value="aiValues"
-              @input="onAiInput"
-            />
+            <!-- 1/3: API keys -->
+            <aside v-if="aiSecrets && aiSecrets.length" class="pw-ai-aside">
+              <!-- API keys (admins only) — written to the project's .env -->
+              <section v-if="aiSecrets && aiSecrets.length" class="pw-ai-secrets">
+                <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.ai.keys') }}</h2>
+                <p class="pw-ai-secrets-help">{{ $t('prw.ai.keys.help') }}</p>
+                <k-box v-if="!aiSecretsWritable" theme="negative" :text="$t('prw.ai.keys.readonly')" />
+                <div v-for="secret in aiSecrets" :key="secret.env" class="pw-ai-secret">
+                  <label class="k-label" :for="'pw-secret-' + secret.env">{{ secret.label }}</label>
+                  <div class="pw-ai-secret-row">
+                    <input
+                      :id="'pw-secret-' + secret.env"
+                      type="password"
+                      autocomplete="new-password"
+                      class="pw-ai-secret-input"
+                      :disabled="!aiSecretsWritable || secret.source === 'config'"
+                      :placeholder="secret.masked ? secret.masked : $t('prw.ai.keys.empty')"
+                      :value="aiSecretInputs[secret.env] || ''"
+                      @input="onSecretInput(secret.env, $event.target.value)"
+                    />
+                    <k-button
+                      v-if="secret.source === 'env' && aiSecretsWritable"
+                      icon="trash"
+                      size="sm"
+                      variant="filled"
+                      :title="$t('prw.ai.keys.remove')"
+                      @click="removeSecret(secret)"
+                    />
+                  </div>
+                  <p class="pw-ai-secret-status">
+                    <template v-if="secret.source === 'config'">{{ $t('prw.ai.keys.config') }}</template>
+                    <template v-else-if="secret.source === 'env'">{{ $t('prw.ai.keys.set') }}</template>
+                    <template v-else>{{ $t('prw.ai.keys.notset') }}</template>
+                    <template v-if="secret.help"> · {{ secret.help }}</template>
+                  </p>
+                </div>
+              </section>
+            </aside>
           </div>
 
         </div>
@@ -1477,7 +1488,17 @@ export default {
   min-height: 200px;
 }
 
-.pw-ai-secrets { margin-bottom: var(--spacing-12); display: flex; flex-direction: column; gap: var(--spacing-4); }
+.pw-ai-settings {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-12);
+  align-items: start;
+}
+.pw-ai-settings.pw-ai-single { grid-template-columns: 1fr; }
+@media (max-width: 60rem) {
+  .pw-ai-settings { grid-template-columns: 1fr; }
+}
+.pw-ai-secrets { display: flex; flex-direction: column; gap: var(--spacing-4); }
 .pw-ai-secrets-title { font-size: var(--text-lg); }
 .pw-ai-secrets-help, .pw-ai-secret-status { color: var(--color-text-dimmed); font-size: var(--text-sm); }
 .pw-ai-secret-row { display: flex; gap: var(--spacing-2); align-items: center; margin-block: var(--spacing-2); }
