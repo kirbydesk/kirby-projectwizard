@@ -268,7 +268,7 @@
             class="pw-wizard-global-content pw-ai-settings"
             :class="{ 'pw-ai-single': !aiForm || !(aiSecrets && aiSecrets.length) }"
           >
-            <!-- 2/3: AI defaults (contentwizard) -->
+            <!-- 3/4: AI defaults (contentwizard) -->
             <div v-if="aiForm" class="pw-ai-main">
               <k-form
                 v-if="aiForm"
@@ -279,7 +279,7 @@
               />
             </div>
 
-            <!-- 1/3: API keys -->
+            <!-- 1/4: API keys -->
             <aside v-if="aiSecrets && aiSecrets.length" class="pw-ai-aside">
               <!-- API keys (admins only) — written to the project's .env -->
               <section v-if="aiSecrets && aiSecrets.length" class="pw-ai-secrets">
@@ -1490,7 +1490,7 @@ export default {
 
 .pw-ai-settings {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: var(--spacing-12);
   align-items: start;
 }
