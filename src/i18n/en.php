@@ -60,7 +60,6 @@
 	'prw.tab.items' => 'Items',
 	'prw.tab.layout' => 'Layout',
 	'prw.tab.layout.placeholder' => 'Layout configuration for this block will appear here.',
-	'prw.headline.items' => 'Items',
 
 	/* -------------- Properties --------------*/
 	'prw.property.align' => 'Alignment',
@@ -76,7 +75,6 @@
 	'prw.headline.columnBlocks' => 'Allowed Blocks',
 	'prw.headline.pagewizard' => 'Pagewizard',
 	'prw.headline.projectRelated' => 'Project Related',
-	'prw.headline.values' => 'Values',
 
 	/* -------------- Props: Navigation groups --------------*/
 	'prw.prop.body' => 'Body',
@@ -101,7 +99,6 @@
 	/* -------------- Props: Body / Blocks --------------*/
 	'prw.prop.body-background' => 'Page Background',
 	'prw.prop.font-family-default' => 'Font Family',
-	'prw.headline.defaultFont' => 'Default Font',
 	'prw.prop.global-margin-top' => 'Margin Top',
 	'prw.prop.global-margin-bottom' => 'Margin Bottom',
 	'prw.prop.global-padding-top' => 'Padding Top',
