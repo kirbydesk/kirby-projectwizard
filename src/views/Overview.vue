@@ -261,9 +261,46 @@
             />
           </div>
 
-          <!-- AI (kirby-contentwizard) -->
-          <div v-if="aiForm" v-show="globalActiveTab === 'ai'" class="pw-wizard-global-content pw-ai-settings">
+          <!-- AI (kirbydesk AI plugins: contentwizard settings, API keys) -->
+          <div v-if="hasAiTab" v-show="globalActiveTab === 'ai'" class="pw-wizard-global-content pw-ai-settings">
+            <!-- API keys (admins only) — written to the project's .env -->
+            <section v-if="aiSecrets && aiSecrets.length" class="pw-ai-secrets">
+              <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.ai.keys') }}</h2>
+              <p class="pw-ai-secrets-help">{{ $t('prw.ai.keys.help') }}</p>
+              <k-box v-if="!aiSecretsWritable" theme="negative" :text="$t('prw.ai.keys.readonly')" />
+              <div v-for="secret in aiSecrets" :key="secret.env" class="pw-ai-secret">
+                <label class="k-label" :for="'pw-secret-' + secret.env">{{ secret.label }}</label>
+                <div class="pw-ai-secret-row">
+                  <input
+                    :id="'pw-secret-' + secret.env"
+                    type="password"
+                    autocomplete="new-password"
+                    class="pw-ai-secret-input"
+                    :disabled="!aiSecretsWritable || secret.source === 'config'"
+                    :placeholder="secret.masked ? secret.masked : $t('prw.ai.keys.empty')"
+                    :value="aiSecretInputs[secret.env] || ''"
+                    @input="onSecretInput(secret.env, $event.target.value)"
+                  />
+                  <k-button
+                    v-if="secret.source === 'env' && aiSecretsWritable"
+                    icon="trash"
+                    size="sm"
+                    variant="filled"
+                    :title="$t('prw.ai.keys.remove')"
+                    @click="removeSecret(secret)"
+                  />
+                </div>
+                <p class="pw-ai-secret-status">
+                  <template v-if="secret.source === 'config'">{{ $t('prw.ai.keys.config') }}</template>
+                  <template v-else-if="secret.source === 'env'">{{ $t('prw.ai.keys.set') }}</template>
+                  <template v-else>{{ $t('prw.ai.keys.notset') }}</template>
+                  <template v-if="secret.help"> · {{ secret.help }}</template>
+                </p>
+              </div>
+            </section>
+
             <k-form
+              v-if="aiForm"
               :key="'ai-' + discardKey"
               :fields="aiForm.fields"
               :value="aiValues"
@@ -505,9 +542,15 @@ export default {
       aiForm: null,
       aiValues: {},
       originalAiValues: {},
+      aiSecrets: null,
+      aiSecretsWritable: true,
+      aiSecretInputs: {},
     };
   },
   computed: {
+    hasAiTab() {
+      return !!this.aiForm || !!(this.aiSecrets && this.aiSecrets.length);
+    },
     globalTabs() {
       const tabs = [
         { key: 'blocks', icon: 'prw-blocks' },
@@ -517,7 +560,7 @@ export default {
         { key: 'footer', icon: 'prw-footer' },
       ];
       // AI defaults — only when kirby-contentwizard is installed
-      if (this.aiForm) tabs.push({ key: 'ai', icon: 'ai' });
+      if (this.hasAiTab) tabs.push({ key: 'ai', icon: 'ai' });
       tabs.push({ key: 'settings', icon: 'settings' });
       return tabs;
     },
@@ -714,6 +757,12 @@ export default {
         } catch (e) {
           this.aiForm = null;
         }
+        // API keys of installed AI plugins (admins only; others get a 403)
+        try {
+          this.setAiSecrets(await this.$api.get('pagewizard/secrets'));
+        } catch (e) {
+          this.aiSecrets = null;
+        }
 
         this.loading = false;
       } catch (e) {
@@ -878,13 +927,50 @@ export default {
 
     onAiInput(values) {
       this.aiValues = values;
-      this.$set(this.dirtyTabs, 'ai', JSON.stringify(values) !== this.snapshots['ai']);
+      this.updateAiDirty();
+    },
+
+    setAiSecrets(res) {
+      this.aiSecrets = res.secrets || [];
+      this.aiSecretsWritable = res.writable !== false;
+      this.aiSecretInputs = {};
+    },
+
+    onSecretInput(env, value) {
+      this.$set(this.aiSecretInputs, env, value);
+      this.updateAiDirty();
+    },
+
+    updateAiDirty() {
+      const settingsDirty = !!this.aiForm && JSON.stringify(this.aiValues) !== this.snapshots['ai'];
+      const keysDirty = Object.values(this.aiSecretInputs).some(v => v && v.trim() !== '');
+      this.$set(this.dirtyTabs, 'ai', settingsDirty || keysDirty);
+    },
+
+    async removeSecret(secret) {
+      if (!window.confirm(this.$t('prw.ai.keys.confirm', { label: secret.label }))) return;
+      try {
+        this.setAiSecrets(await this.$api.post('pagewizard/secrets', { remove: [secret.env] }));
+        this.updateAiDirty();
+        this.$panel.notification.success(this.$t('prw.notify.ai.success'));
+      } catch (e) {
+        this.$panel.notification.error(this.$t('prw.notify.ai.error'));
+      }
     },
 
     async saveAi() {
       try {
-        const res = await this.$api.post('contentwizard/settings', this.aiValues);
-        this.setAiForm(res);
+        if (this.aiForm && JSON.stringify(this.aiValues) !== this.snapshots['ai']) {
+          this.setAiForm(await this.$api.post('contentwizard/settings', this.aiValues));
+        }
+        const set = {};
+        for (const [env, value] of Object.entries(this.aiSecretInputs)) {
+          if (value && value.trim() !== '') set[env] = value.trim();
+        }
+        if (Object.keys(set).length) {
+          this.setAiSecrets(await this.$api.post('pagewizard/secrets', { set }));
+        }
+        this.updateAiDirty();
         this.$panel.notification.success(this.$t('prw.notify.ai.success'));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.ai.error'));
@@ -1220,6 +1306,7 @@ export default {
           this.$set(this.dirtyTabs, 'footer', false);
         } else if (tab === 'ai') {
           this.aiValues = JSON.parse(JSON.stringify(this.originalAiValues));
+          this.aiSecretInputs = {};
           this.$set(this.dirtyTabs, 'ai', false);
         }
       } else {
@@ -1389,6 +1476,22 @@ export default {
 .pw-wizard-global-content {
   min-height: 200px;
 }
+
+.pw-ai-secrets { margin-bottom: var(--spacing-12); display: flex; flex-direction: column; gap: var(--spacing-4); }
+.pw-ai-secrets-title { font-size: var(--text-lg); }
+.pw-ai-secrets-help, .pw-ai-secret-status { color: var(--color-text-dimmed); font-size: var(--text-sm); }
+.pw-ai-secret-row { display: flex; gap: var(--spacing-2); align-items: center; margin-block: var(--spacing-2); }
+.pw-ai-secret-input {
+  flex: 1;
+  height: var(--input-height);
+  padding: 0 var(--input-padding);
+  border-radius: var(--input-rounded);
+  background: var(--input-color-back);
+  border: 1px solid var(--input-color-border);
+  font-family: var(--font-mono);
+}
+.pw-ai-secret-input:focus { outline: 2px solid var(--color-focus); outline-offset: -1px; }
+.pw-ai-secret-input:disabled { opacity: .6; }
 
 .pw-wizard-block-sections { display: flex; flex-direction: column; }
 
