@@ -95,10 +95,10 @@
             <div class="pw-block-preview-body" :style="blockPreviewBodyStyle">
                   <div class="pw-block-preview-row">
                     <div v-for="theme in ['default', 'variant', 'variant2', 'variant3']" :key="theme" class="pw-block-preview" :style="blockPreviewStyle(theme)">
-                      <p :style="blockPreviewElementStyle('tagline', theme)">Tagline goes here</p>
-                      <h2 :style="blockPreviewElementStyle('heading', theme)">The quick brown fox</h2>
-                      <p :style="blockPreviewElementStyle('editor', theme)">Pack my box with <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">five dozen liquor jugs</a>. How vexingly quick daft zebras jump. The five boxing wizards jump quickly at dawn.</p>
-                      <a :class="'pw-preview-btn-' + theme" :style="blockPreviewButtonStyle(theme, '')">Click here</a>
+                      <p :style="blockPreviewElementStyle('tagline', theme)">{{ $t('prw.preview.tagline') }}</p>
+                      <h2 :style="blockPreviewElementStyle('heading', theme)">{{ $t('prw.preview.heading') }}</h2>
+                      <p :style="blockPreviewElementStyle('editor', theme)">{{ $t('prw.preview.text.before') }} <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
+                      <a :class="'pw-preview-btn-' + theme" :style="blockPreviewButtonStyle(theme, '')">{{ $t('prw.preview.button') }}</a>
                     </div>
                   </div>
             </div>
@@ -140,7 +140,7 @@
           <!-- Fonts -->
           <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
             <!-- Font Preview -->
-            <div class="pw-default-font-preview" :style="defaultFontPreviewStyle">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</div>
+            <div class="pw-default-font-preview" :style="defaultFontPreviewStyle">{{ $t('prw.preview.font') }}</div>
 
             <!-- Subtabs -->
             <div class="pw-element-subtabs">

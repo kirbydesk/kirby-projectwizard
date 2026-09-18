@@ -300,4 +300,18 @@
 	'prw.notify.svg.invalid' => 'No valid SVG found',
 	'prw.notify.svg.dimensions' => 'SVG must have a viewBox or width/height attributes',
 
+	'prw.preview.tagline' => 'Tagline goes here',
+	'prw.preview.heading' => 'The quick brown fox',
+	'prw.preview.text.before' => 'Pack my box with',
+	'prw.preview.text.link' => 'five dozen liquor jugs',
+	'prw.preview.text.after' => '. How vexingly quick daft zebras jump. The five boxing wizards jump quickly at dawn.',
+	'prw.preview.button' => 'Click here',
+	'prw.preview.font' => 'The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.',
+	'prw.preview.nav.home' => 'Home',
+	'prw.preview.nav.about' => 'About',
+	'prw.preview.nav.services' => 'Services',
+	'prw.preview.nav.portfolio' => 'Portfolio',
+	'prw.preview.nav.contact' => 'Contact',
+	'prw.preview.nav.submenu' => 'Submenu {letter}',
+
 ];

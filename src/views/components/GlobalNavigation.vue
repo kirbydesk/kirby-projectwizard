@@ -14,12 +14,12 @@
           <div v-if="groupKey === 'desktop' && !hidePreview" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle()">
             <div v-if="navPreviewLogo()" class="pw-nav-preview-logo" :style="navPreviewLogoStyle()"><div :style="{ height: navPreviewLogoSvgHeight() }" v-html="navPreviewLogo()"></div></div>
             <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle()">
-              <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:'Home',fly:false,home:true},{t:'About',fly:false},{t:'Services',fly:true,flyout:'services'},{t:'Portfolio',fly:true,flyout:'portfolio'},{t:'Contact',fly:false}]" v-if="!item.home || (navGet('home-desktop') || navDef('desktop', 'home-desktop')) === 'true'" :key="idx" :style="navPreviewItemStyle()">
+              <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:$t('prw.preview.nav.home'),fly:false,home:true},{t:$t('prw.preview.nav.about'),fly:false},{t:$t('prw.preview.nav.services'),fly:true,flyout:'services'},{t:$t('prw.preview.nav.portfolio'),fly:true,flyout:'portfolio'},{t:$t('prw.preview.nav.contact'),fly:false}]" v-if="!item.home || (navGet('home-desktop') || navDef('desktop', 'home-desktop')) === 'true'" :key="idx" :style="navPreviewItemStyle()">
                 <span style="display:flex;align-items:center;gap:var(--spacing-1)">{{ item.t }}<span v-if="item.fly" class="pw-nav-preview-flyout-icon" :style="{ color: navPreviewTextColor() }" v-html="navFlyoutIconPath()"></span></span>
                 <div v-if="item.flyout && showFlyout && item.flyout === 'services'" class="pw-nav-preview-flyout" :style="navPreviewFlyoutStyle()">
-                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu A</div>
-                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu B</div>
-                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu C</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">{{ $t('prw.preview.nav.submenu', { letter: 'A' }) }}</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">{{ $t('prw.preview.nav.submenu', { letter: 'B' }) }}</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">{{ $t('prw.preview.nav.submenu', { letter: 'C' }) }}</div>
                 </div>
               </span>
             </div>
@@ -29,12 +29,12 @@
           <div v-if="groupKey === 'tablet' && !hidePreview" class="pw-element-preview pw-nav-preview" :style="navPreviewBarStyle('tablet')">
             <div v-if="navPreviewLogo('tablet')" class="pw-nav-preview-logo" :style="navPreviewLogoStyle('tablet')"><div :style="{ height: navPreviewLogoSvgHeight('tablet') }" v-html="navPreviewLogo('tablet')"></div></div>
             <div class="pw-nav-preview-items" :style="navPreviewItemsWrapStyle('tablet')">
-              <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:'Home',fly:false,home:true},{t:'About',fly:false},{t:'Services',fly:true,flyout:'t-services'},{t:'Portfolio',fly:true,flyout:'t-portfolio'},{t:'Contact',fly:false}]" v-if="!item.home || (navGet('home-tablet') || navDef('tablet', 'home-tablet')) === 'true'" :key="idx" :style="navPreviewItemStyle('tablet')">
+              <span class="pw-nav-preview-item" v-for="(item, idx) in [{t:$t('prw.preview.nav.home'),fly:false,home:true},{t:$t('prw.preview.nav.about'),fly:false},{t:$t('prw.preview.nav.services'),fly:true,flyout:'t-services'},{t:$t('prw.preview.nav.portfolio'),fly:true,flyout:'t-portfolio'},{t:$t('prw.preview.nav.contact'),fly:false}]" v-if="!item.home || (navGet('home-tablet') || navDef('tablet', 'home-tablet')) === 'true'" :key="idx" :style="navPreviewItemStyle('tablet')">
                 <span @click.stop="openFlyout = openFlyout === item.flyout ? null : item.flyout" style="cursor:pointer;display:flex;align-items:center;gap:var(--spacing-1)">{{ item.t }}<span v-if="item.fly" class="pw-nav-preview-flyout-icon" :style="{ color: navPreviewTextColor('tablet') }" v-html="navFlyoutIconPath()"></span></span>
                 <div v-if="item.flyout && openFlyout === item.flyout" class="pw-nav-preview-flyout" :style="navPreviewFlyoutStyle()">
-                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu A</div>
-                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemHoverStyle()">Submenu B</div>
-                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">Submenu C</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">{{ $t('prw.preview.nav.submenu', { letter: 'A' }) }}</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemHoverStyle()">{{ $t('prw.preview.nav.submenu', { letter: 'B' }) }}</div>
+                  <div class="pw-nav-preview-flyout-item" :style="navPreviewFlyoutItemStyle()">{{ $t('prw.preview.nav.submenu', { letter: 'C' }) }}</div>
                 </div>
               </span>
             </div>
@@ -47,12 +47,12 @@
               <svg viewBox="0 0 24 24" width="20" height="20" :style="{ fill: mobileColorField('mobile-title-color', 'mobile-title-textcolor') }"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
             </div>
             <div class="pw-nav-preview-mobile-menu">
-              <div v-for="(item, idx) in [{t:'Home',l2:false,active:false,home:true},{t:'About',l2:false,active:false},{t:'Services',l2:true,active:true},{t:'Portfolio',l2:false,active:false},{t:'Contact',l2:false,active:false}]" v-if="!item.home || (navGet('home-mobile') || navDef('mobile', 'home-mobile')) === 'true'" :key="idx">
+              <div v-for="(item, idx) in [{t:$t('prw.preview.nav.home'),l2:false,active:false,home:true},{t:$t('prw.preview.nav.about'),l2:false,active:false},{t:$t('prw.preview.nav.services'),l2:true,active:true},{t:$t('prw.preview.nav.portfolio'),l2:false,active:false},{t:$t('prw.preview.nav.contact'),l2:false,active:false}]" v-if="!item.home || (navGet('home-mobile') || navDef('mobile', 'home-mobile')) === 'true'" :key="idx">
                 <div class="pw-nav-preview-mobile-l1" :style="mobileL1Style(item.active)" :class="{ 'pw-mobile-border': idx > 0 }">
                   {{ item.t }}
                 </div>
                 <template v-if="item.l2">
-                  <div v-for="(sub, sIdx) in [{t:'Submenu A',active:false},{t:'Submenu B',active:true},{t:'Submenu C',active:false}]" :key="'s'+sIdx" class="pw-nav-preview-mobile-l2" :style="mobileL2Style(sub.active)" :class="{ 'pw-mobile-border-l2': true }">
+                  <div v-for="(sub, sIdx) in [{t:$t('prw.preview.nav.submenu', { letter: 'A' }),active:false},{t:$t('prw.preview.nav.submenu', { letter: 'B' }),active:true},{t:$t('prw.preview.nav.submenu', { letter: 'C' }),active:false}]" :key="'s'+sIdx" class="pw-nav-preview-mobile-l2" :style="mobileL2Style(sub.active)" :class="{ 'pw-mobile-border-l2': true }">
                     {{ sub.t }}
                   </div>
                 </template>
