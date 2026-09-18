@@ -151,7 +151,7 @@
 
 	/* -------------- Props: Navigation desktop --------------*/
 	'prw.prop.desktop-logo-src' => 'Source',
-	'prw.prop.tablet-logo-src' => 'Souce',
+	'prw.prop.tablet-logo-src' => 'Source',
 	'prw.prop.mobile-logo-src' => 'Source',
 	'prw.prop.mobile-l1-bordercolor' => 'Divider L1',
 	'prw.prop.mobile-l2-bordercolor' => 'Divider L2',
