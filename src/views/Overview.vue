@@ -32,14 +32,7 @@
     <!-- Kirby-native tab navigation (global view) -->
     <nav v-if="!loading && activeTab === 'global'" class="k-tabs k-model-tabs">
       <button
-        v-for="tab in [
-          { key: 'blocks', icon: 'prw-blocks' },
-          { key: 'elements', icon: 'layers' },
-          { key: 'fonts', icon: 'title' },
-          { key: 'header', icon: 'prw-header' },
-          { key: 'footer', icon: 'prw-footer' },
-          { key: 'settings', icon: 'settings' },
-        ]"
+        v-for="tab in globalTabs"
         :key="tab.key"
         type="button"
         class="k-tabs-button k-button"
@@ -265,6 +258,16 @@
               :fonts="fontsData"
               :body-default-font="bodyDefaultFont"
               @update:overrides="onFooterOverridesUpdate"
+            />
+          </div>
+
+          <!-- AI (kirby-contentwizard) -->
+          <div v-if="aiForm" v-show="globalActiveTab === 'ai'" class="pw-wizard-global-content pw-ai-settings">
+            <k-form
+              :key="'ai-' + discardKey"
+              :fields="aiForm.fields"
+              :value="aiValues"
+              @input="onAiInput"
             />
           </div>
 
@@ -499,9 +502,25 @@ export default {
       footerDefaults: {},
       footerOverrides: {},
       originalFooterOverrides: {},
+      aiForm: null,
+      aiValues: {},
+      originalAiValues: {},
     };
   },
   computed: {
+    globalTabs() {
+      const tabs = [
+        { key: 'blocks', icon: 'prw-blocks' },
+        { key: 'elements', icon: 'layers' },
+        { key: 'fonts', icon: 'title' },
+        { key: 'header', icon: 'prw-header' },
+        { key: 'footer', icon: 'prw-footer' },
+      ];
+      // AI defaults — only when kirby-contentwizard is installed
+      if (this.aiForm) tabs.push({ key: 'ai', icon: 'ai' });
+      tabs.push({ key: 'settings', icon: 'settings' });
+      return tabs;
+    },
     bodyDefaultFont() {
       // Resolve body default font from global defaults + overrides
       const groups = this.globalDefaults || {};
@@ -688,6 +707,14 @@ export default {
         this.originalFooterOverrides = JSON.parse(JSON.stringify(footerOv));
         this.$set(this.snapshots, 'footer', JSON.stringify(footerOv));
 
+        // Load AI defaults (kirby-contentwizard); absent plugin → no tab
+        try {
+          const ai = await this.$api.get('contentwizard/settings');
+          this.setAiForm(ai);
+        } catch (e) {
+          this.aiForm = null;
+        }
+
         this.loading = false;
       } catch (e) {
         console.error('Failed to load', e);
@@ -837,6 +864,30 @@ export default {
         this.$set(this.snapshots, 'fontsizes', JSON.stringify(this.safeOverrides(res.overrides)));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.fontsizes.error'));
+      }
+    },
+
+    // --- Global: AI (kirby-contentwizard) ---
+    setAiForm(ai) {
+      this.aiForm = { fields: ai.fields || {} };
+      this.aiValues = JSON.parse(JSON.stringify(ai.value || {}));
+      this.originalAiValues = JSON.parse(JSON.stringify(ai.value || {}));
+      this.$set(this.snapshots, 'ai', JSON.stringify(this.aiValues));
+      this.$set(this.dirtyTabs, 'ai', false);
+    },
+
+    onAiInput(values) {
+      this.aiValues = values;
+      this.$set(this.dirtyTabs, 'ai', JSON.stringify(values) !== this.snapshots['ai']);
+    },
+
+    async saveAi() {
+      try {
+        const res = await this.$api.post('contentwizard/settings', this.aiValues);
+        this.setAiForm(res);
+        this.$panel.notification.success(this.$t('prw.notify.ai.success'));
+      } catch (e) {
+        this.$panel.notification.error(this.$t('prw.notify.ai.error'));
       }
     },
 
@@ -1135,6 +1186,8 @@ export default {
           await this.saveNavigation();
         } else if (tab === 'footer') {
           await this.saveFooter();
+        } else if (tab === 'ai') {
+          await this.saveAi();
         }
       } else {
         await this.saveBlock(this.activeTab);
@@ -1165,6 +1218,9 @@ export default {
         } else if (tab === 'footer') {
           this.footerOverrides = JSON.parse(JSON.stringify(this.originalFooterOverrides));
           this.$set(this.dirtyTabs, 'footer', false);
+        } else if (tab === 'ai') {
+          this.aiValues = JSON.parse(JSON.stringify(this.originalAiValues));
+          this.$set(this.dirtyTabs, 'ai', false);
         }
       } else {
         const bt = this.activeTab;

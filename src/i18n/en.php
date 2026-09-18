@@ -55,6 +55,7 @@
 	'prw.tab.fonts' => 'Fonts',
 	'prw.tab.elements' => 'Elements',
 	'prw.tab.header' => 'Header',
+	'prw.tab.ai' => 'AI',
 	'prw.tab.footer' => 'Footer',
 	'prw.tab.defaults' => 'Defaults',
 	'prw.tab.items' => 'Items',
@@ -294,6 +295,8 @@
 	'prw.notify.global.error' => 'Failed to save global settings',
 	'prw.notify.block.success' => '{block} settings saved',
 	'prw.notify.block.error' => 'Failed to save {block} settings',
+	'prw.notify.ai.success' => 'AI settings saved',
+	'prw.notify.ai.error' => 'Failed to save AI settings',
 	'prw.notify.svg.invalid' => 'No valid SVG found',
 	'prw.notify.svg.dimensions' => 'SVG must have a viewBox or width/height attributes',
 

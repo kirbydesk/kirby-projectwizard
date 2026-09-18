@@ -55,6 +55,7 @@
 	'prw.tab.fonts' => 'Schriften',
 	'prw.tab.elements' => 'Elemente',
 	'prw.tab.header' => 'Header',
+	'prw.tab.ai' => 'KI',
 	'prw.tab.footer' => 'Footer',
 	'prw.tab.defaults' => 'Standardwerte',
 	'prw.tab.items' => 'Einträge',
@@ -294,6 +295,8 @@
 	'prw.notify.global.error' => 'Globale Einstellungen konnten nicht gespeichert werden',
 	'prw.notify.block.success' => 'Einstellungen für {block} gespeichert',
 	'prw.notify.block.error' => 'Einstellungen für {block} konnten nicht gespeichert werden',
+	'prw.notify.ai.success' => 'KI-Einstellungen gespeichert',
+	'prw.notify.ai.error' => 'KI-Einstellungen konnten nicht gespeichert werden',
 	'prw.notify.svg.invalid' => 'Keine gültige SVG-Datei gefunden',
 	'prw.notify.svg.dimensions' => 'Die SVG-Datei braucht eine viewBox oder width/height-Attribute',
 
