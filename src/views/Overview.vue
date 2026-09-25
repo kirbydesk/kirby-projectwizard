@@ -399,6 +399,7 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                   <pw-block-settings
+                    v-if="isItemShapeVisible(block.blockType)"
                     view="items-layout"
                     :block="block"
                     :config="blockConfigs[block.blockType]"
@@ -427,6 +428,39 @@
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-size']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <!-- Item look (featurelist): icon position/style, title style + sizes -->
+                  <pw-block-settings
+                    view="items-layout"
+                    :block="block"
+                    :config="blockConfigs[block.blockType]"
+                    :overrides="blockOverrides[block.blockType] || {}"
+                    :writer-active="writerActive[block.blockType] !== false"
+                    :layout-keys="['item-icon-position', 'item-icon-style', 'item-title-style']"
+                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                    @update:writer-active="$set(writerActive, block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-icon-size', 'item-icon-gap']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    v-if="itemLayoutDefault(block.blockType, 'item-icon-style') === 'tile'"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-icon-tile-padding', 'item-icon-tile-radius']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-title-size', 'item-title-line-height', 'item-title-gap', 'item-text-size']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -821,9 +855,15 @@ export default {
     isItemLinkStyleButton(blockType) {
       return this.itemLayoutDefault(blockType, 'item-link-style') === 'button';
     },
+    isItemShapeVisible(blockType) {
+      // featurelist: the shape belongs to the icon tile, so only with icon-style "tile"
+      const iconStyle = this.itemLayoutDefault(blockType, 'item-icon-style');
+      return iconStyle === undefined || iconStyle === null || iconStyle === 'tile';
+    },
     isItemRadiusVisible(blockType) {
       // Blocks with an item-shape (logocloud) only use the radii for "custom";
       // blocks without one always show them.
+      if (!this.isItemShapeVisible(blockType)) return false;
       const shape = this.itemLayoutDefault(blockType, 'item-shape');
       return shape === undefined || shape === null || shape === 'custom';
     },
@@ -850,6 +890,9 @@ export default {
       // Generic item-icon-fill — blocks that don't define it (e.g. cardlets)
       // are filtered out by BlockValues' own showOnly check.
       list.push('item-icon-fill');
+      if (this.itemLayoutDefault(blockType, 'item-icon-style') === 'tile') {
+        list.push('item-icon-tile-background');
+      }
       // Steplist-specific colors (filtered out by BlockValues when not defined)
       list.push(
         'item-number-background',

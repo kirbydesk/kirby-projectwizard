@@ -471,7 +471,7 @@
           <div class="k-input" data-type="text">
             <span class="k-input-element pw-field-row-inner">
               <div class="pw-field-row-label-col">
-                <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
+                <label class="pw-field-row-label">{{ field.label ? $t(field.label) : fieldLabel(field.displayKey) }}</label>
               </div>
               <div class="pw-field-row-options">
                 <!-- Icon-select: SVG buttons -->
@@ -676,6 +676,8 @@ export default {
         if (this.isObject(settingVal) && Array.isArray(settingVal.options)) {
           fields.push({
             key, displayKey,
+            // Optional own label key (block-specific wording, e.g. featurelist's tile shape)
+            label: settingVal.label || null,
             type: 'select',
             options: settingVal.options,
             defaultValue: settingVal.default !== undefined ? settingVal.default : settingVal.options[0],
