@@ -2,9 +2,9 @@
 	"name": "{{PROJECT_NAME}}",
 	"description": "A Kirby CMS project created with ProjectWizard",
 	"scripts": {
-		"tailwindWatch": "npx @tailwindcss/cli -i ./storage/temp/tailwind.css -o ./public/assets/css/site.min.css --watch --minify",
+		"tailwindWatch": "npx @tailwindcss/cli -i ./storage/temp/tailwind.css -o ./public/assets/css/site.min.css --watch=always --minify",
 		"tailwindBuild": "npx @tailwindcss/cli -i ./storage/temp/tailwind.css -o ./public/assets/css/site.min.css --minify",
-		"panelWatch": "npx @tailwindcss/cli -i ./site/config/panel.css -o ./public/assets/css/panel.min.css --watch --minify",
+		"panelWatch": "npx @tailwindcss/cli -i ./site/config/panel.css -o ./public/assets/css/panel.min.css --watch=always --minify",
 		"kirbyupSynced": "node kirbyup-sync.config.js",
 		"concatenateJS": "node build-js.config.js",
 		"buildModules": "for f in site/plugins/*/src/js/modules/*.js; do [ -f \"$f\" ] && npx terser \"$f\" -c -m -o \"public/assets/js/$(basename \"${f%.js}\").min.js\"; done || true",
