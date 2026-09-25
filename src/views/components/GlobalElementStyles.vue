@@ -1,26 +1,41 @@
 <template>
   <div>
-    <!-- Element pill navigation -->
-    <div class="pw-element-pills">
-      <button
-        v-for="(group, groupKey) in pillGroups"
-        :key="'pill-' + groupKey"
-        type="button"
-        class="pw-element-pill"
-        :class="{ 'is-active': activeElement === groupKey }"
-        @click="activeElement = groupKey"
-      >{{ groupLabel(groupKey) }}</button>
-    </div>
     <section v-for="(group, groupKey) in groups" :key="groupKey" v-show="isElementVisible(groupKey) && !isChildElement(groupKey)" class="pw-element-section">
       <div class="pw-element-list">
           <!-- Preview -->
-          <template v-if="previewText(groupKey) && !isChildElement(groupKey)">
-          <div class="pw-element-preview-header">
-            <span v-for="bp in ['default', 'lg', 'xl']" :key="'h-' + bp" class="pw-element-preview-header-label">{{ { default: $t('prw.label.mobile'), lg: $t('prw.label.tablet'), xl: $t('prw.label.desktop') }[bp] }}</span>
+          <pw-portal v-if="previewText(groupKey) && !isChildElement(groupKey)" to=".pw-wizard .pw-preview-column">
+          <div v-show="previewActive && isElementVisible(groupKey)" class="pw-element-preview-side">
+          <!-- device (icons only) and theme next to each other -->
+          <div class="pw-preview-switches">
+          <div class="pw-pill pw-bp-switch" role="group">
+            <button
+              v-for="bp in ['default', 'lg', 'xl']"
+              :key="'bp-' + bp"
+              type="button"
+              class="pw-tool"
+              :title="bpLabel(bp)"
+              :aria-label="bpLabel(bp)"
+              :aria-pressed="previewBp === bp ? 'true' : 'false'"
+              @click="previewBp = bp"
+            >
+              <k-icon :type="bpIcon(bp)" />
+            </button>
+          </div>
+          <!-- theme shown in the preview (shared with the colour switch) -->
+          <div class="pw-pill pw-preview-bp pw-preview-theme" role="group">
+            <button
+              v-for="theme in themes"
+              :key="'pt-' + theme"
+              type="button"
+              class="pw-tool"
+              :aria-pressed="colorTheme === theme ? 'true' : 'false'"
+              @click="colorTheme = theme"
+            >{{ $t('pw.option.' + theme) }}</button>
+          </div>
           </div>
           <div class="pw-element-preview" :class="{ 'pw-element-preview-themed': previewThemed(groupKey) }">
-            <template v-for="theme in ['default', 'variant', 'variant2', 'variant3']">
-              <div v-for="bp in ['default', 'lg', 'xl']" :key="theme + '-' + bp" class="pw-element-preview-col" :style="{ backgroundColor: blockBackground(theme) }">
+            <template v-for="theme in [colorTheme]">
+              <div v-for="bp in [previewBp]" :key="theme + '-' + bp" class="pw-element-preview-col" :style="{ backgroundColor: blockBackground(theme) }">
                 <template v-if="groupKey === 'media'">
                   <div class="pw-media-preview-img" :style="mediaPreviewStyle(theme)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -53,23 +68,30 @@
               </div>
             </template>
           </div>
-          </template>
-          <!-- Subtabs -->
-          <div class="pw-element-subtabs">
-            <button
-              v-for="st in combinedSubtabs(groupKey)"
-              :key="'st-' + st.key"
-              type="button"
-              class="pw-element-subtab"
-              :class="{ 'is-active': (openSections[groupKey + '-subtab'] || combinedSubtabs(groupKey)[0].key) === st.key }"
-              @click="$set(openSections, groupKey + '-subtab', st.key)"
-              v-html="st.label"
-            ></button>
           </div>
-
+          </pw-portal>
+          <!-- One section per former subtab (Text, Sizes, Flourish, Colors): heading above a card with the rows in the table look -->
+          <template v-for="st in combinedSubtabs(groupKey)">
+          <h2 v-if="st.partLabel" :key="'part-' + st.key" class="pw-part-heading">{{ st.partLabel }}</h2>
+          <section :key="'card-' + st.key" class="pw-card-section">
+            <div class="pw-card-heading-row">
+              <h3 class="pw-card-heading">{{ st.label }}</h3>
+              <!-- colours: choose the theme, the rows show only its value -->
+              <span v-if="st.category === 'colors'" class="pw-pill pw-theme-switch" role="group">
+                <button
+                  v-for="theme in themes"
+                  :key="'th-' + theme"
+                  type="button"
+                  class="pw-tool"
+                  :aria-pressed="colorTheme === theme ? 'true' : 'false'"
+                  @click="colorTheme = theme"
+                >{{ $t('pw.option.' + theme) }}</button>
+              </span>
+            </div>
+            <div class="pw-card pw-field-table">
           <!-- Text / Sizes fields -->
-          <template v-if="activeSubtabInfo(groupKey).category !== 'colors'">
-          <template v-for="(fieldGroup, gIdx) in groupedVarFields(activeSubtabInfo(groupKey).group, activeSubtabInfo(groupKey).category)">
+          <template v-if="stInfo(st).category !== 'colors'">
+          <template v-for="(fieldGroup, gIdx) in groupedVarFields(stInfo(st).group, stInfo(st).category)">
             <!-- Group header row -->
             <div v-if="fieldGroup.header" :key="'vgh-' + gIdx" class="pw-group-header">
               <div class="pw-field-row-label-col"></div>
@@ -83,20 +105,20 @@
               :key="'vf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :class="{
-                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']),
+                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && openSections[st.key + '-sizes']),
                 'pw-dual-next': field.isState,
               }"
             >
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey)">
+                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey)">
                       <button
                         type="button"
                         class="pw-sizes-toggle"
-                        @click.prevent="$set(openSections, groupKey + '-sizes', !openSections[groupKey + '-sizes'])"
+                        @click.prevent="$set(openSections, st.key + '-sizes', !openSections[st.key + '-sizes'])"
                       >
-                        <k-icon class="pw-sizes-chevron" :type="openSections[groupKey + '-sizes'] ? 'angle-down' : 'angle-right'" />
+                        <k-icon class="pw-sizes-chevron" :type="openSections[st.key + '-sizes'] ? 'angle-down' : 'angle-right'" />
                         <span>{{ field.label }}</span>
                       </button>
                     </template>
@@ -142,7 +164,7 @@
                     </template>
                     <!-- Responsive -->
                     <template v-else-if="field.type === 'responsive'">
-                      <span v-for="(bp, bpIdx) in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                      <span v-for="bp in [previewBp]" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
                             type="text"
@@ -157,6 +179,19 @@
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
                         <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
+                      </span>
+                      <!-- switch the breakpoint (shared with the preview) -->
+                      <span class="pw-pill pw-bp-switch" role="group">
+                        <button
+                          v-for="b in ['default', 'lg', 'xl']"
+                          :key="'sw-' + b"
+                          type="button"
+                          class="pw-tool"
+                          :title="bpLabel(b)"
+                          :aria-label="bpLabel(b)"
+                          :aria-pressed="previewBp === b ? 'true' : 'false'"
+                          @click="previewBp = b"
+                        ><k-icon :type="bpIcon(b)" /></button>
                       </span>
                     </template>
                     <!-- Single value with unit -->
@@ -181,12 +216,12 @@
                   </div>
                 </span>
               </div>
-              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
+              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" :text="$t('prw.label.reset')" :title="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
             </div>
             <!-- Sizes sub-rows -->
-            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']">
+            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && openSections[st.key + '-sizes']">
               <div
-                v-for="(sizeEntry, sizeName) in (fontSizesForGroup(activeSubtabInfo(groupKey).elementKey).vars || fontSizesForGroup(activeSubtabInfo(groupKey).elementKey))"
+                v-for="(sizeEntry, sizeName) in (fontSizesForGroup(stInfo(st).elementKey).vars || fontSizesForGroup(stInfo(st).elementKey))"
                 :key="'sz-' + sizeName"
                 class="pw-field-row pw-dual-next"
               >
@@ -196,7 +231,7 @@
                       <label class="pw-field-row-label pw-sizes-label">{{ $t('pw.option.' + sizeName.split('-').pop()) }}</label>
                     </div>
                     <div class="pw-field-row-options" :class="fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : ''">
-                      <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                      <span v-for="bp in [previewBp]" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
                             type="text"
@@ -212,6 +247,19 @@
                         </span>
                         <span class="pw-px-calculator">{{ toPx(getFontSizeOverride(bp, sizeName) || sizeEntry[bp], sizeEntry.unit || 'rem') }}</span>
                       </span>
+                      <!-- switch the breakpoint (shared with the preview) -->
+                      <span class="pw-pill pw-bp-switch" role="group">
+                        <button
+                          v-for="b in ['default', 'lg', 'xl']"
+                          :key="'sw-' + b"
+                          type="button"
+                          class="pw-tool"
+                          :title="bpLabel(b)"
+                          :aria-label="bpLabel(b)"
+                          :aria-pressed="previewBp === b ? 'true' : 'false'"
+                          @click="previewBp = b"
+                        ><k-icon :type="bpIcon(b)" /></button>
+                      </span>
                     </div>
                   </span>
                 </div>
@@ -225,8 +273,8 @@
           </template>
 
           <!-- Colors -->
-          <template v-if="activeSubtabInfo(groupKey).category === 'colors'">
-          <template v-for="(fieldGroup, gIdx) in groupedColorFields(activeSubtabInfo(groupKey).group)">
+          <template v-if="stInfo(st).category === 'colors'">
+          <template v-for="(fieldGroup, gIdx) in groupedColorFields(stInfo(st).group)">
             <!-- Group header row -->
             <div v-if="fieldGroup.header" :key="'gh-' + gIdx" class="pw-group-header">
               <div class="pw-field-row-label-col"></div>
@@ -240,20 +288,20 @@
               :key="'gf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :class="{
-                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']),
+                'pw-dual-first': field.isFollowedByState || (field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && openSections[st.key + '-sizes']),
                 'pw-dual-next': field.isState,
               }"
             >
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey)">
+                    <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey)">
                       <button
                         type="button"
                         class="pw-sizes-toggle"
-                        @click.prevent="$set(openSections, groupKey + '-sizes', !openSections[groupKey + '-sizes'])"
+                        @click.prevent="$set(openSections, st.key + '-sizes', !openSections[st.key + '-sizes'])"
                       >
-                        <k-icon class="pw-sizes-chevron" :type="openSections[groupKey + '-sizes'] ? 'angle-down' : 'angle-right'" />
+                        <k-icon class="pw-sizes-chevron" :type="openSections[st.key + '-sizes'] ? 'angle-down' : 'angle-right'" />
                         <span>{{ field.label }}</span>
                       </button>
                     </template>
@@ -300,7 +348,7 @@
                     </template>
                     <!-- Responsive (default/lg/xl) -->
                     <template v-else-if="field.type === 'responsive'">
-                      <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                      <span v-for="bp in [previewBp]" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
                             type="text"
@@ -317,11 +365,24 @@
                         </span>
                         <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
                       </span>
+                      <!-- switch the breakpoint (shared with the preview) -->
+                      <span class="pw-pill pw-bp-switch" role="group">
+                        <button
+                          v-for="b in ['default', 'lg', 'xl']"
+                          :key="'sw-' + b"
+                          type="button"
+                          class="pw-tool"
+                          :title="bpLabel(b)"
+                          :aria-label="bpLabel(b)"
+                          :aria-pressed="previewBp === b ? 'true' : 'false'"
+                          @click="previewBp = b"
+                        ><k-icon :type="bpIcon(b)" /></button>
+                      </span>
                     </template>
                     <!-- Theme colors (default/variant/variant2) -->
                     <template v-else-if="field.type === 'theme-color'">
                       <pw-color-field-row
-                        v-for="theme in ['default', 'variant', 'variant2', 'variant3']"
+                        v-for="theme in [colorTheme]"
                         :key="theme"
                         :group="theme"
                         :var-name="field.varName"
@@ -365,12 +426,12 @@
                   </div>
                 </span>
               </div>
-              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
+              <k-button v-if="hasFieldOverride(field)" class="pw-field-reset" :text="$t('prw.label.reset')" :title="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetField(field)" />
             </div>
             <!-- Sizes rows (appear after font-size row when toggled) -->
-            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(activeSubtabInfo(groupKey).elementKey) && openSections[groupKey + '-sizes']">
+            <template v-if="field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && openSections[st.key + '-sizes']">
               <div
-                v-for="(sizeVal, sizeName) in fontSizesForGroup(activeSubtabInfo(groupKey).elementKey).vars"
+                v-for="(sizeVal, sizeName) in fontSizesForGroup(stInfo(st).elementKey).vars"
                 :key="'size-' + sizeName"
                 class="pw-field-row pw-dual-first pw-dual-next"
               >
@@ -380,12 +441,12 @@
                       <label class="pw-field-row-label pw-sizes-label">{{ $t('pw.option.' + sizeName.split('-').pop()) }}</label>
                     </div>
                     <div class="pw-field-row-options pw-group-type-responsive">
-                      <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
+                      <span v-for="bp in [previewBp]" :key="bp" class="pw-element-field">
                         <span class="pw-element-input-wrap">
                           <input
                             type="text"
                             inputmode="decimal"
-                            :step="fontSizesForGroup(activeSubtabInfo(groupKey).elementKey).step || 0.1"
+                            :step="fontSizesForGroup(stInfo(st).elementKey).step || 0.1"
                             min="0.1"
                             max="20"
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
@@ -397,6 +458,19 @@
                         </span>
                         <span class="pw-px-calculator">{{ toPx(getFontSizeOverride(bp, sizeName) || sizeVal[bp], 'rem') }}</span>
                       </span>
+                      <!-- switch the breakpoint (shared with the preview) -->
+                      <span class="pw-pill pw-bp-switch" role="group">
+                        <button
+                          v-for="b in ['default', 'lg', 'xl']"
+                          :key="'sw-' + b"
+                          type="button"
+                          class="pw-tool"
+                          :title="bpLabel(b)"
+                          :aria-label="bpLabel(b)"
+                          :aria-pressed="previewBp === b ? 'true' : 'false'"
+                          @click="previewBp = b"
+                        ><k-icon :type="bpIcon(b)" /></button>
+                      </span>
                     </div>
                   </span>
                 </div>
@@ -407,6 +481,9 @@
             <div v-if="fieldGroup.header" :key="'ge-' + gIdx" class="pw-group-end"></div>
           </template>
           </template>
+            </div>
+          </section>
+          </template>
         </div>
     </section>
   </div>
@@ -415,6 +492,12 @@
 <script>
 export default {
   props: {
+    // themes to offer: default + the variants switched on in the settings
+    themes: { type: Array, default: () => ['default', 'variant', 'variant2', 'variant3'] },
+    // element chosen in the header's select (Overview)
+    selectedElement: { type: String, default: null },
+    // the elements tab is showing: its previews appear in the sidebar
+    previewActive: { type: Boolean, default: false },
     elementDefaults: {
       type: Object,
       default: () => ({}),
@@ -459,6 +542,10 @@ export default {
   data() {
     return {
       activeElement: null,
+      // breakpoint shown in the preview sidebar
+      previewBp: 'xl',
+      // theme whose colours the colour rows show
+      colorTheme: 'default',
       openSections: {},
       resetFields: new Set(),
     };
@@ -476,6 +563,19 @@ export default {
           if (keys.length) this.activeElement = keys[0];
         }
       },
+    },
+    themes(list) {
+      if (!list.includes(this.colorTheme)) this.colorTheme = 'default';
+    },
+    selectedElement: {
+      immediate: true,
+      handler(key) {
+        if (key && key !== this.activeElement) this.activeElement = key;
+      },
+    },
+    activeElement: {
+      immediate: true,
+      handler(key) { this.$emit('update:selectedElement', key); },
     },
   },
   computed: {
@@ -640,9 +740,15 @@ export default {
       return groups;
     },
 
+    // option label from pagewizard's pw.option.* (e.g. uppercase → "Uppercase"), else the value
+    optionText(value) {
+      const key = 'pw.option.' + value;
+      const t = this.$t(key);
+      return t && t !== key ? t : value;
+    },
     filteredOptions(varName, options) {
       if (!varName.endsWith('-font-weight')) {
-        return options.map(o => ({ value: o, text: o }));
+        return options.map(o => ({ value: o, text: this.optionText(o) }));
       }
       const prefix = varName.replace('-font-weight', '');
       const fontFamilyVar = prefix + '-font-family';
@@ -972,18 +1078,36 @@ export default {
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
-      // Parent tabs
-      for (const st of this.elementSubtabs(groupKey)) {
-        const prefix = hasChild ? '<strong>' + this.groupLabel(groupKey) + ':</strong> ' : '';
-        result.push({ key: groupKey + ':' + st, label: prefix + tabLabels[st], elementKey: groupKey, category: st });
-      }
-      // Child tabs
-      if (hasChild) {
-        for (const st of this.elementSubtabs(childKey)) {
-          result.push({ key: childKey + ':' + st, label: '<strong>' + this.groupLabel(childKey) + ':</strong> ' + tabLabels[st], elementKey: childKey, category: st });
-        }
+      // With a child element (quote + cite, media + caption) each part gets
+      // its own sub-heading (partLabel on its first section)
+      const parts = hasChild ? [groupKey, childKey] : [groupKey];
+      for (const elementKey of parts) {
+        this.elementSubtabs(elementKey).forEach((st, i) => {
+          result.push({
+            key: elementKey + ':' + st,
+            label: tabLabels[st],
+            elementKey,
+            category: st,
+            partLabel: hasChild && i === 0 ? this.partLabel(elementKey) : null,
+          });
+        });
       }
       return result;
+    },
+    partLabel(key) {
+      const tKey = 'prw.elementpart.' + key;
+      const t = this.$t(tKey);
+      return (t && t !== tKey) ? t : this.groupLabel(key);
+    },
+    bpIcon(bp) {
+      return { default: 'mobile', lg: 'tablet', xl: 'display' }[bp];
+    },
+    bpLabel(bp) {
+      return { default: this.$t('prw.label.mobile'), lg: this.$t('prw.label.tablet'), xl: this.$t('prw.label.desktop') }[bp];
+    },
+    // field group, category and element of one card (former subtab)
+    stInfo(st) {
+      return { group: this.groups[st.elementKey], category: st.category, elementKey: st.elementKey };
     },
     activeSubtabInfo(groupKey) {
       const tabs = this.combinedSubtabs(groupKey);
@@ -1314,7 +1438,36 @@ export default {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   margin-bottom: var(--spacing-6);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* In the preview sidebar: one breakpoint at a time, the themes below each other */
+/* theme pill in the preview a little smaller (more specific than .pw-pill) */
+.pw-pill.pw-preview-theme {
+  --tool-size: 24px;
+}
+.pw-preview-theme .pw-tool {
+  font-size: var(--text-xs);
+  padding-inline: var(--spacing-2);
+}
+/* devices on the right of the theme switch */
+.pw-element-preview-side .pw-preview-switches .pw-bp-switch {
+  order: 1;
+}
+.pw-element-preview-side .pw-preview-switches {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+}
+.pw-element-preview-side .pw-element-preview {
+  grid-template-columns: 1fr;
+  margin-bottom: 0;
+}
+/* button samples centred in their theme field */
+.pw-element-preview-side .pw-element-preview-themed .pw-element-preview-col {
+  align-items: center;
 }
 
 .pw-element-preview-col {

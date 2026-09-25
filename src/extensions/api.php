@@ -49,6 +49,41 @@ return [
 				return ['success' => true, 'results' => $results];
 			}
 		],
+		// How often each block type is used: top-level blocks of all block (and
+		// layout) fields of the site and every page incl. drafts, default language
+		// only so translations do not count twice
+		[
+			'pattern' => 'projectwizard/blocks/usage',
+			'action'  => function () {
+				$kirby  = kirby();
+				$lang   = $kirby->multilang() ? $kirby->defaultLanguage()->code() : null;
+				$counts = array_fill_keys(array_keys(ProjectConfig::detectBlocks()), 0);
+
+				$countBlocks = function (array $blocks) use (&$counts): void {
+					foreach ($blocks as $block) {
+						$type = is_array($block) ? ($block['type'] ?? null) : null;
+						if ($type !== null && isset($counts[$type])) $counts[$type]++;
+					}
+				};
+
+				foreach ([$kirby->site(), ...$kirby->site()->index(true)] as $model) {
+					foreach ($model->content($lang)->toArray() as $value) {
+						if (!is_string($value) || !str_contains($value, '"type"')) continue;
+						$data = json_decode($value, true);
+						if (!is_array($data)) continue;
+						foreach ($data as $entry) {
+							// layout field: rows → columns → blocks
+							if (is_array($entry) && isset($entry['columns'])) {
+								foreach ($entry['columns'] as $column) $countBlocks($column['blocks'] ?? []);
+							}
+						}
+						$countBlocks($data);
+					}
+				}
+
+				return $counts;
+			}
+		],
 		// List all detected blocks with their defaults and current overrides
 		[
 			'pattern' => 'projectwizard/blocks',
@@ -74,6 +109,7 @@ return [
 				return [
 					'blocks'       => $blocks,
 					'activeBlocks' => $activeBlocks,
+					'activeVariants' => ProjectConfig::activeVariants(),
 				];
 			}
 		],
@@ -111,7 +147,7 @@ return [
 			'pattern' => 'projectwizard/blocks/active',
 			'method'  => 'GET',
 			'action'  => function () {
-				return ['blocks' => ProjectConfig::activeBlocks()];
+				return ['blocks' => ProjectConfig::activeBlocks(), 'variants' => ProjectConfig::activeVariants()];
 			}
 		],
 		[
@@ -121,8 +157,9 @@ return [
 				$data = kirby()->request()->body()->toArray();
 				$blocks = $data['blocks'] ?? [];
 				$result = ProjectConfig::activeBlocks($blocks);
+				$variants = isset($data['variants']) ? ProjectConfig::activeVariants($data['variants']) : ProjectConfig::activeVariants();
 				SetupWizard::triggerProjectbuilder();
-				return ['blocks' => $result];
+				return ['blocks' => $result, 'variants' => $variants];
 			}
 		],
 		// Get full stored config

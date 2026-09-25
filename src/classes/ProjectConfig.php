@@ -203,22 +203,42 @@ class ProjectConfig
 	}
 
 	/**
-	 * Get/set the active blocks list.
+	 * Get/set the active blocks list (blocks.json → "blocks").
 	 */
 	public static function activeBlocks(?array $blocks = null): array
 	{
+		if ($blocks !== null) self::writeBlocksFile(['blocks' => array_values($blocks)]);
+		return self::readBlocksFile()['blocks'] ?? [];
+	}
+
+	/**
+	 * Get/set the active theme variants (blocks.json → "variants"); "default"
+	 * is always on and not stored. Without a setting: variant + variant2.
+	 */
+	public static function activeVariants(?array $variants = null): array
+	{
+		$all = ['variant', 'variant2', 'variant3'];
+		if ($variants !== null) self::writeBlocksFile(['variants' => array_values(array_intersect($all, $variants))]);
+		$stored = self::readBlocksFile()['variants'] ?? ['variant', 'variant2'];
+		return array_values(array_intersect($all, $stored));
+	}
+
+	private static function readBlocksFile(): array
+	{
 		$path = self::configDir() . '/blocks.json';
-		if ($blocks !== null) {
-			$dir = self::configDir();
-			if (!is_dir($dir)) mkdir($dir, 0755, true);
-			file_put_contents($path, json_encode(
-				['blocks' => $blocks],
-				JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-			));
-		}
 		if (!file_exists($path)) return [];
-		$data = json_decode(file_get_contents($path), true);
-		return $data['blocks'] ?? [];
+		return json_decode(file_get_contents($path), true) ?: [];
+	}
+
+	// merges into blocks.json, so blocks and variants do not overwrite each other
+	private static function writeBlocksFile(array $data): void
+	{
+		$dir = self::configDir();
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($dir . '/blocks.json', json_encode(
+			array_merge(self::readBlocksFile(), $data),
+			JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+		));
 	}
 
 	/**

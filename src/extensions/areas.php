@@ -35,15 +35,6 @@ if (SetupWizard::isNeeded()) {
 
 $areas = [];
 
-// Divider before Project Wizard section
-$areas['pw-divider'] = [
-	'label'    => '',
-	'icon'     => 'blank',
-	'menu'     => true,
-	'link'     => false,
-	'disabled' => true,
-];
-
 // Detect blocks for views + menu entries (only activated blocks)
 $allBlocks  = ProjectConfig::detectBlocks();
 $active     = ProjectConfig::activeBlocks();
@@ -90,7 +81,8 @@ foreach ($blocks as $blockType => $info) {
 	$areas['pw-block-' . $slug] = [
 		'label' => $label,
 		'icon'  => $info['icon'] ?? 'box',
-		'menu'  => true,
+		// reached via the "Blocks" dropdown in the wizard's header, not the panel menu
+		'menu'  => false,
 		'link'  => 'projectwizard/block/' . $blockType,
 		'views' => [
 			[

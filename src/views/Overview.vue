@@ -1,9 +1,162 @@
 <template>
-  <k-panel-inside class="pw-wizard">
-    <k-header>
-      {{ blockType ? blockLabel(blockType) : $t('prw.area.title') }}
-      <template v-if="isDirty" #buttons>
-        <div class="k-form-controls">
+  <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'">
+    <!-- Header in Kirby's topbar (like kirby-explorer): tabs as a pill, save buttons -->
+    <pw-portal to=".pw-wizard .k-topbar">
+      <div class="pw-topbar">
+        <!-- Main navigation: the same on the global view and on every block view -->
+        <div v-if="!loading" class="pw-pill pw-tabs" role="group">
+          <!-- Elements: the elements (Kirby's black menu, like kirby-explorer) -->
+          <div class="pw-tab-menu">
+            <button
+              type="button"
+              class="pw-tool pw-tab"
+              aria-haspopup="menu"
+              :aria-pressed="isGlobalTab('elements', 'elementsGeneral') ? 'true' : 'false'"
+              @click="$refs.elementsMenu.toggle()"
+            >
+              <!-- shows the chosen element while the elements are open -->
+              <k-icon :type="elementsButtonIcon" />
+              <span class="pw-tab-text">{{ elementsButtonLabel }}</span>
+              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+            </button>
+            <k-dropdown-content ref="elementsMenu" align-x="start">
+              <nav class="k-navigate">
+                <button
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  data-has-icon="true"
+                  :aria-current="isGlobalTab('elementsGeneral') ? 'true' : undefined"
+                  @click="$refs.elementsMenu.close(); openGlobal('elementsGeneral')"
+                >
+                  <span class="k-button-icon"><k-icon type="layers" /></span>
+                  <span class="k-button-text">{{ $t('prw.tab.elementsGeneral') }}</span>
+                </button>
+                <hr />
+                <button
+                  v-for="option in elementOptions"
+                  :key="option.value"
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  data-has-icon="true"
+                  :aria-current="isGlobalTab('elements') && selectedElement === option.value ? 'true' : undefined"
+                  @click="$refs.elementsMenu.close(); selectedElement = option.value; openGlobal('elements', option.value)"
+                >
+                  <span class="k-button-icon"><k-icon :type="option.icon" /></span>
+                  <span class="k-button-text">{{ option.text }}</span>
+                </button>
+              </nav>
+            </k-dropdown-content>
+          </div>
+        </div>
+
+        <!-- Blocks: its own group -->
+        <div v-if="!loading" class="pw-pill" role="group">
+            <!-- Blocks: general settings, then the activated blocks -->
+            <div class="pw-tab-menu">
+              <button
+                type="button"
+                class="pw-tool pw-tab"
+                aria-haspopup="menu"
+                :aria-pressed="isGlobalTab('blocks') || activeTab !== 'global' ? 'true' : 'false'"
+                @click="$refs.blocksMenu.toggle(); loadBlockUsage()"
+              >
+                <!-- shows the chosen block on a block view -->
+                <k-icon :type="activeTab !== 'global' ? (currentBlockEntry && currentBlockEntry.icon) || 'box' : 'box'" />
+                <span class="pw-tab-text">{{ activeTab !== 'global' ? blockLabel(activeTab) : $t('prw.tab.blocks') }}</span>
+                <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+              </button>
+              <k-dropdown-content ref="blocksMenu" align-x="start">
+                <nav class="k-navigate">
+                  <button
+                    type="button"
+                    class="k-dropdown-item k-button pw-menu-item"
+                    data-has-text="true"
+                    data-has-icon="true"
+                    :aria-current="isGlobalTab('blocks') ? 'true' : undefined"
+                    @click="$refs.blocksMenu.close(); openGlobal('blocks')"
+                  >
+                    <span class="k-button-icon"><k-icon type="box" /></span>
+                    <span class="k-button-text">{{ $t('prw.tab.blocks.general') }}</span>
+                  </button>
+                  <!-- the activated blocks, each opens its own settings view -->
+                  <template v-if="activeBlockEntries.length">
+                    <hr />
+                    <button
+                      v-for="entry in activeBlockEntries"
+                      :key="entry.blockType"
+                      type="button"
+                      class="k-dropdown-item k-button pw-menu-item"
+                      data-has-text="true"
+                      data-has-icon="true"
+                      :aria-current="activeTab === entry.blockType ? 'true' : undefined"
+                      @click="$refs.blocksMenu.close(); $go('projectwizard/block/' + entry.blockType)"
+                    >
+                      <span class="k-button-icon"><k-icon :type="entry.icon || 'box'" /></span>
+                      <span class="k-button-text">
+                        {{ blockLabel(entry.blockType) }}
+                        <!-- how often the block is used in the project, like the counts in kirby-explorer -->
+                        <span v-if="blockUsage[entry.blockType] !== undefined" class="pw-menu-count">{{ blockUsage[entry.blockType] }}</span>
+                      </span>
+                    </button>
+                  </template>
+                </nav>
+              </k-dropdown-content>
+            </div>
+        </div>
+
+        <!-- right side: AI and settings -->
+        <div class="pw-topbar-end">
+        <!-- Cog: global, header, footer, fonts and AI, then the block settings -->
+        <div v-if="!loading" class="pw-pill" role="group">
+          <div class="pw-tab-menu">
+            <button
+              type="button"
+              class="pw-tool"
+              aria-haspopup="menu"
+              :title="$t('prw.tab.settings')"
+              :aria-label="$t('prw.tab.settings')"
+              :aria-pressed="isGlobalTab(...projectMenuTabs, 'settings') ? 'true' : 'false'"
+              @click="$refs.settingsMenu.toggle()"
+            >
+              <k-icon type="cog" />
+              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+            </button>
+            <k-dropdown-content ref="settingsMenu" align-x="end">
+              <nav class="k-navigate">
+                <button
+                  v-for="tab in projectMenuTabs.map(key => globalTabs.find(t => t.key === key)).filter(Boolean)"
+                  :key="tab.key"
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  data-has-icon="true"
+                  :aria-current="isGlobalTab(tab.key) ? 'true' : undefined"
+                  @click="$refs.settingsMenu.close(); openGlobal(tab.key)"
+                >
+                  <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
+                  <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+                </button>
+                <hr />
+                <button
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  data-has-icon="true"
+                  :aria-current="isGlobalTab('settings') ? 'true' : undefined"
+                  @click="$refs.settingsMenu.close(); openGlobal('settings')"
+                >
+                  <span class="k-button-icon"><k-icon type="cog" /></span>
+                  <span class="k-button-text">{{ $t('prw.tab.settings') }}</span>
+                </button>
+              </nav>
+            </k-dropdown-content>
+          </div>
+        </div>
+        </div>
+
+        <div v-if="isDirty" class="k-form-controls pw-topbar-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
               :text="$t('discard')"
@@ -26,49 +179,32 @@
             />
           </div>
         </div>
-      </template>
-    </k-header>
-
-    <!-- Kirby-native tab navigation (global view) -->
-    <nav v-if="!loading && activeTab === 'global'" class="k-tabs k-model-tabs">
-      <button
-        v-for="tab in globalTabs"
-        :key="tab.key"
-        type="button"
-        class="k-tabs-button k-button"
-        :aria-current="globalActiveTab === tab.key ? 'true' : null"
-        data-has-icon="true"
-        data-has-text="true"
-        data-variant="dimmed"
-        @click="globalActiveTab = tab.key"
-      >
-        <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
-        <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
-      </button>
-    </nav>
-
-    <!-- Kirby-native tab navigation (per-block view) -->
-    <nav v-if="!loading && activeTab !== 'global'" class="k-tabs k-model-tabs">
-      <button
-        v-for="tab in blockTabs(activeTab)"
-        :key="tab.key"
-        type="button"
-        class="k-tabs-button k-button"
-        :aria-current="blockViewTab === tab.key ? 'true' : null"
-        data-has-icon="true"
-        data-has-text="true"
-        data-variant="dimmed"
-        @click="blockViewTab = tab.key"
-      >
-        <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
-        <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
-      </button>
-    </nav>
-
+      </div>
+    </pw-portal>
 
     <div v-if="loading" class="pw-wizard-loading">{{ $t('loading') }} …</div>
 
-    <div v-else class="pw-wizard-content">
+    <!-- Two columns while the preview is on: settings 2/3, preview 1/3.
+         The previews are moved into the right column via pw-portal. -->
+    <div v-else class="pw-wizard-columns">
+    <div class="pw-wizard-content">
+
+        <!-- Block view: the tabs of this block (the header names the block) -->
+        <div v-if="!loading && activeTab !== 'global'" class="pw-page-heading-row">
+          <div v-if="!loading && activeTab !== 'global'" class="pw-pill pw-tabs" role="group">
+            <button
+              v-for="tab in blockTabs(activeTab)"
+              :key="tab.key"
+              type="button"
+              class="pw-tool pw-tab"
+              :aria-pressed="blockViewTab === tab.key ? 'true' : 'false'"
+              @click="blockViewTab = tab.key"
+            >
+              <k-icon :type="tab.icon" />
+              <span class="pw-tab-text">{{ $t('prw.tab.' + tab.key) }}</span>
+            </button>
+          </div>
+        </div>
 
         <!-- ==================== Global Settings ==================== -->
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
@@ -76,25 +212,70 @@
           <!-- Blocks -->
           <!-- Settings -->
           <div v-show="globalActiveTab === 'settings'" class="pw-wizard-global-content">
+            <!-- theme variants that can be chosen in the blocks ("default" always on) -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row"><h3 class="pw-card-heading">{{ $t('prw.label.variants') }}</h3></div>
+              <div class="pw-card pw-field-table">
+                <div v-for="variant in ['variant', 'variant2', 'variant3']" :key="variant" class="pw-field-row">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('pw.option.' + variant) }}</label>
+                      </div>
+                      <div class="pw-field-row-options">
+                        <k-toggles-input
+                          :value="activeVariants.includes(variant) ? 'true' : 'false'"
+                          :options="[{ value: 'true', text: $t('pw.option.enabled') }, { value: 'false', text: $t('pw.option.disabled') }]"
+                          :grow="false"
+                          :required="true"
+                          @input="toggleVariant(variant, $event === 'true')"
+                        />
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <pw-global-elements
               :blocks="blocks"
               @toggle="toggleBlock($event.blockType, $event.checked)"
             />
           </div>
 
+          <!-- Project → General: the page background -->
+          <div v-show="globalActiveTab === 'general'" class="pw-wizard-global-content">
+            <pw-global-navigation
+              :nav-defaults="globalDefaults"
+              :nav-overrides="globalOverrides"
+              :saved-overrides="originalGlobalOverrides"
+              :discard-key="discardKey"
+              :fonts="fontsData"
+              :body-default-font="bodyDefaultFont"
+              @update:overrides="onGlobalOverridesUpdate"
+              :show-only="['body-background']"
+              :vars-only="true"
+              :hide-section-headers="true"
+            />
+          </div>
+
           <!-- Blocks -->
           <div v-show="globalActiveTab === 'blocks'" class="pw-wizard-global-content">
             <!-- Block Preview -->
-            <div class="pw-block-preview-body" :style="blockPreviewBodyStyle">
-                  <div class="pw-block-preview-row">
-                    <div v-for="theme in ['default', 'variant', 'variant2', 'variant3']" :key="theme" class="pw-block-preview" :style="blockPreviewStyle(theme)">
-                      <p :style="blockPreviewElementStyle('tagline', theme)">{{ $t('prw.preview.tagline') }}</p>
-                      <h2 :style="blockPreviewElementStyle('heading', theme)">{{ $t('prw.preview.heading') }}</h2>
-                      <p :style="blockPreviewElementStyle('editor', theme)">{{ $t('prw.preview.text.before') }} <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
-                      <a :class="'pw-preview-btn-' + theme" :style="blockPreviewButtonStyle(theme, '')">{{ $t('prw.preview.button') }}</a>
-                    </div>
-                  </div>
-            </div>
+            <pw-portal to=".pw-wizard .pw-preview-column">
+              <div v-show="activeTab === 'global' && globalActiveTab === 'blocks'">
+                <div class="pw-block-preview-body" :style="blockPreviewBodyStyle">
+                      <div class="pw-block-preview-row">
+                        <div v-for="theme in themes" :key="theme" class="pw-block-preview" :style="blockPreviewStyle(theme)">
+                          <p :style="blockPreviewElementStyle('tagline', theme)">{{ $t('prw.preview.tagline') }}</p>
+                          <h2 :style="blockPreviewElementStyle('heading', theme)">{{ $t('prw.preview.heading') }}</h2>
+                          <p :style="blockPreviewElementStyle('editor', theme)">{{ $t('prw.preview.text.before') }} <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
+                          <a :class="'pw-preview-btn-' + theme" :style="blockPreviewButtonStyle(theme, '')">{{ $t('prw.preview.button') }}</a>
+                        </div>
+                      </div>
+                </div>
+              </div>
+            </pw-portal>
 
             <!-- Layout / Colors subtabs -->
             <div class="pw-element-subtabs">
@@ -124,26 +305,15 @@
               :fonts="fontsData"
               :body-default-font="bodyDefaultFont"
               @update:overrides="onGlobalOverridesUpdate"
-              :show-only="['body-background']"
+              :show-only="[]"
               :show-colors="true"
               :hide-section-headers="true"
             />
           </div>
 
-          <!-- Fonts -->
-          <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
-            <!-- Font Preview -->
-            <div class="pw-default-font-preview" :style="defaultFontPreviewStyle">{{ $t('prw.preview.font') }}</div>
-
-            <!-- Subtabs -->
-            <div class="pw-element-subtabs">
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (fontsSubtab || 'default') === 'default' }" @click="fontsSubtab = 'default'">{{ $t('prw.subtab.default-font') }}</button>
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'installed' }" @click="fontsSubtab = 'installed'">{{ $t('prw.subtab.installed-fonts') }}</button>
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'add' }" @click="fontsSubtab = 'add'">{{ $t('prw.subtab.add-font') }}</button>
-            </div>
-
+          <!-- Elements → General: the default font (elements set to "Default" use it) -->
+          <div v-show="globalActiveTab === 'elementsGeneral'" class="pw-wizard-global-content">
             <pw-global-navigation
-              v-show="(fontsSubtab || 'default') === 'default'"
               :nav-defaults="globalDefaults"
               :nav-overrides="globalOverrides"
               :fonts="fontsData"
@@ -152,6 +322,55 @@
               :show-only="['font-family-default']"
               :hide-section-headers="true"
             />
+          </div>
+
+          <!-- Fonts -->
+          <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
+            <!-- Font Preview (in the preview sidebar) -->
+            <pw-portal to=".pw-wizard .pw-preview-column">
+              <div v-show="activeTab === 'global' && ['fonts', 'elementsGeneral'].includes(globalActiveTab)">
+                <!-- which font to preview: the default font or any installed one -->
+                <div class="pw-pill pw-font-preview-select" role="group">
+                  <div class="pw-tab-menu">
+                    <button
+                      type="button"
+                      class="pw-tool pw-tab"
+                      aria-haspopup="menu"
+                      @click="$refs.fontPreviewMenu.toggle()"
+                    >
+                      <k-icon type="title" />
+                      <span class="pw-tab-text">{{ previewFontFamily }}</span>
+                      <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+                    </button>
+                    <k-dropdown-content ref="fontPreviewMenu" align-x="center">
+                      <nav class="k-navigate">
+                        <button
+                          v-for="font in installedFonts"
+                          :key="font.family"
+                          type="button"
+                          class="k-dropdown-item k-button pw-menu-item"
+                          data-has-text="true"
+                          :aria-current="previewFontFamily === font.family ? 'true' : undefined"
+                          @click="previewFont = font.family; $refs.fontPreviewMenu.close()"
+                        >
+                          <span class="k-button-text">{{ font.family === bodyDefaultFont ? $t('prw.label.defaultFont', { font: font.family }) : font.family }}</span>
+                        </button>
+                      </nav>
+                    </k-dropdown-content>
+                  </div>
+                </div>
+                <div class="pw-default-font-preview" :style="previewFontStyle">
+                  <p v-for="size in ['large', 'medium', 'small']" :key="size" :data-size="size">{{ $t('prw.preview.font') }}</p>
+                </div>
+              </div>
+            </pw-portal>
+
+            <!-- Subtabs -->
+            <div class="pw-element-subtabs">
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'installed' }" @click="fontsSubtab = 'installed'">{{ $t('prw.subtab.installed-fonts') }}</button>
+              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'add' }" @click="fontsSubtab = 'add'">{{ $t('prw.subtab.add-font') }}</button>
+            </div>
+
             <pw-global-font-manager
               v-show="fontsSubtab === 'installed'"
               :fonts="fontsData"
@@ -169,6 +388,9 @@
           <!-- Elements -->
           <div v-show="globalActiveTab === 'elements'" class="pw-wizard-global-content">
             <pw-global-elements-styles
+              :preview-active="activeTab === 'global' && globalActiveTab === 'elements'"
+              :themes="themes"
+              :selected-element.sync="selectedElement"
               :element-defaults="elementDefaults"
               :element-overrides="elementOverrides"
               :saved-overrides="originalElementOverrides"
@@ -550,6 +772,25 @@
         </div>
 
     </div>
+    <aside class="pw-preview-column">
+      <!-- collapsed: an eye at the height of the menu's search button, opens the preview -->
+      <k-button
+        v-if="!showPreview"
+        class="pw-preview-open"
+        icon="preview"
+        :title="$t('expand')"
+        @click="togglePreview"
+      />
+    </aside>
+    <!-- Collapse/expand the preview sidebar, like the arrow of Kirby's menu -->
+    <k-button
+      class="pw-preview-toggle"
+      :icon="showPreview ? 'angle-right' : 'angle-left'"
+      :title="showPreview ? $t('collapse') : $t('expand')"
+      size="xs"
+      @click="togglePreview"
+    />
+    </div>
   </k-panel-inside>
 </template>
 
@@ -565,15 +806,25 @@ export default {
     return {
       loading: true,
       blockPreviewOpen: true,
+      // element chosen in the header dropdown (tab "Elements")
+      selectedElement: (() => { try { const e = sessionStorage.getItem('pw-wizard-element'); sessionStorage.removeItem('pw-wizard-element'); return e; } catch (e) { return null; } })(),
+      // font shown in the fonts preview (null = the default font)
+      previewFont: null,
+      // block type → number of uses in the project (loaded when the blocks dropdown opens)
+      blockUsage: {},
+      showPreview: (() => { try { return localStorage.getItem('pw-wizard-preview') !== 'off'; } catch (e) { return true; } })(),
       blocksSubtab: 'layout',
       discardKey: 0,
-      fontsSubtab: 'default',
+      fontsSubtab: 'installed',
       headerPill: 'general',
       headerSubtab: 'layout',
       blocks: [],
       activeBlocks: [],
+      // theme variants switched on (besides "default"); variant3 off by default
+      activeVariants: ['variant', 'variant2'],
+      originalActiveVariants: ['variant', 'variant2'],
       activeTab: 'global',
-      globalActiveTab: 'blocks',
+      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'elements'; } catch (e) { return 'elements'; } })(),
       blockConfigs: {},
       blockOverrides: {},
       originalOverrides: {},
@@ -611,12 +862,58 @@ export default {
     };
   },
   computed: {
+    // tabs of the current view (global or block) for the header
+    // top-level elements for the header dropdown (child elements like cite/caption
+    // are edited together with their parent) — available on every view
+    elementOptions() {
+      const children = ['cite', 'caption'];
+      return Object.entries(this.elementDefaults || {})
+        .filter(([key, val]) => val && typeof val === 'object' && (val.vars || val.colors) && !children.includes(key))
+        .map(([key]) => {
+          const tKey = 'prw.elementgroup.' + key;
+          const text = this.$t(tKey);
+          const icons = { heading: 'title', tagline: 'tag', editor: 'text', quote: 'quote', button: 'url', breadcrumb: 'angle-right', media: 'images' };
+          return { value: key, text: text && text !== tKey ? text : key, icon: icons[key] || 'layers' };
+        });
+    },
+    elementsButtonIcon() {
+      if (this.isGlobalTab('elements')) {
+        const element = this.elementOptions.find(o => o.value === this.selectedElement);
+        if (element) return element.icon;
+      }
+      return 'layers';
+    },
+    elementsButtonLabel() {
+      if (this.isGlobalTab('elementsGeneral')) return this.$t('prw.tab.elementsGeneral');
+      if (this.isGlobalTab('elements')) {
+        const element = this.elementOptions.find(o => o.value === this.selectedElement);
+        if (element) return element.text;
+      }
+      return this.$t('prw.tab.elements');
+    },
+    // themes shown in the wizard: "default" plus the switched-on variants
+    themes() {
+      return ['default', ...this.activeVariants];
+    },
+    // global tabs collected in the cog dropdown (above the block settings), AI only with contentwizard
+    projectMenuTabs() {
+      return ['general', 'header', 'footer', 'fonts', ...(this.hasAiTab ? ['ai'] : [])];
+    },
+    currentBlockEntry() {
+      return this.blocks.find(b => b.blockType === this.activeTab) || null;
+    },
+    // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
+    activeBlockEntries() {
+      return this.blocks.filter(b => b.active && b.blockType.startsWith('pw'));
+    },
     hasAiTab() {
       return !!this.aiForm || !!(this.aiSecrets && this.aiSecrets.length);
     },
     globalTabs() {
       const tabs = [
-        { key: 'blocks', icon: 'prw-blocks' },
+        { key: 'general', icon: 'home' },
+        { key: 'elementsGeneral', icon: 'layers' },
+        { key: 'blocks', icon: 'box' },
         { key: 'elements', icon: 'layers' },
         { key: 'fonts', icon: 'title' },
         { key: 'header', icon: 'prw-header' },
@@ -624,7 +921,7 @@ export default {
       ];
       // AI defaults — only when kirby-contentwizard is installed
       if (this.hasAiTab) tabs.push({ key: 'ai', icon: 'ai' });
-      tabs.push({ key: 'settings', icon: 'settings' });
+      tabs.push({ key: 'settings', icon: 'cog' });
       return tabs;
     },
     bodyDefaultFont() {
@@ -692,20 +989,27 @@ export default {
       }
       return { family, category };
     },
-    defaultFontPreviewStyle() {
-      const family = this.bodyDefaultFont;
-      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
-      let category = 'sans-serif';
-      for (const f of Object.values(allFonts)) {
-        if (f.family === family) { category = f.category || 'sans-serif'; break; }
+    // installed fonts (built-in and uploaded), each family once, sorted
+    installedFonts() {
+      const all = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
+      const seen = new Map();
+      for (const f of Object.values(all)) {
+        if (f && f.family && !seen.has(f.family)) seen.set(f.family, f);
       }
-      return { fontFamily: "'" + family + "', " + category };
+      return [...seen.values()].sort((a, b) => a.family.localeCompare(b.family));
+    },
+    previewFontFamily() {
+      return this.previewFont || this.bodyDefaultFont;
+    },
+    previewFontStyle() {
+      const font = this.installedFonts.find(f => f.family === this.previewFontFamily);
+      return { fontFamily: "'" + this.previewFontFamily + "', " + (font?.category || 'sans-serif') };
     },
     isDirty() {
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
         if (tab === 'settings') return !!this.dirtyTabs['global'];
-        if (tab === 'blocks' || tab === 'fonts') return !!this.dirtyTabs['global-settings'];
+        if (['general', 'elementsGeneral', 'blocks', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
         return !!this.dirtyTabs[tab];
       }
       return !!this.dirtyTabs[this.activeTab];
@@ -743,9 +1047,11 @@ export default {
         const res = await this.$api.get('projectwizard/blocks');
         this.blocks = res.blocks || [];
         this.activeBlocks = res.activeBlocks || [];
+        this.activeVariants = res.activeVariants || ['variant', 'variant2'];
+        this.originalActiveVariants = [...this.activeVariants];
 
         this.originalActiveBlocks = [...this.activeBlocks];
-        this.$set(this.snapshots, 'global', JSON.stringify(this.activeBlocks));
+        this.$set(this.snapshots, 'global', this.globalSnapshot());
 
         for (const block of this.blocks) {
           const config = await this.$api.get('projectwizard/block/' + block.blockType);
@@ -962,7 +1268,7 @@ export default {
       } else {
         this.activeBlocks = this.activeBlocks.filter(b => b !== blockType);
       }
-      this.$set(this.dirtyTabs, 'global', JSON.stringify(this.activeBlocks) !== this.snapshots['global']);
+      this.$set(this.dirtyTabs, 'global', this.globalSnapshot() !== this.snapshots['global']);
     },
 
     // --- Global: Settings ---
@@ -1337,13 +1643,49 @@ export default {
     },
 
     // --- Save / Discard ---
+    isGlobalTab(...keys) {
+      return this.activeTab === 'global' && keys.includes(this.globalActiveTab);
+    },
+    // Opens a tab of the global view; from a block view it switches views and
+    // remembers the tab (and element) for the global view to pick up.
+    openGlobal(tab, element = null) {
+      this.globalActiveTab = tab;
+      if (this.activeTab === 'global') return;
+      try {
+        sessionStorage.setItem('pw-wizard-tab', tab);
+        if (element) sessionStorage.setItem('pw-wizard-element', element);
+      } catch (e) {}
+      this.$go('projectwizard');
+    },
+
+    async loadBlockUsage() {
+      try {
+        this.blockUsage = await this.$api.get('projectwizard/blocks/usage');
+      } catch (e) {}
+    },
+
+    globalSnapshot() {
+      return JSON.stringify({ blocks: this.activeBlocks, variants: this.activeVariants });
+    },
+    toggleVariant(variant, on) {
+      const set = new Set(this.activeVariants);
+      on ? set.add(variant) : set.delete(variant);
+      this.activeVariants = ['variant', 'variant2', 'variant3'].filter(v => set.has(v));
+      this.$set(this.dirtyTabs, 'global', this.globalSnapshot() !== this.snapshots['global']);
+    },
+
+    togglePreview() {
+      this.showPreview = !this.showPreview;
+      try { localStorage.setItem('pw-wizard-preview', this.showPreview ? 'on' : 'off'); } catch (e) {}
+    },
+
     async saveCurrentView() {
       const cssBefore = await this.frontendCssVersion();
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
         if (tab === 'settings') {
           await this.saveGlobal();
-        } else if (tab === 'blocks' || tab === 'fonts') {
+        } else if (['general', 'elementsGeneral', 'blocks', 'fonts'].includes(tab)) {
           await this.saveGlobalSettings();
         } else if (tab === 'elements') {
           await this.saveElements();
@@ -1391,11 +1733,12 @@ export default {
         const tab = this.globalActiveTab;
         if (tab === 'settings') {
           this.activeBlocks = [...this.originalActiveBlocks];
+          this.activeVariants = [...this.originalActiveVariants];
           for (const block of this.blocks) {
             block.active = this.activeBlocks.includes(block.blockType);
           }
           this.$set(this.dirtyTabs, 'global', false);
-        } else if (tab === 'blocks' || tab === 'fonts') {
+        } else if (['general', 'elementsGeneral', 'blocks', 'fonts'].includes(tab)) {
           this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
           this.$set(this.dirtyTabs, 'global-settings', false);
         } else if (tab === 'elements') {
@@ -1423,9 +1766,10 @@ export default {
 
     async saveGlobal() {
       try {
-        await this.$api.post('projectwizard/blocks/active', { blocks: this.activeBlocks });
+        await this.$api.post('projectwizard/blocks/active', { blocks: this.activeBlocks, variants: this.activeVariants });
         this.originalActiveBlocks = [...this.activeBlocks];
-        this.$set(this.snapshots, 'global', JSON.stringify(this.activeBlocks));
+        this.originalActiveVariants = [...this.activeVariants];
+        this.$set(this.snapshots, 'global', this.globalSnapshot());
         this.$set(this.dirtyTabs, 'global', false);
         this.$panel.notification.success(this.$t('prw.notify.blocks.success'));
         setTimeout(() => window.location.reload(), 100);
@@ -1496,6 +1840,495 @@ export default {
 </script>
 
 <style>
+/*------------------------------------------------------------------------------------------------
+	Header in Kirby's topbar (same look as kirby-explorer): no breadcrumb,
+	no page heading, the tabs as a pill, save buttons on the right
+------------------------------------------------------------------------------------------------*/
+.pw-wizard .k-topbar-breadcrumb,
+.pw-wizard .k-topbar-spacer {
+  display: none;
+}
+.pw-wizard .k-topbar-signals:empty {
+  display: none;
+}
+.pw-wizard .k-topbar > .pw-portal {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.pw-wizard .k-topbar {
+  padding-inline: var(--spacing-2);
+  margin-inline: calc(var(--spacing-2) * -1);
+  align-items: center;
+  margin-bottom: var(--spacing-6);
+  flex-wrap: nowrap;
+  column-gap: var(--spacing-3);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding-block: var(--spacing-3) var(--spacing-4);
+  margin-top: calc(var(--spacing-3) * -1);
+  background: var(--color-background);
+}
+.pw-wizard .k-topbar::after {
+  content: "";
+  position: absolute;
+  inset-inline: var(--spacing-2);
+  bottom: 0;
+  height: 1px;
+  background: var(--color-border);
+}
+.pw-wizard .k-panel-menu-proxy {
+  margin-inline-end: calc(var(--spacing-2) * -1);
+}
+.pw-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  min-height: var(--height-md, 2.25rem);
+}
+/*------------------------------------------------------------------------------------------------
+	Sections: a heading above a card with rows in Kirby's table look (as a
+	structure field / kirby-explorer's edit view). Shared by all wizard parts:
+	<section class="pw-card-section"><h2 class="pw-card-heading">…</h2>
+	<div class="pw-card pw-field-table"> rows (.pw-field-row) </div></section>
+------------------------------------------------------------------------------------------------*/
+.pw-card-section {
+  margin-bottom: var(--spacing-8);
+}
+/* sub-heading above a group of sections (e.g. "Quote" and "Source") */
+.pw-part-heading {
+  margin-bottom: var(--spacing-4);
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: var(--font-semi);
+  line-height: 1.25;
+}
+.pw-card-section + .pw-part-heading {
+  margin-top: var(--spacing-12);
+}
+/* heading line: the heading, optional switches on the right */
+.pw-card-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+/* like Kirby's field label above a structure field */
+.pw-card-heading {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semi);
+  line-height: var(--leading-normal, 1.5);
+}
+.pw-card {
+  --pw-table-border: var(--table-color-border, light-dark(var(--color-gray-200), var(--color-gray-800)));
+  --pw-table-th-back: var(--table-color-th-back, light-dark(var(--color-gray-100), var(--color-gray-850)));
+  background: var(--item-color-back, var(--color-white));
+  border-radius: var(--rounded);
+  box-shadow: var(--shadow);
+}
+/* no clipping (the reset buttons sit outside): first and last row round
+   the corners themselves */
+.pw-card > :first-child,
+.pw-card > :first-child .pw-field-row-label-col {
+  border-start-start-radius: var(--rounded);
+}
+.pw-card > :first-child {
+  border-start-end-radius: var(--rounded);
+}
+.pw-card > :last-child,
+.pw-card > :last-child .pw-field-row-label-col {
+  border-end-start-radius: var(--rounded);
+}
+.pw-card > :last-child {
+  border-end-end-radius: var(--rounded);
+}
+/* reset: icon only, absolutely placed just outside the row on the right
+   (takes no width from the card) */
+.pw-field-table .pw-field-reset {
+  right: auto;
+  left: calc(100% + var(--spacing-3));
+  --button-color-back: transparent;
+  background: transparent;
+}
+.pw-field-table .pw-field-reset .k-button-text {
+  display: none;
+}
+
+/* rows: label cell on the left (grey, mono), the value flush in the cell */
+.pw-field-table .pw-field-row {
+  position: relative;
+  padding: 0;
+  border-bottom: 1px solid var(--pw-table-border);
+}
+.pw-field-table > .pw-field-row:last-child,
+.pw-field-table > :last-child .pw-field-row:last-child {
+  border-bottom: 0;
+}
+.pw-field-table .pw-field-row > .k-input {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  outline: 0;
+}
+.pw-field-table .pw-field-row-inner {
+  grid-template-columns: 30% 1fr;
+  align-items: stretch;
+  min-height: var(--table-row-height, 38px);
+  padding: 0;
+}
+.pw-field-table .pw-field-row-label-col {
+  padding-inline: var(--table-cell-padding, var(--spacing-3));
+  background: var(--pw-table-th-back);
+  border-inline-end: 1px solid var(--pw-table-border);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--table-color-th-text, var(--color-text-dimmed));
+}
+.pw-field-table .pw-field-row-label,
+.pw-field-table .pw-sizes-toggle {
+  font: inherit;
+  color: inherit;
+}
+.pw-field-table .pw-field-row-options {
+  padding: var(--spacing-1) var(--table-cell-padding, var(--spacing-3));
+}
+/* the edited row is tinted like in the explorer */
+.pw-field-table .pw-field-row:focus-within {
+  background: color-mix(in oklab, var(--color-focus) 10%, transparent);
+}
+.pw-field-table .pw-field-row:focus-within .pw-field-row-label-col {
+  background: color-mix(in oklab, var(--color-focus) 20%, var(--pw-table-th-back));
+}
+/* column headings (Mobile | Tablet | Desktop, themes) as a header row */
+.pw-field-table .pw-group-header {
+  display: grid;
+  grid-template-columns: 30% 1fr;
+  margin: 0;
+  background: var(--pw-table-th-back);
+  border-bottom: 1px solid var(--pw-table-border);
+}
+.pw-field-table .pw-group-header .pw-field-row-label-col {
+  width: auto;
+  background: transparent;
+}
+.pw-field-table .pw-group-header-labels {
+  padding: var(--spacing-2) var(--table-cell-padding, var(--spacing-3));
+}
+/* responsive rows switch the breakpoint in the row, colours the theme in
+   the heading line: no column headings */
+.pw-field-table .pw-group-header:has(.pw-group-type-theme-color),
+.pw-field-table .pw-group-header:has(.pw-group-type-responsive) {
+  display: none;
+}
+.pw-field-table .pw-bp-switch {
+  margin-inline-start: auto;
+}
+.pw-pill.pw-bp-switch {
+  --tool-size: 1.25rem;
+}
+/* more specific than .pw-pill, which sets its own tool size */
+.pw-pill.pw-theme-switch {
+  --tool-size: 22px;
+}
+.pw-theme-switch .pw-tool {
+  font-size: 0.65rem;
+  line-height: 1;
+  padding-inline: var(--spacing-3);
+}
+.pw-bp-switch .pw-tool {
+  padding-inline: var(--spacing-1);
+}
+.pw-bp-switch .k-icon {
+  --icon-size: 16px;
+}
+/* in the rows only the icons: no pill, no button surface; the chosen one
+   in full colour, the others faded */
+.pw-pill.pw-bp-switch {
+  gap: var(--spacing-1);
+  background: transparent;
+  box-shadow: none;
+}
+.pw-bp-switch .pw-tool,
+.pw-bp-switch .pw-tool:hover,
+.pw-bp-switch .pw-tool[aria-pressed="true"],
+.pw-bp-switch .pw-tool[aria-pressed="true"]:hover {
+  background: transparent;
+  color: var(--color-text);
+  font-weight: inherit;
+}
+.pw-bp-switch .pw-tool:not([aria-pressed="true"]) {
+  opacity: 0.3;
+}
+.pw-bp-switch .pw-tool:not([aria-pressed="true"]):hover {
+  opacity: 0.6;
+}
+/* no hover effect on the breakpoint and theme switches */
+.pw-theme-switch .pw-tool:not([aria-pressed="true"]):hover,
+.pw-bp-switch .pw-tool:not([aria-pressed="true"]):hover,
+.pw-preview-bp .pw-tool:not([aria-pressed="true"]):hover {
+  background: var(--color-white);
+  color: var(--color-text);
+}
+.pw-field-table .pw-group-end {
+  display: none;
+}
+
+/* Block view: row with the block tabs above the settings */
+.pw-page-heading-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-3) var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+}
+
+/* the cog follows the main navigation on the left; the save buttons sit on
+   the right, so nothing moves when they appear */
+.pw-topbar-end {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+.pw-topbar-controls {
+  margin-inline-start: auto;
+}
+
+/* Preview column: 1/3 next to the settings while the preview is on,
+   sticky below the header; narrow screens stack it above the settings */
+.pw-wizard-columns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+.pw-preview-column {
+  order: -1;
+  min-width: 0;
+}
+/* hidden when the active tab has no preview (every portal child is hidden by v-show) */
+.pw-preview-column:not(:has(> .pw-portal > :not([style*="display: none"]))),
+.pw-preview-toggle,
+.pw-preview-open {
+  display: none;
+}
+/* previews not moved into the column yet: hidden while the sidebar is collapsed */
+.pw-wizard[data-preview="off"] .pw-wizard-content .pw-element-preview-header,
+.pw-wizard[data-preview="off"] .pw-wizard-content .pw-element-preview,
+.pw-wizard[data-preview="off"] .pw-wizard-content .pw-nav-preview-mobile {
+  display: none !important;
+}
+
+/* Wide screens: the preview is a sidebar over the full height on the right,
+   like Kirby's menu on the left; the main area makes room for it.
+   Collapsed it keeps the width of Kirby's closed menu. */
+@media (min-width: 75rem) {
+  .pw-wizard {
+    --pw-preview-width: calc((100vw - var(--main-start, 0px)) / 3);
+  }
+  .pw-wizard[data-preview="off"] {
+    --pw-preview-width: var(--menu-width-closed);
+  }
+  /* the sidebar is there on every view (collapsed or open) */
+  .pw-wizard .pw-preview-column:not(:has(> .pw-portal > :not([style*="display: none"]))) {
+    display: block;
+  }
+  .pw-wizard .k-panel-main {
+    margin-inline-end: var(--pw-preview-width);
+  }
+  .pw-preview-column {
+    order: 0;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    inset-inline-end: 0;
+    width: var(--pw-preview-width);
+    padding: var(--spacing-6);
+    /* switches at the top: as close to the edge as Kirby's menu items */
+    padding-top: var(--menu-padding, var(--spacing-3));
+    overflow-y: auto;
+    background: var(--menu-color-back);
+    border-inline-start: 1px solid var(--menu-color-border);
+    z-index: 2;
+  }
+  .pw-wizard[data-preview="off"] .pw-preview-column {
+    padding: 0;
+    overflow: hidden;
+  }
+  .pw-wizard[data-preview="off"] .pw-preview-column > .pw-portal {
+    display: none;
+  }
+  /* same place and size as the search button in Kirby's menu */
+  .pw-preview-open {
+    --button-height: var(--menu-button-height);
+    --button-width: var(--menu-button-height);
+    --button-padding: 7px;
+    margin: var(--menu-padding);
+  }
+
+  /* the arrow: a strip along the sidebar's edge, its tab at the top,
+     shown while hovering the sidebar (same as Kirby's menu toggle) */
+  .pw-wizard .pw-preview-toggle,
+  .pw-preview-open {
+    display: flex;
+  }
+  .pw-preview-toggle {
+    --button-align: flex-start;
+    --button-height: 100%;
+    --button-width: var(--menu-toggle-width, 1.25rem);
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: var(--pw-preview-width);
+    align-items: flex-start;
+    border-radius: 0;
+    overflow: visible;
+    opacity: 0;
+    transition: opacity .2s;
+    z-index: 2;
+  }
+  .pw-preview-toggle .k-button-icon {
+    display: grid;
+    place-items: center;
+    height: var(--menu-toggle-height, var(--height));
+    width: var(--menu-toggle-width, 1.25rem);
+    margin-top: var(--menu-padding, var(--spacing-3));
+    border-block: 1px solid var(--menu-color-border);
+    border-inline-start: 1px solid var(--menu-color-border);
+    background: var(--menu-color-back);
+    border-start-start-radius: var(--button-rounded, var(--rounded));
+    border-end-start-radius: var(--button-rounded, var(--rounded));
+  }
+  .pw-wizard-columns:has(.pw-preview-column:hover) .pw-preview-toggle,
+  .pw-preview-toggle:hover,
+  .pw-preview-toggle:focus-visible {
+    opacity: 1;
+  }
+}
+.pw-preview-column .pw-font-preview-select {
+  display: flex;
+  width: fit-content;
+  margin: 0 auto var(--spacing-6);
+}
+.pw-preview-column .pw-default-font-preview {
+  margin-bottom: 0;
+}
+/* in the sidebar the theme tiles sit directly on its background
+   (no page background and block margins around them) */
+.pw-preview-column .pw-block-preview-body {
+  margin-bottom: 0;
+  padding-block: 0 !important;
+  background-color: transparent !important;
+}
+
+/* Pill with the tabs (segmented control, like the explorer) */
+.pw-pill {
+  --tool-size: var(--height-sm, 1.75rem);
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1px;
+  border-radius: var(--rounded);
+  background: var(--color-border);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgb(0 0 0 / 0.08));
+}
+.pw-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  min-width: var(--tool-size);
+  height: var(--tool-size);
+  padding-inline: var(--spacing-3);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  color: var(--color-text);
+  background: var(--color-white);
+}
+.pw-pill > :first-child {
+  border-start-start-radius: var(--rounded);
+  border-end-start-radius: var(--rounded);
+}
+.pw-pill > :last-child {
+  border-start-end-radius: var(--rounded);
+  border-end-end-radius: var(--rounded);
+}
+.pw-tool:hover {
+  background: var(--color-blue-600, #4a8cff);
+  color: var(--color-white);
+}
+.pw-tool[aria-pressed="true"],
+.pw-tool[aria-pressed="true"]:hover {
+  background: light-dark(var(--color-black), var(--color-gray-950));
+  color: var(--color-white);
+  font-weight: var(--font-semi);
+}
+/* Elements tab as a dropdown: the wrapper passes the pill's corners on */
+.pw-pill > :first-child > .pw-tool {
+  border-start-start-radius: var(--rounded);
+  border-end-start-radius: var(--rounded);
+}
+.pw-pill > :last-child > .pw-tool {
+  border-start-end-radius: var(--rounded);
+  border-end-end-radius: var(--rounded);
+}
+.pw-tab-menu {
+  display: flex;
+}
+/* dropdowns like kirby-explorer's: Kirby's padding so the focus outline is
+   not clipped, and the focused item above its neighbour – the outline reaches
+   2px into the next item, whose hover background would paint over it */
+.pw-tab-menu .k-dropdown-content {
+  padding: var(--dropdown-padding, var(--spacing-2));
+  overflow: visible;
+}
+.pw-tab-menu .k-dropdown-item:focus,
+.pw-tab-menu .k-dropdown-item:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+/* dropdown items exactly like kirby-explorer's (Kirby's language dropdown):
+   text left, count right, space for the check mark always reserved */
+.pw-menu-item {
+  --button-height: var(--height-md);
+  width: 100%;
+}
+.pw-menu-item .k-button-text {
+  display: flex;
+  flex-grow: 1;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-6);
+  min-width: 8rem;
+}
+.pw-menu-item:after {
+  content: "✓";
+  padding-inline-start: var(--spacing-1);
+}
+.pw-menu-item:not([aria-current="true"]):after {
+  visibility: hidden;
+}
+.pw-menu-count {
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+  font-variant-numeric: tabular-nums;
+}
+/* the dropdown buttons: small, faded chevron and tighter padding (explorer) */
+.pw-tab-menu > .pw-tool {
+  gap: 2px;
+  padding-inline: var(--spacing-2) var(--spacing-1);
+}
+.pw-tab-menu > .pw-tool .pw-tab-text {
+  margin-inline: var(--spacing-1);
+}
+.pw-tab-menu-chevron {
+  --icon-size: 12px;
+  opacity: 0.6;
+}
+.pw-tool:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
 /* Global px calculator badge */
 .pw-px-calculator {
   font-size: var(--code-inline-font-size);
@@ -1539,7 +2372,6 @@ export default {
   flex-direction: column;
   align-items: flex-start;
   gap: var(--spacing-2);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 [class^="pw-preview-link-"] {
@@ -1562,14 +2394,16 @@ export default {
 }
 
 .pw-default-font-preview {
-  background: #fff;
-  padding: var(--spacing-4) var(--spacing-6);
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #262626;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  color: var(--color-text);
   margin-bottom: var(--spacing-6);
 }
+/* three sizes of the default font */
+.pw-default-font-preview p[data-size="large"]  { font-size: 1.75rem; line-height: 1.2; }
+.pw-default-font-preview p[data-size="medium"] { font-size: 1.25rem; line-height: 1.4; }
+.pw-default-font-preview p[data-size="small"]  { font-size: 1rem;    line-height: 1.6; }
 
 .pw-wizard-content {
 }

@@ -354,6 +354,12 @@ export default {
       type: Boolean,
       default: false,
     },
+    // show the filtered vars of a group without its colours (e.g. only the
+    // page background from the "colors" group)
+    varsOnly: {
+      type: Boolean,
+      default: false,
+    },
     showGroup: {
       type: String,
       default: null,
@@ -406,7 +412,10 @@ export default {
               if (Object.keys(vars).length === 0 && (!val.colors || !this.showColors)) continue;
               filtered.vars = vars;
             }
-            if (val.colors && this.showOnly && !this.showColors) continue;
+            if (val.colors && this.varsOnly) {
+              if (!filtered.vars || Object.keys(filtered.vars).length === 0) continue;
+              delete filtered.colors;
+            } else if (val.colors && this.showOnly && !this.showColors) continue;
             result[key] = filtered;
           } else {
             result[key] = val;
@@ -1042,7 +1051,6 @@ export default {
   display: flex;
   padding: 0 var(--spacing-6);
   margin-bottom: var(--spacing-2);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .pw-nav-preview-items {
@@ -1098,7 +1106,6 @@ export default {
 .pw-nav-preview-mobile {
   margin-bottom: var(--spacing-2);
   max-width: 320px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .pw-nav-preview-mobile-bar {
