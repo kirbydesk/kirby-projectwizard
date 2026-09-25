@@ -218,6 +218,8 @@
 	'prw.color.element-heading-marked-text' => 'Markierter Text',
 	'prw.color.element-heading-marked-background' => 'Markierter Hintergrund',
 	'prw.color.element-heading-flourish-color' => 'Farbe des Zierelements',
+	'prw.prop.marked-line-height' => 'Zeilenhöhe mit Markierung',
+	'prw.prop.marked-radius' => 'Eckenradius Markierung',
 	'prw.prop.flourish-width' => 'Breite',
 	'prw.prop.flourish-height' => 'Höhe',
 	'prw.prop.flourish-margin-top' => 'Außenabstand oben',

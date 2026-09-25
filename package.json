@@ -1,6 +1,6 @@
 {
 	"name": "kirby-projectwizard",
-	"version": "1.0.90",
+	"version": "1.0.91",
 	"devDependencies": {
 		"kirbyup": "^3.4.1"
 	}

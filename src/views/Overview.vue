@@ -1295,6 +1295,7 @@ export default {
 
     // --- Save / Discard ---
     async saveCurrentView() {
+      const cssBefore = await this.frontendCssVersion();
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
         if (tab === 'settings') {
@@ -1314,7 +1315,32 @@ export default {
         await this.saveBlock(this.activeTab);
       }
       // Trigger projectbuilder hook to regenerate tailwind.css
-      try { fetch(window.location.origin, { cache: 'no-store' }); } catch(e) {}
+      try { await fetch(window.location.origin, { cache: 'no-store' }); } catch(e) {}
+      this.reloadFrontend(cssBefore);
+    },
+
+    // Last-Modified of the built frontend CSS (Tailwind rebuilds it in the background)
+    async frontendCssVersion() {
+      try {
+        const res = await fetch(window.panel.urls.site + '/assets/css/site.min.css', { method: 'HEAD', cache: 'no-store' });
+        return res.headers.get('last-modified');
+      } catch (e) {
+        return null;
+      }
+    },
+
+    // Reload open frontend tabs like a module save does (pagewizard's reloadOnSave
+    // listens on this channel) — once the new CSS is built, at most after 3 s.
+    async reloadFrontend(cssBefore) {
+      if (!('BroadcastChannel' in window)) return;
+      for (let waited = 0; waited < 3000; waited += 250) {
+        if ((await this.frontendCssVersion()) !== cssBefore) break;
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+      // Keep the channel open (like pagewizard): closing it right after
+      // postMessage can drop the message before the frontend tab gets it
+      if (!this._frontendChannel) this._frontendChannel = new BroadcastChannel(window.panel.urls.site);
+      this._frontendChannel.postMessage('content/saved');
     },
 
     discardChanges() {

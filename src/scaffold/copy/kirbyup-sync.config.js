@@ -35,5 +35,36 @@ plugins.forEach(dir => {
 	});
 });
 
+// Tailwind only notices changes inside the project. Plugins symlinked from
+// elsewhere (site/plugins/* → e.g. ../pluginsources/*) live outside of it, so
+// the folders Tailwind reads from them (@import src/css, @source snippets and
+// templates) are watched here; a change touches Tailwind's input file, which
+// makes the Tailwind watcher rebuild.
+const projectRoot   = fs.realpathSync(__dirname);
+const tailwindInput = path.join(__dirname, 'storage/temp/tailwind.css');
+let touchTimer = null;
+
+const touchTailwind = (file) => {
+	clearTimeout(touchTimer);
+	touchTimer = setTimeout(() => {
+		if (!fs.existsSync(tailwindInput)) return;
+		const now = new Date();
+		fs.utimesSync(tailwindInput, now, now);
+		console.log(`🎨 Tailwind rebuild: ${file}`);
+	}, 150);
+};
+
+fs.readdirSync(pluginsDir).forEach(dir => {
+	const realPath = fs.realpathSync(path.join(pluginsDir, dir));
+	if (!fs.statSync(realPath).isDirectory()) return;
+	if (realPath.startsWith(projectRoot + path.sep)) return; // inside the project: Tailwind sees it
+
+	['src/css', 'snippets', 'templates'].forEach(sub => {
+		const watchPath = path.join(realPath, sub);
+		if (!fs.existsSync(watchPath)) return;
+		fs.watch(watchPath, { recursive: true }, (event, file) => touchTailwind(path.join(dir, sub, file || '')));
+	});
+});
+
 console.log('\n✓ KirbyUp sync is running');
 console.log('💡 Edit plugin files to trigger rebuild\n');

@@ -218,6 +218,8 @@
 	'prw.color.element-heading-marked-text' => 'Marked Text',
 	'prw.color.element-heading-marked-background' => 'Marked Background',
 	'prw.color.element-heading-flourish-color' => 'Flourish Color',
+	'prw.prop.marked-line-height' => 'Marked Line Height',
+	'prw.prop.marked-radius' => 'Marked Radius',
 	'prw.prop.flourish-width' => 'Width',
 	'prw.prop.flourish-height' => 'Height',
 	'prw.prop.flourish-margin-top' => 'Margin Top',

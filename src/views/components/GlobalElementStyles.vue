@@ -43,7 +43,9 @@
                   </div>
                 </template>
                 <template v-else>
-                  <span class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)" v-html="previewHtml(groupKey, theme)"></span>
+                  <!-- Heading: plain sample (line height) + marked sample (marked line height) -->
+                  <span class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)" v-html="previewHtml(groupKey, theme, groupKey === 'heading')"></span>
+                  <span v-if="groupKey === 'heading'" class="pw-element-preview-text pw-element-preview-marked" :style="previewStyle(groupKey, bp, theme, true)" v-html="previewHtml(groupKey, theme)"></span>
                 </template>
                 <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
                   <span class="pw-element-preview-text" :style="previewStyle(previewChildKey(groupKey), bp, theme)">{{ previewChildText(groupKey) }}</span>
@@ -1000,9 +1002,10 @@ export default {
       const childKey = this.previewChildKey(groupKey);
       return childKey ? this.previewText(childKey) : null;
     },
-    previewHtml(groupKey, theme) {
+    previewHtml(groupKey, theme, plain = false) {
       let text = this.previewText(groupKey);
       if (!text) return '';
+      if (plain) return text.replace(/__\/?marked__/g, '');
       const elDef = this.elementDefaults[groupKey] || {};
       const elOv = this.elementOverrides.global || {};
       // Replace __marked__...__/marked__ with styled span
@@ -1012,6 +1015,10 @@ export default {
         let style = '';
         if (markedTextColor) style += 'color:' + markedTextColor + ';';
         if (markedBgColor) style += 'background:' + markedBgColor + ';';
+        const markedRadius = elOv[groupKey + '-marked-radius'] || elDef.vars?.[groupKey + '-marked-radius']?.value;
+        if (markedRadius) style += 'border-radius:' + markedRadius + ';';
+        // Same box as the frontend ([data-textbackground]): each line keeps its corners
+        style += 'padding:0.05em 0.3em;box-decoration-break:clone;-webkit-box-decoration-break:clone;';
         return style ? '<mark style="' + style + '">' + content + '</mark>' : content;
       });
       return text;
@@ -1147,7 +1154,7 @@ export default {
       }
       return '';
     },
-    previewStyle(groupKey, bp, theme) {
+    previewStyle(groupKey, bp, theme, marked = false) {
       const prefix = groupKey;
       const get = (prop) => {
         return this.getOverrideValue(prefix + '-' + prop);
@@ -1187,7 +1194,7 @@ export default {
         fontWeight: get('font-weight') || defVal('font-weight', 'value'),
         fontStyle: get('font-style') || defVal('font-style', 'value'),
         fontSize: responsiveVal('font-size'),
-        lineHeight: responsiveVal('line-height'),
+        lineHeight: (marked && responsiveVal('marked-line-height')) || responsiveVal('line-height'),
         letterSpacing: responsiveVal('letter-spacing'),
         textTransform: get('text-transform') || defVal('text-transform', 'value'),
         color: colorOverride || colorDefault,
@@ -1324,6 +1331,17 @@ export default {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* The marked background reaches above the first line box; without this room
+   overflow:hidden (line clamp) cuts off its top corners. The configured line
+   height stays untouched. */
+.pw-element-preview-text:has(mark) {
+  padding-top: 0.25em;
+}
+
+.pw-element-preview-marked {
+  margin-top: 0.75em;
 }
 
 .pw-media-preview-img {
