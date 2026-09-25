@@ -398,7 +398,18 @@
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
+                  <pw-block-settings
+                    view="items-layout"
+                    :block="block"
+                    :config="blockConfigs[block.blockType]"
+                    :overrides="blockOverrides[block.blockType] || {}"
+                    :writer-active="writerActive[block.blockType] !== false"
+                    :layout-keys="['item-shape']"
+                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                    @update:writer-active="$set(writerActive, block.blockType, $event)"
+                  />
                   <pw-block-values
+                    v-if="isItemRadiusVisible(block.blockType)"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-radius']"
@@ -409,6 +420,13 @@
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-number-size', 'item-gap', 'item-content-gap', 'item-connector-width']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-size']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -802,6 +820,12 @@ export default {
     },
     isItemLinkStyleButton(blockType) {
       return this.itemLayoutDefault(blockType, 'item-link-style') === 'button';
+    },
+    isItemRadiusVisible(blockType) {
+      // Blocks with an item-shape (logocloud) only use the radii for "custom";
+      // blocks without one always show them.
+      const shape = this.itemLayoutDefault(blockType, 'item-shape');
+      return shape === undefined || shape === null || shape === 'custom';
     },
     itemColorsShowOnly(blockType) {
       // Link colors only matter when link-style="text" (button mode pulls from

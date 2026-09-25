@@ -55,9 +55,18 @@
             </div>
           </div>
 
-          <!-- Plain vars (single / multi-value / quad) -->
+          <!-- Plain vars (single / multi-value / quad / responsive) -->
+          <template v-for="(def, varName) in group.vars">
+          <!-- Responsive header (Mobile / Tablet / Desktop), like the element sizes -->
+          <div v-if="isResponsive(def)" :key="'rh-' + varName" class="pw-group-header">
+            <div class="pw-field-row-label-col"></div>
+            <div class="pw-group-header-labels pw-group-type-responsive">
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.mobile') }}</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.tablet') }}</span></span>
+              <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.desktop') }}</span></span>
+            </div>
+          </div>
           <div
-            v-for="(def, varName) in group.vars"
             :key="varName"
             class="pw-field-row"
           >
@@ -66,7 +75,7 @@
                 <div class="pw-field-row-label-col">
                   <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
                 </div>
-                <div class="pw-field-row-options">
+                <div class="pw-field-row-options" :class="{ 'pw-group-type-responsive': isResponsive(def) }">
 
                   <!-- Color -->
                   <template v-if="def.type === 'color'">
@@ -77,6 +86,28 @@
                       :override-value="getOverride(varName) || ''"
                       @update:value="setSingle(varName, $event || '', def.value)"
                     />
+                  </template>
+
+                  <!-- Responsive (default / lg / xl) -->
+                  <template v-else-if="isResponsive(def)">
+                    <span
+                      v-for="bp in ['default', 'lg', 'xl']"
+                      :key="bp"
+                      class="pw-element-field"
+                    >
+                      <span class="pw-element-input-wrap">
+                        <input
+                          type="text"
+                          inputmode="decimal"
+                          class="pw-element-input pw-element-input-number"
+                          :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !responsiveAt(varName, bp) }"
+                          :value="stripUnit(responsiveAt(varName, bp) || def[bp], def.unit)"
+                          @change="setResponsive(varName, bp, $event.target.value, def)"
+                        />
+                        <span class="pw-element-unit">{{ def.unit }}</span>
+                      </span>
+                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(responsiveAt(varName, bp) || def[bp], def.unit) }}</span>
+                    </span>
                   </template>
 
                   <!-- Multi-value with suffixes (small/large or quad) -->
@@ -146,6 +177,7 @@
               <k-button v-if="hasVarOverride(varName)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetVar(varName)" />
             </div>
           </div>
+          </template>
 
         </div>
       </transition>
@@ -208,6 +240,15 @@ export default {
       return key.charAt(0).toUpperCase() + key.slice(1);
     },
     varLabel(varName) {
+      // A value may bring its own label key (block-specific wording, e.g.
+      // logocloud's gap) — the shared prw.prop.* keys are global.
+      for (const group of Object.values(this.defaults || {})) {
+        const def = group && ((group.vars && group.vars[varName]) || (group.colors && group.colors[varName]));
+        if (def && def.label) {
+          const own = this.$t(def.label);
+          if (own && own !== def.label) return own;
+        }
+      }
       const t = this.$t('prw.prop.' + varName);
       if (t && t !== 'prw.prop.' + varName) return t;
       return varName.replace(/^item-/, '').replace(/-/g, ' ');
@@ -298,6 +339,30 @@ export default {
           if (Object.keys(next[theme]).length === 0) delete next[theme];
         }
       }
+      this.$emit('update:overrides', next);
+    },
+    isResponsive(def) {
+      return !!def && typeof def === 'object' && def.value === undefined
+        && def.default !== undefined && def.lg !== undefined;
+    },
+    responsiveAt(varName, bp) {
+      const v = this.overrides[varName];
+      return (v && typeof v === 'object' && !Array.isArray(v)) ? v[bp] : undefined;
+    },
+    setResponsive(varName, bp, value, def) {
+      const next = JSON.parse(JSON.stringify(this.overrides || {}));
+      const current = (next[varName] && typeof next[varName] === 'object' && !Array.isArray(next[varName])) ? next[varName] : {};
+      if (value === '') {
+        delete current[bp];
+      } else {
+        const num = this.parseNum(value);
+        if (num === null) return;
+        const composed = num + (def.unit || '');
+        if (composed === def[bp]) delete current[bp];
+        else current[bp] = composed;
+      }
+      if (Object.keys(current).length === 0) delete next[varName];
+      else next[varName] = current;
       this.$emit('update:overrides', next);
     },
     setMulti(varName, idx, value, defaultArr, unit) {
