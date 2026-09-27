@@ -81,7 +81,7 @@
 	'prw.view.defaults' => 'Start values',
 	'prw.view.presets' => 'Restrictions',
 	'prw.view.design.intro' => 'Applies immediately to all blocks of this type, including existing ones.',
-	'prw.view.defaults.intro' => 'Applies to newly created blocks. The values can still be changed in the block itself.',
+	'prw.view.defaults.intro' => 'Start values apply to newly created blocks. The values can still be changed in the block itself.',
 	'prw.view.presets.intro' => 'Limits which options editors can choose in the block and sets what a new block has preselected.',
 	'prw.heading.block' => 'Block',
 	'prw.tab.items' => 'Items',
