@@ -44,7 +44,7 @@
                   </div>
                   <div v-else class="pw-media-preview-img pw-media-preview-photo" :style="mediaPreviewStyle(theme)">
                     <span class="pw-media-preview-zoom" :style="{ color: mediaColor(theme, 'element-image-zoom'), backgroundColor: mediaColor(theme, 'element-image-zoom-background') }">
-                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.031 16.617 22.314 20.899 20.899 22.314 16.617 18.031C15.077 19.263 13.124 20 11 20 6.032 20 2 15.968 2 11 2 6.032 6.032 2 11 2 15.968 2 20 6.032 20 11 20 13.124 19.263 15.077 18.031 16.617ZM16.025 15.875C17.247 14.615 18 12.896 18 11 18 7.133 14.867 4 11 4 7.133 4 4 7.133 4 11 4 14.867 7.133 18 11 18 12.896 18 14.615 17.247 15.875 16.025L16.025 15.875ZM10 10V7H12V10H15V12H12V15H10V12H7V10H10Z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
                   </div>
                   <div class="pw-media-preview-bullets">
@@ -1717,7 +1717,7 @@ export default {
 </script>
 
 <style>
-/* media preview with an image: a drawn landscape, the zoom button top right */
+/* media preview with an image: a drawn landscape with the zoom button */
 .pw-image-switch[aria-pressed="false"] {
   opacity: 0.35;
 }
@@ -1728,16 +1728,13 @@ export default {
   background-position: center;
   overflow: hidden;
 }
+/* as in the frontend (media-image.css): square, bottom right, 0.5rem padding */
 .pw-media-preview-zoom {
   position: absolute;
-  top: var(--spacing-2);
-  right: var(--spacing-2);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  right: 0;
+  bottom: 0;
+  padding: 0.5rem;
+  line-height: 0;
 }
 .pw-media-preview-zoom svg {
   width: 16px;
