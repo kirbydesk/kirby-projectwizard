@@ -7,15 +7,14 @@
       <span class="k-input-element pw-field-row-inner">
         <div class="pw-field-row-label-col">
           <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
-        </div>
-        <div class="pw-field-row-options">
-          <!-- preset (left): one of the allowed options (Kirby's black menu) -->
+          <!-- preset: one of the allowed options (Kirby's black menu), on the
+               right of the label column -->
           <div v-if="!noDefault" class="pw-tab-menu pw-default-menu">
             <button type="button" class="pw-default-button" aria-haspopup="menu" :title="$t('prw.label.presetValue')" @click="$refs.defaultMenu.toggle()">
               <span class="pw-default-value">{{ optionLabel(defaultValue) }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
             </button>
-            <k-dropdown-content ref="defaultMenu" align-x="start">
+            <k-dropdown-content ref="defaultMenu" align-x="end">
               <nav class="k-navigate">
                 <button
                   v-for="opt in allowedOptions"
@@ -30,8 +29,10 @@
                 </button>
               </nav>
             </k-dropdown-content>
-          </div>
-          <!-- allowed options (right): each pill switches on/off -->
+            </div>
+        </div>
+        <div class="pw-field-row-options">
+          <!-- allowed options: each pill switches on/off -->
           <span class="pw-pill pw-option-pills" role="group">
             <button
               v-for="opt in options"
@@ -199,9 +200,10 @@ export default {
   color: var(--color-text-dimmed);
   text-decoration: line-through;
 }
-/* preset dropdown on the left of the row, the allowed options on the right */
-.pw-default-menu + .pw-option-pills {
+/* preset dropdown at the right end of the label column */
+.pw-default-menu {
   margin-inline-start: auto;
+  margin-inline-end: var(--spacing-3);
 }
 .pw-default-button {
   display: inline-flex;
