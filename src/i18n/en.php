@@ -25,6 +25,7 @@
 	'prw.label.logo' => 'Logo',
 	'prw.label.divider-l1' => 'Divider L1',
 	'prw.label.divider-l2' => 'Divider L2',
+	'prw.label.showImage' => 'Show image in preview',
 	'prw.label.showInPreview' => 'Show in preview',
 	'prw.label.topBottom' => 'Vertical',
 	'prw.label.leftRight' => 'Horizontal',

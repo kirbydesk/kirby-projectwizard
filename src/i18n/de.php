@@ -25,6 +25,7 @@
 	'prw.label.logo' => 'Logo',
 	'prw.label.divider-l1' => 'Trennlinie Ebene 1',
 	'prw.label.divider-l2' => 'Trennlinie Ebene 2',
+	'prw.label.showImage' => 'Bild in der Vorschau zeigen',
 	'prw.label.showInPreview' => 'In der Vorschau zeigen',
 	'prw.label.topBottom' => 'Vertikal',
 	'prw.label.leftRight' => 'Horizontal',
