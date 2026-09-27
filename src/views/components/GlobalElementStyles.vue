@@ -37,12 +37,12 @@
             <template v-for="theme in [colorTheme]">
               <div v-for="bp in [previewBp]" :key="theme + '-' + bp" class="pw-element-preview-col" :style="{ backgroundColor: blockBackground(theme) }">
                 <template v-if="groupKey === 'media'">
-                  <!-- the media: its background with a placeholder, or (switch in the
-                       card heading) a drawn sample image with the zoom button -->
-                  <div v-if="!previewMediaImage" class="pw-media-preview-img" :style="mediaPreviewStyle(theme)">
+                  <!-- the media twice: its background with a placeholder (no image
+                       yet), then a drawn sample image with the zoom button -->
+                  <div class="pw-media-preview-img pw-media-preview-empty" :style="mediaPreviewStyle(theme)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                   </div>
-                  <div v-else class="pw-media-preview-img pw-media-preview-photo" :style="mediaPreviewStyle(theme)">
+                  <div class="pw-media-preview-img pw-media-preview-photo" :style="mediaPreviewStyle(theme)">
                     <span class="pw-media-preview-zoom" :style="{ color: mediaColor(theme, 'element-image-zoom'), backgroundColor: mediaColor(theme, 'element-image-zoom-background') }">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
@@ -100,21 +100,9 @@
           <section :key="'card-' + st.key" class="pw-card-section">
             <div class="pw-card-heading-row">
               <h3 class="pw-card-heading">{{ st.label }}</h3>
-              <!-- media: show a sample image in the preview (just the icon) -->
-              <button
-                v-if="st.elementKey === 'media' && st.category === 'style'"
-                type="button"
-                class="pw-marked-switch pw-image-switch"
-                :title="$t('prw.label.showImage')"
-                :aria-label="$t('prw.label.showImage')"
-                :aria-pressed="previewMediaImage ? 'true' : 'false'"
-                @click="previewMediaImage = !previewMediaImage"
-              >
-                <k-icon type="image" />
-              </button>
               <!-- flourish: show it in the preview (just the eye icon) -->
               <button
-                v-else-if="st.category === 'flourish'"
+                v-if="st.category === 'flourish'"
                 type="button"
                 class="pw-marked-switch"
                 :title="$t('prw.label.showInPreview')"
@@ -744,7 +732,6 @@ export default {
       previewMarked: false,
       previewFlourish: false,
       // media preview with a sample image
-      previewMediaImage: false,
       // media radii kept while the corners are square
       mediaCustomRadius: null,
       openSections: {},
@@ -1769,10 +1756,11 @@ export default {
 </script>
 
 <style>
-/* media preview with an image: a drawn landscape with the zoom button */
-.pw-image-switch[aria-pressed="false"] {
-  opacity: 0.35;
+/* media preview: the empty media above the one with an image */
+.pw-media-preview-empty {
+  margin-bottom: var(--spacing-4);
 }
+/* media preview with an image: a drawn landscape with the zoom button */
 .pw-media-preview-photo {
   position: relative;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2387b7e0'/%3E%3Cstop offset='1' stop-color='%23f3d9b1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='90' fill='url(%23s)'/%3E%3Ccircle cx='118' cy='30' r='11' fill='%23fff3c4'/%3E%3Cpath d='M0 70 L38 38 L64 58 L92 30 L130 64 L160 48 L160 90 L0 90Z' fill='%235f7f6b'/%3E%3Cpath d='M0 78 L30 62 L62 76 L100 58 L140 78 L160 70 L160 90 L0 90Z' fill='%23405c4c'/%3E%3C/svg%3E");
