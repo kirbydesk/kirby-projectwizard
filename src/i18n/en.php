@@ -272,7 +272,6 @@
 	'prw.color.element-breadcrumb-text-active' => 'Text <span class="pw-state-pill pw-state-active">:Active</span>',
 	'prw.color.element-quote-text' => 'Color',
 	'prw.color.element-cite-text' => 'Color',
-	'prw.color.element-icon-fill' => 'Icon',
 	'prw.color.element-media-background' => 'Background',
 	'prw.color.element-image-zoom' => 'Zoom Icon',
 	'prw.color.element-image-zoom-background' => 'Zoom Icon Background',
