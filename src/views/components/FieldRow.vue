@@ -29,7 +29,7 @@
                 </button>
               </nav>
             </k-dropdown-content>
-            </div>
+          </div>
         </div>
         <div class="pw-field-row-options">
           <!-- allowed options: each pill switches on/off -->
