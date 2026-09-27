@@ -400,6 +400,11 @@ export default {
     };
   },
   computed: {
+    // blocks are square: all four global corner radii are 0
+    blocksSquare() {
+      const radii = (this.globalValues || {})['global-'];
+      return Array.isArray(radii) && radii.length > 0 && radii.every(r => parseFloat(r) === 0);
+    },
     blockType() {
       return this.block.blockType;
     },
@@ -619,8 +624,9 @@ export default {
         if (cat.key === 'settings') {
           const layout = this.getCategories().find(c => c.key === 'layout');
           const radius = layout && layout.fields.find(f => f.key === 'radius');
-          // second row, after the block size
-          if (radius) fields = [...fields.slice(0, 1), { ...radius, catKey: 'layout' }, ...fields.slice(1)];
+          // second row, after the block size; none while the blocks are
+          // square (all global radii 0), the corners have no effect then
+          if (radius && !this.blocksSquare) fields = [...fields.slice(0, 1), { ...radius, catKey: 'layout' }, ...fields.slice(1)];
         }
       }
       return fields;
