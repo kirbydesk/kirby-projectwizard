@@ -10,8 +10,9 @@
         </div>
         <div class="pw-field-row-options">
           <!-- the options as Kirby's toggles (same markup, so they look like
-               the other toggles): black = preset, plain = allowed, greyed =
-               not allowed; a click moves on to the next state -->
+               the other toggles): greyed = not allowed, black text = allowed,
+               black pill = preset; a click moves on: greyed → allowed →
+               preset → greyed -->
           <div class="k-toggles-input pw-option-toggles">
             <ul>
               <li v-for="opt in options" :key="opt" :data-state="optionState(opt)">
@@ -176,6 +177,10 @@ export default {
   flex-wrap: wrap;
 }
 
+/* the preset: a black pill */
+.pw-option-toggles li[data-state="preset"] label {
+  border-radius: 999px;
+}
 /* options not allowed: greyed, as Kirby's disabled toggles */
 .pw-option-toggles li[data-state="disabled"] label {
   color: var(--color-text-dimmed);
