@@ -1212,8 +1212,11 @@ export default {
     // tabs of a block view: design (only with values), start values, visibility
     blockViewTabs() {
       const views = this.hasDesign(this.activeTab) ? ['design', 'defaults', 'presets'] : ['defaults', 'presets'];
+      // design: the palette, start values: new blocks, visibility: the eye
+      const icons = { design: 'palette', defaults: 'add', presets: 'preview' };
       return views.map(name => ({
         name,
+        icon: icons[name],
         label: this.$t('prw.view.' + name),
         click: () => { this.blockViewTab = name; },
       }));
