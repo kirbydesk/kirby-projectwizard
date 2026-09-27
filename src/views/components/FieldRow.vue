@@ -7,40 +7,18 @@
       <span class="k-input-element pw-field-row-inner">
         <div class="pw-field-row-label-col">
           <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
-          <!-- preset: one of the allowed options (Kirby's black menu), on the
-               right of the label column -->
-          <div v-if="!noDefault" class="pw-tab-menu pw-default-menu">
-            <button type="button" class="pw-default-button" aria-haspopup="menu" :title="$t('prw.label.presetValue')" @click="$refs.defaultMenu.toggle()">
-              <span class="pw-default-value">{{ optionLabel(defaultValue) }}</span>
-              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
-            </button>
-            <k-dropdown-content ref="defaultMenu" align-x="end">
-              <nav class="k-navigate">
-                <button
-                  v-for="opt in allowedOptions"
-                  :key="opt"
-                  type="button"
-                  class="k-dropdown-item k-button pw-menu-item"
-                  data-has-text="true"
-                  :aria-current="opt === defaultValue ? 'true' : undefined"
-                  @click="setDefault(opt)"
-                >
-                  <span class="k-button-text">{{ optionLabel(opt) }}</span>
-                </button>
-              </nav>
-            </k-dropdown-content>
-          </div>
         </div>
         <div class="pw-field-row-options">
-          <!-- allowed options: each pill switches on/off -->
-          <span class="pw-pill pw-option-pills" role="group">
+          <!-- the options as Kirby's toggles: black = preset, white = allowed,
+               greyed = not allowed; a click moves on to the next state -->
+          <span class="pw-option-toggles" :style="{ '--options': options.length }">
             <button
               v-for="opt in options"
               :key="opt"
               type="button"
-              class="pw-tool"
-              :aria-pressed="localActive.includes(opt) ? 'true' : 'false'"
-              @click="toggleOption(opt)"
+              :data-state="optionState(opt)"
+              :title="$t('prw.option.state.' + optionState(opt))"
+              @click="cycleOption(opt)"
             >{{ optionLabel(opt) }}</button>
           </span>
         </div>
@@ -117,7 +95,19 @@ export default {
       }
       return opt;
     },
-    // pill clicked: allow/disallow the option (at least one stays allowed)
+    // preset (black), allowed (white) or not allowed (greyed)
+    optionState(opt) {
+      if (!this.localActive.includes(opt)) return 'disabled';
+      return !this.noDefault && opt === this.defaultValue ? 'preset' : 'allowed';
+    },
+    // click: allowed → preset → not allowed → allowed; without presets just
+    // allowed ↔ not allowed
+    cycleOption(opt) {
+      const state = this.optionState(opt);
+      if (state === 'allowed' && !this.noDefault) this.setDefault(opt);
+      else this.toggleOption(opt);
+    },
+    // allow/disallow the option (at least one stays allowed)
     toggleOption(opt) {
       const allowed = this.localActive.includes(opt);
       if (allowed && this.allowedOptions.length <= 1) return;
@@ -134,7 +124,6 @@ export default {
     setDefault(opt) {
       this.localDefault = opt;
       this.$emit('update:default', opt);
-      this.$refs.defaultMenu?.close();
     },
   },
 };
@@ -180,47 +169,31 @@ export default {
   flex-wrap: wrap;
 }
 
-/* allowed options as pills: allowed = white, not allowed = faded + struck */
-.pw-pill.pw-option-pills {
-  --tool-size: 24px;
-}
-.pw-option-pills .pw-tool {
-  font-size: var(--text-xs);
-  padding-inline: var(--spacing-2);
-}
-.pw-option-pills .pw-tool[aria-pressed="true"],
-.pw-option-pills .pw-tool[aria-pressed="true"]:hover {
-  background: var(--color-white);
-  color: var(--color-text);
-  font-weight: var(--font-normal);
-}
-.pw-option-pills .pw-tool[aria-pressed="false"],
-.pw-option-pills .pw-tool[aria-pressed="false"]:hover {
-  background: light-dark(var(--color-gray-100), var(--color-gray-850));
-  color: var(--color-text-dimmed);
-  text-decoration: line-through;
-}
-/* preset dropdown at the right end of the label column */
-.pw-default-menu {
-  margin-inline-start: auto;
-  margin-inline-end: var(--spacing-3);
-}
-.pw-default-button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-1);
-  height: 24px;
-  padding-inline: var(--spacing-2) var(--spacing-1);
+/* the options as Kirby's toggles (k-toggles-input): preset black, allowed
+   white, not allowed greyed */
+.pw-option-toggles {
+  display: grid;
+  grid-template-columns: repeat(var(--options), auto);
+  gap: 1px;
   border-radius: var(--rounded);
-  font-size: var(--text-xs);
-  color: var(--color-text);
-  white-space: nowrap;
+  background: var(--color-border);
+  overflow: hidden;
+  line-height: 1.25;
 }
-.pw-default-button:hover {
-  background: light-dark(var(--color-gray-100), var(--color-gray-850));
+.pw-option-toggles button {
+  height: var(--field-input-height);
+  padding: 0 var(--spacing-3);
+  font-size: var(--text-sm);
+  background: light-dark(var(--color-white), var(--color-gray-850));
+  cursor: pointer;
 }
-.pw-default-value {
-  font-weight: var(--font-semi);
+.pw-option-toggles button[data-state="preset"] {
+  background: light-dark(var(--color-black), var(--color-gray-950));
+  color: var(--color-white);
+}
+.pw-option-toggles button[data-state="disabled"] {
+  background: var(--panel-color-back);
+  color: var(--color-text-dimmed);
 }
 
 .pw-field-required {
