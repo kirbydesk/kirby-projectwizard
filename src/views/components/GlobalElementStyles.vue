@@ -396,7 +396,7 @@
                     <div class="pw-field-row-options">
                       <span class="pw-state-grid">
                         <span v-for="stateField in colorField.states" :key="stateField.varName" class="pw-state-cell">
-                          <span v-if="stateField.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + stateField.state">:{{ stateField.state === 'hover' ? 'Hover' : 'Active' }}</span>
+                          <span v-if="stateField.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + stateField.state">:{{ $t('prw.state.' + stateField.state) }}</span>
                           <pw-color-field-row
                             :group="colorTheme"
                             :var-name="stateField.varName"
@@ -533,7 +533,7 @@
                       <span class="pw-state-grid">
                         <span v-for="stateField in field.states" :key="stateField.varName" class="pw-state-cell">
                           <!-- hover/active: the purple state pill (as before in the labels) -->
-                          <span v-if="stateField.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + stateField.state">:{{ stateField.state === 'hover' ? 'Hover' : 'Active' }}</span>
+                          <span v-if="stateField.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + stateField.state">:{{ $t('prw.state.' + stateField.state) }}</span>
                           <pw-color-field-row
                             :group="colorTheme"
                             :var-name="stateField.varName"

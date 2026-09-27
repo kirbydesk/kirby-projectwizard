@@ -294,7 +294,7 @@
                   <div v-if="theme && stateColors(varName, group.colors).length > 1" class="pw-field-row-options">
                     <span class="pw-state-grid">
                       <span v-for="stateColor in stateColors(varName, group.colors)" :key="stateColor.varName" class="pw-state-cell">
-                        <span v-if="stateColor.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + stateColor.state">:{{ stateColor.state === 'hover' ? 'Hover' : 'Active' }}</span>
+                        <span v-if="stateColor.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + stateColor.state">:{{ $t('prw.state.' + stateColor.state) }}</span>
                         <pw-color-field-row
                           :group="theme"
                           :var-name="stateColor.varName"
