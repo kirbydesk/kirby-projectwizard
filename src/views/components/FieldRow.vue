@@ -116,15 +116,16 @@ export default {
     // preset is set, the option doesn't switch back and forth first)
     clickOption(opt, event) {
       if (this.optionState(opt) === 'preset') return;
-      clearTimeout(this.clickTimer);
+      const timers = this.clickTimers || (this.clickTimers = {});
+      clearTimeout(timers[opt]);
       if (!event || event.detail === 0) return this.toggleOption(opt);
       if (event.detail > 1) return;
-      this.clickTimer = setTimeout(() => this.toggleOption(opt), 250);
+      timers[opt] = setTimeout(() => this.toggleOption(opt), 250);
     },
     // double click: the option becomes the preset (allowed if it wasn't); the
     // old preset stays allowed
     makePreset(opt) {
-      clearTimeout(this.clickTimer);
+      clearTimeout((this.clickTimers || {})[opt]);
       if (this.noDefault) return;
       if (!this.localActive.includes(opt)) this.toggleOption(opt);
       this.setDefault(opt);
