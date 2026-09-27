@@ -184,6 +184,7 @@ export default {
 /* options not allowed: greyed text only */
 .pw-option-toggles li[data-state="disabled"] label {
   color: var(--color-text-dimmed);
+  opacity: 0.5;
 }
 
 .pw-field-required {
