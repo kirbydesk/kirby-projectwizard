@@ -1209,11 +1209,11 @@ export default {
       return ['general', 'header', 'footer', 'blocks', 'fonts', ...(this.hasAiTab ? ['ai'] : [])];
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
-    // tabs of a block view: design (only with values), start values, visibility
+    // tabs of a block view: design (only with values), start values, restrictions
     blockViewTabs() {
       const views = this.hasDesign(this.activeTab) ? ['design', 'defaults', 'presets'] : ['defaults', 'presets'];
-      // design: the palette, start values: the pen, visibility: the eye
-      const icons = { design: 'palette', defaults: 'edit-line', presets: 'preview' };
+      // design: the palette, start values: the pen, restrictions: the crossed-out eye
+      const icons = { design: 'palette', defaults: 'edit-line', presets: 'hidden' };
       return views.map(name => ({
         name,
         icon: icons[name],
