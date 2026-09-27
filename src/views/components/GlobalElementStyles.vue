@@ -102,7 +102,7 @@
               <h3 class="pw-card-heading">{{ st.label }}</h3>
               <!-- media: show a sample image in the preview (just the icon) -->
               <button
-                v-if="st.elementKey === 'media' && st.category === 'colors'"
+                v-if="st.elementKey === 'media' && st.category === 'style'"
                 type="button"
                 class="pw-marked-switch pw-image-switch"
                 :title="$t('prw.label.showImage')"
@@ -419,7 +419,7 @@
           </template>
 
           <!-- Colors -->
-          <template v-if="hasColorRows(stInfo(st).category) && stInfo(st).category !== 'style'">
+          <template v-if="hasColorRows(stInfo(st).category) && (stInfo(st).category !== 'style' || st.elementKey !== 'button')">
           <template v-for="(fieldGroup, gIdx) in groupedColorFields(stInfo(st).group, stInfo(st).category)">
             <!-- Group header row -->
             <div v-if="fieldGroup.header && !isCornerGroup(fieldGroup)" :key="'gh-' + gIdx" class="pw-group-header">
@@ -972,6 +972,11 @@ export default {
         // colour in the text card (all states)
         if (name.startsWith('element-button-border') || name.startsWith('element-button-background')) return 'style';
         if (name.startsWith('element-button-text')) return 'text';
+        // media: background with the style, the slideshow dots and the zoom
+        // button in cards of their own
+        if (name === 'element-media-background') return 'style';
+        if (name.startsWith('element-slideshow-')) return 'slideshow';
+        if (name.startsWith('element-image-zoom')) return 'zoom';
         if (name.includes('-marked-')) return 'marked';
         if (name.includes('-flourish-')) return 'flourish';
         if (!hasStates && /^element-[a-z]+-text$/.test(name)) return 'text';
@@ -1008,7 +1013,7 @@ export default {
 
     // cards that hold colour rows (with the variant switch in their heading)
     hasColorRows(category) {
-      return ['colors', 'marked', 'flourish', 'text', 'icon', 'shape', 'style'].includes(category);
+      return ['colors', 'marked', 'flourish', 'text', 'icon', 'shape', 'style', 'slideshow', 'zoom'].includes(category);
     },
     groupedFields(group, only, category) {
       const allFields = [];
@@ -1413,7 +1418,7 @@ export default {
         button:     ['text', 'padding', 'margin', 'shape', 'style', 'icon', 'colors'],
         caption:    ['text', 'colors'],
         breadcrumb: ['text', 'colors'],
-        media:      ['colors'],
+        media:      ['style', 'slideshow', 'zoom'],
         cite:       ['text', 'margin', 'colors'],
       };
       return tabs[groupKey] || ['text', 'sizes', 'colors'];
@@ -1449,7 +1454,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
