@@ -285,11 +285,11 @@
                            mark the fixed edge to the neighbouring blocks -->
                       <div class="pw-block-preview-row pw-block-preview-spaced" :class="{ 'has-guides': previewGuides }" :style="blockPreviewMarginStyle">
                         <div v-for="theme in [currentBlocksColorTheme]" :key="theme" class="pw-block-preview" :class="{ 'has-guides': previewGuides }" :style="blockPreviewStyle(theme, true)">
-                          <div class="pw-block-preview-content">
-                          <p :style="blockPreviewElementStyle('tagline', theme, blocksPreviewBp)">{{ $t('prw.preview.tagline') }}</p>
-                          <h2 :style="blockPreviewElementStyle('heading', theme, blocksPreviewBp)">{{ $t('prw.preview.heading') }}</h2>
+                          <!-- just text: two paragraphs (the first with a link), spaced
+                               like the editor's paragraphs -->
+                          <div class="pw-block-preview-content pw-block-preview-text">
                           <p :style="blockPreviewElementStyle('editor', theme, blocksPreviewBp)">{{ $t('prw.preview.text.before') }} <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
-                          <a :class="'pw-preview-btn-' + theme" :style="blockPreviewButtonStyle(theme, '')">{{ $t('prw.preview.button') }}</a>
+                          <p :style="{ ...blockPreviewElementStyle('editor', theme, blocksPreviewBp), marginTop: blockPreviewParagraphSpacing() }">{{ $t('prw.sample.editor.2') }}</p>
                           </div>
                         </div>
                       </div>
@@ -1890,50 +1890,10 @@ export default {
       }
       return '';
     },
-    blockPreviewButtonStyle(theme, state) {
-      const elDef = this.elementDefaults.button || {};
-      const elOv = this.elementOverrides.global || {};
-      const get = (v) => elOv[v] || '';
-      const def = (v) => {
-        const d = elDef.vars?.[v];
-        if (!d) return '';
-        return d.value || '';
-      };
-      let fontFamily = get('button-font-family') || def('button-font-family');
-      if (!fontFamily || fontFamily === 'default') fontFamily = this.bodyDefaultFont;
-      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
-      let fontCategory = 'sans-serif';
-      for (const f of Object.values(allFonts)) {
-        if (f.family === fontFamily) { fontCategory = f.category || 'sans-serif'; break; }
-      }
-      const colorVal = (name) => {
-        return ((elOv)[theme] || {})[name] || elDef.colors?.[name]?.[theme] || '';
-      };
-      const paddingOv = elOv['button-padding'];
-      const padding = Array.isArray(paddingOv) ? paddingOv : (elDef.vars?.['button-padding']?.value || []);
-      const radiusOv = elOv['button-border-radius'];
-      const radius = Array.isArray(radiusOv) ? radiusOv : (elDef.vars?.['button-border-radius']?.value || []);
-      return {
-        fontFamily: "'" + fontFamily + "', " + fontCategory,
-        fontWeight: get('button-font-weight') || def('button-font-weight'),
-        fontStyle: get('button-font-style') || def('button-font-style'),
-        fontSize: def('button-font-size'),
-        lineHeight: def('button-line-height'),
-        letterSpacing: def('button-letter-spacing'),
-        textTransform: get('button-text-transform') || def('button-text-transform'),
-        color: colorVal('element-button-text' + (state || '')),
-        backgroundColor: colorVal('element-button-background' + (state || '')),
-        borderColor: colorVal('element-button-border' + (state || '')),
-        borderWidth: get('button-border-width') || def('button-border-width') || '1px',
-        // shadow: the chosen step's CSS from elements.json (generates)
-        boxShadow: elDef.vars?.['button-shadow']?.generates?.['button-shadow']?.[get('button-shadow') || def('button-shadow') || 'none'] || 'none',
-        borderStyle: 'solid',
-        padding: Array.isArray(padding) ? padding.join(' ') : padding,
-        borderRadius: { square: '0', round: '999px' }[get('button-shape') || def('button-shape')] || (Array.isArray(radius) ? radius.join(' ') : radius),
-        display: 'inline-block',
-        marginTop: '0.5rem',
-        cursor: 'default',
-      };
+    // gap between the editor's paragraphs (em: at the paragraph's size)
+    blockPreviewParagraphSpacing() {
+      return (this.elementOverrides.global || {})['editor-paragraph-spacing']
+        || this.elementDefaults.editor?.vars?.['editor-paragraph-spacing']?.value || '0';
     },
     injectPreviewStyles() {
       const id = 'pw-panel-preview-states';
@@ -1950,11 +1910,6 @@ export default {
         rules.push('.pw-preview-link-' + theme + ':hover { color: ' + linkHover + ' !important;'
           + (this.globalLayoutValue('block-link-decoration') === 'none' ? '' : ' text-decoration-line: underline !important;') + ' }');
         rules.push('.pw-preview-link-' + theme + ':active { color: ' + linkActive + ' !important; }');
-
-        const btnHover = this.blockPreviewBtnColors(theme, '-hover');
-        const btnActive = this.blockPreviewBtnColors(theme, '-active');
-        rules.push('.pw-preview-btn-' + theme + ':hover { color: ' + btnHover.color + ' !important; background-color: ' + btnHover.bg + ' !important; border-color: ' + btnHover.border + ' !important; }');
-        rules.push('.pw-preview-btn-' + theme + ':active { color: ' + btnActive.color + ' !important; background-color: ' + btnActive.bg + ' !important; border-color: ' + btnActive.border + ' !important; }');
       }
 
       // Nav preview hover/active
@@ -1974,16 +1929,6 @@ export default {
       const key = 'block-link' + (state || '');
       const colorOv = ((this.globalOverrides.global || {})[theme] || {})[key];
       return colorOv || this.globalDefaults.colors?.colors?.[key]?.[theme] || '#1D548B';
-    },
-    blockPreviewBtnColors(theme, state) {
-      const elDef = this.elementDefaults.button || {};
-      const elOv = this.elementOverrides.global || {};
-      const colorVal = (name) => ((elOv)[theme] || {})[name] || elDef.colors?.[name]?.[theme] || '';
-      return {
-        color: colorVal('element-button-text' + (state || '')),
-        bg: colorVal('element-button-background' + (state || '')),
-        border: colorVal('element-button-border' + (state || '')),
-      };
     },
     injectFontFaces() {
       const id = 'pw-panel-fontfaces';
@@ -3042,15 +2987,15 @@ export default {
   gap: var(--spacing-2);
 }
 
+/* blocks preview: the paragraphs spaced by the editor's paragraph spacing */
+.pw-block-preview-text {
+  gap: 0;
+}
+
 [class^="pw-preview-link-"] {
   text-decoration: underline;
   cursor: pointer;
   transition: color 0.15s;
-}
-
-[class^="pw-preview-btn-"] {
-  cursor: pointer;
-  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
 }
 
 .pw-block-preview-label {
