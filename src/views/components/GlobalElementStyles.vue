@@ -37,8 +37,15 @@
             <template v-for="theme in [colorTheme]">
               <div v-for="bp in [previewBp]" :key="theme + '-' + bp" class="pw-element-preview-col" :style="{ backgroundColor: blockBackground(theme) }">
                 <template v-if="groupKey === 'media'">
+                  <!-- without an image: the media background with a placeholder -->
                   <div class="pw-media-preview-img" :style="mediaPreviewStyle(theme)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  </div>
+                  <!-- with an image (a drawn sample) and the zoom button in its colours -->
+                  <div class="pw-media-preview-img pw-media-preview-photo" :style="mediaPreviewStyle(theme)">
+                    <span class="pw-media-preview-zoom" :style="{ color: mediaColor(theme, 'element-image-zoom'), backgroundColor: mediaColor(theme, 'element-image-zoom-background') }">
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.031 16.617 22.314 20.899 20.899 22.314 16.617 18.031C15.077 19.263 13.124 20 11 20 6.032 20 2 15.968 2 11 2 6.032 6.032 2 11 2 15.968 2 20 6.032 20 11 20 13.124 19.263 15.077 18.031 16.617ZM16.025 15.875C17.247 14.615 18 12.896 18 11 18 7.133 14.867 4 11 4 7.133 4 4 7.133 4 11 4 14.867 7.133 18 11 18 12.896 18 14.615 17.247 15.875 16.025L16.025 15.875ZM10 10V7H12V10H15V12H12V15H10V12H7V10H10Z"/></svg>
+                    </span>
                   </div>
                   <div class="pw-media-preview-bullets">
                     <span :style="{ backgroundColor: mediaColor(theme, 'element-slideshow-bullet') }"></span>
@@ -1696,6 +1703,30 @@ export default {
 </script>
 
 <style>
+/* media preview with an image: a drawn landscape, the zoom button top right */
+.pw-media-preview-photo {
+  position: relative;
+  margin-top: var(--spacing-3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2387b7e0'/%3E%3Cstop offset='1' stop-color='%23f3d9b1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='90' fill='url(%23s)'/%3E%3Ccircle cx='118' cy='30' r='11' fill='%23fff3c4'/%3E%3Cpath d='M0 70 L38 38 L64 58 L92 30 L130 64 L160 48 L160 90 L0 90Z' fill='%235f7f6b'/%3E%3Cpath d='M0 78 L30 62 L62 76 L100 58 L140 78 L160 70 L160 90 L0 90Z' fill='%23405c4c'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+.pw-media-preview-zoom {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+.pw-media-preview-zoom svg {
+  width: 16px;
+  height: 16px;
+}
 /* preview buttons: colours per state from variables (hover/active as in
    the frontend) */
 .pw-element-preview-button {
