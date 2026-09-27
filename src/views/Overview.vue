@@ -2585,9 +2585,12 @@ export default {
   align-items: flex-end;
   margin-bottom: var(--spacing-3);
 }
+/* the tabs take the free width (Kirby moves tabs that don't fit into its
+   "…" menu, measured by this width), aligned to the right */
 .pw-block-view-tabs.k-tabs {
+  flex-grow: 1;
   justify-content: flex-end;
-  margin-inline: auto calc(var(--button-padding) * -1);
+  margin-inline: 0 calc(var(--button-padding) * -1);
   margin-bottom: calc(var(--spacing-3) * -1);
 }
 .pw-block-view-intro {
