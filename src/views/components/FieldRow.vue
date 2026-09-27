@@ -16,7 +16,7 @@
               <span class="pw-default-value">{{ optionLabel(defaultValue) }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
             </button>
-            <k-dropdown-content ref="defaultMenu" align-x="end">
+            <k-dropdown-content ref="defaultMenu" align-x="start">
               <nav class="k-navigate">
                 <button
                   v-for="opt in allowedOptions"
