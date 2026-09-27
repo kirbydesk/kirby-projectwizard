@@ -181,10 +181,9 @@ export default {
 .pw-option-toggles li[data-state="preset"] label {
   border-radius: 999px;
 }
-/* options not allowed: greyed, as Kirby's disabled toggles */
+/* options not allowed: greyed text only */
 .pw-option-toggles li[data-state="disabled"] label {
   color: var(--color-text-dimmed);
-  background: var(--panel-color-back);
 }
 
 .pw-field-required {
