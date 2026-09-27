@@ -77,11 +77,15 @@
 	'prw.tab.header' => 'Header',
 	'prw.tab.ai' => 'KI',
 	'prw.tab.footer' => 'Footer',
-	'prw.tab.defaults' => 'Standardwerte',
+	'prw.view.design' => 'Gestaltung',
+	'prw.view.defaults' => 'Startwerte',
+	'prw.view.presets' => 'Sichtbarkeit',
+	'prw.view.design.intro' => 'Gilt sofort für alle Blöcke dieses Typs, auch für bereits angelegte.',
+	'prw.view.defaults.intro' => 'Gilt für neu angelegte Blöcke. Im Block selbst lassen sich die Werte weiterhin ändern.',
+	'prw.view.presets.intro' => 'Legt fest, was Redakteure im Block auswählen können und was ein neuer Block vorausgewählt hat.',
 	'prw.heading.block' => 'Block',
 	'prw.tab.items' => 'Einträge',
 	'prw.tab.layout' => 'Layout',
-	'prw.tab.presets' => 'Vorgaben',
 
 	/* -------------- Properties --------------*/
 	'prw.property.align' => 'Ausrichtung',

@@ -168,23 +168,15 @@
           <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
         </div>
 
-        <!-- Block view: the block's name as page heading, the presets switch behind it -->
+        <!-- Block view: the block's name as page heading, below Kirby's tabs
+             (design, start values, visibility) and what the chosen one does -->
         <div v-if="!loading && activeTab !== 'global'" class="pw-page-title-row">
           <h1 class="pw-page-title">{{ blockLabel(activeTab) }}</h1>
-          <!-- presets: only the icon, right behind the heading -->
-          <div class="pw-pill pw-presets-switch" role="group">
-            <button
-              type="button"
-              class="pw-tool"
-              :title="$t('prw.tab.presets')"
-              :aria-label="$t('prw.tab.presets')"
-              :aria-pressed="blockViewTab === 'presets' ? 'true' : 'false'"
-              @click="blockViewTab = blockViewTab === 'presets' ? 'defaults' : 'presets'"
-            >
-              <k-icon type="settings" />
-            </button>
-          </div>
         </div>
+        <template v-if="!loading && activeTab !== 'global'">
+          <k-tabs class="pw-block-view-tabs" :tab="currentBlockView" :tabs="blockViewTabs" />
+          <p class="pw-block-view-intro">{{ $t('prw.view.' + currentBlockView + '.intro') }}</p>
+        </template>
 
         <!-- ==================== Global Settings ==================== -->
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
@@ -813,9 +805,10 @@
             </div>
           </pw-portal>
 
-          <!-- Defaults: the block's values, then (blocks with items) the items -->
-          <div v-show="blockViewTab === 'defaults'" v-if="blockConfigs[block.blockType]">
-            <h2 v-if="hasItemFields(block.blockType)" class="pw-group-title">{{ $t('prw.heading.block') }}</h2>
+          <!-- Start values: the block's field defaults, then (blocks with items)
+               the items' ones -->
+          <div v-show="currentBlockView === 'defaults'" v-if="blockConfigs[block.blockType]">
+            <h2 v-if="hasItemFields(block.blockType) && hasItemDefaultFields(block.blockType)" class="pw-group-title">{{ $t('prw.heading.block') }}</h2>
             <pw-block-settings
               view="defaults"
               :global-values="globalLayoutValues"
@@ -827,32 +820,10 @@
               @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
               @update:writer-active="$set(writerActive, block.blockType, $event)"
             />
-          </div>
-
-          <!-- Presets tab: allowed options + preset per field (pills) -->
-          <div v-show="blockViewTab === 'presets'" v-if="blockConfigs[block.blockType]">
-            <pw-block-settings
-              view="presets"
-              :block="block"
-              :config="blockConfigs[block.blockType]"
-              :overrides="blockOverrides[block.blockType] || {}"
-              :writer-active="writerActive[block.blockType] !== false"
-              @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-              @update:writer-active="$set(writerActive, block.blockType, $event)"
-            />
-          </div>
-
-          <!-- Items (below the block's defaults): content + defaults sub-sections
-               plus the Layout/Colors value editor (only when block has item fields). -->
-          <div v-show="blockViewTab === 'defaults'" v-if="blockConfigs[block.blockType] && hasItemFields(block.blockType)">
-            <h2 class="pw-group-title">{{ $t('prw.tab.items') }}</h2>
-
-            <!-- Items: defaults (radius toggles), layout and colours, each a heading above a card -->
-            <template v-if="blockValueDefaults[block.blockType] && hasItemDefaultFields(block.blockType)">
+            <!-- the items' start values (corner toggles, link style) -->
+            <template v-if="hasItemFields(block.blockType) && hasItemDefaultFields(block.blockType)">
+              <h2 class="pw-group-title">{{ $t('prw.tab.items') }}</h2>
               <section class="pw-card-section">
-                <div class="pw-card-heading-row">
-                  <h3 class="pw-card-heading">{{ $t('prw.tab.defaults') }}</h3>
-                </div>
                 <div class="pw-card pw-field-table">
                   <pw-block-settings
                     view="items-defaults"
@@ -867,6 +838,24 @@
                 </div>
               </section>
             </template>
+
+          </div>
+
+          <!-- Visibility: allowed options + preset per field (pills) -->
+          <div v-show="currentBlockView === 'presets'" v-if="blockConfigs[block.blockType]">
+            <pw-block-settings
+              view="presets"
+              :block="block"
+              :config="blockConfigs[block.blockType]"
+              :overrides="blockOverrides[block.blockType] || {}"
+              :writer-active="writerActive[block.blockType] !== false"
+              @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+              @update:writer-active="$set(writerActive, block.blockType, $event)"
+            />
+          </div>
+
+          <!-- Design: the items' values (CSS variables), for all blocks at once -->
+          <div v-show="currentBlockView === 'design'" v-if="blockConfigs[block.blockType] && hasDesign(block.blockType)">
 
             <!-- Layout section. Order is fixed:
                  padding → radius → border (toggle) → border-width (only if border on) → link-style.
@@ -1120,7 +1109,8 @@ export default {
       dirtyTabs: {},
       snapshots: {},
       writerActive: {},
-      blockViewTab: 'defaults',
+      // chosen tab of a block view (design, defaults, presets); null: the first
+      blockViewTab: null,
       // theme shown in the items' colour card
       itemColorTheme: 'default',
       // guides in the block preview (and the matching stripes in the rows)
@@ -1218,6 +1208,19 @@ export default {
       return ['general', 'header', 'footer', 'blocks', 'fonts', ...(this.hasAiTab ? ['ai'] : [])];
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
+    // tabs of a block view: design (only with values), start values, visibility
+    blockViewTabs() {
+      const views = this.hasDesign(this.activeTab) ? ['design', 'defaults', 'presets'] : ['defaults', 'presets'];
+      return views.map(name => ({
+        name,
+        label: this.$t('prw.view.' + name),
+        click: () => { this.blockViewTab = name; },
+      }));
+    },
+    currentBlockView() {
+      const names = this.blockViewTabs.map(t => t.name);
+      return names.includes(this.blockViewTab) ? this.blockViewTab : names[0];
+    },
     activeBlockEntries() {
       return this.blocks.filter(b => b.active && b.blockType.startsWith('pw'));
     },
@@ -1346,6 +1349,10 @@ export default {
     },
   },
   watch: {
+    // another block: start on its first tab
+    activeTab() {
+      this.blockViewTab = null;
+    },
     blockType: {
       immediate: true,
       handler(val) {
@@ -1622,6 +1629,10 @@ export default {
       const cfg = this.blockConfigs[blockType];
       const content = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields && cfg.defaults.settings.fields.content || {};
       return content.blocks !== undefined && content.blocks !== false;
+    },
+    // a block with values of its own (the items' CSS variables)
+    hasDesign(blockType) {
+      return this.hasItemFields(blockType) && !!this.blockValueDefaults[blockType];
     },
     hasItemDefaultFields(blockType) {
       // The Defaults sub-section inside Items only makes sense when the plugin
@@ -2566,24 +2577,18 @@ export default {
   margin-top: var(--spacing-12);
 }
 
-/* presets: as big as the tabs, but only the icon (no pill surface); open
-   in full colour, closed faded like the device switch */
-.pw-pill.pw-presets-switch {
-  background: transparent;
-  box-shadow: none;
+/* block view: Kirby's tabs right under the heading's line (as in a page
+   view), below them what the chosen tab does */
+.pw-page-title-row:has(+ .pw-block-view-tabs) {
+  margin-bottom: 0;
 }
-.pw-presets-switch .pw-tool,
-.pw-presets-switch .pw-tool:hover,
-.pw-presets-switch .pw-tool[aria-pressed="true"],
-.pw-presets-switch .pw-tool[aria-pressed="true"]:hover {
-  background: transparent;
-  color: var(--color-text);
+.pw-block-view-tabs.k-tabs {
+  margin-bottom: var(--spacing-3);
 }
-.pw-presets-switch .pw-tool:not([aria-pressed="true"]) {
-  opacity: 0.3;
-}
-.pw-presets-switch .pw-tool:not([aria-pressed="true"]):hover {
-  opacity: 0.6;
+.pw-block-view-intro {
+  margin-bottom: var(--spacing-8);
+  font-size: var(--text-sm);
+  color: var(--color-text-dimmed);
 }
 
 /* the save buttons sit on the right, so nothing moves when they appear */

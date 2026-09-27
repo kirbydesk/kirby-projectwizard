@@ -77,11 +77,15 @@
 	'prw.tab.header' => 'Header',
 	'prw.tab.ai' => 'AI',
 	'prw.tab.footer' => 'Footer',
-	'prw.tab.defaults' => 'Defaults',
+	'prw.view.design' => 'Design',
+	'prw.view.defaults' => 'Start values',
+	'prw.view.presets' => 'Visibility',
+	'prw.view.design.intro' => 'Applies immediately to all blocks of this type, including existing ones.',
+	'prw.view.defaults.intro' => 'Applies to newly created blocks. The values can still be changed in the block itself.',
+	'prw.view.presets.intro' => 'Defines what editors can choose in the block and what a new block has preselected.',
 	'prw.heading.block' => 'Block',
 	'prw.tab.items' => 'Items',
 	'prw.tab.layout' => 'Layout',
-	'prw.tab.presets' => 'Presets',
 
 	/* -------------- Properties --------------*/
 	'prw.property.align' => 'Alignment',
