@@ -9,18 +9,25 @@
           <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
         </div>
         <div class="pw-field-row-options">
-          <!-- the options as Kirby's toggles: black = preset, white = allowed,
-               greyed = not allowed; a click moves on to the next state -->
-          <span class="pw-option-toggles" :style="{ '--options': options.length }">
-            <button
-              v-for="opt in options"
-              :key="opt"
-              type="button"
-              :data-state="optionState(opt)"
-              :title="$t('prw.option.state.' + optionState(opt))"
-              @click="cycleOption(opt)"
-            >{{ optionLabel(opt) }}</button>
-          </span>
+          <!-- the options as Kirby's toggles (same markup, so they look like
+               the other toggles): black = preset, plain = allowed, greyed =
+               not allowed; a click moves on to the next state -->
+          <div class="k-toggles-input pw-option-toggles">
+            <ul>
+              <li v-for="opt in options" :key="opt" :data-state="optionState(opt)">
+                <input
+                  :id="uid + '-' + opt"
+                  type="checkbox"
+                  class="input-hidden"
+                  :checked="optionState(opt) === 'preset'"
+                  @click.prevent="cycleOption(opt)"
+                />
+                <label :for="uid + '-' + opt" :title="$t('prw.option.state.' + optionState(opt))">
+                  <span class="k-toggles-text">{{ optionLabel(opt) }}</span>
+                </label>
+              </li>
+            </ul>
+          </div>
         </div>
       </span>
     </div>
@@ -169,43 +176,10 @@ export default {
   flex-wrap: wrap;
 }
 
-/* the options as Kirby's toggles (k-toggles-input): preset black, allowed
-   white, not allowed greyed */
-.pw-option-toggles {
-  display: grid;
-  grid-template-columns: repeat(var(--options), auto);
-  gap: 1px;
-  border-radius: var(--rounded);
-  background: var(--color-border);
-  overflow: hidden;
-  line-height: 1.25;
-}
-.pw-option-toggles button {
-  height: var(--field-input-height);
-  padding: 0 var(--spacing-3);
-  font-size: var(--text-sm);
-  background: light-dark(var(--color-white), var(--color-gray-850));
-  cursor: pointer;
-}
-/* the preset: a black pill inside its cell */
-.pw-option-toggles button {
-  position: relative;
-  isolation: isolate;
-}
-.pw-option-toggles button[data-state="preset"] {
-  color: var(--color-white);
-}
-.pw-option-toggles button[data-state="preset"]::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  z-index: -1;
-  border-radius: 999px;
-  background: light-dark(var(--color-black), var(--color-gray-950));
-}
-.pw-option-toggles button[data-state="disabled"] {
-  background: var(--panel-color-back);
+/* options not allowed: greyed, as Kirby's disabled toggles */
+.pw-option-toggles li[data-state="disabled"] label {
   color: var(--color-text-dimmed);
+  background: var(--panel-color-back);
 }
 
 .pw-field-required {
