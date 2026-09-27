@@ -22,7 +22,7 @@
                   role="button"
                   tabindex="0"
                   :title="$t('prw.option.state.' + optionState(opt))"
-                  @click="clickOption(opt)"
+                  @click="clickOption(opt, $event)"
                   @dblclick="makePreset(opt)"
                   @keydown.enter.space.prevent="clickOption(opt)"
                 >
@@ -112,13 +112,19 @@ export default {
     },
     // click: not allowed ↔ allowed; the preset stays (another option has to
     // become the preset first)
-    clickOption(opt) {
+    // (a mouse click waits a moment: when a double click follows, only the
+    // preset is set, the option doesn't switch back and forth first)
+    clickOption(opt, event) {
       if (this.optionState(opt) === 'preset') return;
-      this.toggleOption(opt);
+      clearTimeout(this.clickTimer);
+      if (!event || event.detail === 0) return this.toggleOption(opt);
+      if (event.detail > 1) return;
+      this.clickTimer = setTimeout(() => this.toggleOption(opt), 250);
     },
     // double click: the option becomes the preset (allowed if it wasn't); the
     // old preset stays allowed
     makePreset(opt) {
+      clearTimeout(this.clickTimer);
       if (this.noDefault) return;
       if (!this.localActive.includes(opt)) this.toggleOption(opt);
       this.setDefault(opt);
