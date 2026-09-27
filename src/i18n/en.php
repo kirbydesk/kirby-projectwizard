@@ -29,7 +29,6 @@
 	'prw.label.topBottom' => 'Vertical',
 	'prw.label.leftRight' => 'Horizontal',
 	'prw.option.asTyped' => 'As typed',
-	'prw.option.userDefined' => 'Custom',
 	'prw.label.presetValue' => 'Preset',
 	'prw.label.variants' => 'Variants',
 	'prw.label.mobile' => 'Mobile',

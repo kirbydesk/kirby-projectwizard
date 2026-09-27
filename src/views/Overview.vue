@@ -435,7 +435,7 @@
                       <div class="pw-field-row-options">
                         <k-toggles-input
                           :value="radiusShape"
-                          :options="[{ value: 'square', text: $t('pw.option.square') }, { value: 'custom', text: $t('prw.option.userDefined') }]"
+                          :options="[{ value: 'square', text: $t('pw.option.square') }, { value: 'custom', text: $t('pw.option.round') }]"
                           :grow="false"
                           :required="true"
                           @input="setRadiusShape"
