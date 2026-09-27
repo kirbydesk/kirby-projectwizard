@@ -79,7 +79,6 @@
 	'prw.tab.header' => 'Header',
 	'prw.tab.ai' => 'KI',
 	'prw.tab.footer' => 'Footer',
-	'prw.drawer.itemsContent' => 'Inhalt der Einträge',
 	'prw.view.design' => 'Gestaltung',
 	'prw.view.defaults' => 'Startwerte',
 	'prw.view.presets' => 'Einschränkungen',

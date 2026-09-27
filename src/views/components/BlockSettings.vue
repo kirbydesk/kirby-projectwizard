@@ -9,7 +9,18 @@
       <template v-if="view === 'defaults' || view === 'presets'">
 
         <!-- the drawer tab "Content" above the content cards -->
-        <h2 v-if="presetFields(getContentFields()).length || hasEditorCard()" class="pw-drawer-heading">{{ drawerLabel('content') }}</h2>
+        <template v-if="presetFields(getContentFields()).length || hasEditorCard()">
+        <header :id="drawerId('content')" class="k-drawer-header pw-drawer-strip">
+          <nav class="k-breadcrumb k-drawer-breadcrumb">
+            <ol>
+              <li v-for="(crumb, i) in drawerCrumbs" :key="i">
+                <k-button class="k-breadcrumb-link" :icon="crumb.icon" :text="crumb.text" :current="i === drawerCrumbs.length - 1" variant="dimmed" />
+              </li>
+            </ol>
+          </nav>
+          <k-drawer-tabs :tab="'content'" :tabs="drawerTabs" @open="scrollToDrawer" />
+        </header>
+        </template>
 
         <!-- Content fields -->
         <section
@@ -90,7 +101,18 @@
         <!-- Item-* content fields (item-tagline, item-heading, item-editor) —
              rendered AFTER the editor so block-level fields and the editor
              come before per-item field defaults. -->
-        <h2 v-if="presetFields(getItemDefaultsContentFields()).length" class="pw-drawer-heading">{{ $t('prw.drawer.itemsContent') }}</h2>
+        <template v-if="presetFields(getItemDefaultsContentFields()).length">
+        <header :id="drawerId('items-content')" class="k-drawer-header pw-drawer-strip">
+          <nav class="k-breadcrumb k-drawer-breadcrumb">
+            <ol>
+              <li v-for="(crumb, i) in itemDrawerCrumbs" :key="i">
+                <k-button class="k-breadcrumb-link" :icon="crumb.icon" :text="crumb.text" :current="i === itemDrawerCrumbs.length - 1" variant="dimmed" />
+              </li>
+            </ol>
+          </nav>
+          <k-drawer-tabs :tab="'content'" :tabs="drawerTabs" @open="scrollToDrawer" />
+        </header>
+        </template>
         <section
           v-for="field in presetFields(getItemDefaultsContentFields())"
           :key="field.key"
@@ -125,7 +147,18 @@
            with the rows of this view, its heading right above ===== -->
       <template v-for="cat in getCategories()">
         <!-- the drawer tab the rows sit in (Layout, Style, Grid, Settings) -->
-        <h2 v-if="view !== 'layout' && catSections(cat).length" :key="'drawer-' + cat.key" class="pw-drawer-heading">{{ drawerLabel(cat.key) }}</h2>
+        <template v-if="view !== 'layout' && catSections(cat).length">
+        <header :key="'drawer-' + cat.key" :id="drawerId(cat.key)" class="k-drawer-header pw-drawer-strip">
+          <nav class="k-breadcrumb k-drawer-breadcrumb">
+            <ol>
+              <li v-for="(crumb, i) in drawerCrumbs" :key="i">
+                <k-button class="k-breadcrumb-link" :icon="crumb.icon" :text="crumb.text" :current="i === drawerCrumbs.length - 1" variant="dimmed" />
+              </li>
+            </ol>
+          </nav>
+          <k-drawer-tabs :tab="cat.key" :tabs="drawerTabs" @open="scrollToDrawer" />
+        </header>
+        </template>
         <section
           v-for="sec in catSections(cat)"
           :key="'card-' + cat.key + '-' + sec.key"
@@ -406,6 +439,26 @@ export default {
     };
   },
   computed: {
+    // the block's drawer tabs, as in the block's drawer (content always)
+    drawerTabs() {
+      const tabs = this.getDefault('settings.tabs') || {};
+      return ['content', 'layout', 'style', 'effects', 'grid', 'settings']
+        .filter(key => key === 'content' || (tabs[key] !== undefined && tabs[key] !== false))
+        .map(key => ({ name: key, label: this.drawerLabel(key) }));
+    },
+    // breadcrumb of the drawer header: the block (and its items)
+    drawerCrumbs() {
+      return [{ icon: this.block.icon || 'box', text: this.blockTitle }];
+    },
+    itemDrawerCrumbs() {
+      return [...this.drawerCrumbs, { icon: 'list-bullet', text: this.$t('prw.tab.items') }];
+    },
+    blockTitle() {
+      if (this.block.name) return this.block.name;
+      const tKey = this.block.plugin + '.name';
+      const t = this.$t(tKey);
+      return t && t !== tKey ? t : this.blockType;
+    },
     // blocks are square: all four global corner radii are 0
     blocksSquare() {
       const radii = (this.globalValues || {})['global-'];
@@ -649,6 +702,17 @@ export default {
     // name of a drawer tab (as in the block's drawer)
     drawerLabel(key) {
       return this.$t('pw.tab.' + key);
+    },
+
+    // id of a drawer header, to scroll to it from the tabs
+    drawerId(tab) {
+      return 'pw-drawer-' + this.blockType + '-' + this.view + '-' + tab;
+    },
+
+    // a tab clicked in a drawer header: to that tab's header, if this view has one
+    scrollToDrawer(tab) {
+      const el = document.getElementById(this.drawerId(tab));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
 
     editorField() {
@@ -1326,15 +1390,15 @@ export default {
   padding-left: var(--spacing-2);
 }
 
-/* the drawer tab above its cards (Content, Layout, Grid, …), smaller than
-   the "Block" / "Items" group titles */
-.pw-drawer-heading {
+/* a drawer header as in the block's drawer (breadcrumb, tabs) above the
+   cards of that tab */
+.pw-drawer-strip {
   margin-bottom: var(--spacing-3);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semi);
-  color: var(--color-text-dimmed);
+  border-radius: var(--rounded);
+  box-shadow: var(--shadow);
+  scroll-margin-top: var(--spacing-6);
 }
-.pw-card-section + .pw-drawer-heading {
+.pw-card-section + .pw-drawer-strip {
   margin-top: var(--spacing-10);
 }
 
