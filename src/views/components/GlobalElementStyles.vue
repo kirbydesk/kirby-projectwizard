@@ -1449,13 +1449,13 @@ export default {
         caption:    ['text', 'colors'],
         breadcrumb: ['text', 'colors'],
         media:      ['shape', 'style', 'slideshow', 'zoom'],
-        cite:       ['text', 'margin', 'colors'],
+        cite:       ['text', 'colors'],
       };
       return tabs[groupKey] || ['text', 'sizes', 'colors'];
     },
     varCategory(varName) {
-      // source: its gap to the quote is its outer spacing
-      if (varName === 'cite-spacing') return 'margin';
+      // source: its gap to the quote sits in the source card
+      if (varName === 'cite-spacing') return 'text';
       // buttons: paddings, outer spacing (gap between buttons), form and icon
       if (varName === 'button-padding') return 'padding';
       if (varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
