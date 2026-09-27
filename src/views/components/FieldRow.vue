@@ -9,35 +9,40 @@
           <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
         </div>
         <div class="pw-field-row-options">
-          <!-- per option: the tick allows it for the editors, the dot marks
-               the preset (only on allowed options) -->
-          <span
-            v-for="opt in options"
-            :key="opt"
-            class="pw-option-choice"
-            :class="{ 'is-allowed': localActive.includes(opt) }"
-          >
-            <label class="pw-option-allow" :title="$t('prw.label.allowed')">
-              <input
-                type="checkbox"
-                :checked="localActive.includes(opt)"
-                :disabled="localActive.includes(opt) && allowedOptions.length <= 1"
-                @change="toggleOption(opt)"
-              />
-              <span class="pw-option-name">{{ optionLabel(opt) }}</span>
-            </label>
-            <input
-              v-if="!noDefault"
-              type="radio"
-              class="pw-option-preset"
-              :name="uid + '-preset'"
-              :title="$t('prw.label.presetValue')"
-              :aria-label="$t('prw.label.presetValue') + ': ' + optionLabel(opt)"
-              :checked="opt === defaultValue"
-              :disabled="!localActive.includes(opt)"
-              @change="setDefault(opt)"
-            />
+          <!-- allowed options: each pill switches on/off -->
+          <span class="pw-pill pw-option-pills" role="group">
+            <button
+              v-for="opt in options"
+              :key="opt"
+              type="button"
+              class="pw-tool"
+              :aria-pressed="localActive.includes(opt) ? 'true' : 'false'"
+              @click="toggleOption(opt)"
+            >{{ optionLabel(opt) }}</button>
           </span>
+          <!-- preset: one of the allowed options (Kirby's black menu) -->
+          <div v-if="!noDefault" class="pw-tab-menu pw-default-menu">
+            <button type="button" class="pw-default-button" aria-haspopup="menu" @click="$refs.defaultMenu.toggle()">
+              <span class="pw-default-label">{{ $t('prw.label.presetValue') }}:</span>
+              <span class="pw-default-value">{{ optionLabel(defaultValue) }}</span>
+              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+            </button>
+            <k-dropdown-content ref="defaultMenu" align-x="end">
+              <nav class="k-navigate">
+                <button
+                  v-for="opt in allowedOptions"
+                  :key="opt"
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  :aria-current="opt === defaultValue ? 'true' : undefined"
+                  @click="setDefault(opt)"
+                >
+                  <span class="k-button-text">{{ optionLabel(opt) }}</span>
+                </button>
+              </nav>
+            </k-dropdown-content>
+          </div>
         </div>
       </span>
     </div>
@@ -129,6 +134,7 @@ export default {
     setDefault(opt) {
       this.localDefault = opt;
       this.$emit('update:default', opt);
+      this.$refs.defaultMenu?.close();
     },
   },
 };
@@ -174,30 +180,49 @@ export default {
   flex-wrap: wrap;
 }
 
-/* an option: tick (allowed) with its name, then the dot (preset); options
-   not allowed are faded and have no dot */
-.pw-field-row-options:has(> .pw-option-choice) {
-  column-gap: var(--spacing-4);
-  row-gap: var(--spacing-1);
+/* allowed options as pills: allowed = white, not allowed = faded + struck */
+.pw-pill.pw-option-pills {
+  --tool-size: 24px;
 }
-.pw-option-choice {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  --choice-height: 1rem;
+.pw-option-pills .pw-tool {
+  font-size: var(--text-xs);
+  padding-inline: var(--spacing-2);
 }
-.pw-option-allow {
+.pw-option-pills .pw-tool[aria-pressed="true"],
+.pw-option-pills .pw-tool[aria-pressed="true"]:hover {
+  background: var(--color-white);
+  color: var(--color-text);
+  font-weight: var(--font-normal);
+}
+.pw-option-pills .pw-tool[aria-pressed="false"],
+.pw-option-pills .pw-tool[aria-pressed="false"]:hover {
+  background: light-dark(var(--color-gray-100), var(--color-gray-850));
+  color: var(--color-text-dimmed);
+  text-decoration: line-through;
+}
+/* preset dropdown on the right of the row */
+.pw-default-menu {
+  margin-inline-start: auto;
+}
+.pw-default-button {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-1);
-  font-size: var(--text-sm);
-  cursor: pointer;
+  height: 24px;
+  padding-inline: var(--spacing-2) var(--spacing-1);
+  border-radius: var(--rounded);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  white-space: nowrap;
 }
-.pw-option-choice:not(.is-allowed) .pw-option-name {
+.pw-default-button:hover {
+  background: light-dark(var(--color-gray-100), var(--color-gray-850));
+}
+.pw-default-label {
   color: var(--color-text-dimmed);
 }
-.pw-option-choice:not(.is-allowed) .pw-option-preset {
-  visibility: hidden;
+.pw-default-value {
+  font-weight: var(--font-semi);
 }
 
 .pw-field-required {
