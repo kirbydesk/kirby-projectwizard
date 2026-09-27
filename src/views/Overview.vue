@@ -2581,11 +2581,9 @@ export default {
   margin-top: var(--spacing-12);
 }
 
-/* block view: Kirby's tabs on the right of the heading, the current one's
-   line on the heading's line (as the tabs in Kirby's drawers); below them
-   what the chosen tab does */
+/* block view: Kirby's tabs on the right of the heading, centred on its
+   line; below them what the chosen tab does */
 .pw-page-title-row-tabs {
-  align-items: flex-end;
   margin-bottom: var(--spacing-3);
 }
 /* the tabs take the free width (Kirby moves tabs that don't fit into its
@@ -2594,7 +2592,7 @@ export default {
   flex-grow: 1;
   justify-content: flex-end;
   margin-inline: 0 calc(var(--button-padding) * -1);
-  margin-bottom: calc(var(--spacing-3) * -1);
+  margin-bottom: 0;
 }
 .pw-block-view-intro {
   margin-bottom: var(--spacing-8);
