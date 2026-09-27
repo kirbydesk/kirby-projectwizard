@@ -9,18 +9,7 @@
           <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
         </div>
         <div class="pw-field-row-options">
-          <!-- allowed options: each pill switches on/off -->
-          <span class="pw-pill pw-option-pills" role="group">
-            <button
-              v-for="opt in options"
-              :key="opt"
-              type="button"
-              class="pw-tool"
-              :aria-pressed="localActive.includes(opt) ? 'true' : 'false'"
-              @click="toggleOption(opt)"
-            >{{ optionLabel(opt) }}</button>
-          </span>
-          <!-- preset: one of the allowed options (Kirby's black menu) -->
+          <!-- preset (left): one of the allowed options (Kirby's black menu) -->
           <div v-if="!noDefault" class="pw-tab-menu pw-default-menu">
             <button type="button" class="pw-default-button" aria-haspopup="menu" @click="$refs.defaultMenu.toggle()">
               <span class="pw-default-label">{{ $t('prw.label.presetValue') }}:</span>
@@ -43,6 +32,17 @@
               </nav>
             </k-dropdown-content>
           </div>
+          <!-- allowed options (right): each pill switches on/off -->
+          <span class="pw-pill pw-option-pills" role="group">
+            <button
+              v-for="opt in options"
+              :key="opt"
+              type="button"
+              class="pw-tool"
+              :aria-pressed="localActive.includes(opt) ? 'true' : 'false'"
+              @click="toggleOption(opt)"
+            >{{ optionLabel(opt) }}</button>
+          </span>
         </div>
       </span>
     </div>
@@ -200,8 +200,8 @@ export default {
   color: var(--color-text-dimmed);
   text-decoration: line-through;
 }
-/* preset dropdown on the right of the row */
-.pw-default-menu {
+/* preset dropdown on the left of the row, the allowed options on the right */
+.pw-default-menu + .pw-option-pills {
   margin-inline-start: auto;
 }
 .pw-default-button {
