@@ -1418,7 +1418,7 @@ export default {
         button:     ['text', 'padding', 'margin', 'shape', 'style', 'icon', 'colors'],
         caption:    ['text', 'colors'],
         breadcrumb: ['text', 'colors'],
-        media:      ['style', 'slideshow', 'zoom'],
+        media:      ['shape', 'style', 'slideshow', 'zoom'],
         cite:       ['text', 'margin', 'colors'],
       };
       return tabs[groupKey] || ['text', 'sizes', 'colors'];
@@ -1430,6 +1430,8 @@ export default {
       if (varName === 'button-padding') return 'padding';
       if (varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
       if (varName === 'button-shape' || varName === 'button-border-radius') return 'shape';
+      // media: the corner radii
+      if (varName === 'media-radius') return 'shape';
       if (varName === 'button-border-width' || varName === 'button-shadow') return 'style';
       if (varName === 'button-icon-size' || varName === 'button-icon-gap') return 'icon';
       // text marking (heading): its line height and corner radius

@@ -177,6 +177,7 @@
 	'prw.element.cite-spacing' => 'Spacing to Quote',
 	'prw.element.button-border-width' => 'Border Width',
 	'prw.element.button-shadow' => 'Shadow',
+	'prw.element.media-radius' => 'Radii',
 	'prw.element.button-shape' => 'Corners',
 	'prw.element.button-row-gap' => 'Vertical',
 	'prw.element.button-icon-size' => 'Size',

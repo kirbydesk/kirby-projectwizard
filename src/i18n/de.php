@@ -177,6 +177,7 @@
 	'prw.element.cite-spacing' => 'Abstand zum Zitat',
 	'prw.element.button-border-width' => 'Rahmenstärke',
 	'prw.element.button-shadow' => 'Schatten',
+	'prw.element.media-radius' => 'Radien',
 	'prw.element.button-shape' => 'Ecken',
 	'prw.element.button-row-gap' => 'Vertikal',
 	'prw.element.button-icon-size' => 'Größe',
