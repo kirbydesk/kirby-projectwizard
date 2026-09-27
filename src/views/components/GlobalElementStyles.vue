@@ -1500,8 +1500,8 @@ export default {
         subtabs.forEach((st, i) => {
           result.push({
             key: elementKey + ':' + st,
-            // the caption's text card is named after the caption
-            label: elementKey === 'caption' && st === 'text' ? this.partLabel('caption') : tabLabels[st],
+            // the text card of the caption and the source is named after them
+            label: (elementKey === 'caption' || elementKey === 'cite') && st === 'text' ? this.partLabel(elementKey) : tabLabels[st],
             elementKey,
             category: st,
             // media + caption without the part headings, the source (cite) too
