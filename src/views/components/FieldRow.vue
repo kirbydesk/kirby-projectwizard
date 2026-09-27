@@ -1,36 +1,48 @@
 <template>
   <div
     class="pw-field-row"
-    :class="{ 'is-disabled': !enabled, 'is-modified': modified || touched }"
+    :class="{ 'is-disabled': !enabled, 'is-modified': modified }"
   >
     <div class="k-input" data-type="text">
       <span class="k-input-element pw-field-row-inner">
         <div class="pw-field-row-label-col">
-          <input
-            v-if="!noCheckbox"
-            :id="'pw-prop-' + uid"
-            type="checkbox"
-            class="pw-field-row-check"
-            :checked="active"
-            @change="toggleActive($event.target.checked)"
-          />
-          <label class="pw-field-row-label" :for="noCheckbox ? null : 'pw-prop-' + uid">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
+          <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
         </div>
-        <div v-if="active" class="pw-field-row-options">
-          <button
-            v-for="opt in allOptions.filter(o => o !== '|')"
-            :key="opt"
-            type="button"
-            class="pw-field-row-option"
-            :class="{
-              'is-active': localActive.includes(opt),
-              'is-default': !noDefault && opt === localDefault,
-              'is-plugin-default': !noDefault && opt === pluginDefault && !touched && !modified,
-            }"
-            @click="handleClick(opt)"
-          >
-            {{ optionLabel(opt) }}
-          </button>
+        <div class="pw-field-row-options">
+          <!-- allowed options: each pill switches on/off -->
+          <span class="pw-pill pw-option-pills" role="group">
+            <button
+              v-for="opt in options"
+              :key="opt"
+              type="button"
+              class="pw-tool"
+              :aria-pressed="localActive.includes(opt) ? 'true' : 'false'"
+              @click="toggleOption(opt)"
+            >{{ optionLabel(opt) }}</button>
+          </span>
+          <!-- preset: one of the allowed options (Kirby's black menu) -->
+          <div v-if="!noDefault" class="pw-tab-menu pw-default-menu">
+            <button type="button" class="pw-default-button" aria-haspopup="menu" @click="$refs.defaultMenu.toggle()">
+              <span class="pw-default-label">{{ $t('prw.label.presetValue') }}:</span>
+              <span class="pw-default-value">{{ optionLabel(defaultValue) }}</span>
+              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+            </button>
+            <k-dropdown-content ref="defaultMenu" align-x="end">
+              <nav class="k-navigate">
+                <button
+                  v-for="opt in allowedOptions"
+                  :key="opt"
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  :aria-current="opt === defaultValue ? 'true' : undefined"
+                  @click="setDefault(opt)"
+                >
+                  <span class="k-button-text">{{ optionLabel(opt) }}</span>
+                </button>
+              </nav>
+            </k-dropdown-content>
+          </div>
         </div>
       </span>
     </div>
@@ -49,42 +61,42 @@ export default {
     enabled: { type: Boolean, default: true },
     modified: { type: Boolean, default: false },
     noDefault: { type: Boolean, default: false },
-    noCheckbox: { type: Boolean, default: false },
     required: { type: Boolean, default: false },
   },
   data() {
     return {
-      active: this.activeOptions && this.activeOptions.length > 0,
-      touched: this.modified,
-      localDefault: null,
       localActive: [...(this.activeOptions || [])],
+      localDefault: null,
     };
+  },
+  computed: {
+    options() {
+      return (this.allOptions || []).filter(o => o !== '|');
+    },
+    allowedOptions() {
+      return this.options.filter(o => this.localActive.includes(o));
+    },
+    // preset shown in the dropdown: the chosen one, else the current/plugin default
+    defaultValue() {
+      const value = this.localDefault ?? this.currentDefault ?? this.pluginDefault;
+      return this.allowedOptions.includes(value) ? value : this.allowedOptions[0];
+    },
   },
   watch: {
     modified(val) {
       if (!val) {
-        this.touched = false;
         this.localDefault = null;
         this.localActive = [...(this.activeOptions || [])];
-        this.active = this.activeOptions && this.activeOptions.length > 0;
       }
     },
     activeOptions(newVal) {
       this.localActive = [...(newVal || [])];
-      this.active = newVal && newVal.length > 0;
+    },
+    currentDefault() {
+      this.localDefault = null;
     },
   },
   methods: {
-    toggleActive(checked) {
-      this.active = checked;
-      if (!checked) {
-        // Deactivated — emit null to signal "disabled"
-        this.$emit('update:options', null);
-      } else {
-        // Reactivated — restore all options
-        this.$emit('update:options', this.allOptions);
-      }
-    },
     propertyLabel(key) {
       const tKey = 'prw.property.' + key;
       const translated = this.$t(tKey);
@@ -105,69 +117,24 @@ export default {
       }
       return opt;
     },
-    handleClick(opt) {
-      if (this.noDefault) {
-        if (!this.touched) {
-          this.touched = true;
-          this.localActive = [opt];
-        } else {
-          const isActive = this.localActive.includes(opt);
-          if (isActive) {
-            const updated = this.localActive.filter(o => o !== opt);
-            if (updated.length === 0) {
-              if (this.required) return;
-              this.touched = false;
-              this.localActive = [...this.allOptions];
-              this.$emit('update:options', this.allOptions);
-              return;
-            }
-            this.localActive = updated;
-          } else {
-            this.localActive = this.allOptions.filter(
-              o => this.localActive.includes(o) || o === opt
-            );
-          }
-        }
-        this.$emit('update:options', this.localActive);
-        return;
+    // pill clicked: allow/disallow the option (at least one stays allowed)
+    toggleOption(opt) {
+      const allowed = this.localActive.includes(opt);
+      if (allowed && this.allowedOptions.length <= 1) return;
+      const updated = allowed
+        ? this.options.filter(o => this.localActive.includes(o) && o !== opt)
+        : this.options.filter(o => this.localActive.includes(o) || o === opt);
+      this.localActive = updated;
+      this.$emit('update:options', updated);
+      // the preset must stay one of the allowed options
+      if (!this.noDefault && allowed && opt === this.defaultValue) {
+        this.setDefault(updated[0]);
       }
-
-      if (!this.touched) {
-        this.touched = true;
-        this.localActive = [opt];
-        this.$emit('update:options', [opt]);
-        return;
-      }
-
-      const isActive = this.localActive.includes(opt);
-      const isLocalDefault = opt === this.localDefault;
-
-      if (!isActive) {
-        // Aus → Grau
-        const updated = this.allOptions.filter(
-          o => this.localActive.includes(o) || o === opt
-        );
-        this.localActive = updated;
-        this.$emit('update:options', updated);
-      } else if (isActive && !isLocalDefault) {
-        // Grau → Blau
-        this.localDefault = opt;
-        this.$emit('update:default', opt);
-      } else if (isActive && isLocalDefault) {
-        // Blau → Aus
-        const updated = this.localActive.filter(o => o !== opt);
-        if (updated.length === 0) {
-          // Last option deselected → reset to defaults
-          this.touched = false;
-          this.localDefault = null;
-          this.localActive = [...this.allOptions];
-          this.$emit('update:options', []);
-          return;
-        }
-        this.localDefault = null;
-        this.localActive = updated;
-        this.$emit('update:options', updated);
-      }
+    },
+    setDefault(opt) {
+      this.localDefault = opt;
+      this.$emit('update:default', opt);
+      this.$refs.defaultMenu?.close();
     },
   },
 };
@@ -199,11 +166,6 @@ export default {
   gap: 10px;
 }
 
-.pw-field-row-check {
-  accent-color: var(--color-black);
-  cursor: pointer;
-  flex-shrink: 0;
-}
 
 .pw-field-row-label {
   font-size: var(--text-sm);
@@ -218,63 +180,55 @@ export default {
   flex-wrap: wrap;
 }
 
-/* Option: plain text by default */
-.pw-field-row-option {
-  padding: var(--spacing-1) var(--spacing-2);
-  border: none;
-  background: none;
-  font-size: var(--text-sm);
-  font-family: var(--font-sans);
+/* allowed options as pills: allowed = white, not allowed = faded + struck */
+.pw-pill.pw-option-pills {
+  --tool-size: 24px;
+}
+.pw-option-pills .pw-tool {
+  font-size: var(--text-xs);
+  padding-inline: var(--spacing-2);
+}
+.pw-option-pills .pw-tool[aria-pressed="true"],
+.pw-option-pills .pw-tool[aria-pressed="true"]:hover {
+  background: var(--color-white);
   color: var(--color-text);
-  cursor: pointer;
+  font-weight: var(--font-normal);
+}
+.pw-option-pills .pw-tool[aria-pressed="false"],
+.pw-option-pills .pw-tool[aria-pressed="false"]:hover {
+  background: light-dark(var(--color-gray-100), var(--color-gray-850));
+  color: var(--color-text-dimmed);
+  text-decoration: line-through;
+}
+/* preset dropdown on the right of the row */
+.pw-default-menu {
+  margin-inline-start: auto;
+}
+.pw-default-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  height: 24px;
+  padding-inline: var(--spacing-2) var(--spacing-1);
   border-radius: var(--rounded);
-  transition: none;
-}
-
-/* Not active — dimmed */
-.pw-field-row-option:not(.is-active) {
-  color: var(--color-text-dimmed);
-  opacity: 0.35;
-}
-
-/* Active — dimmed text, no background */
-.pw-field-row-option.is-active {
-  color: var(--color-text-dimmed);
-}
-
-/* Unmodified state: default is underlined, dimmed */
-.pw-field-row-option.is-plugin-default {
-  text-decoration: underline;
-  color: var(--color-text-dimmed);
-}
-
-/* Modified state: active options get grey pilled badge */
-.pw-field-row.is-modified .pw-field-row-option.is-active {
-  background: light-dark(var(--color-blue-300), #5D5D5D);
+  font-size: var(--text-xs);
   color: var(--color-text);
-  border-radius: 5px;
+  white-space: nowrap;
+}
+.pw-default-button:hover {
+  background: light-dark(var(--color-gray-100), var(--color-gray-850));
+}
+.pw-default-label {
+  color: var(--color-text-dimmed);
+}
+.pw-default-value {
+  font-weight: var(--font-semi);
 }
 
-/* Modified state: not active — lower opacity */
-.pw-field-row.is-modified .pw-field-row-option:not(.is-active) {
-  opacity: 0.25;
-}
-
-/* Modified state: default gets blue pilled badge */
-.pw-field-row.is-modified .pw-field-row-option.is-default.is-active {
-  background: var(--color-blue-600);
-  color: var(--color-white);
-  border-radius: 5px;
-}
-
-/* Required indicator */
 .pw-field-required {
   color: var(--color-red-600, #dc2626);
   margin-left: 2px;
 }
 
 /* Hover */
-.pw-field-row-option:hover {
-  opacity: 1;
-}
 </style>

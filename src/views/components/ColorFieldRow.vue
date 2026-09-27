@@ -1,11 +1,26 @@
 <template>
-  <div class="pw-color-field">
-    <k-color-field
+  <!-- flat: the colour first (like the px badge of the number fields), then
+       the value as text; a click on the colour opens Kirby's picker -->
+  <div class="pw-color-field" :class="{ 'is-default': !overrideValue }">
+    <k-colorname-input
+      class="pw-color-value"
       :value="displayValue"
       :alpha="true"
-      mode="picker"
+      format="hex"
       @input="onInput"
     />
+    <button type="button" class="pw-color-swatch" :title="displayValue" @click="$refs.picker.toggle()">
+      <k-color-frame :color="displayValue" ratio="1/1" />
+    </button>
+    <k-dropdown-content ref="picker" align-x="start" class="k-color-field-picker">
+      <k-colorpicker-input
+        :value="displayValue"
+        :alpha="true"
+        format="hex"
+        @input="onInput"
+        @click.native.stop
+      />
+    </k-dropdown-content>
   </div>
 </template>
 
@@ -36,24 +51,40 @@ export default {
 .pw-color-field {
   display: flex;
   align-items: center;
-}
-
-.pw-color-field .k-color-field {
-  height: auto;
+  gap: var(--spacing-3);
   width: 160px;
 }
 
-.pw-color-field .k-input[data-type="color"] {
-  background: light-dark(#f9f9f9, #1a1a1a);
-  border-radius: 0 !important;
+.pw-color-field .pw-color-value {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+.pw-color-field .pw-color-value:focus {
+  outline: 0;
 }
 
-.pw-color-field .k-color-field-preview {
-  width: 22px;
-  height: 22px;
+.pw-color-swatch {
+  --color-frame-size: 22px;
+  --color-frame-rounded: var(--rounded-sm);
+  order: -1;
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: var(--color-frame-rounded);
+  cursor: pointer;
 }
 
-.pw-color-field .k-string-input {
-  padding-right: 0;
+/* in the table the field fills the cell */
+.pw-field-table .pw-color-field {
+  flex: 1;
+  width: auto;
+}
+.pw-field-table .pw-element-field:has(> .pw-color-field) {
+  flex: 1;
 }
 </style>

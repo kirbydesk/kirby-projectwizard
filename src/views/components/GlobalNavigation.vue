@@ -67,7 +67,7 @@
             </div>
             <template v-else>
               <!-- Group header row -->
-              <div v-if="fieldGroup.header" :key="'gh-' + gIdx" class="pw-group-header">
+              <div v-if="fieldGroup.header && !isCornerGroup(fieldGroup)" :key="'gh-' + gIdx" class="pw-group-header">
                 <div class="pw-field-row-label-col"></div>
                 <div class="pw-group-header-labels" :class="'pw-group-type-' + fieldGroup.fieldType">
                   <span v-for="label in fieldGroup.header" :key="label" class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t(label) || label }}</span></span>
@@ -78,6 +78,7 @@
               <div
                 :key="'gf-' + gIdx + '-' + fIdx"
                 class="pw-field-row"
+                :data-guide="guideVars.includes(field.varName) ? 'margin' : null"
                 :class="{ 'pw-dual-first': field.isTight, 'pw-dual-next': field.isTightNext }"
               >
                 <div class="k-input" data-type="text">
@@ -85,7 +86,7 @@
                     <div class="pw-field-row-label-col">
                       <label class="pw-field-row-label" v-html="field.label"></label>
                     </div>
-                    <div class="pw-field-row-options" :class="fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : ''">
+                    <div class="pw-field-row-options" :class="[fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : '', { 'pw-corner-grid': isCorners(field.def) }]">
                       <!-- Visibility toggle -->
                       <button
                         v-if="field.def.type === 'visibility'"
@@ -153,6 +154,7 @@
                         <span v-for="(val, idx) in field.def.value" :key="idx" class="pw-element-field">
                           <span class="pw-element-input-wrap">
                             <input
+                              v-pw-autosize
                               type="text"
                               inputmode="decimal"
                               :step="field.def.step || 0.1"
@@ -165,7 +167,7 @@
                             />
                             <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                           </span>
-                          <span class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit) }}</span>
+                          <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit) }}</span>
                         </span>
                       </template>
                       <!-- Responsive (default/lg/xl) -->
@@ -173,6 +175,7 @@
                         <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                           <span class="pw-element-input-wrap">
                             <input
+                              v-pw-autosize
                               type="text"
                               inputmode="decimal"
                               :step="field.def.step || 0.1"
@@ -185,7 +188,7 @@
                             />
                             <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                           </span>
-                          <span class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
+                          <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
                         </span>
                       </template>
                       <!-- Number input with unit -->
@@ -193,6 +196,7 @@
                         <span class="pw-element-field">
                           <span class="pw-element-input-wrap">
                             <input
+                              v-pw-autosize
                               type="text"
                               inputmode="decimal"
                               :step="field.def.step || 0.1"
@@ -205,7 +209,7 @@
                             />
                             <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                           </span>
-                          <span class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
+                          <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
                         </span>
                       </template>
                       <!-- SVG + dependent height field -->
@@ -217,6 +221,7 @@
                               <span class="pw-group-column-label" style="margin-right: var(--spacing-2)">{{ $t('pw.field.height.label') }}</span>
                               <span class="pw-element-input-wrap">
                                 <input
+                                  v-pw-autosize
                                   type="text"
                                   inputmode="decimal"
                                   :step="dependentField(field.varName).def.step || 0.1"
@@ -229,7 +234,7 @@
                                 />
                                 <span class="pw-element-unit">{{ dependentField(field.varName).def.unit }}</span>
                               </span>
-                              <span class="pw-px-calculator">{{ toPx(getOverrideValue(dependentField(field.varName).varName) || dependentField(field.varName).def.value, dependentField(field.varName).def.unit) }}</span>
+                              <span v-if="dependentField(field.varName).def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(dependentField(field.varName).varName) || dependentField(field.varName).def.value, dependentField(field.varName).def.unit) }}</span>
                             </span>
                           </template>
                         </template>
@@ -261,7 +266,7 @@
           </template>
           <!-- Multi-theme colors -->
           <template v-if="group.colors && !showPreview">
-            <div v-if="hasColors(group)" class="pw-group-header">
+            <div v-if="hasColors(group) && !theme" class="pw-group-header">
               <div class="pw-field-row-label-col"></div>
               <div class="pw-group-header-labels pw-group-type-theme-color">
                 <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.default') }}</span></span>
@@ -272,6 +277,7 @@
             </div>
             <div
               v-for="(colorVal, varName, index) in group.colors"
+              v-if="colorShown(varName) && !(theme && isStateColor(varName, group.colors))"
               :key="'color-' + varName"
               class="pw-field-row"
               :class="{
@@ -284,15 +290,30 @@
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label" v-html="propLabel(varName)"></label>
                   </div>
-                  <div class="pw-field-row-options pw-group-type-theme-color">
+                  <!-- one theme and hover/active colours: the three states in one row -->
+                  <div v-if="theme && stateColors(varName, group.colors).length > 1" class="pw-field-row-options">
+                    <span class="pw-state-grid">
+                      <span v-for="stateColor in stateColors(varName, group.colors)" :key="stateColor.varName" class="pw-state-cell">
+                        <span v-if="stateColor.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + stateColor.state">:{{ stateColor.state === 'hover' ? 'Hover' : 'Active' }}</span>
+                        <pw-color-field-row
+                          :group="theme"
+                          :var-name="stateColor.varName"
+                          :default-value="stateColor.colorVal[theme] || ''"
+                          :override-value="getColorOverrideValue(theme, stateColor.varName)"
+                          @update:value="setColorValue(theme, stateColor.varName, $event, stateColor.colorVal[theme] || '')"
+                        />
+                      </span>
+                    </span>
+                  </div>
+                  <div v-else class="pw-field-row-options" :class="{ 'pw-group-type-theme-color': !theme }">
                     <pw-color-field-row
-                      v-for="theme in ['default', 'variant', 'variant2', 'variant3']"
-                      :key="theme"
-                      :group="theme"
+                      v-for="t in (theme ? [theme] : ['default', 'variant', 'variant2', 'variant3'])"
+                      :key="t"
+                      :group="t"
                       :var-name="varName"
-                      :default-value="colorVal[theme] || ''"
-                      :override-value="getColorOverrideValue(theme, varName)"
-                      @update:value="setColorValue(theme, varName, $event, colorVal[theme] || '')"
+                      :default-value="colorVal[t] || ''"
+                      :override-value="getColorOverrideValue(t, varName)"
+                      @update:value="setColorValue(t, varName, $event, colorVal[t] || '')"
                     />
                   </div>
                 </span>
@@ -308,8 +329,30 @@
 </template>
 
 <script>
+import autosize from '../../directives/autosize.js';
+
 export default {
+  directives: { 'pw-autosize': autosize },
   props: {
+    // colour rows to show (null: all) / to leave out
+    colorNames: {
+      type: Array,
+      default: null,
+    },
+    hideColorNames: {
+      type: Array,
+      default: () => [],
+    },
+    // rows marked with the cyan guide stripe (preview guides on)
+    guideVars: {
+      type: Array,
+      default: () => [],
+    },
+    // one theme (e.g. "variant"): the colour rows show only its value
+    theme: {
+      type: String,
+      default: null,
+    },
     navDefaults: {
       type: Object,
       default: () => ({}),
@@ -440,6 +483,28 @@ export default {
     },
   },
   methods: {
+    // four corner values (top-left, top-right, bottom-left, bottom-right):
+    // shown as a 2×2 grid in the cell, like the corners themselves
+    // corner values in the 2×2 grid carry their own glyphs: no column labels
+    // hover/active colour of a base colour in the same group (shown in the
+    // base colour's row)
+    isStateColor(varName, colors) {
+      const base = varName.replace(/-(hover|active)$/, '');
+      return base !== varName && !!colors[base];
+    },
+    stateColors(varName, colors) {
+      return ['', '-hover', '-active']
+        .filter(suffix => colors[varName + suffix])
+        .map(suffix => ({ varName: varName + suffix, colorVal: colors[varName + suffix], state: suffix ? suffix.slice(1) : 'normal' }));
+    },
+    isCornerGroup(fieldGroup) {
+      return (fieldGroup.fields || []).some(field => this.isCorners(field.def));
+    },
+    isCorners(def) {
+      // four values named by corner, either as CSS suffixes or as labels
+      const names = (def && (def.suffixes || def.labels)) || [];
+      return Array.isArray(names) && names.length === 4 && names.some(n => String(n).includes('top-left'));
+    },
     toggle(key) {
       this.$set(this.openSections, key, !this.isOpen(key));
     },
@@ -452,6 +517,10 @@ export default {
       const prwT = this.$t(prwKey);
       if (prwT && prwT !== prwKey) return prwT;
       return key;
+    },
+    colorShown(varName) {
+      if (this.hideColorNames.includes(varName)) return false;
+      return !this.colorNames || this.colorNames.includes(varName);
     },
     hasColors(group) {
       return group.colors && Object.keys(group.colors).length > 0;

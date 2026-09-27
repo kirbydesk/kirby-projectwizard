@@ -1,9 +1,57 @@
 <template>
-  <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'">
+  <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'" :style="{ '--pw-body-background': bodyBackgroundColor }">
     <!-- Header in Kirby's topbar (like kirby-explorer): tabs as a pill, save buttons -->
     <pw-portal to=".pw-wizard .k-topbar">
       <div class="pw-topbar">
         <!-- Main navigation: the same on the global view and on every block view -->
+        <!-- Project: project, header, footer, fonts and AI, then the settings -->
+        <div v-if="!loading" class="pw-pill pw-tabs" role="group">
+          <div class="pw-tab-menu">
+            <button
+              type="button"
+              class="pw-tool pw-tab"
+              aria-haspopup="menu"
+              :aria-pressed="isGlobalTab(...projectMenuTabs, 'settings') ? 'true' : 'false'"
+              @click="$refs.settingsMenu.toggle()"
+            >
+              <k-icon type="globe" />
+              <span class="pw-tab-text">{{ $t('prw.tab.project') }}</span>
+              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+            </button>
+            <k-dropdown-content ref="settingsMenu" align-x="start">
+              <nav class="k-navigate">
+                <template v-for="(tab, idx) in projectMenuTabs.map(key => globalTabs.find(t => t.key === key)).filter(Boolean)">
+                  <button
+                    :key="tab.key"
+                    type="button"
+                    class="k-dropdown-item k-button pw-menu-item"
+                    data-has-text="true"
+                    data-has-icon="true"
+                    :aria-current="isGlobalTab(tab.key) ? 'true' : undefined"
+                    @click="$refs.settingsMenu.close(); openGlobal(tab.key)"
+                  >
+                    <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
+                    <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+                  </button>
+                  <!-- "Project" first, like "Elements" and "Blocks" in their menus -->
+                  <hr v-if="idx === 0" :key="'hr-' + tab.key" />
+                </template>
+                <hr />
+                <button
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  data-has-icon="true"
+                  :aria-current="isGlobalTab('settings') ? 'true' : undefined"
+                  @click="$refs.settingsMenu.close(); openGlobal('settings')"
+                >
+                  <span class="k-button-icon"><k-icon type="cog" /></span>
+                  <span class="k-button-text">{{ $t('prw.tab.settings') }}</span>
+                </button>
+              </nav>
+            </k-dropdown-content>
+          </div>
+        </div>
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <!-- Elements: the elements (Kirby's black menu, like kirby-explorer) -->
           <div class="pw-tab-menu">
@@ -11,28 +59,16 @@
               type="button"
               class="pw-tool pw-tab"
               aria-haspopup="menu"
-              :aria-pressed="isGlobalTab('elements', 'elementsGeneral') ? 'true' : 'false'"
+              :aria-pressed="isGlobalTab('elements') ? 'true' : 'false'"
               @click="$refs.elementsMenu.toggle()"
             >
-              <!-- shows the chosen element while the elements are open -->
-              <k-icon :type="elementsButtonIcon" />
-              <span class="pw-tab-text">{{ elementsButtonLabel }}</span>
+              <k-icon type="layers" />
+              <span class="pw-tab-text">{{ $t('prw.tab.elements') }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
             </button>
             <k-dropdown-content ref="elementsMenu" align-x="start">
               <nav class="k-navigate">
-                <button
-                  type="button"
-                  class="k-dropdown-item k-button pw-menu-item"
-                  data-has-text="true"
-                  data-has-icon="true"
-                  :aria-current="isGlobalTab('elementsGeneral') ? 'true' : undefined"
-                  @click="$refs.elementsMenu.close(); openGlobal('elementsGeneral')"
-                >
-                  <span class="k-button-icon"><k-icon type="layers" /></span>
-                  <span class="k-button-text">{{ $t('prw.tab.elementsGeneral') }}</span>
-                </button>
-                <hr />
+                <!-- the elements (the default font is under Project → Fonts) -->
                 <button
                   v-for="option in elementOptions"
                   :key="option.value"
@@ -53,36 +89,24 @@
 
         <!-- Blocks: its own group -->
         <div v-if="!loading" class="pw-pill" role="group">
-            <!-- Blocks: general settings, then the activated blocks -->
+            <!-- Blocks: the activated blocks -->
             <div class="pw-tab-menu">
               <button
                 type="button"
                 class="pw-tool pw-tab"
                 aria-haspopup="menu"
-                :aria-pressed="isGlobalTab('blocks') || activeTab !== 'global' ? 'true' : 'false'"
+                :aria-pressed="activeTab !== 'global' ? 'true' : 'false'"
                 @click="$refs.blocksMenu.toggle(); loadBlockUsage()"
               >
-                <!-- shows the chosen block on a block view -->
-                <k-icon :type="activeTab !== 'global' ? (currentBlockEntry && currentBlockEntry.icon) || 'box' : 'box'" />
-                <span class="pw-tab-text">{{ activeTab !== 'global' ? blockLabel(activeTab) : $t('prw.tab.blocks') }}</span>
+                <k-icon type="box" />
+                <span class="pw-tab-text">{{ $t('prw.tab.blocks') }}</span>
                 <k-icon type="angle-down" class="pw-tab-menu-chevron" />
               </button>
               <k-dropdown-content ref="blocksMenu" align-x="start">
                 <nav class="k-navigate">
-                  <button
-                    type="button"
-                    class="k-dropdown-item k-button pw-menu-item"
-                    data-has-text="true"
-                    data-has-icon="true"
-                    :aria-current="isGlobalTab('blocks') ? 'true' : undefined"
-                    @click="$refs.blocksMenu.close(); openGlobal('blocks')"
-                  >
-                    <span class="k-button-icon"><k-icon type="box" /></span>
-                    <span class="k-button-text">{{ $t('prw.tab.blocks.general') }}</span>
-                  </button>
-                  <!-- the activated blocks, each opens its own settings view -->
+                  <!-- the activated blocks, each opens its own settings view
+                       (the general block settings are under Project) -->
                   <template v-if="activeBlockEntries.length">
-                    <hr />
                     <button
                       v-for="entry in activeBlockEntries"
                       :key="entry.blockType"
@@ -104,56 +128,6 @@
                 </nav>
               </k-dropdown-content>
             </div>
-        </div>
-
-        <!-- right side: AI and settings -->
-        <div class="pw-topbar-end">
-        <!-- Cog: global, header, footer, fonts and AI, then the block settings -->
-        <div v-if="!loading" class="pw-pill" role="group">
-          <div class="pw-tab-menu">
-            <button
-              type="button"
-              class="pw-tool"
-              aria-haspopup="menu"
-              :title="$t('prw.tab.settings')"
-              :aria-label="$t('prw.tab.settings')"
-              :aria-pressed="isGlobalTab(...projectMenuTabs, 'settings') ? 'true' : 'false'"
-              @click="$refs.settingsMenu.toggle()"
-            >
-              <k-icon type="cog" />
-              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
-            </button>
-            <k-dropdown-content ref="settingsMenu" align-x="end">
-              <nav class="k-navigate">
-                <button
-                  v-for="tab in projectMenuTabs.map(key => globalTabs.find(t => t.key === key)).filter(Boolean)"
-                  :key="tab.key"
-                  type="button"
-                  class="k-dropdown-item k-button pw-menu-item"
-                  data-has-text="true"
-                  data-has-icon="true"
-                  :aria-current="isGlobalTab(tab.key) ? 'true' : undefined"
-                  @click="$refs.settingsMenu.close(); openGlobal(tab.key)"
-                >
-                  <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
-                  <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
-                </button>
-                <hr />
-                <button
-                  type="button"
-                  class="k-dropdown-item k-button pw-menu-item"
-                  data-has-text="true"
-                  data-has-icon="true"
-                  :aria-current="isGlobalTab('settings') ? 'true' : undefined"
-                  @click="$refs.settingsMenu.close(); openGlobal('settings')"
-                >
-                  <span class="k-button-icon"><k-icon type="cog" /></span>
-                  <span class="k-button-text">{{ $t('prw.tab.settings') }}</span>
-                </button>
-              </nav>
-            </k-dropdown-content>
-          </div>
-        </div>
         </div>
 
         <div v-if="isDirty" class="k-form-controls pw-topbar-controls">
@@ -189,19 +163,25 @@
     <div v-else class="pw-wizard-columns">
     <div class="pw-wizard-content">
 
-        <!-- Block view: the tabs of this block (the header names the block) -->
-        <div v-if="!loading && activeTab !== 'global'" class="pw-page-heading-row">
-          <div v-if="!loading && activeTab !== 'global'" class="pw-pill pw-tabs" role="group">
+        <!-- Global views: the page's name as heading (an element: its name) -->
+        <div v-if="!loading && activeTab === 'global'" class="pw-page-title-row">
+          <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
+        </div>
+
+        <!-- Block view: the block's name as page heading, the presets switch behind it -->
+        <div v-if="!loading && activeTab !== 'global'" class="pw-page-title-row">
+          <h1 class="pw-page-title">{{ blockLabel(activeTab) }}</h1>
+          <!-- presets: only the icon, right behind the heading -->
+          <div class="pw-pill pw-presets-switch" role="group">
             <button
-              v-for="tab in blockTabs(activeTab)"
-              :key="tab.key"
               type="button"
-              class="pw-tool pw-tab"
-              :aria-pressed="blockViewTab === tab.key ? 'true' : 'false'"
-              @click="blockViewTab = tab.key"
+              class="pw-tool"
+              :title="$t('prw.tab.presets')"
+              :aria-label="$t('prw.tab.presets')"
+              :aria-pressed="blockViewTab === 'presets' ? 'true' : 'false'"
+              @click="blockViewTab = blockViewTab === 'presets' ? 'defaults' : 'presets'"
             >
-              <k-icon :type="tab.icon" />
-              <span class="pw-tab-text">{{ $t('prw.tab.' + tab.key) }}</span>
+              <k-icon type="settings" />
             </button>
           </div>
         </div>
@@ -237,126 +217,362 @@
               </div>
             </section>
 
-            <pw-global-elements
-              :blocks="blocks"
-              @toggle="toggleBlock($event.blockType, $event.checked)"
-            />
           </div>
 
           <!-- Project → General: the page background -->
           <div v-show="globalActiveTab === 'general'" class="pw-wizard-global-content">
-            <pw-global-navigation
-              :nav-defaults="globalDefaults"
-              :nav-overrides="globalOverrides"
-              :saved-overrides="originalGlobalOverrides"
-              :discard-key="discardKey"
-              :fonts="fontsData"
-              :body-default-font="bodyDefaultFont"
-              @update:overrides="onGlobalOverridesUpdate"
-              :show-only="['body-background']"
-              :vars-only="true"
-              :hide-section-headers="true"
+            <!-- which blocks can be used -->
+            <pw-global-elements
+              :blocks="blocks"
+              @toggle="toggleBlock($event.blockType, $event.checked)"
             />
+            <!-- page colours as a card, like the elements -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-global-navigation
+                  :nav-defaults="globalDefaults"
+                  :nav-overrides="globalOverrides"
+                  :saved-overrides="originalGlobalOverrides"
+                  :discard-key="discardKey"
+                  :fonts="fontsData"
+                  :body-default-font="bodyDefaultFont"
+                  @update:overrides="onGlobalOverridesUpdate"
+                  :show-only="['body-background']"
+                  :vars-only="true"
+                  :hide-section-headers="true"
+                />
+              </div>
+            </section>
           </div>
 
           <!-- Blocks -->
           <div v-show="globalActiveTab === 'blocks'" class="pw-wizard-global-content">
             <!-- Block Preview -->
             <pw-portal to=".pw-wizard .pw-preview-column">
-              <div v-show="activeTab === 'global' && globalActiveTab === 'blocks'">
+              <div v-show="activeTab === 'global' && globalActiveTab === 'blocks'" class="pw-element-preview-side">
+                <!-- toolbar: the variant (shared with the colour card) -->
+                <div class="pw-preview-switches">
+                  <div class="pw-pill pw-preview-bp pw-preview-theme" role="group">
+                    <button
+                      v-for="t in themes"
+                      :key="'bpt-' + t"
+                      type="button"
+                      class="pw-tool"
+                      :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
+                      @click="blocksColorTheme = t"
+                    >{{ $t('pw.option.' + t) }}</button>
+                  </div>
+                  <!-- guides on/off (shared by all previews) -->
+                  <div class="pw-pill pw-guides-switch" role="group">
+                    <button
+                      type="button"
+                      class="pw-tool"
+                      :title="$t('prw.preview.guides')"
+                      :aria-label="$t('prw.preview.guides')"
+                      :aria-pressed="previewGuides ? 'true' : 'false'"
+                      @click="previewGuides = !previewGuides"
+                    >
+                      <k-icon type="prw-guides" />
+                    </button>
+                  </div>
+                  <pw-device-select v-model="blocksPreviewBp" />
+                </div>
                 <div class="pw-block-preview-body" :style="blockPreviewBodyStyle">
-                      <div class="pw-block-preview-row">
-                        <div v-for="theme in themes" :key="theme" class="pw-block-preview" :style="blockPreviewStyle(theme)">
-                          <p :style="blockPreviewElementStyle('tagline', theme)">{{ $t('prw.preview.tagline') }}</p>
-                          <h2 :style="blockPreviewElementStyle('heading', theme)">{{ $t('prw.preview.heading') }}</h2>
-                          <p :style="blockPreviewElementStyle('editor', theme)">{{ $t('prw.preview.text.before') }} <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
+                      <!-- the outer spacing (block layout) around the tile; the guides
+                           mark the fixed edge to the neighbouring blocks -->
+                      <div class="pw-block-preview-row pw-block-preview-spaced" :class="{ 'has-guides': previewGuides }" :style="blockPreviewMarginStyle">
+                        <div v-for="theme in [currentBlocksColorTheme]" :key="theme" class="pw-block-preview" :class="{ 'has-guides': previewGuides }" :style="blockPreviewStyle(theme, true)">
+                          <div class="pw-block-preview-content">
+                          <p :style="blockPreviewElementStyle('tagline', theme, blocksPreviewBp)">{{ $t('prw.preview.tagline') }}</p>
+                          <h2 :style="blockPreviewElementStyle('heading', theme, blocksPreviewBp)">{{ $t('prw.preview.heading') }}</h2>
+                          <p :style="blockPreviewElementStyle('editor', theme, blocksPreviewBp)">{{ $t('prw.preview.text.before') }} <a :class="'pw-preview-link-' + theme" :style="blockPreviewLinkStyle(theme, '')">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
                           <a :class="'pw-preview-btn-' + theme" :style="blockPreviewButtonStyle(theme, '')">{{ $t('prw.preview.button') }}</a>
+                          </div>
                         </div>
                       </div>
                 </div>
               </div>
             </pw-portal>
 
-            <!-- Layout / Colors subtabs -->
-            <div class="pw-element-subtabs">
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': (blocksSubtab || 'layout') === 'layout' }" @click="blocksSubtab = 'layout'">{{ $t('prw.subtab.layout') }}</button>
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': blocksSubtab === 'colors' }" @click="blocksSubtab = 'colors'">{{ $t('prw.subtab.colors') }}</button>
-            </div>
-
-            <pw-global-navigation
-              v-show="(blocksSubtab || 'layout') === 'layout'"
-              :nav-defaults="globalDefaults"
-              :nav-overrides="globalOverrides"
-              :saved-overrides="originalGlobalOverrides"
-              :discard-key="discardKey"
-              :fonts="fontsData"
-              :body-default-font="bodyDefaultFont"
-              @update:overrides="onGlobalOverridesUpdate"
-              :show-only="['global-margin-top', 'global-margin-bottom', 'global-padding-left', 'global-padding-right', 'global-padding-top', 'global-padding-bottom', 'global-']"
-              :hide-section-headers="true"
-            />
-
-            <pw-global-navigation
-              v-show="blocksSubtab === 'colors'"
-              :nav-defaults="globalDefaults"
-              :nav-overrides="globalOverrides"
-              :saved-overrides="originalGlobalOverrides"
-              :discard-key="discardKey"
-              :fonts="fontsData"
-              :body-default-font="bodyDefaultFont"
-              @update:overrides="onGlobalOverridesUpdate"
-              :show-only="[]"
-              :show-colors="true"
-              :hide-section-headers="true"
-            />
+            <!-- the global block values as cards, like the elements -->
+            <!-- paddings: one row per axis; the small/large switch (in the
+                 vertical row) applies to top and bottom only -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.paddings') }}</h3>
+              </div>
+              <!-- left / right, then top / bottom (small or large) -->
+              <div class="pw-card pw-field-table">
+                <!-- left / right: one size only -->
+                <div class="pw-field-row" :data-guide="previewGuides ? 'padding' : null">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('prw.label.leftRight') }}</label>
+                      </div>
+                      <div class="pw-field-row-options pw-corner-grid pw-side-grid pw-axis-grid">
+                          <span v-for="side in paddingSides.filter(sd => !sd.pair)" :key="side.key" class="pw-element-field">
+                            <span class="pw-element-input-wrap">
+                              <input
+                                v-pw-autosize
+                                type="text"
+                                inputmode="decimal"
+                                step="0.1"
+                                min="0"
+                                max="20"
+                                class="pw-element-input pw-element-input-number"
+                                :value="parseFloat(paddingValue(side)) || 0"
+                                @change="setPadding(side, $event.target.value)"
+                              />
+                              <span class="pw-element-unit">rem</span>
+                            </span>
+                            <span class="pw-px-calculator">{{ Math.round((parseFloat(paddingValue(side)) || 0) * 16) }}px</span>
+                            <k-icon :type="'grid-' + side.key" class="pw-side-icon" />
+                          </span>
+                      </div>
+                    </span>
+                  </div>
+                </div>
+                <!-- top / bottom: small or large -->
+                <div class="pw-field-row" :data-guide="previewGuides ? 'padding' : null">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('prw.label.topBottom') }}</label>
+                        <!-- small/large step of top and bottom, right in its row -->
+                        <span class="pw-pill pw-bp-switch pw-label-switch" role="group">
+                          <button
+                            v-for="step in ['small', 'large']"
+                            :key="'ps-' + step"
+                            type="button"
+                            class="pw-tool"
+                            :title="$t('pw.option.' + step)"
+                            :aria-label="$t('pw.option.' + step)"
+                            :aria-pressed="paddingStep === step ? 'true' : 'false'"
+                            @click="paddingStep = step"
+                          ><k-icon :type="'prw-step-' + step" /></button>
+                        </span>
+                      </div>
+                      <div class="pw-field-row-options pw-corner-grid pw-side-grid pw-axis-grid">
+                          <span v-for="side in paddingSides.filter(sd => sd.pair)" :key="side.key" class="pw-element-field">
+                            <span class="pw-element-input-wrap">
+                              <input
+                                v-pw-autosize
+                                type="text"
+                                inputmode="decimal"
+                                step="0.1"
+                                min="0"
+                                max="20"
+                                class="pw-element-input pw-element-input-number"
+                                :value="parseFloat(paddingValue(side)) || 0"
+                                @change="setPadding(side, $event.target.value)"
+                              />
+                              <span class="pw-element-unit">rem</span>
+                            </span>
+                            <span class="pw-px-calculator">{{ Math.round((parseFloat(paddingValue(side)) || 0) * 16) }}px</span>
+                            <k-icon :type="'grid-' + side.key" class="pw-side-icon" />
+                          </span>
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <!-- outer spacing of the blocks: top / bottom in one row -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.margins') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <!-- outer spacing top / bottom in one row, with the side icons -->
+                <div class="pw-field-row" :data-guide="previewGuides ? 'margin' : null">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('prw.label.topBottom') }}</label>
+                      </div>
+                      <div class="pw-field-row-options pw-corner-grid pw-side-grid pw-axis-grid">
+                        <span v-for="side in marginSides" :key="side.key" class="pw-element-field">
+                          <span class="pw-element-input-wrap">
+                            <input
+                              v-pw-autosize
+                              type="text"
+                              inputmode="decimal"
+                              step="0.1"
+                              min="0"
+                              max="20"
+                              class="pw-element-input pw-element-input-number"
+                              :value="parseFloat(paddingValue(side)) || 0"
+                              @change="setPadding(side, $event.target.value)"
+                            />
+                            <span class="pw-element-unit">rem</span>
+                          </span>
+                          <span class="pw-px-calculator">{{ Math.round((parseFloat(paddingValue(side)) || 0) * 16) }}px</span>
+                          <k-icon :type="'grid-' + side.key" class="pw-side-icon" />
+                        </span>
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <!-- form of the blocks: the corners (square or custom radii) -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.shape') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <!-- corners: square (all radii 0) or custom (the four radii) -->
+                <div class="pw-field-row">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('prw.element.button-shape') }}</label>
+                      </div>
+                      <div class="pw-field-row-options">
+                        <k-toggles-input
+                          :value="radiusShape"
+                          :options="[{ value: 'square', text: $t('pw.option.square') }, { value: 'custom', text: $t('prw.option.userDefined') }]"
+                          :grow="false"
+                          :required="true"
+                          @input="setRadiusShape"
+                        />
+                      </div>
+                    </span>
+                  </div>
+                </div>
+                <pw-global-navigation
+                  v-if="radiusShape === 'custom'"
+                  :nav-defaults="globalDefaults"
+                  :nav-overrides="globalOverrides"
+                  :saved-overrides="originalGlobalOverrides"
+                  :discard-key="discardKey"
+                  :fonts="fontsData"
+                  :body-default-font="bodyDefaultFont"
+                  @update:overrides="onGlobalOverridesUpdate"
+                  :hide-section-headers="true"
+                  :show-only="['global-']"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <!-- colours: choose the theme, the rows show only its value -->
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="t in themes"
+                    :key="'bt-' + t"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
+                    @click="blocksColorTheme = t"
+                  >{{ $t('pw.option.' + t) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-global-navigation
+                  :nav-defaults="globalDefaults"
+                  :nav-overrides="globalOverrides"
+                  :saved-overrides="originalGlobalOverrides"
+                  :discard-key="discardKey"
+                  :fonts="fontsData"
+                  :body-default-font="bodyDefaultFont"
+                  @update:overrides="onGlobalOverridesUpdate"
+                  :hide-section-headers="true"
+                  :show-only="[]"
+                  :show-colors="true"
+                  :theme="currentBlocksColorTheme"
+                  :hide-color-names="['block-link']"
+                />
+              </div>
+            </section>
+            <!-- links in texts: underline, its thickness and offset -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.links') }}</h3>
+                <!-- the link colour per variant (shared with the colours card) -->
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="t in themes"
+                    :key="'lk-' + t"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
+                    @click="blocksColorTheme = t"
+                  >{{ $t('pw.option.' + t) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-global-navigation
+                  :nav-defaults="globalDefaults"
+                  :nav-overrides="globalOverrides"
+                  :saved-overrides="originalGlobalOverrides"
+                  :discard-key="discardKey"
+                  :fonts="fontsData"
+                  :body-default-font="bodyDefaultFont"
+                  @update:overrides="onGlobalOverridesUpdate"
+                  :hide-section-headers="true"
+                  :show-only="['block-link-decoration', 'block-link-thickness', 'block-link-offset']"
+                />
+                <pw-global-navigation
+                  :nav-defaults="globalDefaults"
+                  :nav-overrides="globalOverrides"
+                  :saved-overrides="originalGlobalOverrides"
+                  :discard-key="discardKey"
+                  :fonts="fontsData"
+                  :body-default-font="bodyDefaultFont"
+                  @update:overrides="onGlobalOverridesUpdate"
+                  :hide-section-headers="true"
+                  :show-only="[]"
+                  :show-colors="true"
+                  :theme="currentBlocksColorTheme"
+                  :color-names="['block-link']"
+                />
+              </div>
+            </section>
           </div>
 
           <!-- Elements → General: the default font (elements set to "Default" use it) -->
-          <div v-show="globalActiveTab === 'elementsGeneral'" class="pw-wizard-global-content">
-            <pw-global-navigation
-              :nav-defaults="globalDefaults"
-              :nav-overrides="globalOverrides"
-              :fonts="fontsData"
-              :body-default-font="bodyDefaultFont"
-              @update:overrides="onGlobalOverridesUpdate"
-              :show-only="['font-family-default']"
-              :hide-section-headers="true"
-            />
-          </div>
 
           <!-- Fonts -->
           <div v-show="globalActiveTab === 'fonts'" class="pw-wizard-global-content">
             <!-- Font Preview (in the preview sidebar) -->
             <pw-portal to=".pw-wizard .pw-preview-column">
-              <div v-show="activeTab === 'global' && ['fonts', 'elementsGeneral'].includes(globalActiveTab)">
-                <!-- which font to preview: the default font or any installed one -->
-                <div class="pw-pill pw-font-preview-select" role="group">
-                  <div class="pw-tab-menu">
-                    <button
-                      type="button"
-                      class="pw-tool pw-tab"
-                      aria-haspopup="menu"
-                      @click="$refs.fontPreviewMenu.toggle()"
-                    >
-                      <k-icon type="title" />
-                      <span class="pw-tab-text">{{ previewFontFamily }}</span>
-                      <k-icon type="angle-down" class="pw-tab-menu-chevron" />
-                    </button>
-                    <k-dropdown-content ref="fontPreviewMenu" align-x="center">
-                      <nav class="k-navigate">
-                        <button
-                          v-for="font in installedFonts"
-                          :key="font.family"
-                          type="button"
-                          class="k-dropdown-item k-button pw-menu-item"
-                          data-has-text="true"
-                          :aria-current="previewFontFamily === font.family ? 'true' : undefined"
-                          @click="previewFont = font.family; $refs.fontPreviewMenu.close()"
-                        >
-                          <span class="k-button-text">{{ font.family === bodyDefaultFont ? $t('prw.label.defaultFont', { font: font.family }) : font.family }}</span>
-                        </button>
-                      </nav>
-                    </k-dropdown-content>
+              <div v-show="activeTab === 'global' && globalActiveTab === 'fonts'">
+                <!-- toolbar: which font to preview (the default font or any installed one) -->
+                <div class="pw-preview-switches">
+                  <div class="pw-pill pw-font-preview-select" role="group">
+                    <div class="pw-tab-menu">
+                      <button
+                        type="button"
+                        class="pw-tool pw-tab"
+                        aria-haspopup="menu"
+                        @click="$refs.fontPreviewMenu.toggle()"
+                      >
+                        <k-icon type="title" />
+                        <span class="pw-tab-text">{{ previewFontFamily }}</span>
+                        <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+                      </button>
+                      <k-dropdown-content ref="fontPreviewMenu" align-x="start">
+                        <nav class="k-navigate">
+                          <button
+                            v-for="font in installedFonts"
+                            :key="font.family"
+                            type="button"
+                            class="k-dropdown-item k-button pw-menu-item"
+                            data-has-text="true"
+                            :aria-current="previewFontFamily === font.family ? 'true' : undefined"
+                            @click="previewFont = font.family; $refs.fontPreviewMenu.close()"
+                          >
+                            <span class="k-button-text">{{ font.family === bodyDefaultFont ? $t('prw.label.defaultFont', { font: font.family }) : font.family }}</span>
+                          </button>
+                        </nav>
+                      </k-dropdown-content>
+                    </div>
                   </div>
                 </div>
                 <div class="pw-default-font-preview" :style="previewFontStyle">
@@ -365,29 +581,53 @@
               </div>
             </pw-portal>
 
-            <!-- Subtabs -->
-            <div class="pw-element-subtabs">
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'installed' }" @click="fontsSubtab = 'installed'">{{ $t('prw.subtab.installed-fonts') }}</button>
-              <button type="button" class="pw-element-subtab" :class="{ 'is-active': fontsSubtab === 'add' }" @click="fontsSubtab = 'add'">{{ $t('prw.subtab.add-font') }}</button>
-            </div>
-
-            <pw-global-font-manager
-              v-show="fontsSubtab === 'installed'"
-              :fonts="fontsData"
-              :mode="'installed'"
-              @update="loadFontsData"
-            />
-            <pw-global-font-manager
-              v-show="fontsSubtab === 'add'"
-              :fonts="fontsData"
-              :mode="'add'"
-              @update="loadFontsData"
-            />
+            <!-- the default font of the page (elements use it unless they have their own) -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.defaultFont') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-global-navigation
+                  :nav-defaults="globalDefaults"
+                  :nav-overrides="globalOverrides"
+                  :fonts="fontsData"
+                  :body-default-font="bodyDefaultFont"
+                  @update:overrides="onGlobalOverridesUpdate"
+                  :show-only="['font-family-default']"
+                  :hide-section-headers="true"
+                />
+              </div>
+            </section>
+            <!-- installed fonts -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.installed-fonts') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-global-font-manager
+                  :fonts="fontsData"
+                  :mode="'installed'"
+                  @update="loadFontsData"
+                />
+              </div>
+            </section>
+            <!-- adding a font -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.add-font') }}</h3>
+              </div>
+              <pw-global-font-manager
+                :fonts="fontsData"
+                :mode="'add'"
+                @update="loadFontsData"
+              />
+            </section>
           </div>
 
           <!-- Elements -->
           <div v-show="globalActiveTab === 'elements'" class="pw-wizard-global-content">
             <pw-global-elements-styles
+              :guides.sync="previewGuides"
               :preview-active="activeTab === 'global' && globalActiveTab === 'elements'"
               :themes="themes"
               :selected-element.sync="selectedElement"
@@ -551,10 +791,35 @@
           class="pw-wizard-panel"
         >
 
-          <!-- Defaults tab -->
+          <!-- Live preview of the block in the sidebar (Text for now) -->
+          <pw-portal v-if="block.blockType === 'pwtext' && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+            <div v-show="activeTab === block.blockType">
+              <pw-block-preview
+                :config="blockConfigs[block.blockType]"
+                :overrides="blockOverrides[block.blockType] || {}"
+                :element-defaults="elementDefaults"
+                :element-overrides="elementOverrides"
+                :global-defaults="globalDefaults"
+                :global-overrides="globalOverrides"
+                :font-defaults="fontDefaults"
+                :font-overrides="fontOverrides"
+                :fonts="fontsData"
+                :body-default-font="bodyDefaultFont"
+                :body-background="bodyBackgroundColor"
+                :themes="themes"
+                :guides.sync="previewGuides"
+                :bp.sync="itemBp"
+              />
+            </div>
+          </pw-portal>
+
+          <!-- Defaults: the block's values, then (blocks with items) the items -->
           <div v-show="blockViewTab === 'defaults'" v-if="blockConfigs[block.blockType]">
+            <h2 v-if="hasItemFields(block.blockType)" class="pw-group-title">{{ $t('prw.heading.block') }}</h2>
             <pw-block-settings
               view="defaults"
+              :global-values="globalLayoutValues"
+              :guides="previewGuides"
               :block="block"
               :config="blockConfigs[block.blockType]"
               :overrides="blockOverrides[block.blockType] || {}"
@@ -564,11 +829,10 @@
             />
           </div>
 
-          <!-- Items tab — content + defaults sub-sections plus the Layout/Colors
-               value editor (only when block has item fields). -->
-          <div v-show="blockViewTab === 'items'" v-if="blockConfigs[block.blockType] && hasItemFields(block.blockType)">
+          <!-- Presets tab: allowed options + preset per field (pills) -->
+          <div v-show="blockViewTab === 'presets'" v-if="blockConfigs[block.blockType]">
             <pw-block-settings
-              view="items"
+              view="presets"
               :block="block"
               :config="blockConfigs[block.blockType]"
               :overrides="blockOverrides[block.blockType] || {}"
@@ -576,19 +840,23 @@
               @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
               @update:writer-active="$set(writerActive, block.blockType, $event)"
             />
+          </div>
 
-            <!-- Defaults section (radius toggles, link-style, border) -->
-            <section v-if="blockValueDefaults[block.blockType] && hasItemDefaultFields(block.blockType)" class="pw-wizard-section">
-              <div class="pw-section-header">
-                <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'defaults')">
-                  <span>{{ $t('prw.tab.defaults') || 'Defaults' }}</span>
-                  <k-icon :type="isItemSectionOpen(block.blockType, 'defaults') ? 'angle-down' : 'angle-right'" />
-                </button>
-              </div>
-              <transition name="pw-slide">
-                <div v-show="isItemSectionOpen(block.blockType, 'defaults')" class="pw-field-block" data-collapsible="true">
+          <!-- Items (below the block's defaults): content + defaults sub-sections
+               plus the Layout/Colors value editor (only when block has item fields). -->
+          <div v-show="blockViewTab === 'defaults'" v-if="blockConfigs[block.blockType] && hasItemFields(block.blockType)">
+            <h2 class="pw-group-title">{{ $t('prw.tab.items') }}</h2>
+
+            <!-- Items: defaults (radius toggles), layout and colours, each a heading above a card -->
+            <template v-if="blockValueDefaults[block.blockType] && hasItemDefaultFields(block.blockType)">
+              <section class="pw-card-section">
+                <div class="pw-card-heading-row">
+                  <h3 class="pw-card-heading">{{ $t('prw.tab.defaults') }}</h3>
+                </div>
+                <div class="pw-card pw-field-table">
                   <pw-block-settings
                     view="items-defaults"
+                    :item-radius="itemRadiusValues(block.blockType)"
                     :block="block"
                     :config="blockConfigs[block.blockType]"
                     :overrides="blockOverrides[block.blockType] || {}"
@@ -597,23 +865,21 @@
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                 </div>
-              </transition>
-            </section>
+              </section>
+            </template>
 
             <!-- Layout section. Order is fixed:
                  padding → radius → border (toggle) → border-width (only if border on) → link-style.
                  Each row uses its own component so we can interleave field-default toggles
                  with css-variable inputs in the desired sequence. -->
-            <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
-              <div class="pw-section-header">
-                <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'layout')">
-                  <span>{{ $t('prw.subtab.layout') || 'Layout' }}</span>
-                  <k-icon :type="isItemSectionOpen(block.blockType, 'layout') ? 'angle-down' : 'angle-right'" />
-                </button>
-              </div>
-              <transition name="pw-slide">
-                <div v-show="isItemSectionOpen(block.blockType, 'layout')" class="pw-field-block pw-items-layout-stack" data-collapsible="true">
+            <template v-if="blockValueDefaults[block.blockType]">
+              <section class="pw-card-section">
+                <div class="pw-card-heading-row">
+                  <h3 class="pw-card-heading">{{ $t('prw.subtab.layout') }}</h3>
+                </div>
+                <div class="pw-card pw-field-table">
                   <pw-block-values
+                    :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-padding']"
@@ -632,6 +898,7 @@
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                   <pw-block-values
+                    :bp.sync="itemBp"
                     v-if="isItemRadiusVisible(block.blockType)"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
@@ -640,6 +907,7 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                   <pw-block-values
+                    :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-number-size', 'item-gap', 'item-content-gap', 'item-connector-width']"
@@ -647,6 +915,7 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                   <pw-block-values
+                    :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-size']"
@@ -665,6 +934,7 @@
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                   <pw-block-values
+                    :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-icon-size', 'item-icon-gap']"
@@ -672,6 +942,7 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                   <pw-block-values
+                    :bp.sync="itemBp"
                     v-if="itemLayoutDefault(block.blockType, 'item-icon-style') === 'tile'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
@@ -680,6 +951,7 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                   <pw-block-values
+                    :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-title-size', 'item-title-line-height', 'item-title-gap', 'item-text-size']"
@@ -697,6 +969,7 @@
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                   <pw-block-values
+                    :bp.sync="itemBp"
                     v-if="isItemBorderEnabled(block.blockType)"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
@@ -737,36 +1010,39 @@
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                 </div>
-              </transition>
-            </section>
+              </section>
+            </template>
 
             <!-- Colors section (multi-theme) -->
-            <section v-if="blockValueDefaults[block.blockType]" class="pw-wizard-section">
-              <div class="pw-section-header">
-                <button class="pw-section-toggle" @click="toggleItemSection(block.blockType, 'colors')">
-                  <span>{{ $t('prw.subtab.colors') || 'Colors' }}</span>
-                  <k-icon :type="isItemSectionOpen(block.blockType, 'colors') ? 'angle-down' : 'angle-right'" />
-                </button>
-              </div>
-              <transition name="pw-slide">
-                <div v-show="isItemSectionOpen(block.blockType, 'colors')" class="pw-field-block" data-collapsible="true">
+            <template v-if="blockValueDefaults[block.blockType]">
+              <section class="pw-card-section">
+                <!-- colours: choose the theme, the rows show only its value -->
+                <div class="pw-card-heading-row">
+                  <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                  <span class="pw-pill pw-theme-switch" role="group">
+                    <button
+                      v-for="theme in themes"
+                      :key="'th-' + theme"
+                      type="button"
+                      class="pw-tool"
+                      :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                      @click="itemColorTheme = theme"
+                    >{{ $t('pw.option.' + theme) }}</button>
+                  </span>
+                </div>
+                <div class="pw-card pw-field-table">
                   <pw-block-values
+                    :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="itemColorsShowOnly(block.blockType)"
+                    :theme="currentItemColorTheme"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                 </div>
-              </transition>
-            </section>
-          </div>
-
-          <!-- Layout tab — only used by non-items blocks (placeholder). -->
-          <div v-show="blockViewTab === 'layout'">
-            <div class="pw-wizard-empty">
-              <p>{{ $t('prw.tab.layout.placeholder') || 'Layout configuration for this block will appear here.' }}</p>
-            </div>
+              </section>
+            </template>
           </div>
 
         </div>
@@ -795,7 +1071,10 @@
 </template>
 
 <script>
+import autosize from '../directives/autosize.js';
+
 export default {
+  directives: { 'pw-autosize': autosize },
   props: {
     blockType: {
       type: String,
@@ -813,9 +1092,15 @@ export default {
       // block type → number of uses in the project (loaded when the blocks dropdown opens)
       blockUsage: {},
       showPreview: (() => { try { return localStorage.getItem('pw-wizard-preview') !== 'off'; } catch (e) { return true; } })(),
-      blocksSubtab: 'layout',
+      // theme shown in the blocks' colour card and preview
+      blocksColorTheme: 'default',
+      // device of the blocks preview
+      blocksPreviewBp: 'default',
+      // radii kept while the corners are square (for switching back)
+      customRadius: null,
+      // padding step shown in the blocks' padding card
+      paddingStep: 'large',
       discardKey: 0,
-      fontsSubtab: 'installed',
       headerPill: 'general',
       headerSubtab: 'layout',
       blocks: [],
@@ -824,19 +1109,24 @@ export default {
       activeVariants: ['variant', 'variant2'],
       originalActiveVariants: ['variant', 'variant2'],
       activeTab: 'global',
-      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'elements'; } catch (e) { return 'elements'; } })(),
+      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'general'; } catch (e) { return 'general'; } })(),
       blockConfigs: {},
       blockOverrides: {},
       originalOverrides: {},
       blockValueDefaults: {},
       blockValueOverrides: {},
       originalBlockValueOverrides: {},
-      itemSectionOpen: {},
       originalActiveBlocks: [],
       dirtyTabs: {},
       snapshots: {},
       writerActive: {},
       blockViewTab: 'defaults',
+      // theme shown in the items' colour card
+      itemColorTheme: 'default',
+      // guides in the block preview (and the matching stripes in the rows)
+      previewGuides: (() => { try { return localStorage.getItem('pw-wizard-guides') === 'on'; } catch (e) { return false; } })(),
+      // breakpoint shown in the items' responsive rows
+      itemBp: 'default',
       globalDefaults: {},
       globalOverrides: {},
       originalGlobalOverrides: {},
@@ -876,31 +1166,56 @@ export default {
           return { value: key, text: text && text !== tKey ? text : key, icon: icons[key] || 'layers' };
         });
     },
-    elementsButtonIcon() {
-      if (this.isGlobalTab('elements')) {
-        const element = this.elementOptions.find(o => o.value === this.selectedElement);
-        if (element) return element.icon;
-      }
-      return 'layers';
-    },
-    elementsButtonLabel() {
-      if (this.isGlobalTab('elementsGeneral')) return this.$t('prw.tab.elementsGeneral');
-      if (this.isGlobalTab('elements')) {
-        const element = this.elementOptions.find(o => o.value === this.selectedElement);
-        if (element) return element.text;
-      }
-      return this.$t('prw.tab.elements');
-    },
     // themes shown in the wizard: "default" plus the switched-on variants
     themes() {
       return ['default', ...this.activeVariants];
     },
-    // global tabs collected in the cog dropdown (above the block settings), AI only with contentwizard
-    projectMenuTabs() {
-      return ['general', 'header', 'footer', 'fonts', ...(this.hasAiTab ? ['ai'] : [])];
+    // outer spacing of the blocks (block layout): top and bottom
+    marginSides() {
+      return [
+        { key: 'top', name: 'global-margin-top' },
+        { key: 'bottom', name: 'global-margin-bottom' },
+      ];
     },
-    currentBlockEntry() {
-      return this.blocks.find(b => b.blockType === this.activeTab) || null;
+    // the four paddings, one row each
+    paddingSides() {
+      return [
+        { key: 'top', name: 'global-padding-top', pair: true },
+        { key: 'bottom', name: 'global-padding-bottom', pair: true },
+        { key: 'left', name: 'global-padding-left' },
+        { key: 'right', name: 'global-padding-right' },
+      ];
+    },
+    // global corners: square when all four radii are 0, else custom
+    radiusShape() {
+      const radii = this.globalLayoutValues['global-'] || [];
+      return Array.isArray(radii) && radii.length && radii.every(r => parseFloat(r) === 0) ? 'square' : 'custom';
+    },
+    // outer spacing of a block (global margins) around the preview tile
+    blockPreviewMarginStyle() {
+      return {
+        paddingTop: this.globalLayoutValues['global-margin-top'] || 0,
+        paddingBottom: this.globalLayoutValues['global-margin-bottom'] || 0,
+      };
+    },
+    currentBlocksColorTheme() {
+      return this.themes.includes(this.blocksColorTheme) ? this.blocksColorTheme : 'default';
+    },
+    // the chosen theme, back to "default" when its variant was switched off
+    currentItemColorTheme() {
+      return this.themes.includes(this.itemColorTheme) ? this.itemColorTheme : 'default';
+    },
+    // global tabs collected in the cog dropdown (above the block settings), AI only with contentwizard
+    // heading of a global view: the tab's name, for an element its name
+    globalPageTitle() {
+      if (this.globalActiveTab === 'elements') {
+        const element = this.elementOptions.find(o => o.value === this.selectedElement);
+        if (element) return element.text;
+      }
+      return this.$t('prw.tab.' + this.globalActiveTab);
+    },
+    projectMenuTabs() {
+      return ['general', 'header', 'footer', 'blocks', 'fonts', ...(this.hasAiTab ? ['ai'] : [])];
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
     activeBlockEntries() {
@@ -911,8 +1226,7 @@ export default {
     },
     globalTabs() {
       const tabs = [
-        { key: 'general', icon: 'home' },
-        { key: 'elementsGeneral', icon: 'layers' },
+        { key: 'general', icon: 'globe' },
         { key: 'blocks', icon: 'box' },
         { key: 'elements', icon: 'layers' },
         { key: 'fonts', icon: 'title' },
@@ -973,6 +1287,16 @@ export default {
       const active = subtabs.find(t => t.key === this.headerSubtab) || subtabs[0];
       return active.vars;
     },
+    // global layout values (defaults + overrides), e.g. global-padding-left
+    globalLayoutValues() {
+      const vars = this.globalDefaults.layout?.vars || {};
+      const ov = this.globalOverrides.global || {};
+      const out = {};
+      for (const [name, def] of Object.entries(vars)) {
+        out[name] = ov[name] !== undefined && ov[name] !== '' ? ov[name] : def.value;
+      }
+      return out;
+    },
     bodyBackgroundColor() {
       const ov = (this.globalOverrides.global || {})['body-background'];
       if (ov) return ov;
@@ -1003,13 +1327,19 @@ export default {
     },
     previewFontStyle() {
       const font = this.installedFonts.find(f => f.family === this.previewFontFamily);
-      return { fontFamily: "'" + this.previewFontFamily + "', " + (font?.category || 'sans-serif') };
+      return {
+        fontFamily: "'" + this.previewFontFamily + "', " + (font?.category || 'sans-serif'),
+        // readable on the page background (the preview sits on it)
+        color: this.contrastColor(this.bodyBackgroundColor),
+      };
     },
     isDirty() {
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
         if (tab === 'settings') return !!this.dirtyTabs['global'];
-        if (['general', 'elementsGeneral', 'blocks', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
+        // the project page also holds the block activation
+        if (tab === 'general') return !!this.dirtyTabs['global-settings'] || !!this.dirtyTabs['global'];
+        if (['blocks', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
         return !!this.dirtyTabs[tab];
       }
       return !!this.dirtyTabs[this.activeTab];
@@ -1023,6 +1353,9 @@ export default {
       },
     },
     globalOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
+    previewGuides(on) {
+      try { localStorage.setItem('pw-wizard-guides', on ? 'on' : 'off'); } catch (e) { /* no storage */ }
+    },
     elementOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
     navOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
   },
@@ -1149,12 +1482,6 @@ export default {
       const name = blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
       return name.charAt(0).toUpperCase() + name.slice(1);
     },
-    isItemSectionOpen(blockType, key) {
-      return this.itemSectionOpen[blockType + ':' + key] !== false;
-    },
-    toggleItemSection(blockType, key) {
-      this.$set(this.itemSectionOpen, blockType + ':' + key, !this.isItemSectionOpen(blockType, key));
-    },
     isItemBorderEnabled(blockType) {
       return this.itemLayoutDefault(blockType, 'item-border') === true;
     },
@@ -1176,17 +1503,7 @@ export default {
     itemColorsShowOnly(blockType) {
       // Link colors only matter when link-style="text" (button mode pulls from
       // global element-button-*). Border color only matters when border is on.
-      // Tagline color only shows when the item-tagline content field is enabled.
-      const list = ['item-background'];
-      if (this.isItemContentFieldEnabled(blockType, 'item-tagline')) {
-        list.push('item-tagline-text');
-      }
-      if (this.isItemContentFieldEnabled(blockType, 'item-heading')) {
-        list.push('item-heading-text');
-      }
-      if (this.isItemContentFieldEnabled(blockType, 'item-editor')) {
-        list.push('item-editor-text');
-      }
+      const list = ['item-background', 'item-tagline-text', 'item-heading-text', 'item-editor-text'];
       if (!this.isItemLinkStyleButton(blockType)) {
         list.push('item-link', 'item-link-hover', 'item-link-active');
       }
@@ -1207,14 +1524,84 @@ export default {
       );
       return list;
     },
-    isItemContentFieldEnabled(blockType, fieldKey) {
-      // Reads settings.fields.content.<fieldKey>._disabled (override). If absent
-      // or false, the field is enabled (which is the default state).
-      const ov = this.blockOverrides[blockType];
-      const disabled = ov && ov.settings && ov.settings.fields && ov.settings.fields.content
-        && ov.settings.fields.content[fieldKey]
-        && ov.settings.fields.content[fieldKey]._disabled;
-      return disabled !== true;
+    // square: all radii 0 (the custom ones kept for switching back);
+    // custom: the kept radii, else the defaults
+    setRadiusShape(shape) {
+      const overrides = JSON.parse(JSON.stringify(this.globalOverrides || {}));
+      if (!overrides.global) overrides.global = {};
+      if (shape === 'square') {
+        if (this.radiusShape === 'custom') this.customRadius = this.globalLayoutValues['global-'];
+        overrides.global['global-'] = ['0rem', '0rem', '0rem', '0rem'];
+      } else if (this.customRadius) {
+        overrides.global['global-'] = [...this.customRadius];
+      } else {
+        delete overrides.global['global-'];
+      }
+      if (Object.keys(overrides.global).length === 0) delete overrides.global;
+      this.onGlobalOverridesUpdate(overrides);
+    },
+    paddingStepValue(value) {
+      return Array.isArray(value) ? value[this.paddingStep === 'large' ? 1 : 0] : value;
+    },
+    // global padding of a side; top/bottom at the chosen step (small/large)
+    paddingDefault(side) {
+      const def = this.globalDefaults.layout?.vars?.[side.name]?.value;
+      return side.pair ? (Array.isArray(def) ? def[this.paddingStep === 'large' ? 1 : 0] : '') : (def || '');
+    },
+    paddingValue(side) {
+      const ov = (this.globalOverrides.global || {})[side.name];
+      if (side.pair) return (Array.isArray(ov) && ov[this.paddingStep === 'large' ? 1 : 0]) || this.paddingDefault(side);
+      return ov || this.paddingDefault(side);
+    },
+    setPadding(side, input) {
+      const num = parseFloat(String(input).replace(',', '.'));
+      const value = isNaN(num) ? this.paddingDefault(side) : num + 'rem';
+      const overrides = JSON.parse(JSON.stringify(this.globalOverrides || {}));
+      if (!overrides.global) overrides.global = {};
+      const def = this.globalDefaults.layout?.vars?.[side.name]?.value;
+      if (side.pair) {
+        const current = Array.isArray(overrides.global[side.name]) ? [...overrides.global[side.name]] : [...(def || [])];
+        current[this.paddingStep === 'large' ? 1 : 0] = value;
+        if (Array.isArray(def) && current.every((v, i) => v === def[i])) delete overrides.global[side.name];
+        else overrides.global[side.name] = current;
+      } else if (value === def) {
+        delete overrides.global[side.name];
+      } else {
+        overrides.global[side.name] = value;
+      }
+      if (Object.keys(overrides.global).length === 0) delete overrides.global;
+      this.onGlobalOverridesUpdate(overrides);
+    },
+    // a size step (heading-size-lg …) at a breakpoint: override, else default
+    fontStep(element, step, bp = 'default') {
+      const name = element + '-size-' + step;
+      const entry = this.fontDefaults[element]?.vars?.[name];
+      if (!entry) return '';
+      return ((this.fontOverrides.global || {})[bp] || {})[name] || entry[bp] || entry.default || '';
+    },
+    // near-black on a light colour, near-white on a dark one (#rgb/#rrggbb)
+    contrastColor(color) {
+      let hex = String(color || '').trim().replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      if (!/^[0-9a-f]{6}/i.test(hex)) return '';
+      const [r, g, b] = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16));
+      return (r * 299 + g * 587 + b * 114) / 1000 > 140 ? '#111111' : '#f5f5f5';
+    },
+    // the items' four corner radii: override, else the plugin's value
+    itemRadiusValues(blockType) {
+      const ov = (this.blockValueOverrides[blockType] || {})['item-radius'];
+      if (Array.isArray(ov)) {
+        const def = this.itemRadiusDefaults(blockType);
+        return def.map((v, i) => ov[i] || v);
+      }
+      return this.itemRadiusDefaults(blockType);
+    },
+    itemRadiusDefaults(blockType) {
+      for (const group of Object.values(this.blockValueDefaults[blockType] || {})) {
+        const def = group && group.vars && group.vars['item-radius'];
+        if (def && Array.isArray(def.value)) return def.value;
+      }
+      return [];
     },
     itemLayoutDefault(blockType, key) {
       // Resolve current default for a settings.fields.layout.<key>: override wins,
@@ -1247,18 +1634,6 @@ export default {
       }
       return false;
     },
-    blockTabs(blockType) {
-      const tabs = [{ key: 'defaults', icon: 'settings' }];
-      if (this.hasItemFields(blockType)) {
-        // Items tab now hosts both content fields, defaults and the layout/colors
-        // value editors — no separate top-level Layout tab.
-        tabs.push({ key: 'items', icon: 'list-bullet' });
-      } else {
-        tabs.push({ key: 'layout', icon: 'layout-top' });
-      }
-      return tabs;
-    },
-
     // --- Global: Elements ---
     toggleBlock(blockType, checked) {
       const block = this.blocks.find(b => b.blockType === blockType);
@@ -1412,7 +1787,7 @@ export default {
         console.error('Failed to load fonts', e);
       }
     },
-    blockPreviewStyle(theme) {
+    blockPreviewStyle(theme, single = false) {
       const bg = ((this.globalOverrides.global || {})[theme] || {})['block-background'] ||
         (this.globalDefaults.colors?.colors?.['block-background']?.[theme]) || '#ffffff';
       const globalOv = this.globalOverrides.global || {};
@@ -1425,7 +1800,10 @@ export default {
       };
       const radius = getGlobalQuad('global-');
       let borderRadius = '0 0 0 0';
-      if (Array.isArray(radius) && radius.length === 4) {
+      if (Array.isArray(radius) && radius.length === 4 && single) {
+        // one tile: all four corners (top-left, top-right, bottom-left, bottom-right)
+        borderRadius = [radius[0], radius[1], radius[3], radius[2]].join(' ');
+      } else if (Array.isArray(radius) && radius.length === 4) {
         if (theme === 'default') {
           borderRadius = radius[0] + ' ' + radius[1] + ' 0 0';
         } else if (theme === 'variant3') {
@@ -1436,8 +1814,9 @@ export default {
       }
       return {
         backgroundColor: bg,
-        paddingTop: getGlobal('global-padding-top') || '1.5rem',
-        paddingBottom: getGlobal('global-padding-bottom') || '1.5rem',
+        // top/bottom are small/large pairs: the step chosen in the padding card
+        paddingTop: this.paddingStepValue(getGlobal('global-padding-top')) || '1.5rem',
+        paddingBottom: this.paddingStepValue(getGlobal('global-padding-bottom')) || '1.5rem',
         paddingLeft: getGlobal('global-padding-left') || '3rem',
         paddingRight: getGlobal('global-padding-right') || '3rem',
         borderRadius: borderRadius,
@@ -1452,14 +1831,15 @@ export default {
       const b = parseInt(bg.slice(5, 7), 16);
       return (r * 299 + g * 587 + b * 114) / 1000 > 160 ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
     },
-    blockPreviewElementStyle(element, theme) {
+    blockPreviewElementStyle(element, theme, bp = 'default') {
       const elDef = this.elementDefaults[element] || {};
       const elOv = this.elementOverrides.global || {};
       const get = (v) => elOv[v] || '';
+      // responsive values at the chosen device
       const def = (v) => {
         const d = elDef.vars?.[v];
         if (!d) return '';
-        if (d.default !== undefined) return d.default;
+        if (d.default !== undefined) return (elOv[bp] || {})[v] || d[bp] || d.default;
         return d.value || '';
       };
       // Font
@@ -1478,7 +1858,8 @@ export default {
         fontFamily: "'" + fontFamily + "', " + fontCategory,
         fontWeight: get(element + '-font-weight') || def(element + '-font-weight'),
         fontStyle: get(element + '-font-style') || def(element + '-font-style'),
-        fontSize: def(element + '-font-size'),
+        // headings have no base size: the "lg" step, as in the frontend
+        fontSize: def(element + '-font-size') || this.fontStep(element, 'lg', bp),
         lineHeight: def(element + '-line-height'),
         letterSpacing: def(element + '-letter-spacing'),
         textTransform: get(element + '-text-transform') || def(element + '-text-transform'),
@@ -1490,11 +1871,24 @@ export default {
       const key = 'block-link' + (state || '');
       const colorOv = ((this.globalOverrides.global || {})[theme] || {})[key];
       const colorDef = this.globalDefaults.colors?.colors?.[key]?.[theme] || '#1D548B';
+      // underline as set for the links (none / always / on hover)
+      const decoration = this.globalLayoutValue('block-link-decoration') || 'none';
       return {
         color: colorOv || colorDef,
-        textDecoration: 'underline',
-        cursor: 'default',
+        textDecorationLine: decoration === 'always' ? 'underline' : 'none',
+        textDecorationThickness: this.globalLayoutValue('block-link-thickness'),
+        textUnderlineOffset: this.globalLayoutValue('block-link-offset'),
+        cursor: 'pointer',
       };
+    },
+    // a global value of any group (override, else the plugin's)
+    globalLayoutValue(name) {
+      const ov = (this.globalOverrides.global || {})[name];
+      if (ov !== undefined && ov !== '') return ov;
+      for (const group of Object.values(this.globalDefaults || {})) {
+        if (group && group.vars && group.vars[name]) return group.vars[name].value;
+      }
+      return '';
     },
     blockPreviewButtonStyle(theme, state) {
       const elDef = this.elementDefaults.button || {};
@@ -1530,10 +1924,12 @@ export default {
         color: colorVal('element-button-text' + (state || '')),
         backgroundColor: colorVal('element-button-background' + (state || '')),
         borderColor: colorVal('element-button-border' + (state || '')),
-        borderWidth: '1px',
+        borderWidth: get('button-border-width') || def('button-border-width') || '1px',
+        // shadow: the chosen step's CSS from elements.json (generates)
+        boxShadow: elDef.vars?.['button-shadow']?.generates?.['button-shadow']?.[get('button-shadow') || def('button-shadow') || 'none'] || 'none',
         borderStyle: 'solid',
         padding: Array.isArray(padding) ? padding.join(' ') : padding,
-        borderRadius: Array.isArray(radius) ? radius.join(' ') : radius,
+        borderRadius: { square: '0', round: '999px' }[get('button-shape') || def('button-shape')] || (Array.isArray(radius) ? radius.join(' ') : radius),
         display: 'inline-block',
         marginTop: '0.5rem',
         cursor: 'default',
@@ -1551,7 +1947,8 @@ export default {
       for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
         const linkHover = this.blockPreviewLinkColor(theme, '-hover');
         const linkActive = this.blockPreviewLinkColor(theme, '-active');
-        rules.push('.pw-preview-link-' + theme + ':hover { color: ' + linkHover + ' !important; }');
+        rules.push('.pw-preview-link-' + theme + ':hover { color: ' + linkHover + ' !important;'
+          + (this.globalLayoutValue('block-link-decoration') === 'none' ? '' : ' text-decoration-line: underline !important;') + ' }');
         rules.push('.pw-preview-link-' + theme + ':active { color: ' + linkActive + ' !important; }');
 
         const btnHover = this.blockPreviewBtnColors(theme, '-hover');
@@ -1634,6 +2031,9 @@ export default {
 
     // --- Block overrides ---
     onBlockOverridesUpdate(blockType, overrides) {
+      // BlockSettings changes the object in place: store a fresh copy, so
+      // everything reading it (e.g. the live preview) notices the change
+      overrides = JSON.parse(JSON.stringify(overrides || {}));
       this.$set(this.blockOverrides, blockType, overrides);
       const current = JSON.stringify(overrides);
       const snapshot = this.snapshots[blockType] || '{}';
@@ -1685,7 +2085,10 @@ export default {
         const tab = this.globalActiveTab;
         if (tab === 'settings') {
           await this.saveGlobal();
-        } else if (['general', 'elementsGeneral', 'blocks', 'fonts'].includes(tab)) {
+        } else if (tab === 'general') {
+          if (this.dirtyTabs['global-settings']) await this.saveGlobalSettings();
+          if (this.dirtyTabs['global']) await this.saveGlobal();
+        } else if (['blocks', 'fonts'].includes(tab)) {
           await this.saveGlobalSettings();
         } else if (tab === 'elements') {
           await this.saveElements();
@@ -1731,14 +2134,15 @@ export default {
     discardChanges() {
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
-        if (tab === 'settings') {
+        if (tab === 'settings' || tab === 'general') {
           this.activeBlocks = [...this.originalActiveBlocks];
           this.activeVariants = [...this.originalActiveVariants];
           for (const block of this.blocks) {
             block.active = this.activeBlocks.includes(block.blockType);
           }
           this.$set(this.dirtyTabs, 'global', false);
-        } else if (['general', 'elementsGeneral', 'blocks', 'fonts'].includes(tab)) {
+        }
+        if (['general', 'blocks', 'fonts'].includes(tab)) {
           this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
           this.$set(this.dirtyTabs, 'global-settings', false);
         } else if (tab === 'elements') {
@@ -1886,6 +2290,11 @@ export default {
   gap: var(--spacing-3);
   min-height: var(--height-md, 2.25rem);
 }
+/* the groups stay in one line each */
+.pw-topbar > .pw-pill {
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
 /*------------------------------------------------------------------------------------------------
 	Sections: a heading above a card with rows in Kirby's table look (as a
 	structure field / kirby-explorer's edit view). Shared by all wizard parts:
@@ -1993,13 +2402,6 @@ export default {
 .pw-field-table .pw-field-row-options {
   padding: var(--spacing-1) var(--table-cell-padding, var(--spacing-3));
 }
-/* the edited row is tinted like in the explorer */
-.pw-field-table .pw-field-row:focus-within {
-  background: color-mix(in oklab, var(--color-focus) 10%, transparent);
-}
-.pw-field-table .pw-field-row:focus-within .pw-field-row-label-col {
-  background: color-mix(in oklab, var(--color-focus) 20%, var(--pw-table-th-back));
-}
 /* column headings (Mobile | Tablet | Desktop, themes) as a header row */
 .pw-field-table .pw-group-header {
   display: grid;
@@ -2023,6 +2425,135 @@ export default {
 }
 .pw-field-table .pw-bp-switch {
   margin-inline-start: auto;
+}
+/* number fields flat in the cell, like the explorer's inputs: no box, the
+   unit right behind the number ("1.5 rem"); the input is only as wide as
+   its value (v-pw-autosize), the rest of the field still takes the click */
+.pw-field-table .pw-field-row-options > .pw-element-field:has(.pw-element-input-number) {
+  flex: 1;
+  align-self: stretch;
+}
+.pw-field-table .pw-element-input-wrap:has(> .pw-element-input-number) {
+  flex: 1;
+  align-self: stretch;
+  cursor: text;
+}
+.pw-field-table .pw-element-input-number {
+  min-width: 1ch;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.pw-field-table .pw-element-input-number:focus {
+  outline: 0;
+}
+/* numbers always in full colour, also the defaults (only the unit is grey) */
+.pw-field-table .pw-element-input-number,
+.pw-field-table .pw-element-input-number.is-default {
+  color: var(--color-text);
+}
+.pw-field-table .pw-element-input-wrap > .pw-element-unit {
+  color: var(--color-text-dimmed);
+}
+.pw-field-table .pw-element-input-wrap > .pw-element-unit {
+  position: static;
+  margin-inline-start: 0.35em;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+/* several values in one row: a hairline between them */
+.pw-field-table .pw-element-field + .pw-element-field:has(.pw-element-input-number) {
+  padding-inline-start: var(--spacing-3);
+  border-inline-start: 1px solid var(--pw-table-border);
+}
+/* four corners (values or radius switches): a 2×2 grid filling the cell
+   (top-left, top-right / bottom-left, bottom-right), hairlines between */
+.pw-field-table .pw-field-row-options.pw-corner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0;
+}
+.pw-field-table .pw-corner-grid > *,
+.pw-field-table .pw-corner-grid > * + * {
+  min-height: var(--table-row-height, 38px);
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: var(--spacing-1) var(--table-cell-padding, var(--spacing-3));
+  border: 0;
+}
+.pw-field-table .pw-corner-grid .k-toggle-input {
+  margin: 0;
+  padding: 0;
+}
+/* radius switches: the switch first, then the corner glyph, the value at
+   the right end */
+.pw-field-table .pw-corner-grid .pw-field-hint {
+  order: 2;
+  margin-inline: auto 0;
+}
+/* radius switches: only switch and corner glyph – the text stays for
+   screen readers; a switched-on corner shows its glyph at full opacity */
+.pw-field-table .pw-corner-grid .k-toggle-input .k-choice-input-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.pw-field-table .pw-corner-grid > .pw-corner-cell::after {
+  order: 1;
+  margin-inline: var(--spacing-3) 0;
+  opacity: 1;
+}
+.pw-field-table .pw-corner-grid > *:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--pw-table-border);
+}
+.pw-field-table .pw-corner-grid > *:nth-child(even) {
+  border-inline-start: 1px solid var(--pw-table-border);
+}
+/* a small corner glyph at the right of each part (as in Figma): the
+   top-left corner, mirrored for the others */
+.pw-field-table .pw-corner-grid > *::after {
+  content: "";
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-inline-start: auto;
+  /* the grey of the units, at full opacity */
+  background: var(--color-text-dimmed);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M4 21V11a7 7 0 0 1 7-7h10'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M4 21V11a7 7 0 0 1 7-7h10'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.pw-field-table .pw-corner-grid > *:nth-child(2)::after {
+  transform: scaleX(-1);
+}
+.pw-field-table .pw-corner-grid > *:nth-child(3)::after {
+  transform: scaleY(-1);
+}
+.pw-field-table .pw-corner-grid > *:nth-child(4)::after {
+  transform: scale(-1);
+}
+/* a switch in a row's label cell (e.g. small/large of the paddings) */
+.pw-field-row-label-col .pw-label-switch {
+  margin-inline-start: auto;
+}
+/* two values of one axis side by side (paddings): one row of the grid,
+   without the grid's inner bottom line */
+.pw-field-table .pw-field-row-options.pw-axis-grid > .pw-element-field {
+  border-bottom: 0;
+}
+/* components stacked in one card: their own section spacing goes */
+.pw-field-table .pw-element-section,
+.pw-field-table .pw-element-list,
+.pw-field-table .pw-field-block,
+.pw-field-table .pw-wizard-section {
+  margin: 0;
 }
 .pw-pill.pw-bp-switch {
   --tool-size: 1.25rem;
@@ -2063,10 +2594,10 @@ export default {
 .pw-bp-switch .pw-tool:not([aria-pressed="true"]):hover {
   opacity: 0.6;
 }
-/* no hover effect on the breakpoint and theme switches */
+/* no hover effect on the breakpoint and theme switches in the rows (the
+   variant pills of the previews keep the blue hover of the buttons) */
 .pw-theme-switch .pw-tool:not([aria-pressed="true"]):hover,
-.pw-bp-switch .pw-tool:not([aria-pressed="true"]):hover,
-.pw-preview-bp .pw-tool:not([aria-pressed="true"]):hover {
+.pw-bp-switch .pw-tool:not([aria-pressed="true"]):hover {
   background: var(--color-white);
   color: var(--color-text);
 }
@@ -2074,22 +2605,53 @@ export default {
   display: none;
 }
 
-/* Block view: row with the block tabs above the settings */
-.pw-page-heading-row {
+/* Block view: page heading like Kirby's view header */
+.pw-page-title-row {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--spacing-3) var(--spacing-6);
+  gap: var(--spacing-2);
   margin-bottom: var(--spacing-6);
+  /* a line under the heading, as under Kirby's view headers */
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.pw-page-title {
+  font-size: var(--text-h1, var(--text-2xl));
+  font-weight: var(--font-h1, var(--font-semi));
+  line-height: var(--leading-h1, 1.25);
+}
+/* Block view with items: "Block" and "Items" above their sections */
+.pw-group-title {
+  margin-bottom: var(--spacing-6);
+  font-size: var(--text-xl, 1.25rem);
+  font-weight: var(--font-semi);
+  line-height: 1.25;
+}
+.pw-wizard-panel > div + div > .pw-group-title {
+  margin-top: var(--spacing-12);
 }
 
-/* the cog follows the main navigation on the left; the save buttons sit on
-   the right, so nothing moves when they appear */
-.pw-topbar-end {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
+/* presets: as big as the tabs, but only the icon (no pill surface); open
+   in full colour, closed faded like the device switch */
+.pw-pill.pw-presets-switch {
+  background: transparent;
+  box-shadow: none;
 }
+.pw-presets-switch .pw-tool,
+.pw-presets-switch .pw-tool:hover,
+.pw-presets-switch .pw-tool[aria-pressed="true"],
+.pw-presets-switch .pw-tool[aria-pressed="true"]:hover {
+  background: transparent;
+  color: var(--color-text);
+}
+.pw-presets-switch .pw-tool:not([aria-pressed="true"]) {
+  opacity: 0.3;
+}
+.pw-presets-switch .pw-tool:not([aria-pressed="true"]):hover {
+  opacity: 0.6;
+}
+
+/* the save buttons sit on the right, so nothing moves when they appear */
 .pw-topbar-controls {
   margin-inline-start: auto;
 }
@@ -2150,6 +2712,23 @@ export default {
     border-inline-start: 1px solid var(--menu-color-border);
     z-index: 2;
   }
+  /* open: the page background of the site, the previews sit on it */
+  .pw-wizard[data-preview="on"] .pw-preview-column {
+    background: var(--pw-body-background, var(--menu-color-back));
+    /* a soft shadow to the left, onto the settings */
+    box-shadow: -6px 0 16px -4px rgba(0, 0, 0, 0.12);
+  }
+  /* the preview's toolbar (device, variant) stays in Kirby's grey: a band
+     across the top of the column, staying in place while scrolling */
+  .pw-wizard .pw-preview-column .pw-preview-switches {
+    position: sticky;
+    top: calc(-1 * var(--menu-padding, var(--spacing-3)));
+    z-index: 1;
+    margin: calc(-1 * var(--menu-padding, var(--spacing-3))) calc(-1 * var(--spacing-6)) var(--spacing-6);
+    padding: var(--menu-padding, var(--spacing-3)) var(--spacing-6);
+    background: var(--menu-color-back);
+    border-bottom: 1px solid var(--menu-color-border);
+  }
   .pw-wizard[data-preview="off"] .pw-preview-column {
     padding: 0;
     overflow: hidden;
@@ -2206,7 +2785,53 @@ export default {
 .pw-preview-column .pw-font-preview-select {
   display: flex;
   width: fit-content;
-  margin: 0 auto var(--spacing-6);
+}
+/* every preview toolbar: the variants on the left, the guides on the right */
+.pw-preview-switches .pw-preview-theme {
+  order: 0;
+}
+/* the guides button as high as the variant pills */
+.pw-pill.pw-guides-switch {
+  --tool-size: 24px;
+}
+.pw-guides-switch .k-icon {
+  --icon-size: 14px;
+}
+.pw-preview-switches .pw-device-select {
+  order: 3;
+}
+.pw-preview-switches .pw-guides-switch {
+  order: 2;
+  margin-inline-start: auto;
+}
+/* guides in the blocks preview: fixed cyan lines at the edge to the
+   neighbouring blocks (the outer spacing lies between line and tile) */
+.pw-block-preview-spaced {
+  position: relative;
+}
+.pw-block-preview-spaced.has-guides::before,
+.pw-block-preview-spaced.has-guides::after {
+  content: "";
+  position: absolute;
+  inset-inline: calc(-1 * var(--spacing-6));
+  border-top: 1px solid rgba(0, 170, 255, 0.8);
+  pointer-events: none;
+}
+.pw-block-preview-spaced.has-guides::before {
+  top: 0;
+}
+.pw-block-preview-spaced.has-guides::after {
+  bottom: 0;
+}
+/* guides in the blocks preview: where the paddings end */
+.pw-block-preview.has-guides .pw-block-preview-content {
+  outline: 1px solid rgba(255, 0, 170, 0.6);
+}
+/* a toolbar without its own layout (e.g. the font choice) */
+.pw-preview-column .pw-preview-switches {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
 }
 .pw-preview-column .pw-default-font-preview {
   margin-bottom: 0;
@@ -2329,14 +2954,21 @@ export default {
   outline-offset: 1px;
 }
 
-/* Global px calculator badge */
+/* Global px calculator badge: on its own at the start of the row, before
+   the value */
+.pw-element-field:has(> .pw-px-calculator) {
+  flex: 1;
+}
 .pw-px-calculator {
+  order: -1;
+  flex-shrink: 0;
+  margin-inline-end: var(--spacing-3);
   font-size: var(--code-inline-font-size);
   font-family: var(--font-mono);
   color: var(--code-inline-color-text);
   background: var(--code-inline-color-back);
   padding: var(--spacing-1) var(--spacing-2);
-  border-radius: 0 var(--rounded) var(--rounded) 0;
+  border-radius: var(--rounded);
   border: 1px solid var(--code-inline-color-border);
   height: 26px;
   width: 45px;
@@ -2344,12 +2976,53 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
-/* Input adjacent to px calculator */
-.pw-px-calculator-input {
-  border-radius: var(--rounded) 0 0 var(--rounded) !important;
-  border-right: none !important;
+/* rows with one value: the px value is a cell of its own at the start of
+   the input column (rows with several values keep it next to each value) */
+.pw-field-table .pw-field-row-inner {
+  position: relative;
 }
+.pw-field-table .pw-field-row-options:not(.pw-corner-grid):not(:has(> .pw-element-field ~ .pw-element-field)) .pw-px-calculator {
+  /* a cell of its own: full row height, flush against the column line */
+  position: absolute;
+  /* 1px of air around it */
+  top: 1px;
+  bottom: 1px;
+  /* starts right at the column line, at the start of the input cell */
+  left: calc(30% + 1px);
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--color-blue-600);
+}
+/* 2×2 grid: the same px cell at the start of each part (stronger than the
+   rule for several values in a row, which adds its own padding and line) */
+.pw-field-table .pw-field-row-options.pw-corner-grid > .pw-element-field {
+  position: relative;
+  padding-inline-start: calc(45px + var(--table-cell-padding, var(--spacing-3)));
+  border-inline-start: 0;
+}
+.pw-field-table .pw-field-row-options.pw-corner-grid > .pw-element-field:nth-child(even) {
+  border-inline-start: 1px solid var(--pw-table-border);
+}
+.pw-field-table .pw-corner-grid > .pw-element-field > .pw-px-calculator {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--color-blue-600);
+}
+/* the value moves right of the px cell */
+.pw-field-table .pw-field-row-options:not(.pw-corner-grid):not(:has(> .pw-element-field ~ .pw-element-field)):has(.pw-px-calculator) {
+  padding-inline-start: calc(45px + var(--table-cell-padding, var(--spacing-3)));
+}
+
 
 .pw-wizard-loading {
   padding: var(--spacing-12);
@@ -2368,6 +3041,11 @@ export default {
 }
 
 .pw-block-preview {
+  display: flex;
+  flex-direction: column;
+}
+/* the tile's content (inside its paddings) */
+.pw-block-preview-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -2446,5 +3124,4 @@ export default {
 /* Items > Layout: padding/radius/border-width/link-style/button-style stack
    directly on top of each other. Each pw-element-list inside a BlockValues
    adds spacing-10 by default — collapse that here so the rows flow as one list. */
-.pw-items-layout-stack .pw-element-list { margin-bottom: 0; }
 </style>

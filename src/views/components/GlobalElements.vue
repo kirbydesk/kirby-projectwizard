@@ -1,43 +1,39 @@
 <template>
+  <!-- which blocks can be used: one card per group (heading above) -->
   <div>
     <template v-for="group in groups">
       <section
         v-if="group.blocks.length"
         :key="group.key"
-        class="pw-element-section"
+        class="pw-card-section"
       >
-        <div class="pw-section-header">
-          <button class="pw-section-toggle" @click="$set(open, group.key, !isOpen(group.key))">
-            <span>{{ group.label }}</span>
-            <k-icon :type="isOpen(group.key) ? 'angle-down' : 'angle-right'" />
-          </button>
+        <div class="pw-card-heading-row">
+          <h3 class="pw-card-heading">{{ group.label }}</h3>
         </div>
-        <transition name="pw-slide">
-          <div v-show="isOpen(group.key)" class="pw-element-list">
-            <div
-              v-for="block in group.blocks"
-              :key="block.blockType"
-              class="pw-field-row"
-            >
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ blockLabel(block.blockType) }}</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <k-toggles-input
-                      :value="block.active ? 'true' : 'false'"
-                      :options="[{ value: 'true', text: $t('pw.option.enabled') || 'Enabled' }, { value: 'false', text: $t('pw.option.disabled') || 'Disabled' }]"
-                      :grow="false"
-                      :required="true"
-                      @input="$emit('toggle', { blockType: block.blockType, checked: $event === 'true' })"
-                    />
-                  </div>
-                </span>
-              </div>
+        <div class="pw-card pw-field-table">
+          <div
+            v-for="block in group.blocks"
+            :key="block.blockType"
+            class="pw-field-row"
+          >
+            <div class="k-input" data-type="text">
+              <span class="k-input-element pw-field-row-inner">
+                <div class="pw-field-row-label-col">
+                  <label class="pw-field-row-label">{{ blockLabel(block.blockType) }}</label>
+                </div>
+                <div class="pw-field-row-options">
+                  <k-toggles-input
+                    :value="block.active ? 'true' : 'false'"
+                    :options="[{ value: 'true', text: $t('pw.option.enabled') || 'Enabled' }, { value: 'false', text: $t('pw.option.disabled') || 'Disabled' }]"
+                    :grow="false"
+                    :required="true"
+                    @input="$emit('toggle', { blockType: block.blockType, checked: $event === 'true' })"
+                  />
+                </div>
+              </span>
             </div>
           </div>
-        </transition>
+        </div>
       </section>
     </template>
   </div>
@@ -50,9 +46,6 @@ export default {
       type: Array,
       default: () => [],
     },
-  },
-  data() {
-    return { open: {} };
   },
   computed: {
     groups() {
@@ -71,9 +64,6 @@ export default {
     },
   },
   methods: {
-    isOpen(key) {
-      return this.open[key] !== false;
-    },
     blockLabel(blockType) {
       const block = this.blocks.find(b => b.blockType === blockType);
       if (block && block.name) return block.name;

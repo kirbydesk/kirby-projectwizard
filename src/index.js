@@ -10,9 +10,14 @@ import GlobalFontManager from './views/components/GlobalFontManager.vue';
 import BlockValues from './views/components/BlockValues.vue';
 import SetupWizard from './views/SetupWizard.vue';
 import Portal from './views/components/Portal.vue';
+import BlockPreview from './views/components/BlockPreview.vue';
+import DeviceSelect from './views/components/DeviceSelect.vue';
 
 panel.plugin('kirbydesk/kirby-projectwizard', {
 	icons: {
+		'prw-step-large': '<path d="M18.2072 9.0428 12.0001 2.83569 5.793 9.0428 7.20721 10.457 12.0001 5.66412 16.793 10.457 18.2072 9.0428ZM5.79285 14.9572 12 21.1643 18.2071 14.9572 16.7928 13.543 12 18.3359 7.20706 13.543 5.79285 14.9572Z"></path>',
+		'prw-step-small': '<path d="M5.79285 5.20718 12 11.4143 18.2071 5.20718 16.7928 3.79297 12 8.58586 7.20706 3.79297 5.79285 5.20718ZM18.2072 18.7928 12.0001 12.5857 5.793 18.7928 7.20721 20.207 12.0001 15.4141 16.793 20.207 18.2072 18.7928Z"></path>',
+		'prw-guides': '<path d="M8 8V16H16V8H8ZM6 6H18V18H6V6ZM6 2H8V5H6V2ZM6 19H8V22H6V19ZM2 6H5V8H2V6ZM2 16H5V18H2V16ZM19 6H22V8H19V6ZM19 16H22V18H19V16ZM16 2H18V5H16V2ZM16 19H18V22H16V19Z"></path>',
 		'prw-header': '<path d="M21 3C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3H21ZM20 5H4V19H20V5ZM18 7V9H6V7H18Z"></path>',
 		'prw-footer': '<path d="M21 3C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3H21ZM4 16V19H20V16H4ZM4 14H20V5H4V14Z"></path>',
 	},
@@ -29,5 +34,7 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-block-values': BlockValues,
 		'pw-wizard-setup': SetupWizard,
 		'pw-portal': Portal,
+		'pw-block-preview': BlockPreview,
+		'pw-device-select': DeviceSelect,
 	},
 });

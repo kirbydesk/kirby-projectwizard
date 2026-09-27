@@ -1,63 +1,25 @@
 <template>
-  <div class="pw-wizard-block-sections">
+  <div v-if="hasRows()" class="pw-wizard-block-sections">
 
-    <!-- ===== Content + Categories (defaults) / Layout (layout) ===== -->
-    <div v-if="view === 'defaults' || view === 'layout'" class="pw-wizard-tab-content">
+    <!-- ===== Content + Categories: "defaults" holds the plain default rows,
+         "presets" the rows with allowed options + a preset (pills) ===== -->
+    <div v-if="view === 'defaults' || view === 'presets' || view === 'layout'" class="pw-wizard-tab-content">
 
-      <!-- Content Fields (defaults view only) -->
-      <section v-if="view === 'defaults'" class="pw-wizard-section">
-      <div class="pw-section-header">
-        <span class="pw-tab-visibility pw-tab-visibility-static">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"/></svg>
-        </span>
-        <button class="pw-section-toggle" @click="toggleSection('content')">
-          <span>{{ $t('pw.headline.content') }}</span>
-          <k-icon :type="isSectionOpen('content') ? 'angle-down' : 'angle-right'" />
-        </button>
-      </div>
-      <transition name="pw-slide">
-      <div v-show="isSectionOpen('content')" class="pw-field-block" data-collapsible="true">
+      <!-- ===== Content: one card per content field ===== -->
+      <template v-if="view === 'defaults' || view === 'presets'">
 
-      <!-- Column blocks (first, controls which fields are visible) -->
-      <div v-if="getColumnBlocks()" class="pw-field-block">
-        <div class="k-field k-text-field pw-content-field" data-object="content-field">
-          <div class="pw-field-rows">
-            <pw-field-row
-              :uid="blockType + '-column-blocks'"
-              :label="$t('prw.headline.columnBlocks')"
-              :all-options="getColumnBlocks()"
-              :active-options="getActiveColumnBlocks()"
-              current-default=""
-              plugin-default=""
-              :enabled="true"
-              :modified="hasOverride('settings.fields.content.column-blocks')"
-              :no-default="true"
-              :no-checkbox="true"
-              @update:options="setColumnBlocks($event, getColumnBlocks())"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Content fields (filtered by active column-blocks if present) -->
-      <div v-if="getContentFields().length" class="pw-field-block">
-        <div
-          v-for="field in getContentFields()"
-          v-show="isColumnBlockField(field.key)"
+        <!-- Content fields -->
+        <section
+          v-for="field in presetFields(getContentFields())"
           :key="field.key"
-          class="k-field k-text-field pw-content-field"
-          data-object="content-field"
+          class="pw-card-section"
         >
-          <div v-if="!getColumnBlocks()" class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
-            <span class="pw-tab-visibility">
-              <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
-            </span>
-            <span>{{ fieldLabel(field.key) }}</span>
+          <div class="pw-card-heading-row">
+            <h3 class="pw-card-heading">
+              {{ fieldLabel(field.key) }}
+            </h3>
           </div>
-          <div v-else class="pw-column-field-label"><span>{{ fieldLabel(field.key) }}</span></div>
-
-          <!-- Property rows -->
-          <div v-show="!getColumnBlocks() ? isFieldEnabled(field) : true" v-if="field.properties.length" class="pw-field-rows">
+          <div v-show="isFieldEnabled(field)" class="pw-card pw-field-table">
             <pw-field-row
               v-for="prop in field.properties"
               :key="field.key + '-' + prop.key"
@@ -74,99 +36,68 @@
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
             />
           </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- Editor config (content settings + editor.json merged) -->
-      <div
-        v-if="getEditorField() || getEditorConfigRows().length"
-        class="k-field k-text-field pw-content-field"
-        data-object="content-field"
-      >
-        <div class="pw-column-field-label pw-clickable" @click="toggleField(getEditorField() || { key: 'editor', enabled: true }, !isFieldEnabled(getEditorField() || { key: 'editor', enabled: true }))">
-          <span class="pw-tab-visibility">
-            <k-icon :type="isFieldEnabled(getEditorField() || { key: 'editor', enabled: true }) ? 'preview' : 'hidden'" />
-          </span>
-          <span>{{ fieldLabel('editor') }}</span>
-        </div>
-
-        <div v-show="isFieldEnabled(getEditorField() || { key: 'editor', enabled: true })" class="pw-field-rows">
-          <!-- Editor content settings (mode, align, sizes) as FieldRows -->
-          <template v-if="getEditorField()">
-            <pw-field-row
-              v-for="prop in getEditorField().properties"
-              :key="'editor-content-' + prop.key"
-              :uid="blockType + '-editor-' + prop.key"
-              :label="prop.key"
-              :all-options="prop.allOptions"
-              :active-options="getActiveOptions('editor', prop.key, prop)"
-              :current-default="getVal('settings.fields.content.editor.' + prop.key + '.default', prop.pluginDefault)"
-              :plugin-default="prop.pluginDefault"
-              :enabled="true"
-              :modified="hasOverride('settings.fields.content.editor.' + prop.key)"
-              @update:options="setEditorContentOptions(prop.key, prop, $event)"
-              @update:default="selectOption('settings.fields.content.editor.' + prop.key + '.default', $event, prop.pluginDefault)"
-            />
-          </template>
-
-          <!-- Editor config (marks, nodes, headings, toolbar) — only if writer mode available -->
-          <template v-if="writerActive !== false" v-for="row in getEditorConfigRows()">
-            <pw-field-row
-              v-if="row.type === 'array'"
-              :key="'editor-' + row.key"
-              :uid="blockType + '-editor-' + row.key"
-              :label="row.key"
-              :all-options="row.values"
-              :active-options="getOverrideOnly('editor.' + row.key) || row.values"
-              current-default=""
-              plugin-default=""
-              :enabled="true"
-              :modified="hasOverride('editor.' + row.key)"
-              :no-default="true"
-              @update:options="setEditorArrayDirect(row.key, $event, row.values)"
-            />
-            <div
-              v-if="row.type === 'toggle'"
-              :key="'editor-' + row.key"
-              class="pw-field-row"
-            >
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ row.label }}</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <k-toggle-input
-                      :value="getVal('editor.' + row.path, row.value)"
-                      :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                      @input="setVal('editor.' + row.path, $event)"
-                    />
-                  </div>
-                </span>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- Item-* content fields (item-tagline, item-heading, item-editor) —
-           rendered AFTER the editor section so block-level fields and the
-           editor come before per-item field defaults. -->
-      <div v-if="getItemDefaultsContentFields().length" class="pw-field-block">
-        <div
-          v-for="field in getItemDefaultsContentFields()"
-          :key="field.key"
-          class="k-field k-text-field pw-content-field"
-          data-object="content-field"
-        >
-          <div class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
-            <span class="pw-tab-visibility">
-              <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
-            </span>
-            <span>{{ fieldLabel(field.key) }}</span>
+        <!-- Editor config (content settings + editor.json merged) -->
+        <section v-if="hasEditorCard()" class="pw-card-section">
+          <div class="pw-card-heading-row">
+            <h3 class="pw-card-heading">
+              {{ fieldLabel('editor') }}
+            </h3>
           </div>
 
-          <div v-show="isFieldEnabled(field)" v-if="field.properties.length" class="pw-field-rows">
+          <div v-show="isFieldEnabled(editorField())" class="pw-card pw-field-table">
+            <!-- Editor content settings (mode, align, sizes) as FieldRows -->
+            <template v-if="view === 'presets'">
+              <pw-field-row
+                v-for="prop in getEditorField().properties"
+                :key="'editor-content-' + prop.key"
+                :uid="blockType + '-editor-' + prop.key"
+                :label="prop.key"
+                :all-options="prop.allOptions"
+                :active-options="getActiveOptions('editor', prop.key, prop)"
+                :current-default="getVal('settings.fields.content.editor.' + prop.key + '.default', prop.pluginDefault)"
+                :plugin-default="prop.pluginDefault"
+                :enabled="true"
+                :modified="hasOverride('settings.fields.content.editor.' + prop.key)"
+                @update:options="setEditorContentOptions(prop.key, prop, $event)"
+                @update:default="selectOption('settings.fields.content.editor.' + prop.key + '.default', $event, prop.pluginDefault)"
+              />
+            </template>
+
+            <!-- Editor config (marks, nodes, headings) — only if writer mode available -->
+            <template v-if="view === 'presets' && writerActive !== false" v-for="row in getEditorConfigRows()">
+              <pw-field-row
+                :key="'editor-' + row.key"
+                :uid="blockType + '-editor-' + row.key"
+                :label="row.key"
+                :all-options="row.values"
+                :active-options="getOverrideOnly('editor.' + row.key) || row.values"
+                current-default=""
+                plugin-default=""
+                :enabled="true"
+                :modified="hasOverride('editor.' + row.key)"
+                :no-default="true"
+                @update:options="setEditorArrayDirect(row.key, $event, row.values)"
+              />
+            </template>
+          </div>
+        </section>
+
+        <!-- Item-* content fields (item-tagline, item-heading, item-editor) —
+             rendered AFTER the editor so block-level fields and the editor
+             come before per-item field defaults. -->
+        <section
+          v-for="field in presetFields(getItemDefaultsContentFields())"
+          :key="field.key"
+          class="pw-card-section"
+        >
+          <div class="pw-card-heading-row">
+            <h3 class="pw-card-heading">
+              {{ fieldLabel(field.key) }}
+            </h3>
+          </div>
+          <div v-show="isFieldEnabled(field)" class="pw-card pw-field-table">
             <pw-field-row
               v-for="prop in field.properties"
               :key="field.key + '-' + prop.key"
@@ -183,36 +114,22 @@
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
             />
           </div>
-        </div>
-      </div>
-      </div>
-      </transition>
+        </section>
+      </template>
 
-      </section>
-
-      <!-- ===== Categories (layout, style, effects, grid, settings) ===== -->
-      <section
-        v-for="cat in getCategories()"
-        :key="cat.key"
-        class="pw-wizard-section"
-      >
-        <div class="pw-section-header">
-          <button
-            type="button"
-            class="pw-tab-visibility"
-            @click.stop="toggleVisibility('settings.tabs.' + cat.key)"
-          >
-            <k-icon :type="getVal('settings.tabs.' + cat.key, true) === false ? 'hidden' : 'preview'" />
-          </button>
-          <button v-if="cat.fields.length" class="pw-section-toggle" @click="toggleSection(cat.key)">
-            <span>{{ $t('pw.headline.' + cat.key) }}</span>
-            <k-icon :type="isSectionOpen(cat.key) ? 'angle-down' : 'angle-right'" />
-          </button>
-          <span v-else class="pw-section-title">{{ $t('pw.headline.' + cat.key) }}</span>
+      <!-- ===== Categories (layout, style, effects, grid, settings): a card
+           with the rows of this view, its heading right above ===== -->
+      <template v-for="cat in getCategories()">
+        <section
+          v-if="viewFields(cat).length"
+          :key="'card-' + cat.key"
+          class="pw-card-section"
+        >
+        <div class="pw-card-heading-row">
+          <h3 class="pw-card-heading">{{ categoryHeading(cat.key) }}</h3>
         </div>
-        <transition v-if="cat.fields.length" name="pw-slide">
-        <div v-show="isSectionOpen(cat.key)" class="pw-field-block" data-collapsible="true">
-          <template v-for="field in cat.fields">
+        <div class="pw-card pw-field-table">
+          <template v-for="field in viewFields(cat)">
             <!-- FieldRow (e.g. theme with options + click logic) -->
             <pw-field-row
               v-if="field.type === 'fieldrow'"
@@ -225,13 +142,12 @@
               :plugin-default="field.pluginDefault"
               :enabled="true"
               :modified="hasOverride('settings.fields.' + cat.key + '.' + field.key)"
-              :no-checkbox="true"
               :required="field.required === true"
               @update:options="setCategoryOptions(cat.key, field.key, field, $event)"
               @update:default="selectOption('settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.pluginDefault)"
             />
             <!-- Toggles field (e.g. padding-top with small/large) -->
-            <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row">
+            <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
@@ -246,6 +162,11 @@
                       :required="field.required === true"
                       @input="selectOption('settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.defaultValue)"
                     />
+                    <span
+                      v-if="globalHint(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
+                      class="pw-field-hint"
+                      :class="{ 'is-zero': globalHint(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) === '0rem' }"
+                    >{{ globalHint(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) }}</span>
                   </div>
                 </span>
               </div>
@@ -257,20 +178,25 @@
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
                   </div>
-                  <div class="pw-field-row-options pw-toggle-group">
-                    <k-toggle-input
-                      v-for="sub in field.subFields"
-                      :key="sub.key"
-                      :value="getVal('settings.fields.' + cat.key + '.' + sub.key + '.default', sub.defaultValue)"
-                      :text="toggleOptionLabel(sub.label)"
-                      @input="setVal('settings.fields.' + cat.key + '.' + sub.key + '.default', $event)"
-                    />
+                  <div class="pw-field-row-options pw-toggle-group" :class="{ 'pw-corner-grid': isCornerGroup(field) }">
+                    <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell">
+                      <k-toggle-input
+                        :value="getVal('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default', sub.defaultValue)"
+                        :text="toggleOptionLabel(sub.label)"
+                        @input="setVal('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default', $event)"
+                      />
+                      <span
+                        v-if="isCornerGroup(field)"
+                        class="pw-field-hint"
+                        :class="{ 'is-zero': !getVal('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default', sub.defaultValue) }"
+                      >{{ cornerHint(sub.label, getVal('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default', sub.defaultValue), globalValues['global-']) }}</span>
+                    </span>
                   </div>
                 </span>
               </div>
             </div>
             <!-- Single field -->
-            <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row">
+            <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
@@ -284,6 +210,11 @@
                       :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
                       @input="setVal('settings.fields.' + cat.key + '.' + field.key + '.default', $event)"
                     />
+                    <span
+                      v-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean' && globalHint(field.key, true)"
+                      class="pw-field-hint"
+                      :class="{ 'is-zero': !getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue) }"
+                    >{{ globalHint(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) }}</span>
                     <!-- String with options: select -->
                     <select
                       v-else-if="field.options && field.options.length"
@@ -322,113 +253,13 @@
             </div>
           </template>
         </div>
-        </transition>
-      </section>
+        </section>
+      </template>
 
     </div>
 
     <!-- ===== Items ===== -->
-    <div v-if="view === 'items' || view === 'items-defaults' || view === 'items-layout'" class="pw-wizard-tab-content">
-
-      <!-- Content sub-section (legacy — kept for backwards compat with custom plugins
-           that still split items.content out, otherwise unused now that item-*
-           fields are rendered alongside block-level fields in the Defaults tab) -->
-      <section v-if="view === 'items' && getItemContentFields().length" class="pw-wizard-section">
-        <div class="pw-section-header">
-          <span class="pw-tab-visibility pw-tab-visibility-static">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"/></svg>
-          </span>
-          <button class="pw-section-toggle" @click="toggleSection('items-content')">
-            <span>{{ $t('pw.headline.content') }}</span>
-            <k-icon :type="isSectionOpen('items-content') ? 'angle-down' : 'angle-right'" />
-          </button>
-        </div>
-        <transition name="pw-slide">
-          <div v-show="isSectionOpen('items-content')" class="pw-field-block" data-collapsible="true">
-            <div v-if="getItemContentFields().length" class="pw-item-section">
-              <div class="pw-field-block">
-                <div
-                  v-for="field in getItemContentFields()"
-                  :key="field.key"
-                  class="k-field k-text-field pw-content-field"
-                  data-object="content-field"
-                >
-                  <div class="pw-column-field-label pw-clickable" @click="toggleField(field, !isFieldEnabled(field))">
-                    <span class="pw-tab-visibility">
-                      <k-icon :type="isFieldEnabled(field) ? 'preview' : 'hidden'" />
-                    </span>
-                    <span>{{ $t('prw.label.item') }}: {{ fieldLabel(field.displayKey) }}</span>
-                  </div>
-
-                  <div v-show="isFieldEnabled(field)" v-if="field.properties.length" class="pw-field-rows">
-                    <pw-field-row
-                      v-for="prop in field.properties"
-                      :key="field.key + '-' + prop.key"
-                      :uid="blockType + '-' + field.key + '-' + prop.key"
-                      :label="prop.key"
-                      :all-options="prop.allOptions"
-                      :active-options="getActiveOptions(field.key, prop.key, prop)"
-                      :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
-                      :plugin-default="prop.pluginDefault"
-                      :enabled="true"
-                      :required="prop.required === true"
-                      :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
-                      @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
-                      @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </transition>
-      </section>
-
-      <!-- Layout sub-section (radius defaults for individual items) -->
-      <section v-if="getItemLayoutFields().length" class="pw-wizard-section">
-        <div class="pw-section-header">
-          <span class="pw-tab-visibility pw-tab-visibility-static">
-            <k-icon type="layout-top" />
-          </span>
-          <button class="pw-section-toggle" @click="toggleSection('items-layout')">
-            <span>{{ $t('prw.tab.layout') || 'Layout' }}</span>
-            <k-icon :type="isSectionOpen('items-layout') ? 'angle-down' : 'angle-right'" />
-          </button>
-        </div>
-        <transition name="pw-slide">
-          <div v-show="isSectionOpen('items-layout')" class="pw-field-block" data-collapsible="true">
-            <div
-              v-for="field in getItemLayoutFields()"
-              :key="field.key"
-              class="pw-field-row"
-            >
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <k-toggle-input
-                      v-if="typeof field.defaultValue === 'boolean'"
-                      :value="getVal('settings.fields.content.' + field.key + '.default', field.defaultValue)"
-                      :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
-                      @input="setVal('settings.fields.content.' + field.key + '.default', $event)"
-                    />
-                    <input
-                      v-else
-                      type="text"
-                      class="pw-category-input"
-                      :placeholder="String(field.defaultValue)"
-                      :value="getOverrideOnly('settings.fields.content.' + field.key + '.default') || ''"
-                      @input="setValOrClear('settings.fields.content.' + field.key + '.default', $event.target.value, field.defaultValue)"
-                    />
-                  </div>
-                </span>
-              </div>
-            </div>
-          </div>
-        </transition>
-      </section>
+    <div v-if="view === 'items-defaults' || view === 'items-layout'" class="pw-wizard-tab-content">
 
       <!-- Defaults: rendered inside the Defaults section in Overview.vue.
            Holds the radius corner toggle group. -->
@@ -445,15 +276,20 @@
               </div>
               <div
                 class="pw-field-row-options"
-                :class="{ 'pw-toggle-group': field.type === 'toggle-group' }"
+                :class="{ 'pw-toggle-group': field.type === 'toggle-group', 'pw-corner-grid': isCornerGroup(field) }"
               >
-                <k-toggle-input
-                  v-for="sub in field.subFields"
-                  :key="sub.key"
-                  :value="getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue)"
-                  :text="toggleOptionLabel(sub.label)"
-                  @input="setVal('settings.fields.layout.' + sub.key + '.default', $event)"
-                />
+                <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell">
+                  <k-toggle-input
+                    :value="getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue)"
+                    :text="toggleOptionLabel(sub.label)"
+                    @input="setVal('settings.fields.layout.' + sub.key + '.default', $event)"
+                  />
+                  <span
+                    v-if="isCornerGroup(field)"
+                    class="pw-field-hint"
+                    :class="{ 'is-zero': !getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue) }"
+                  >{{ cornerHint(sub.label, getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue), itemRadius) }}</span>
+                </span>
               </div>
             </span>
           </div>
@@ -528,6 +364,23 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    // global layout values (margins, paddings) shown next to the switches
+    // that use them
+    globalValues: {
+      type: Object,
+      default: () => ({}),
+    },
+    // the items' corner radii (top-left, top-right, bottom-left, bottom-right)
+    // shown next to the item radius switches
+    itemRadius: {
+      type: Array,
+      default: () => [],
+    },
+    // preview guides on: the rows they belong to get a stripe in their colour
+    guides: {
+      type: Boolean,
+      default: false,
+    },
     writerActive: {
       type: Boolean,
       default: true,
@@ -544,7 +397,6 @@ export default {
   },
   data() {
     return {
-      sectionState: {},
     };
   },
   computed: {
@@ -570,7 +422,7 @@ export default {
       for (const [key, settingVal] of Object.entries(settings)) {
         // Skip structural fields handled elsewhere or with no defaults to edit:
         //  - editor:        rendered in its own section (with marks/nodes/etc.)
-        //  - column-blocks: handled by the column-blocks selector above
+        //  - column-blocks: the multicolumn's list of column blocks (all allowed)
         //  - blocks:        the inner-blocks container — has no own defaults
         if (key === 'editor' || key === 'column-blocks' || key === 'blocks') continue;
         // Split block-level vs item-* into two passes
@@ -616,10 +468,6 @@ export default {
       return fields;
     },
 
-    isItemLayoutKey(key) {
-      // Layout area inside the Items tab: master radius toggle + per-corner radius toggles.
-      return key === 'item-radius' || key.startsWith('item-radius-');
-    },
     getItemRadiusFields() {
       // Per-corner radius toggles get grouped into one row (toggle-group with
       // four sub-toggles). Mirrors how block-level radius is rendered in
@@ -693,34 +541,6 @@ export default {
       }
       return fields;
     },
-    getItemContentFields() {
-      // After v1.0.51 item-* content fields are rendered in the Defaults tab
-      // (alongside block-level fields). This getter stays empty unless a plugin
-      // intentionally exposes item-* keys NOT also handled by getContentFields,
-      // for backwards compat.
-      return [];
-    },
-    getItemLayoutFields() {
-      // Layout fields are simple {default: bool|...} entries that getItemFieldsRaw()
-      // filters out (no nested props). Iterate the raw content settings so we can
-      // render them as standalone toggles / selects, similar to category fields.
-      const settings = this.getDefault('settings.fields.content') || {};
-      const fields = [];
-      for (const [key, settingVal] of Object.entries(settings)) {
-        if (!this.isItemLayoutKey(key)) continue;
-        if (settingVal === false || settingVal === 'enabled') continue;
-
-        const displayKey = key.replace(/^item-/, '');
-        let defaultValue = false;
-        if (this.isObject(settingVal) && 'default' in settingVal) {
-          defaultValue = settingVal.default;
-        } else if (typeof settingVal === 'boolean' || typeof settingVal === 'string' || typeof settingVal === 'number') {
-          defaultValue = settingVal;
-        }
-        fields.push({ key, displayKey, defaultValue });
-      }
-      return fields;
-    },
     getItemFields() {
       // Kept for backwards compatibility (e.g. Overview.vue's hasItemFields detection
       // historically counted any item-*). The template now uses the split helpers.
@@ -764,6 +584,52 @@ export default {
       return fields;
     },
 
+    // Editor field for the visibility eye (a stand-in when the block has
+    // only editor.json rows)
+    // items-defaults / items-layout sit in a shared card: without rows of
+    // their own they render nothing
+    hasRows() {
+      if (this.view === 'items-defaults') return this.getItemRadiusFields().length > 0;
+      if (this.view === 'items-layout') return this.getItemLayoutSettings().length > 0;
+      return true;
+    },
+
+    // content fields with preset rows (presets view only)
+    presetFields(fields) {
+      return this.view === 'presets' ? fields.filter(f => f.properties.length) : [];
+    },
+
+    // the editor card sits in the presets: mode/align/size, then (writer)
+    // formatting and lists
+    hasEditorCard() {
+      if (this.view !== 'presets') return false;
+      return !!(this.getEditorField() && this.getEditorField().properties.length)
+        || (this.writerActive !== false && this.getEditorConfigRows().length > 0);
+    },
+
+    // category rows of this view: pills + preset and the whole grid (sizes
+    // and offsets, allowed on every block) in "presets", the rest in "defaults"
+    viewFields(cat) {
+      if (this.view === 'layout') return cat.fields;
+      const isPreset = f => cat.key === 'grid' || f.type === 'fieldrow';
+      let fields = cat.fields.filter(f => isPreset(f) === (this.view === 'presets'));
+      // the corner radius (a layout field) is shown in the block layout card
+      if (this.view === 'defaults') {
+        if (cat.key === 'layout') fields = fields.filter(f => f.key !== 'radius');
+        if (cat.key === 'settings') {
+          const layout = this.getCategories().find(c => c.key === 'layout');
+          const radius = layout && layout.fields.find(f => f.key === 'radius');
+          // second row, after the block size
+          if (radius) fields = [...fields.slice(0, 1), { ...radius, catKey: 'layout' }, ...fields.slice(1)];
+        }
+      }
+      return fields;
+    },
+
+    editorField() {
+      return this.getEditorField() || { key: 'editor', enabled: true };
+    },
+
     getEditorField() {
       const settings = this.getDefault('settings.fields.content') || {};
       const settingVal = settings['editor'];
@@ -796,51 +662,17 @@ export default {
       const editorConfig = JSON.parse(JSON.stringify(raw || {}));
       const rows = [];
       for (const [key, val] of Object.entries(editorConfig)) {
+        // formatting and lists only: headings are never allowed in the text
+        // (the heading field does that), the toolbar stays fixed
+        if (key === 'headings') continue;
         if (Array.isArray(val) && val.length > 0) {
           rows.push({ key, type: 'array', values: val });
-        } else if (val && typeof val === 'object') {
-          for (const [subKey, subVal] of Object.entries(val)) {
-            if (typeof subVal === 'boolean') {
-              rows.push({ key: key + '-' + subKey, label: key + ' › ' + subKey, type: 'toggle', path: key + '.' + subKey, value: subVal });
-            }
-          }
         }
       }
       return rows;
     },
 
     // --- Column blocks ---
-    getColumnBlocks() {
-      const settings = this.getDefault('settings.fields.content') || {};
-      const val = settings['column-blocks'];
-      return Array.isArray(val) && val.length ? val : null;
-    },
-
-    getActiveColumnBlocks() {
-      const override = this.getOverrideOnly('settings.fields.content.column-blocks');
-      if (Array.isArray(override) && override.length) return override;
-      return this.getColumnBlocks() || [];
-    },
-
-    isColumnBlockField(fieldKey) {
-      const columnBlocks = this.getColumnBlocks();
-      if (!columnBlocks) return true;
-      const active = this.getActiveColumnBlocks();
-      return active.some(cb => cb.replace('multicolumn', '') === fieldKey);
-    },
-
-    setColumnBlocks(values, allBlocks) {
-      const ordered = allBlocks.filter(b => values.includes(b));
-      if (JSON.stringify(ordered) === JSON.stringify(allBlocks)) {
-        this.deleteNested(this.overrides || {}, 'settings.fields.content.column-blocks');
-        this.cleanEmpty(this.overrides || {}, 'settings.fields.content');
-        this.cleanEmpty(this.overrides || {}, 'settings.fields');
-        this.cleanEmpty(this.overrides || {}, 'settings');
-      } else {
-        this.setVal('settings.fields.content.column-blocks', ordered);
-      }
-      this.markDirty();
-    },
 
     // --- Editor options ---
     setEditorContentOptions(propKey, prop, values) {
@@ -853,7 +685,6 @@ export default {
     // --- Active options ---
     getActiveOptions(fieldKey, propKey, prop) {
       const fullOverride = this.getOverrideOnly('settings.fields.content.' + fieldKey + '.' + propKey);
-      if (fullOverride === false) return [];
       const override = this.isObject(fullOverride) ? fullOverride.options : undefined;
       if (Array.isArray(override)) return override;
       return prop.allOptions;
@@ -861,12 +692,6 @@ export default {
 
     setActiveOptions(fieldKey, propKey, prop, values) {
       const basePath = 'settings.fields.content.' + fieldKey + '.' + propKey;
-
-      if (values === null) {
-        this.setVal(basePath, false);
-        this.markDirty();
-        return;
-      }
 
       const updated = Array.isArray(values) ? values : [];
 
@@ -927,7 +752,7 @@ export default {
           if (this.view === 'layout' && catKey === 'layout' && !key.startsWith('item-')) continue;
           if (this.view === 'layout' && catKey === 'layout' && (key === 'item-radius' || key.startsWith('item-radius-'))) continue;
           // Defaults-tab filter: hide item-* layout keys (they live on the Layout tab)
-          if (this.view === 'defaults' && catKey === 'layout' && key.startsWith('item-')) continue;
+          if ((this.view === 'defaults' || this.view === 'presets') && catKey === 'layout' && key.startsWith('item-')) continue;
 
           // Strip item- prefix for grouping (item-radius → radius, item-padding-top → padding-top)
           // so the existing radius/padding-* group rules below catch them.
@@ -1101,54 +926,9 @@ export default {
 
     // --- Field enabled/toggle ---
     isFieldEnabled(field) {
-      const disabled = this.getOverrideOnly('settings.fields.content.' + field.key + '._disabled');
-      if (disabled === true) return false;
-      const override = this.getOverrideOnly('settings.fields.content.' + field.key);
-      if (override === false) return false;
-      if (override === true || this.isObject(override)) return true;
       return field.enabled !== false;
     },
 
-    toggleField(field, enabled) {
-      if (!this.overrides || Array.isArray(this.overrides)) {
-        this.$emit('update:overrides', {});
-      }
-      const path = 'settings.fields.content.' + field.key;
-      if (enabled) {
-        this.deleteNested(this.overrides, path + '._disabled');
-        this.cleanEmpty(this.overrides, path);
-        this.cleanEmpty(this.overrides, 'settings.fields.content');
-        this.cleanEmpty(this.overrides, 'settings.fields');
-        this.cleanEmpty(this.overrides, 'settings');
-      } else {
-        this.setVal(path + '._disabled', true);
-      }
-      this.markDirty();
-    },
-
-    toggleVisibility(path) {
-      const current = this.getVal(path, 'enabled');
-      if (current === false) {
-        this.deleteNested(this.overrides || {}, path);
-        const parts = path.split('.');
-        for (let i = parts.length - 1; i > 0; i--) {
-          this.cleanEmpty(this.overrides || {}, parts.slice(0, i).join('.'));
-        }
-      } else {
-        this.setVal(path, false);
-      }
-      this.markDirty();
-    },
-
-    toggleSection(sectionKey) {
-      const key = this.blockType + '-' + sectionKey;
-      this.$set(this.sectionState, key, !this.isSectionOpen(sectionKey));
-    },
-
-    isSectionOpen(sectionKey) {
-      const key = this.blockType + '-' + sectionKey;
-      return this.sectionState[key] !== false;
-    },
 
     selectOption(path, value, pluginDefault) {
       if (value === pluginDefault || value === String(pluginDefault)) {
@@ -1218,6 +998,9 @@ export default {
 
     // --- Label helpers ---
     fieldLabel(key) {
+      // names as in the elements (e.g. multicolumn's headline → Heading)
+      const own = this.$t('prw.contentfield.' + key);
+      if (own && own !== 'prw.contentfield.' + key) return own;
       const tKey = 'pw.field.' + key;
       const translated = this.$t(tKey);
       return (translated && translated !== tKey) ? translated : key.charAt(0).toUpperCase() + key.slice(1);
@@ -1243,6 +1026,56 @@ export default {
         if (headlineT && headlineT !== headlineKey) return headlineT;
       }
       return key;
+    },
+
+    // radius a corner switch applies: its value from the four corner values
+    // (top-left, top-right, bottom-left, bottom-right); off → 0rem
+    cornerHint(corner, on, values) {
+      if (!on) return '0rem';
+      const idx = ['top-left', 'top-right', 'bottom-left', 'bottom-right'].indexOf(corner);
+      return (Array.isArray(values) && values[idx]) || '';
+    },
+
+    // the four corner switches (radius): a 2×2 grid like the corner values
+    isCornerGroup(field) {
+      return (field.subFields || []).length === 4 && field.subFields.some(sub => sub.label === 'top-left');
+    },
+    cornerOrder(subFields) {
+      const order = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+      if (!subFields.every(sub => order.includes(sub.label))) return subFields;
+      return [...subFields].sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label));
+    },
+
+    // card heading of a category: the layout card holds the paddings, the
+    // settings card the block's layout (size, outer spacing)
+    categoryHeading(key) {
+      if (key === 'layout') return this.$t('prw.headline.paddings');
+      if (key === 'settings') return this.$t('prw.headline.blockLayout');
+      return this.$t('pw.headline.' + key);
+    },
+
+    // guide colour of a row while the preview guides are on and the row's
+    // switch is on: outer spacing (cyan lines) or paddings (magenta line)
+    guideType(key, value) {
+      if (!this.guides || !value) return null;
+      if (key === 'margin-top' || key === 'margin-bottom') return 'margin';
+      if (['padding-top', 'padding-bottom', 'padding-left', 'padding-right'].includes(key)) return 'padding';
+      return null;
+    },
+
+    // the value a switch applies (e.g. padding-left → 4.5rem, padding-top
+    // "large" → the large step); switched off → 0rem
+    globalHint(key, value) {
+      const g = this.globalValues || {};
+      const single = { 'padding-left': 'global-padding-left', 'padding-right': 'global-padding-right',
+        'margin-top': 'global-margin-top', 'margin-bottom': 'global-margin-bottom' };
+      if (single[key]) return value ? (g[single[key]] || '') : '0rem';
+      if (key === 'padding-top' || key === 'padding-bottom') {
+        if (value !== 'small' && value !== 'large') return '0rem';
+        const pair = g['global-' + key];
+        return Array.isArray(pair) ? pair[value === 'large' ? 1 : 0] || '' : '';
+      }
+      return '';
     },
 
     toggleOptionLabel(val) {
@@ -1416,10 +1249,6 @@ export default {
   }
 }
 
-.pw-clickable {
-  cursor: pointer;
-}
-
 .pw-column-field-label {
   font-size: var(--text-sm);
   font-weight: 600;
@@ -1459,8 +1288,8 @@ export default {
   color: var(--color-text);
 }
 .pw-icon-select .pw-icon-option.is-active {
-  background: var(--color-blue-600);
-  border-color: var(--color-blue-600);
+  background: var(--color-black);
+  border-color: var(--color-black);
   color: var(--color-white);
 }
 
@@ -1493,7 +1322,7 @@ export default {
 }
 
 .pw-field-row-options .k-toggles-input input:checked + label {
-  background: var(--color-blue-600) !important;
+  background: var(--color-black) !important;
   color: var(--color-white) !important;
 }
 
@@ -1538,6 +1367,32 @@ export default {
   letter-spacing: 0.05em;
   margin-top: var(--spacing-4);
   margin-bottom: var(--spacing-3);
+}
+
+/* rows belonging to a preview guide: a 3px stripe in its colour at the
+   left edge of the label */
+.pw-field-row[data-guide] .pw-field-row-label-col {
+  box-shadow: inset 3px 0 0 var(--pw-guide-color);
+}
+.pw-field-row[data-guide="margin"] {
+  --pw-guide-color: rgba(0, 170, 255, 0.8);
+}
+.pw-field-row[data-guide="padding"] {
+  --pw-guide-color: rgba(255, 0, 170, 0.6);
+}
+
+/* the global value a switch applies, grey at the right end of the row */
+.pw-field-hint {
+  margin-inline-start: auto;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+  opacity: 0.6;
+}
+/* 0rem (switched off) a bit fainter */
+.pw-field-hint.is-zero {
+  opacity: 0.3;
 }
 
 .pw-wizard-block-sections {

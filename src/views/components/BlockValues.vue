@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <!-- nothing without rows (several of these can share one card) -->
+  <div v-if="Object.keys(groups).length">
     <section v-for="(group, groupKey) in groups" :key="groupKey" class="pw-element-section">
       <div v-if="!hideSectionHeaders" class="pw-section-header">
         <span class="pw-tab-visibility pw-tab-visibility-static">
@@ -14,7 +15,7 @@
         <div v-show="isOpen(groupKey)" class="pw-element-list">
 
           <!-- Multi-theme colors header (Default / Variant / Variant2) -->
-          <div v-if="Object.keys(group.colors || {}).length" class="pw-group-header">
+          <div v-if="!theme && Object.keys(group.colors || {}).length" class="pw-group-header">
             <div class="pw-field-row-label-col"></div>
             <div class="pw-group-header-labels pw-group-type-theme-color">
               <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('pw.option.default') || 'Default' }}</span></span>
@@ -35,9 +36,9 @@
                 <div class="pw-field-row-label-col">
                   <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
                 </div>
-                <div class="pw-field-row-options pw-group-type-theme-color">
+                <div class="pw-field-row-options" :class="{ 'pw-group-type-theme-color': !theme }">
                   <span
-                    v-for="(themeValue, themeKey) in themes"
+                    v-for="(themeValue, themeKey) in visibleThemes(themes)"
                     :key="themeKey"
                     class="pw-element-field"
                   >
@@ -58,7 +59,7 @@
           <!-- Plain vars (single / multi-value / quad / responsive) -->
           <template v-for="(def, varName) in group.vars">
           <!-- Responsive header (Mobile / Tablet / Desktop), like the element sizes -->
-          <div v-if="isResponsive(def)" :key="'rh-' + varName" class="pw-group-header">
+          <div v-if="isResponsive(def) && !bp" :key="'rh-' + varName" class="pw-group-header">
             <div class="pw-field-row-label-col"></div>
             <div class="pw-group-header-labels pw-group-type-responsive">
               <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.mobile') }}</span></span>
@@ -75,7 +76,7 @@
                 <div class="pw-field-row-label-col">
                   <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
                 </div>
-                <div class="pw-field-row-options" :class="{ 'pw-group-type-responsive': isResponsive(def) }">
+                <div class="pw-field-row-options" :class="{ 'pw-group-type-responsive': isResponsive(def) && !bp, 'pw-corner-grid': isCorners(def) }">
 
                   <!-- Color -->
                   <template v-if="def.type === 'color'">
@@ -91,12 +92,13 @@
                   <!-- Responsive (default / lg / xl) -->
                   <template v-else-if="isResponsive(def)">
                     <span
-                      v-for="bp in ['default', 'lg', 'xl']"
+                      v-for="bp in (bp ? [bp] : ['default', 'lg', 'xl'])"
                       :key="bp"
                       class="pw-element-field"
                     >
                       <span class="pw-element-input-wrap">
                         <input
+                          v-pw-autosize
                           type="text"
                           inputmode="decimal"
                           class="pw-element-input pw-element-input-number"
@@ -106,7 +108,20 @@
                         />
                         <span class="pw-element-unit">{{ def.unit }}</span>
                       </span>
-                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(responsiveAt(varName, bp) || def[bp], def.unit) }}</span>
+                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(responsiveAt(varName, bp) || def[bp], def.unit, varName, bp) }}</span>
+                    </span>
+                    <!-- switch the breakpoint (shared by all rows) -->
+                    <span v-if="bp" class="pw-pill pw-bp-switch" role="group">
+                      <button
+                        v-for="b in ['default', 'lg', 'xl']"
+                        :key="'sw-' + b"
+                        type="button"
+                        class="pw-tool"
+                        :title="bpLabel(b)"
+                        :aria-label="bpLabel(b)"
+                        :aria-pressed="bp === b ? 'true' : 'false'"
+                        @click="$emit('update:bp', b)"
+                      ><k-icon :type="bpIcon(b)" /></button>
                     </span>
                   </template>
 
@@ -119,6 +134,7 @@
                     >
                       <span class="pw-element-input-wrap">
                         <input
+                          v-pw-autosize
                           type="text"
                           inputmode="decimal"
                           class="pw-element-input pw-element-input-number"
@@ -141,6 +157,7 @@
                     >
                       <span class="pw-element-input-wrap">
                         <input
+                          v-pw-autosize
                           type="text"
                           inputmode="decimal"
                           class="pw-element-input pw-element-input-number"
@@ -159,6 +176,7 @@
                     <span class="pw-element-field">
                       <span class="pw-element-input-wrap">
                         <input
+                          v-pw-autosize
                           type="text"
                           inputmode="decimal"
                           class="pw-element-input pw-element-input-number"
@@ -168,7 +186,7 @@
                         />
                         <span v-if="def.unit" class="pw-element-unit">{{ def.unit }}</span>
                       </span>
-                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(getOverride(varName) || def.value, def.unit) }}</span>
+                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(getOverride(varName) || def.value, def.unit, varName) }}</span>
                     </span>
                   </template>
 
@@ -186,13 +204,21 @@
 </template>
 
 <script>
+import autosize from '../../directives/autosize.js';
+
 export default {
+  directives: { 'pw-autosize': autosize },
   props: {
     defaults: { type: Object, default: () => ({}) },
     overrides: { type: Object, default: () => ({}) },
     groupLabels: { type: Object, default: null },
     hideSectionHeaders: { type: Boolean, default: false },
     showOnly: { type: Array, default: null },
+    // one theme (e.g. "variant"): the colour rows show only its value
+    theme: { type: String, default: null },
+    // one breakpoint (default / lg / xl): responsive rows show only its
+    // value plus the device switch (.sync)
+    bp: { type: String, default: null },
   },
   data() {
     return { open: {} };
@@ -227,6 +253,23 @@ export default {
     },
   },
   methods: {
+    // four corner values (top-left, top-right, bottom-left, bottom-right):
+    // shown as a 2×2 grid in the cell, like the corners themselves
+    isCorners(def) {
+      // four values named by corner, either as CSS suffixes or as labels
+      const names = (def && (def.suffixes || def.labels)) || [];
+      return Array.isArray(names) && names.length === 4 && names.some(n => String(n).includes('top-left'));
+    },
+    bpIcon(bp) {
+      return { default: 'mobile', lg: 'tablet', xl: 'display' }[bp];
+    },
+    bpLabel(bp) {
+      return { default: this.$t('prw.label.mobile'), lg: this.$t('prw.label.tablet'), xl: this.$t('prw.label.desktop') }[bp];
+    },
+    visibleThemes(themes) {
+      if (!this.theme) return themes;
+      return this.theme in themes ? { [this.theme]: themes[this.theme] } : {};
+    },
     toggle(key) {
       this.$set(this.open, key, !this.isOpen(key));
     },
@@ -263,14 +306,37 @@ export default {
       const n = parseFloat(String(val).replace(',', '.'));
       return isNaN(n) ? null : n;
     },
-    toPx(val, unit) {
+    // px of a value; a line height without unit is a factor of the row's
+    // font size (e.g. item-title-line-height × item-title-size)
+    toPx(val, unit, varName, bp) {
       if (!val) return '';
       const n = this.parseNum(val);
       if (n === null) return '';
+      if (!unit && varName && varName.endsWith('-line-height')) {
+        const size = this.fontSizePx(varName.replace(/line-height$/, ''), bp);
+        return size ? Math.round(n * size) + 'px' : '';
+      }
       const u = unit || (String(val).match(/(rem|em|px|%)$/) || [, ''])[1];
       if (u === 'rem' || u === 'em') return Math.round(n * 16) + 'px';
       if (u === 'px') return Math.round(n) + 'px';
       return '';
+    },
+    // font size in px next to a line height ("item-title-" → item-title-size
+    // or item-title-font-size), at the same breakpoint
+    fontSizePx(prefix, bp) {
+      for (const group of Object.values(this.defaults || {})) {
+        const vars = (group && group.vars) || {};
+        for (const name of [prefix + 'size', prefix + 'font-size']) {
+          const def = vars[name];
+          if (!def) continue;
+          const val = this.isResponsive(def)
+            ? (this.responsiveAt(name, bp || 'default') || def[bp || 'default'])
+            : (this.getOverride(name) || def.value);
+          const px = this.toPx(val, def.unit, name, bp);
+          return px ? parseFloat(px) : null;
+        }
+      }
+      return null;
     },
     showCalculator(unit) {
       return unit !== 'px';

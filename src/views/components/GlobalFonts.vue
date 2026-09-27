@@ -34,6 +34,7 @@
                   <span v-for="bp in ['default', 'lg', 'xl']" :key="bp" class="pw-element-field">
                     <span class="pw-element-input-wrap">
                       <input
+                        v-pw-autosize
                         type="text"
                         inputmode="decimal"
                         :step="group.step || 0.1"
@@ -60,7 +61,10 @@
 </template>
 
 <script>
+import autosize from '../../directives/autosize.js';
+
 export default {
+  directives: { 'pw-autosize': autosize },
   props: {
     fontDefaults: {
       type: Object,
