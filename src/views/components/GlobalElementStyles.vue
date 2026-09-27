@@ -1471,7 +1471,8 @@ export default {
             label: tabLabels[st],
             elementKey,
             category: st,
-            partLabel: hasChild && i === 0 ? this.partLabel(elementKey) : null,
+            // media + caption without the part headings
+            partLabel: hasChild && i === 0 && groupKey !== 'media' ? this.partLabel(elementKey) : null,
           });
         });
       }
