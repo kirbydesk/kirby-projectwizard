@@ -216,6 +216,25 @@
                 </div>
               </div>
           </template>
+          <!-- media corners: square (all radii 0) or custom (the four radii), as for the blocks -->
+          <div v-if="st.elementKey === 'media' && st.category === 'shape'" :key="'media-shape-' + st.key" class="pw-field-row">
+            <div class="k-input" data-type="text">
+              <span class="k-input-element pw-field-row-inner">
+                <div class="pw-field-row-label-col">
+                  <label class="pw-field-row-label">{{ $t('prw.element.button-shape') }}</label>
+                </div>
+                <div class="pw-field-row-options">
+                  <k-toggles-input
+                    :value="mediaShape()"
+                    :options="[{ value: 'square', text: $t('pw.option.square') }, { value: 'custom', text: $t('prw.option.userDefined') }]"
+                    :grow="false"
+                    :required="true"
+                    @input="setMediaShape"
+                  />
+                </div>
+              </span>
+            </div>
+          </div>
           <template v-for="(fieldGroup, gIdx) in groupedVarFields(stInfo(st).group, stInfo(st).category)">
             <!-- Group header row -->
             <div v-if="fieldGroup.header && !isCornerGroup(fieldGroup)" :key="'vgh-' + gIdx" class="pw-group-header">
@@ -265,9 +284,9 @@
               </div>
             </template>
             <!-- the base font size only while the step "normal" is chosen; the
-                 button's corner radii only for custom corners -->
+                 button's and media's corner radii only for custom corners -->
             <div
-              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom')"
+              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom')"
               :key="'vf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :data-guide="guideType(field.varName)"
@@ -726,6 +745,8 @@ export default {
       previewFlourish: false,
       // media preview with a sample image
       previewMediaImage: false,
+      // media radii kept while the corners are square
+      mediaCustomRadius: null,
       openSections: {},
       resetFields: new Set(),
     };
@@ -826,6 +847,28 @@ export default {
       return null;
     },
     // button corners: square, round or custom (then the radii apply)
+    // media corners: square when all four radii are 0
+    mediaShape() {
+      const def = this.elementDefaults.media?.vars?.['media-radius']?.value || [];
+      const ov = (this.elementOverrides.global || {})['media-radius'];
+      const radii = Array.isArray(ov) ? ov : def;
+      return radii.length && radii.every(r => parseFloat(r) === 0) ? 'square' : 'custom';
+    },
+    // square sets the radii to 0 (keeping the custom ones to switch back)
+    setMediaShape(shape) {
+      const overrides = JSON.parse(JSON.stringify(this.elementOverrides));
+      if (!overrides.global) overrides.global = {};
+      if (shape === 'square') {
+        if (this.mediaShape() === 'custom') this.mediaCustomRadius = overrides.global['media-radius'] || null;
+        overrides.global['media-radius'] = ['0rem', '0rem', '0rem', '0rem'];
+      } else if (this.mediaCustomRadius) {
+        overrides.global['media-radius'] = [...this.mediaCustomRadius];
+      } else {
+        delete overrides.global['media-radius'];
+      }
+      if (Object.keys(overrides.global).length === 0) delete overrides.global;
+      this.$emit('update:overrides', overrides);
+    },
     buttonShape() {
       return this.getOverrideValue('button-shape') || this.elementDefaults.button?.vars?.['button-shape']?.value || 'custom';
     },
