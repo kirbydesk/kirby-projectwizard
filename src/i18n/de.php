@@ -80,7 +80,7 @@
 	'prw.view.design' => 'Gestaltung',
 	'prw.view.defaults' => 'Startwerte',
 	'prw.view.presets' => 'Einschränkungen',
-	'prw.view.design.intro' => 'Gestaltung gilt sofort für alle Blöcke dieses Typs, auch für bereits angelegte.',
+	'prw.view.design.intro' => 'Gestaltung gilt für alle Blöcke dieses Typs, auch bereits angelegte.',
 	'prw.view.defaults.intro' => 'Startwerte gelten für neu angelegte Blöcke. Im Block selbst lassen sich die Werte weiterhin ändern.',
 	'prw.view.presets.intro' => 'Schränkt ein, welche Optionen Redakteure im Block auswählen können, und legt fest, was ein neuer Block vorausgewählt hat.',
 	'prw.heading.block' => 'Block',
