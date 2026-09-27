@@ -16,14 +16,15 @@
           <div class="k-toggles-input pw-option-toggles">
             <ul>
               <li v-for="opt in options" :key="opt" :data-state="optionState(opt)">
-                <input
-                  :id="uid + '-' + opt"
-                  type="checkbox"
-                  class="input-hidden"
-                  :checked="optionState(opt) === 'preset'"
-                  @click.prevent="cycleOption(opt)"
-                />
-                <label :for="uid + '-' + opt" :title="$t('prw.option.state.' + optionState(opt))">
+                <!-- no checkbox: the state alone decides the look (a prevented
+                     checkbox click let the browser undo it, two presets showed) -->
+                <label
+                  role="button"
+                  tabindex="0"
+                  :title="$t('prw.option.state.' + optionState(opt))"
+                  @click="cycleOption(opt)"
+                  @keydown.enter.space.prevent="cycleOption(opt)"
+                >
                   <span class="k-toggles-text">{{ optionLabel(opt) }}</span>
                 </label>
               </li>
@@ -180,6 +181,8 @@ export default {
 /* the preset: a black pill */
 .pw-option-toggles li[data-state="preset"] label {
   border-radius: 999px;
+  background: var(--color-black);
+  color: var(--color-white);
 }
 /* options not allowed: greyed text only */
 .pw-option-toggles li[data-state="disabled"] label {
