@@ -1504,8 +1504,8 @@ export default {
             label: elementKey === 'caption' && st === 'text' ? this.partLabel('caption') : tabLabels[st],
             elementKey,
             category: st,
-            // media + caption without the part headings
-            partLabel: hasChild && i === 0 && groupKey !== 'media' ? this.partLabel(elementKey) : null,
+            // media + caption without the part headings, the source (cite) too
+            partLabel: hasChild && i === 0 && groupKey !== 'media' && elementKey !== 'cite' ? this.partLabel(elementKey) : null,
           });
         });
       }
