@@ -96,7 +96,6 @@
           </pw-portal>
           <!-- One section per former subtab (Text, Sizes, Flourish, Colors): heading above a card with the rows in the table look -->
           <template v-for="st in combinedSubtabs(groupKey)">
-          <h2 v-if="st.partLabel" :key="'part-' + st.key" class="pw-part-heading">{{ st.partLabel }}</h2>
           <section :key="'card-' + st.key" class="pw-card-section">
             <div class="pw-card-heading-row">
               <h3 class="pw-card-heading">{{ st.label }}</h3>
@@ -1490,22 +1489,19 @@ export default {
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
-      // With a child element (quote + cite, media + caption) each part gets
-      // its own sub-heading (partLabel on its first section)
+      // With a child element (quote + cite, media + caption) the cards of
+      // both parts follow each other; their text cards are named after them
       const parts = hasChild ? [groupKey, childKey] : [groupKey];
       for (const elementKey of parts) {
         // no colours card when all colours sit in other cards
         const subtabs = this.elementSubtabs(elementKey).filter(st =>
           st !== 'colors' || !this.groups[elementKey] || this.groupedColorFields(this.groups[elementKey], 'colors').length > 0);
-        subtabs.forEach((st, i) => {
+        subtabs.forEach(st => {
           result.push({
             key: elementKey + ':' + st,
-            // the text card of the caption and the source is named after them
-            label: (elementKey === 'caption' || elementKey === 'cite') && st === 'text' ? this.partLabel(elementKey) : tabLabels[st],
+            label: hasChild && st === 'text' ? this.partLabel(elementKey) : tabLabels[st],
             elementKey,
             category: st,
-            // media + caption without the part headings, the source (cite) too
-            partLabel: hasChild && i === 0 && groupKey !== 'media' && elementKey !== 'cite' ? this.partLabel(elementKey) : null,
           });
         });
       }

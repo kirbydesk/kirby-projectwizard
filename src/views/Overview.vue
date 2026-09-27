@@ -2304,16 +2304,6 @@ export default {
 .pw-card-section {
   margin-bottom: var(--spacing-8);
 }
-/* sub-heading above a group of sections (e.g. "Quote" and "Source") */
-.pw-part-heading {
-  margin-bottom: var(--spacing-4);
-  font-size: var(--text-lg, 1.125rem);
-  font-weight: var(--font-semi);
-  line-height: 1.25;
-}
-.pw-card-section + .pw-part-heading {
-  margin-top: var(--spacing-12);
-}
 /* heading line: the heading, optional switches on the right */
 .pw-card-heading-row {
   display: flex;
