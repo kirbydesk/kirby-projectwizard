@@ -11,8 +11,7 @@
         <div class="pw-field-row-options">
           <!-- preset (left): one of the allowed options (Kirby's black menu) -->
           <div v-if="!noDefault" class="pw-tab-menu pw-default-menu">
-            <button type="button" class="pw-default-button" aria-haspopup="menu" @click="$refs.defaultMenu.toggle()">
-              <span class="pw-default-label">{{ $t('prw.label.presetValue') }}:</span>
+            <button type="button" class="pw-default-button" aria-haspopup="menu" :title="$t('prw.label.presetValue')" @click="$refs.defaultMenu.toggle()">
               <span class="pw-default-value">{{ optionLabel(defaultValue) }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
             </button>
@@ -217,9 +216,6 @@ export default {
 }
 .pw-default-button:hover {
   background: light-dark(var(--color-gray-100), var(--color-gray-850));
-}
-.pw-default-label {
-  color: var(--color-text-dimmed);
 }
 .pw-default-value {
   font-weight: var(--font-semi);
