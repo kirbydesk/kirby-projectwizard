@@ -11,8 +11,8 @@
         <div class="pw-field-row-options">
           <!-- the options as Kirby's toggles (same markup, so they look like
                the other toggles): greyed = not allowed, black text = allowed,
-               black pill = preset; a click moves on: greyed → allowed →
-               preset → greyed -->
+               black pill = preset; a click switches greyed ↔ allowed, a double
+               click makes the preset (the pill itself stays, nothing jumps) -->
           <div class="k-toggles-input pw-option-toggles">
             <ul>
               <li v-for="opt in options" :key="opt" :data-state="optionState(opt)">
@@ -22,8 +22,9 @@
                   role="button"
                   tabindex="0"
                   :title="$t('prw.option.state.' + optionState(opt))"
-                  @click="cycleOption(opt)"
-                  @keydown.enter.space.prevent="cycleOption(opt)"
+                  @click="clickOption(opt)"
+                  @dblclick="makePreset(opt)"
+                  @keydown.enter.space.prevent="clickOption(opt)"
                 >
                   <span class="k-toggles-text">{{ optionLabel(opt) }}</span>
                 </label>
@@ -109,12 +110,18 @@ export default {
       if (!this.localActive.includes(opt)) return 'disabled';
       return !this.noDefault && opt === this.defaultValue ? 'preset' : 'allowed';
     },
-    // click: allowed → preset → not allowed → allowed; without presets just
-    // allowed ↔ not allowed
-    cycleOption(opt) {
-      const state = this.optionState(opt);
-      if (state === 'allowed' && !this.noDefault) this.setDefault(opt);
-      else this.toggleOption(opt);
+    // click: not allowed ↔ allowed; the preset stays (another option has to
+    // become the preset first)
+    clickOption(opt) {
+      if (this.optionState(opt) === 'preset') return;
+      this.toggleOption(opt);
+    },
+    // double click: the option becomes the preset (allowed if it wasn't); the
+    // old preset stays allowed
+    makePreset(opt) {
+      if (this.noDefault) return;
+      if (!this.localActive.includes(opt)) this.toggleOption(opt);
+      this.setDefault(opt);
     },
     // allow/disallow the option (at least one stays allowed)
     toggleOption(opt) {
@@ -179,6 +186,10 @@ export default {
 }
 
 /* the preset: a black pill */
+/* no text selection on a double click */
+.pw-option-toggles label {
+  user-select: none;
+}
 .pw-option-toggles li[data-state="preset"] label {
   border-radius: 999px;
   background: var(--color-black);
