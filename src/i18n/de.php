@@ -28,6 +28,7 @@
 	'prw.label.showInPreview' => 'In der Vorschau zeigen',
 	'prw.label.topBottom' => 'Vertikal',
 	'prw.label.leftRight' => 'Horizontal',
+	'prw.option.asTyped' => 'Wie eingegeben',
 	'prw.option.userDefined' => 'Benutzerdefiniert',
 	'prw.label.presetValue' => 'Vorgabe',
 	'prw.label.variants' => 'Varianten',

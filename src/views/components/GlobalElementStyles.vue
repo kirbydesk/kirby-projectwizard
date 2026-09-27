@@ -1081,7 +1081,8 @@ export default {
     },
     filteredOptions(varName, options) {
       if (!varName.endsWith('-font-weight')) {
-        return options.map(o => ({ value: o, text: this.optionText(o) }));
+        // text transform "none": the text as typed
+        return options.map(o => ({ value: o, text: o === 'none' && varName.endsWith('text-transform') ? this.$t('prw.option.asTyped') : this.optionText(o) }));
       }
       const prefix = varName.replace('-font-weight', '');
       const fontFamilyVar = prefix + '-font-family';
