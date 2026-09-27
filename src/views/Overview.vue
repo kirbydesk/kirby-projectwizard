@@ -2597,6 +2597,7 @@ export default {
 .pw-block-view-intro {
   margin-bottom: var(--spacing-8);
   font-size: var(--text-sm);
+  line-height: var(--leading-normal);
   color: var(--color-text-dimmed);
 }
 
