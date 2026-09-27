@@ -54,7 +54,7 @@
 	'prw.subtab.marked' => 'Text marking',
 	'prw.subtab.shape' => 'Shape',
 	'prw.subtab.slideshow' => 'Slideshow',
-	'prw.subtab.zoom' => 'Zoom',
+	'prw.subtab.zoom' => 'Zoom icon',
 	'prw.subtab.icon' => 'Icon',
 	'prw.state.normal' => 'Normal',
 	'prw.state.hover' => 'Hover',
