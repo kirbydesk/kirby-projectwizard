@@ -187,9 +187,21 @@ export default {
   background: light-dark(var(--color-white), var(--color-gray-850));
   cursor: pointer;
 }
+/* the preset: a black pill inside its cell */
+.pw-option-toggles button {
+  position: relative;
+  isolation: isolate;
+}
 .pw-option-toggles button[data-state="preset"] {
-  background: light-dark(var(--color-black), var(--color-gray-950));
   color: var(--color-white);
+}
+.pw-option-toggles button[data-state="preset"]::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  border-radius: 999px;
+  background: light-dark(var(--color-black), var(--color-gray-950));
 }
 .pw-option-toggles button[data-state="disabled"] {
   background: var(--panel-color-back);
