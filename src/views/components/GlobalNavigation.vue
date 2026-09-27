@@ -739,8 +739,12 @@ export default {
     },
     filteredOptions(varName, options) {
       if (!varName.endsWith('font-weight')) {
-        // text transform "none": the text as typed
-        return options.map(o => ({ value: String(o), text: o === 'none' && varName.endsWith('text-transform') ? this.$t('prw.option.asTyped') : this.optionLabel(o) }));
+        // text transform: glyph icons, the name as tooltip ("none": as typed)
+        if (varName.endsWith('text-transform')) {
+          const icons = { none: 'prw-case-none', uppercase: 'prw-case-upper', lowercase: 'prw-case-lower', capitalize: 'prw-case-capitalize' };
+          return options.map(o => ({ value: String(o), icon: icons[o], text: o === 'none' ? this.$t('prw.option.asTyped') : this.optionLabel(o) }));
+        }
+        return options.map(o => ({ value: String(o), text: this.optionLabel(o) }));
       }
       const prefix = varName.replace('font-weight', '');
       const fontFamilyVar = prefix + 'font-family';
