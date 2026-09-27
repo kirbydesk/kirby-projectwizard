@@ -1212,8 +1212,8 @@ export default {
     // tabs of a block view: design (only with values), start values, visibility
     blockViewTabs() {
       const views = this.hasDesign(this.activeTab) ? ['design', 'defaults', 'presets'] : ['defaults', 'presets'];
-      // design: the palette, start values: new blocks, visibility: the eye
-      const icons = { design: 'palette', defaults: 'add', presets: 'preview' };
+      // design: the palette, start values: the pen, visibility: the eye
+      const icons = { design: 'palette', defaults: 'edit-line', presets: 'preview' };
       return views.map(name => ({
         name,
         icon: icons[name],
