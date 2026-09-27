@@ -8,6 +8,9 @@
       <!-- ===== Content: one card per content field ===== -->
       <template v-if="view === 'defaults' || view === 'presets'">
 
+        <!-- the drawer tab "Content" above the content cards -->
+        <h2 v-if="presetFields(getContentFields()).length || hasEditorCard()" class="pw-drawer-heading">{{ drawerLabel('content') }}</h2>
+
         <!-- Content fields -->
         <section
           v-for="field in presetFields(getContentFields())"
@@ -87,6 +90,7 @@
         <!-- Item-* content fields (item-tagline, item-heading, item-editor) —
              rendered AFTER the editor so block-level fields and the editor
              come before per-item field defaults. -->
+        <h2 v-if="presetFields(getItemDefaultsContentFields()).length" class="pw-drawer-heading">{{ $t('prw.drawer.itemsContent') }}</h2>
         <section
           v-for="field in presetFields(getItemDefaultsContentFields())"
           :key="field.key"
@@ -120,16 +124,18 @@
       <!-- ===== Categories (layout, style, effects, grid, settings): a card
            with the rows of this view, its heading right above ===== -->
       <template v-for="cat in getCategories()">
+        <!-- the drawer tab the rows sit in (Layout, Style, Grid, Settings) -->
+        <h2 v-if="view !== 'layout' && catSections(cat).length" :key="'drawer-' + cat.key" class="pw-drawer-heading">{{ drawerLabel(cat.key) }}</h2>
         <section
-          v-if="viewFields(cat).length"
-          :key="'card-' + cat.key"
+          v-for="sec in catSections(cat)"
+          :key="'card-' + cat.key + '-' + sec.key"
           class="pw-card-section"
         >
-        <div class="pw-card-heading-row">
-          <h3 class="pw-card-heading">{{ categoryHeading(cat.key) }}</h3>
+        <div v-if="sec.heading" class="pw-card-heading-row">
+          <h3 class="pw-card-heading">{{ sec.heading }}</h3>
         </div>
         <div class="pw-card pw-field-table">
-          <template v-for="field in viewFields(cat)">
+          <template v-for="field in sec.fields">
             <!-- FieldRow (e.g. theme with options + click logic) -->
             <pw-field-row
               v-if="field.type === 'fieldrow'"
@@ -618,18 +624,31 @@ export default {
       if (this.view === 'layout') return cat.fields;
       const isPreset = f => cat.key === 'grid' || f.type === 'fieldrow';
       let fields = cat.fields.filter(f => isPreset(f) === (this.view === 'presets'));
-      // the corner radius (a layout field) is shown in the block layout card
-      if (this.view === 'defaults') {
-        if (cat.key === 'layout') fields = fields.filter(f => f.key !== 'radius');
-        if (cat.key === 'settings') {
-          const layout = this.getCategories().find(c => c.key === 'layout');
-          const radius = layout && layout.fields.find(f => f.key === 'radius');
-          // second row, after the block size; none while the blocks are
-          // square (all global radii 0), the corners have no effect then
-          if (radius && !this.blocksSquare) fields = [...fields.slice(0, 1), { ...radius, catKey: 'layout' }, ...fields.slice(1)];
-        }
-      }
       return fields;
+    },
+
+    // the cards of a category, as the drawer tab groups them: layout has
+    // paddings and corners (the corners only while the blocks are round);
+    // a card's heading is left out when it just repeats the drawer tab
+    catSections(cat) {
+      const fields = this.viewFields(cat);
+      if (this.view === 'defaults' && cat.key === 'layout') {
+        const radius = fields.find(f => f.key === 'radius');
+        const paddings = fields.filter(f => f.key !== 'radius');
+        const sections = [];
+        if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.paddings'), fields: paddings });
+        if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.element.button-shape'), fields: [radius] });
+        return sections;
+      }
+      if (!fields.length) return [];
+      const heading = this.categoryHeading(cat.key);
+      const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
+      return [{ key: 'main', heading: repeats ? null : heading, fields }];
+    },
+
+    // name of a drawer tab (as in the block's drawer)
+    drawerLabel(key) {
+      return this.$t('pw.tab.' + key);
     },
 
     editorField() {
@@ -1305,6 +1324,18 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
+}
+
+/* the drawer tab above its cards (Content, Layout, Grid, …), smaller than
+   the "Block" / "Items" group titles */
+.pw-drawer-heading {
+  margin-bottom: var(--spacing-3);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semi);
+  color: var(--color-text-dimmed);
+}
+.pw-card-section + .pw-drawer-heading {
+  margin-top: var(--spacing-10);
 }
 
 .pw-field-row-options .k-toggles-input ul {
