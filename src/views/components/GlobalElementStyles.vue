@@ -1490,7 +1490,7 @@ export default {
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
       // With a child element (quote + cite, media + caption) the cards of
-      // both parts follow each other; their text cards are named after them
+      // both parts follow each other; the child's text card is named after it
       const parts = hasChild ? [groupKey, childKey] : [groupKey];
       for (const elementKey of parts) {
         // no colours card when all colours sit in other cards
@@ -1499,7 +1499,7 @@ export default {
         subtabs.forEach(st => {
           result.push({
             key: elementKey + ':' + st,
-            label: hasChild && st === 'text' ? this.partLabel(elementKey) : tabLabels[st],
+            label: elementKey === childKey && st === 'text' ? this.partLabel(elementKey) : tabLabels[st],
             elementKey,
             category: st,
           });
