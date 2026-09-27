@@ -168,13 +168,14 @@
           <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
         </div>
 
-        <!-- Block view: the block's name as page heading, below Kirby's tabs
-             (design, start values, visibility) and what the chosen one does -->
-        <div v-if="!loading && activeTab !== 'global'" class="pw-page-title-row">
-          <h1 class="pw-page-title">{{ blockLabel(activeTab) }}</h1>
-        </div>
+        <!-- Block view: the block's name as page heading, Kirby's tabs (design,
+             start values, visibility) on the right in its line, below what the
+             chosen tab does -->
         <template v-if="!loading && activeTab !== 'global'">
-          <k-tabs class="pw-block-view-tabs" :tab="currentBlockView" :tabs="blockViewTabs" />
+          <div class="pw-page-title-row pw-page-title-row-tabs">
+            <h1 class="pw-page-title">{{ blockLabel(activeTab) }}</h1>
+            <k-tabs class="pw-block-view-tabs" :tab="currentBlockView" :tabs="blockViewTabs" />
+          </div>
           <p class="pw-block-view-intro">{{ $t('prw.view.' + currentBlockView + '.intro') }}</p>
         </template>
 
@@ -2577,13 +2578,17 @@ export default {
   margin-top: var(--spacing-12);
 }
 
-/* block view: Kirby's tabs right under the heading's line (as in a page
-   view), below them what the chosen tab does */
-.pw-page-title-row:has(+ .pw-block-view-tabs) {
-  margin-bottom: 0;
+/* block view: Kirby's tabs on the right of the heading, the current one's
+   line on the heading's line (as the tabs in Kirby's drawers); below them
+   what the chosen tab does */
+.pw-page-title-row-tabs {
+  align-items: flex-end;
+  margin-bottom: var(--spacing-3);
 }
 .pw-block-view-tabs.k-tabs {
-  margin-bottom: var(--spacing-3);
+  justify-content: flex-end;
+  margin-inline: auto calc(var(--button-padding) * -1);
+  margin-bottom: calc(var(--spacing-3) * -1);
 }
 .pw-block-view-intro {
   margin-bottom: var(--spacing-8);
