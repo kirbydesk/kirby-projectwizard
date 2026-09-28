@@ -1104,6 +1104,30 @@
                 />
                 <!-- with an icon: its size, colour, tile -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none'">
+                <!-- beside the content: its vertical alignment (top / centre),
+                     at the top a fine vertical offset (as the steplist's number) -->
+                <pw-block-settings
+                  v-if="itemLayoutDefault(block.blockType, 'item-icon-position') === 'left'"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-icon-align']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-icon-position') === 'left' && itemLayoutDefault(block.blockType, 'item-icon-align') !== 'center'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-icon-offset']"
+                  :labels="{ 'item-icon-offset': $t('prw.label.offset') }"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
                 <pw-block-values
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"

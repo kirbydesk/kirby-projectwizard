@@ -467,6 +467,10 @@ export default {
     featureNoIcon() {
       return this.setting('layout', 'item-icon-position') === 'none';
     },
+    // icon beside the content: top (with its offset) or centre
+    featureIconAlign() {
+      return this.setting('layout', 'item-icon-align') || 'top';
+    },
     featureIconTop() {
       return this.setting('layout', 'item-icon-position') === 'top';
     },
@@ -484,12 +488,15 @@ export default {
         flexDirection: this.featureIconTop ? 'column' : 'row',
         // with guides the gap is an element of its own (two lines)
         gap: this.guides ? 0 : this.itemValue('item-icon-gap'),
-        alignItems: 'flex-start',
+        // icon beside the content: at the top or centred to it
+        alignItems: !this.featureIconTop && this.featureIconAlign === 'center' ? 'center' : 'flex-start',
       };
     },
     // the icon: plain, or on a tile (padding, background, shape)
     featureIconStyle() {
       const style = { display: 'flex', flexShrink: 0, position: 'relative' };
+      // beside the content at the top: its fine vertical offset
+      if (!this.featureIconTop && this.featureIconAlign !== 'center') style.translate = '0 ' + (this.itemValue('item-icon-offset') || '0rem');
       if (!this.featureTile) return style;
       const shape = this.setting('layout', 'item-shape') || 'custom';
       const r = this.itemValue('item-radius') || [];
