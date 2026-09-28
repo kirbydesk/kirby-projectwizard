@@ -1627,10 +1627,9 @@ export default {
 /* the question mark at the right end of the label cell: hovered, the
    value's area is tinted in the preview */
 .pw-area-hint {
-  --icon-size: 14px;
+  --icon-size: 18px;
   margin-inline-start: auto;
   color: var(--color-text-dimmed);
-  cursor: help;
 }
 .pw-area-hint:hover {
   color: var(--color-text);
