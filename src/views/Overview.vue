@@ -806,8 +806,8 @@
                 :bp.sync="itemBp"
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="blockValueOverrides[block.blockType] || {}"
-                :step-style="block.blockType === 'pwsteplist' ? currentStepStyle(block.blockType) : ''"
-                :feature-layout="block.blockType === 'pwfeaturelist' ? currentFeatureLayout(block.blockType) : ''"
+                :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
+                :feature-layout="block.blockType === 'pwfeaturelist' && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
                 :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
@@ -1702,6 +1702,7 @@ export default {
       featurePreviewLayout: {},
       // hero: the height its preview shows (small … fullscreen), a view
       heroPreviewHeight: {},
+      startHeroHeights: {},
       startSectionLayouts: {},
       // the value whose row the pointer is over: its area tinted in the preview
       hoveredVar: null,
@@ -2703,6 +2704,12 @@ export default {
         this.$delete(this.featurePreviewLayout, blockType);
       }
       this.$set(this.startSectionLayouts, blockType, sectionLayout);
+      // hero: the start value of the height changed – show it in the design tab
+      const heroHeight = overrides?.settings?.fields?.style?.height?.default;
+      if (blockType in this.startHeroHeights && this.startHeroHeights[blockType] !== heroHeight) {
+        this.$delete(this.heroPreviewHeight, blockType);
+      }
+      this.$set(this.startHeroHeights, blockType, heroHeight);
       // own space below switched on: start from the elements' current values
       const spacing = overrides?.settings?.fields?.layout?.['item-spacing']?.default;
       if (spacing === 'own' && this.blockValueDefaults[blockType]) this.seedOwnSpacing(blockType);
