@@ -77,7 +77,7 @@
                   <span v-if="groupKey === 'heading' && previewMarked" class="pw-element-preview-text pw-element-preview-marked" :style="previewStyle(groupKey, bp, theme, true)" v-html="previewHtml(groupKey, theme)"></span>
                   <span v-else class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)" v-html="previewHtml(groupKey, theme, groupKey === 'heading')"></span>
                   <!-- flourish below the heading (switch in its card) -->
-                  <span v-if="groupKey === 'heading' && previewFlourish" class="pw-element-preview-flourish-box" :style="flourishBoxStyle(bp, theme)">
+                  <span v-if="groupKey === 'heading' && previewFlourish" class="pw-element-preview-flourish-box" :class="{ 'is-hot-top': hoveredArea === 'heading-flourish-margin-top', 'is-hot-bottom': hoveredArea === 'heading-flourish-margin-bottom' }" :style="flourishBoxStyle(bp, theme)">
                     <span class="pw-element-preview-flourish" :style="flourishStyle(bp, theme)"></span>
                   </span>
                 </template>
@@ -895,8 +895,12 @@ export default {
       if (varName.endsWith('cite-spacing') || varName === 'button-gap') return 'margin';
       // the space after an element (tagline, heading, text)
       if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'margin';
+      // buttons: the gap between icon and text, the third gap (orange)
+      if (varName === 'button-icon-gap') return 'text';
       if (!this.previewFlourish) return null;
-      if (varName.endsWith('-flourish-margin-top') || varName.endsWith('-flourish-margin-bottom')) return 'margin';
+      // the heading's gaps: space below cyan, flourish above violet, below orange
+      if (varName.endsWith('-flourish-margin-top')) return 'row';
+      if (varName.endsWith('-flourish-margin-bottom')) return 'text';
       return null;
     },
     // button corners: square, round or custom (then the radii apply)
@@ -954,6 +958,7 @@ export default {
         'button-row-gap': 'is-hot-row',
         'button-padding-h': 'is-hot-padding-h',
         'button-padding-v': 'is-hot-padding-v',
+        'button-icon-gap': 'is-hot-icon',
       }[this.hoveredArea] || null;
     },
     // gap between buttons (button-gap), as in the frontend
@@ -963,7 +968,9 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap'].includes(varName);
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap'].includes(varName)
+        // the flourish's gaps while the flourish is shown
+        || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
     // the space below an element (tagline, heading, text): override, else the plugin's
     // tooltip of a value's question mark
@@ -972,6 +979,9 @@ export default {
       if (varName === 'cite-spacing') return 'prw.hint.citeSpacing';
       if (varName === 'button-gap') return 'prw.hint.buttonGap';
       if (varName === 'button-row-gap') return 'prw.hint.buttonRowGap';
+      if (varName === 'button-icon-gap') return 'prw.hint.iconGap';
+      if (varName.endsWith('-flourish-margin-top')) return 'prw.hint.flourishTop';
+      if (varName.endsWith('-flourish-margin-bottom')) return 'prw.hint.flourishBottom';
       if (varName.endsWith('-padding-h')) return 'prw.hint.paddingX';
       if (varName.endsWith('-padding-v')) return 'prw.hint.paddingY';
       return 'prw.hint.spaceBelow';
@@ -1022,6 +1032,9 @@ export default {
         fontSize: this.previewStyle('heading', bp, theme).fontSize,
         paddingTop: val('heading-flourish-margin-top', '0.5em'),
         paddingBottom: val('heading-flourish-margin-bottom', '0'),
+        // the same for the tinted areas (guides)
+        '--pw-flourish-pt': val('heading-flourish-margin-top', '0.5em'),
+        '--pw-flourish-pb': val('heading-flourish-margin-bottom', '0'),
       };
     },
     // only the size step chosen in the card heading: { name: entry }
@@ -1811,6 +1824,9 @@ export default {
       return {
         fontSize: iconSizeOv || iconSizeDef,
         marginRight: iconGapOv || iconGapDef,
+        // the gap for its guide, in the button's font size (the icon's own
+        // size would change the em)
+        '--pw-icon-gap': iconGapOv || iconGapDef,
       };
     },
     mediaPreviewStyle(theme) {
@@ -2011,6 +2027,27 @@ export default {
   border-block: 1px solid rgba(0, 180, 90, 0.9);
   pointer-events: none;
 }
+/* guides: the gap between icon and text, orange lines at both its edges */
+.pw-element-preview.has-guides .pw-element-preview-button .pw-preview-link-icon {
+  position: relative;
+}
+.pw-element-preview.has-guides .pw-element-preview-button .pw-preview-link-icon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  box-sizing: border-box;
+  width: var(--pw-icon-gap);
+  border-inline: 1px solid rgba(255, 140, 0, 0.9);
+  pointer-events: none;
+}
+.pw-element-preview.has-guides.has-focus .pw-element-preview-button .pw-preview-link-icon::after {
+  border-color: transparent;
+}
+.pw-element-preview.has-guides.has-focus .is-hot-icon .pw-preview-link-icon::after {
+  background: rgba(255, 140, 0, 0.3);
+}
 /* a question mark hovered: the buttons' guide lines hidden */
 .pw-element-preview.has-guides.has-focus .pw-element-preview-buttons-row::before,
 .pw-element-preview.has-guides.has-focus .pw-element-preview-buttons-row::after,
@@ -2183,15 +2220,15 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-paragraphs p:not(:last-child)::after {
   bottom: 0;
 }
-/* guides at the flourish: the edges of its outer spacing as cyan lines
-   across the preview */
+/* guides at the flourish: the edges of its outer spacing as lines across
+   the preview, above violet, below orange (the flourish itself the other edge) */
 .pw-element-preview.has-guides .pw-element-preview-flourish-box::before,
 .pw-element-preview.has-guides .pw-element-preview-flourish-box::after {
   content: "";
   position: absolute;
   left: calc(-1 * var(--spacing-6));
   right: calc(-1 * var(--spacing-6));
-  border-top: 1px solid rgba(0, 170, 255, 0.8);
+  border-top: 1px solid rgba(130, 80, 255, 0.9);
   pointer-events: none;
 }
 .pw-element-preview.has-guides .pw-element-preview-flourish-box::before {
@@ -2199,6 +2236,16 @@ export default {
 }
 .pw-element-preview.has-guides .pw-element-preview-flourish-box::after {
   bottom: 0;
+  border-top-color: rgba(255, 140, 0, 0.9);
+}
+/* its question marks hovered: the spacing above or below tinted */
+.pw-element-preview.has-focus .pw-element-preview-flourish-box.is-hot-top::before {
+  height: var(--pw-flourish-pt);
+  background: rgba(130, 80, 255, 0.15);
+}
+.pw-element-preview.has-focus .pw-element-preview-flourish-box.is-hot-bottom::after {
+  height: var(--pw-flourish-pb);
+  background: rgba(255, 140, 0, 0.15);
 }
 /* marked heading in the preview: no padding above it */
 .pw-element-preview.is-marked .pw-element-preview-col {
