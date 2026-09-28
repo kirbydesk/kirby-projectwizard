@@ -1171,7 +1171,7 @@ export default {
 .pw-space-band.is-tagline.is-hot::before { background: rgba(0, 170, 255, 0.15); }
 .pw-space-band.is-heading.is-hot::before { background: rgba(130, 80, 255, 0.15); }
 .pw-space-band.is-editor.is-hot::before { background: rgba(255, 140, 0, 0.15); }
-.has-focus .pw-space-band::before {
+.pw-block-live-preview.has-focus .pw-space-band::before {
   border-color: transparent;
 }
 /* hero: a video background marked by a play symbol */
@@ -1261,36 +1261,38 @@ export default {
   outline: 1px solid rgba(255, 0, 170, 0.6);
   pointer-events: none;
 }
-.has-focus .pw-featurelist-offset-gap,
-.has-focus .pw-featurelist-gap,
-.has-focus .pw-featurelist-icon-gap,
-.has-focus .pw-featurelist-title-gap {
+.pw-block-live-preview.has-focus .pw-featurelist-offset-gap,
+.pw-block-live-preview.has-focus .pw-featurelist-gap,
+.pw-block-live-preview.has-focus .pw-featurelist-icon-gap,
+.pw-block-live-preview.has-focus .pw-featurelist-title-gap {
   border-color: transparent;
 }
-.has-focus .pw-featurelist-pad {
+.pw-block-live-preview.has-focus .pw-featurelist-pad {
   display: none;
 }
 .pw-featurelist-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-featurelist-icon-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
 .pw-featurelist-title-gap.is-hot { background: rgba(215, 160, 0, 0.18); }
-/* a value's label hovered: every other guide hidden – the block's own
+/* a value's label hovered: every other guide hidden (each rule prefixed
+   with the preview's class, so it beats the guides' own, e.g. the gaps side
+   by side or with the icon on top) – the block's own
    lines, the other gaps, the padding frames, the flexible tiles' edges */
-.has-focus .pw-block-live-block::before,
-.has-focus .pw-block-live-block::after {
+.pw-block-live-preview.has-focus .pw-block-live-block::before,
+.pw-block-live-preview.has-focus .pw-block-live-block::after {
   display: none;
 }
-.has-focus .pw-block-live-section.has-guides .pw-block-live-content {
+.pw-block-live-preview.has-focus .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 0;
 }
 /* (the hovered value too: only its tinted area shows, no lines) */
-.has-focus .pw-steplist-step-gap,
-.has-focus .pw-steplist-gap,
-.has-focus .pw-logocloud-gap,
-.has-focus .pw-logocloud-text-gap {
+.pw-block-live-preview.has-focus .pw-steplist-step-gap,
+.pw-block-live-preview.has-focus .pw-steplist-gap,
+.pw-block-live-preview.has-focus .pw-logocloud-gap,
+.pw-block-live-preview.has-focus .pw-logocloud-text-gap {
   border-color: transparent;
 }
-.has-focus .pw-logocloud-preview.has-guides .pw-logocloud-pad,
-.has-focus .pw-logocloud-preview.is-flexible .pw-logocloud-item::before {
+.pw-block-live-preview.has-focus .pw-logocloud-preview.has-guides .pw-logocloud-pad,
+.pw-block-live-preview.has-focus .pw-logocloud-preview.is-flexible .pw-logocloud-item::before {
   display: none;
 }
 /* a value's row hovered (guides on): its area tinted in its colour */
