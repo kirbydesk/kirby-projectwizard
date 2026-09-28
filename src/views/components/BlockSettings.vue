@@ -151,7 +151,7 @@
               :uid="blockType + '-' + cat.key + '-' + field.key"
               :label="field.key"
               :all-options="fieldOptions(field)"
-              :active-options="getCategoryActiveOptions(cat.key, field.key, field).filter(o => fieldOptions(field).includes(o))"
+              :active-options="cat.key === 'grid' ? fieldOptions(field) : getCategoryActiveOptions(cat.key, field.key, field).filter(o => fieldOptions(field).includes(o))"
               :current-default="getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.pluginDefault)"
               :plugin-default="field.pluginDefault"
               :enabled="true"
@@ -655,12 +655,12 @@ export default {
     // and offsets, allowed on every block) in "presets", the rest in "defaults"
     viewFields(cat) {
       if (this.view === 'layout') return cat.fields;
-      // restrictions: the option rows and the grid; start values: everything
-      // but the grid (option rows as the choice a new block starts with)
-      const isPreset = f => cat.key === 'grid' || f.type === 'fieldrow';
+      // restrictions: the option rows (not the grid, it is never limited);
+      // start values: everything (option rows as the choice a new block
+      // starts with, the grid with all its values)
       let fields = this.view === 'presets'
-        ? cat.fields.filter(isPreset)
-        : cat.fields.filter(f => cat.key !== 'grid');
+        ? cat.fields.filter(f => cat.key !== 'grid' && f.type === 'fieldrow')
+        : cat.fields;
       // steplist starting as "connected": always one column, no column rows
       if (this.view === 'defaults' && cat.key === 'layout' && this.blockType === 'pwsteplist'
         && this.getVal('settings.fields.style.item-style.default', 'default') === 'connected') {
