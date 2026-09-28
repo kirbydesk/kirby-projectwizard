@@ -57,10 +57,11 @@
           <!-- media: a sample image (as in the element's preview) with the
                element's corner radii -->
           <div v-if="isMedia && hasField('media')" class="pw-media-preview-img pw-media-preview-photo" :style="mediaStyle"></div>
-          <!-- logocloud: two sample logos side by side (so the gap shows),
-               shrinking in a narrow preview -->
+          <!-- logocloud: four sample logos, two by two (so the gap shows
+               between the columns and between the rows), shrinking in a
+               narrow preview -->
           <div v-if="isLogocloud" class="pw-logocloud-preview" :style="logosStyle">
-            <div v-for="n in 2" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
+            <div v-for="n in 4" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
               <k-icon type="image" />
             </div>
           </div>
@@ -207,21 +208,17 @@ export default {
     isLogocloud() {
       return this.blockType === 'pwlogocloud';
     },
-    // the logos' row: at most "per row" logos wide, wrapping, aligned as set
+    // the logos: two columns and two rows with the gap between them,
+    // aligned as set
     logosStyle() {
       const size = this.itemValueAt('item-size');
-      const gap = this.itemValue('item-gap');
-      const perRow = Number(this.setting('layout', 'logos-' + ({ default: 'sm', lg: 'lg', xl: 'xl' }[this.bp]))) || 2;
       const align = this.preset('logos', 'align') || 'center';
       return {
-        display: 'flex',
-        flexWrap: 'nowrap',
-        justifyContent: { left: 'flex-start', right: 'flex-end' }[align] || 'center',
-        gap,
-        maxWidth: 'calc(' + perRow + ' * ' + size + ' + ' + (perRow - 1) + ' * ' + gap + ')',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, ' + size + '))',
+        justifyContent: { left: 'start', right: 'end' }[align] || 'center',
+        gap: this.itemValue('item-gap'),
         marginTop: this.gapBefore('logos'),
-        marginLeft: align === 'left' ? 0 : 'auto',
-        marginRight: align === 'right' ? 0 : 'auto',
       };
     },
     // a logo's tile: size, padding, shape and background as in the frontend
@@ -230,9 +227,7 @@ export default {
       const r = this.itemValue('item-radius') || [];
       const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
       return {
-        flex: '0 1 ' + this.itemValueAt('item-size'),
         minWidth: 0,
-        maxWidth: '100%',
         aspectRatio: '1',
         padding: this.itemValue('item-padding'),
         backgroundColor: this.itemColor('item-background'),
