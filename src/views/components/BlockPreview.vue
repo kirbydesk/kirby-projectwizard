@@ -418,8 +418,9 @@ export default {
       // above the items: the gap after the text; split: 2rem below the intro
       // on mobile, none beside it
       const marginTop = this.featureSplit ? (this.hasGrid ? 0 : '2rem') : this.gapBefore('items');
-      if (!this.hasGrid) return { marginTop };
-      return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + this.featureColumns + ', minmax(0, 1fr))', gap, marginBottom: gap };
+      // the gap only between the features (none below the last)
+      if (!this.hasGrid) return { marginTop, display: 'flex', flexDirection: 'column', gap };
+      return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + this.featureColumns + ', minmax(0, 1fr))', gap };
     },
     featureItemStyle() {
       return {
@@ -427,8 +428,6 @@ export default {
         flexDirection: this.setting('layout', 'item-icon-position') === 'top' ? 'column' : 'row',
         gap: this.itemValue('item-icon-gap'),
         alignItems: 'flex-start',
-        // mobile: the gap below each feature (no grid)
-        marginBottom: this.hasGrid ? 0 : this.itemValueAt('item-gap'),
       };
     },
     // the icon: plain, or on a tile (padding, background, shape)
