@@ -6,6 +6,7 @@
  *
  * Arrow up/down change the value by its step (the input's `step`, else
  * 0.1), with Shift by ten steps; each step is applied right away (change).
+ * Typed values are kept within the input's min / max as well.
  *
  * Whole numbers are shown with ".0" (2 → 2.0) – only in the field: the
  * value handed on (change) stays as it is.
@@ -27,17 +28,21 @@ const format = (el) => {
 
 const decimals = (number) => (String(number).split('.')[1] || '').length;
 
+// a number within the input's min / max
+const clamp = (el, number) => {
+	const min = parseFloat(el.getAttribute('min'));
+	const max = parseFloat(el.getAttribute('max'));
+	if (!Number.isNaN(min)) number = Math.max(min, number);
+	if (!Number.isNaN(max)) number = Math.min(max, number);
+	return number;
+};
+
 const stepBy = (el, direction, big) => {
 	const current = parseFloat(String(el.value).replace(',', '.'));
 	if (Number.isNaN(current)) return;
 	const step = (parseFloat(el.getAttribute('step')) || 0.1) * (big ? 10 : 1);
 	const places = Math.max(decimals(step), decimals(current));
-	let next = Number((current + direction * step).toFixed(places));
-	const min = parseFloat(el.getAttribute('min'));
-	const max = parseFloat(el.getAttribute('max'));
-	if (!Number.isNaN(min)) next = Math.max(min, next);
-	if (!Number.isNaN(max)) next = Math.min(max, next);
-	el.value = String(next);
+	el.value = String(clamp(el, Number((current + direction * step).toFixed(places))));
 	el.dispatchEvent(new Event('change'));
 	format(el);
 };
@@ -55,6 +60,14 @@ export default {
 			el.pwTyping = false;
 			format(el);
 		});
+		// a typed value is kept within min / max as the arrows do; capturing,
+		// so it is corrected before the field's own change handler reads it
+		el.addEventListener('change', () => {
+			const typed = parseFloat(String(el.value).replace(',', '.'));
+			if (Number.isNaN(typed)) return;
+			const kept = clamp(el, typed);
+			if (kept !== typed) el.value = String(kept);
+		}, true);
 		el.addEventListener('keydown', (event) => {
 			if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
 			event.preventDefault();
