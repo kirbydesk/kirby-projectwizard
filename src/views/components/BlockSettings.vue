@@ -37,6 +37,52 @@
             </div>
           </div>
         </section>
+
+        <!-- a field's further settings (not dropdowns in the drawer, e.g.
+             the media's type, size and corners) as a card of their own -->
+        <section
+          v-for="field in contentExtraFields()"
+          :key="'cx-' + field.key"
+          class="pw-card-section"
+        >
+          <div class="pw-card-heading-row">
+            <h3 class="pw-card-heading">{{ fieldLabel(field.key) }}</h3>
+          </div>
+          <div class="pw-card pw-field-table">
+            <pw-field-row
+              v-for="prop in field.extras"
+              :key="field.key + '-' + prop.key"
+              :uid="blockType + '-' + field.key + '-' + prop.key"
+              :label="prop.key"
+              :plugin="block.plugin || ''"
+              :all-options="prop.allOptions"
+              :active-options="prop.allOptions"
+              :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
+              :plugin-default="prop.pluginDefault"
+              :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
+              @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
+            />
+            <!-- custom corners: the four switches (as in the drawer) -->
+            <div v-if="field.corners && getVal('settings.fields.content.' + field.key + '.radius.default', 'none') === 'custom'" class="pw-field-row">
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ categoryFieldLabel('radius') }}</label>
+                  </div>
+                  <div class="pw-field-row-options pw-toggle-group pw-corner-grid">
+                    <span v-for="corner in ['top-left', 'top-right', 'bottom-left', 'bottom-right']" :key="corner" class="pw-corner-cell">
+                      <k-toggle-input
+                        :value="getVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', false)"
+                        :text="toggleOptionLabel(corner)"
+                        @input="setVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', $event)"
+                      />
+                    </span>
+                  </div>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
       </template>
 
       <!-- ===== Restrictions: the fields of the chosen drawer tab, each with
@@ -676,7 +722,17 @@ export default {
         // cannot be hidden
         const row = (k) => ({ id: k, keys: [k], label: this.fieldLabel(k), locked: this.isObject(all[k]) && all[k].locked === true });
         const groups = [];
-        const own = keys.filter(k => !k.startsWith('item-')).map(row);
+        // below a field its further settings (the media's type, size, corner
+        // style: media-type → the drawer's mediaType …)
+        const extras = {};
+        for (const f of this.contentExtraFields()) {
+          extras[f.key] = f.extras.map(p => {
+            const pKey = 'prw.property.' + p.key;
+            const pLabel = this.$t(pKey);
+            return { id: f.key + '-' + p.key, keys: [f.key + '-' + p.key], label: pLabel && pLabel !== pKey ? pLabel : p.key };
+          });
+        }
+        const own = keys.filter(k => !k.startsWith('item-')).flatMap(k => [row(k), ...(extras[k] || [])]);
         const items = keys.filter(k => k.startsWith('item-')).map(row);
         if (own.length) groups.push({ key: 'block', heading: null, rows: own });
         if (items.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: items });
@@ -757,6 +813,19 @@ export default {
     },
     // a content field's dropdowns (as in the drawer: flourish … level, then
     // the editor mode), each with the allowed options and the start value
+    // content fields with settings beyond the drawer's dropdowns (the media's
+    // type, size, corner style), each with its corner switches if it has them
+    contentExtraFields() {
+      const dropdowns = ['flourish', 'multiline', 'textbackground', 'align', 'sizes', 'level', 'mode'];
+      const raw = this.getDefault('settings.fields.content') || {};
+      return this.getContentFields()
+        .map(f => ({
+          key: f.key,
+          extras: f.properties.filter(p => !dropdowns.includes(p.key)),
+          corners: this.isObject(raw[f.key]) && 'radius-top-left' in raw[f.key],
+        }))
+        .filter(f => f.extras.length);
+    },
     contentToolbarRow(field) {
       const order = ['flourish', 'multiline', 'textbackground', 'align', 'sizes', 'level', 'mode'];
       const items = field.properties

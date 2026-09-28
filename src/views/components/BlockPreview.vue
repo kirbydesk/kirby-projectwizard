@@ -167,14 +167,29 @@ export default {
     isMedia() {
       return this.blockType === 'pwmedia';
     },
-    // the media's corners: the element's radii (Elements › Media › Form)
+    // the media as a new block starts: its size (max width as in the
+    // frontend) and alignment, its corners – none, round (all four) or
+    // custom (the chosen ones) with the element's radii (Elements › Media)
     mediaStyle() {
       const def = this.elementDefaults.media?.vars?.['media-radius']?.value || [];
       const ov = (this.elementOverrides.global || {})['media-radius'];
       const r = Array.isArray(ov) ? ov : def;
+      const style = this.preset('media', 'radius') || 'none';
+      const corner = (key, idx) => {
+        if (style === 'round') return r[idx] || 0;
+        if (style === 'custom' && this.preset('media', 'radius-' + key) === true) return r[idx] || 0;
+        return 0;
+      };
+      const widths = { xsmall: '25%', small: '33%', medium: '50%', large: '75%', fullscreen: '100%' };
+      const align = this.preset('media', 'align') || 'left';
       return {
         marginTop: this.gapBefore('media'),
-        borderRadius: r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0,
+        maxWidth: widths[this.preset('media', 'size')] || '33%',
+        marginLeft: align === 'left' ? 0 : 'auto',
+        marginRight: align === 'right' ? 0 : 'auto',
+        borderRadius: r.length === 4
+          ? [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' ')
+          : 0,
       };
     },
     isQuote() {
