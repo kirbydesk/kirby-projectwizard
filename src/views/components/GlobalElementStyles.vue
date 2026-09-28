@@ -81,6 +81,9 @@
                     <span class="pw-element-preview-flourish" :style="flourishStyle(bp, theme)"></span>
                   </span>
                 </template>
+                <!-- guides: the space below the element (tagline, heading, text) as
+                     a band of its height between two cyan lines -->
+                <span v-if="guides && spaceBelow(groupKey)" class="pw-element-space-below" :style="{ height: spaceBelow(groupKey) }"></span>
                 <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
                   <!-- the source keeps its gap to the quote (cite-spacing) -->
                   <span
@@ -872,6 +875,12 @@ export default {
       return this.getOverrideValue(name) || this.elementDefaults.button?.vars?.[name]?.value || '';
     },
     // gap between quote and source, as in the frontend
+    // the space below an element (tagline, heading, text): override, else the plugin's
+    spaceBelow(groupKey) {
+      if (!['tagline', 'heading', 'editor'].includes(groupKey)) return '';
+      const name = groupKey + '-spacing';
+      return this.getOverrideValue(name) || this.elementDefaults[groupKey]?.vars?.[name]?.value || '';
+    },
     citeGapStyle(childKey) {
       if (childKey !== 'cite') return {};
       const gap = this.getOverrideValue('cite-spacing') || this.elementDefaults.cite?.vars?.['cite-spacing']?.value || '';
@@ -2137,6 +2146,13 @@ export default {
 }
 
 
+/* guides: the space below an element, between two cyan lines */
+.pw-element-space-below {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  border-block: 1px solid rgba(0, 170, 255, 0.8);
+}
 .pw-element-preview-text {
   display: -webkit-box;
   -webkit-line-clamp: 3;
