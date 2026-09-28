@@ -2521,16 +2521,12 @@ export default {
 
 /* the unit as a select (rem / %): looks like the unit label, clickable */
 .pw-element-unit.pw-element-unit-select {
-  right: var(--spacing-1);
-  padding: 0 var(--spacing-1);
+  padding: 0;
   border: 0;
   background: transparent;
   font-family: inherit;
   cursor: pointer;
   pointer-events: auto;
-}
-.pw-element-input-wrap:has(.pw-element-unit-select) .pw-element-input-number {
-  padding-right: 3.25rem;
 }
 .pw-font-select {
   width: 200px;
