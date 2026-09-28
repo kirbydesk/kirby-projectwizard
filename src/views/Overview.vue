@@ -807,6 +807,7 @@
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="blockValueOverrides[block.blockType] || {}"
                 :step-style="block.blockType === 'pwsteplist' ? currentStepStyle(block.blockType) : ''"
+                :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
                 @update:variant="itemColorTheme = $event"
               />
@@ -895,6 +896,7 @@
                   :labels="{ [stepValueKey(block.blockType, 'item-number-size')]: $t(currentStepStyle(block.blockType) === 'minimal' ? 'prw.prop.font-size' : 'prw.label.size') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
                 <!-- styles with a bubble (not minimal): its form -->
                 <template v-if="currentStepStyle(block.blockType) !== 'minimal'">
@@ -916,6 +918,7 @@
                     :show-only="['item-radius']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                 </template>
                 <!-- beside the text (not centered): the number's alignment
@@ -941,6 +944,7 @@
                   :labels="{ [stepValueKey(block.blockType, 'item-number-offset')]: $t('prw.label.offset') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
@@ -951,6 +955,7 @@
                   :labels="{ [stepValueKey(block.blockType, 'item-content-gap')]: $t(currentStepStyle(block.blockType) === 'centered' ? 'prw.label.gapVertical' : 'prw.label.gapHorizontal') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
                 <!-- "connected": the width of the line (its colour: colours card) -->
                 <pw-block-values
@@ -962,6 +967,7 @@
                   :labels="{ 'item-connector-width': $t('prw.prop.item-connector') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
               </div>
             </section>
@@ -1001,6 +1007,7 @@
                   :show-only="['item-radius']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
@@ -1010,6 +1017,7 @@
                   :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'padding-y' } : null"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
@@ -1020,6 +1028,7 @@
                   :theme="currentItemColorTheme"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
               </div>
             </section>
@@ -1044,6 +1053,7 @@
                     :guides="previewGuides ? { 'item-padding': 'padding' } : null"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <pw-block-settings
                     v-if="isItemShapeVisible(block.blockType) && block.blockType !== 'pwsteplist'"
@@ -1064,6 +1074,7 @@
                     :show-only="['item-radius']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <!-- logocloud: its size (height) right after the format -->
                   <pw-block-values
@@ -1075,6 +1086,7 @@
                     :labels="itemLayoutDefault(block.blockType, 'item-format') === 'flexible' ? { 'item-size': $t('prw.label.height') } : {}"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <pw-block-values
                     :bp.sync="itemBp"
@@ -1085,6 +1097,7 @@
                     :guides="previewGuides ? { 'item-gap': 'margin', 'item-row-gap': 'row', 'item-text-gap': 'text' } : null"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <pw-block-values
                     v-if="block.blockType !== 'pwlogocloud'"
@@ -1095,6 +1108,7 @@
                     :labels="itemLayoutDefault(block.blockType, 'item-format') === 'flexible' ? { 'item-size': $t('prw.label.height') } : {}"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <!-- Item look (featurelist): icon position/style, title style + sizes -->
                   <pw-block-settings
@@ -1114,6 +1128,7 @@
                     :show-only="['item-icon-size', 'item-icon-gap']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <pw-block-values
                     :bp.sync="itemBp"
@@ -1123,6 +1138,7 @@
                     :show-only="['item-icon-tile-padding', 'item-icon-tile-radius']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <pw-block-values
                     :bp.sync="itemBp"
@@ -1131,6 +1147,7 @@
                     :show-only="['item-title-size', 'item-title-line-height', 'item-title-gap', 'item-text-size']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <pw-block-settings
                     view="items-layout"
@@ -1150,6 +1167,7 @@
                     :show-only="['item-border-width']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                   <pw-block-settings
                     view="items-layout"
@@ -1214,6 +1232,7 @@
                     :theme="currentItemColorTheme"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                 </div>
               </section>
@@ -1299,6 +1318,8 @@ export default {
       blockViewTab: null,
       // steplist: item style shown in the design tab and the preview (per block)
       stepPreviewStyle: {},
+      // the value whose row the pointer is over: its area tinted in the preview
+      hoveredVar: null,
       // theme shown in the items' colour card
       itemColorTheme: 'default',
       // guides in the block preview (and the matching stripes in the rows)

@@ -71,6 +71,8 @@
             :key="varName"
             class="pw-field-row"
             :data-guide="guides ? guides[varName] || null : null"
+            @mouseenter="$emit('hover-var', varName)"
+            @mouseleave="$emit('hover-var', null)"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">

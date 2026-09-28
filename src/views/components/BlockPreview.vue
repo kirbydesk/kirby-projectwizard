@@ -62,8 +62,8 @@
                narrow preview -->
           <!-- guides: the gap to the text as an element of its own, a cyan line
                above (end of the text) and below (start of the logos) -->
-          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :style="{ height: logosTextGap }"></div>
-          <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible }" :style="logosStyle">
+          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: logosTextGap }"></div>
+          <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible, 'is-hot-gap': highlight === 'item-gap', 'is-hot-row-gap': highlight === 'item-row-gap' }" :style="logosStyle">
             <div
               v-for="(logo, index) in dummyLogos"
               :key="'logo-' + index"
@@ -75,10 +75,10 @@
             <!-- guides: the gap as elements of their own, two cyan lines each
                  (between the columns, between the rows) -->
             <template v-if="guides && !logosFlexible">
-              <span class="pw-logocloud-gap is-column" style="grid-area: 1 / 2"></span>
-              <span class="pw-logocloud-gap is-column" style="grid-area: 3 / 2"></span>
-              <span class="pw-logocloud-gap is-row" style="grid-area: 2 / 1"></span>
-              <span class="pw-logocloud-gap is-row" style="grid-area: 2 / 3"></span>
+              <span class="pw-logocloud-gap is-column" :class="{ 'is-hot': highlight === 'item-gap' }" style="grid-area: 1 / 2"></span>
+              <span class="pw-logocloud-gap is-column" :class="{ 'is-hot': highlight === 'item-gap' }" style="grid-area: 3 / 2"></span>
+              <span class="pw-logocloud-gap is-row" :class="{ 'is-hot': highlight === 'item-row-gap' }" style="grid-area: 2 / 1"></span>
+              <span class="pw-logocloud-gap is-row" :class="{ 'is-hot': highlight === 'item-row-gap' }" style="grid-area: 2 / 3"></span>
             </template>
           </div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
@@ -89,7 +89,7 @@
                side – between the steps cyan, between number and text magenta -->
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides, 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
             <template v-for="n in stepCount">
-            <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :style="stepStepGapStyle"></span>
+            <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="stepStepGapStyle"></span>
             <div
               :key="'step-' + n"
               class="pw-steplist-item"
@@ -100,7 +100,7 @@
               <div class="pw-steplist-number" :style="stepNumberStyle">{{ n }}</div>
               <!-- guides: the gap between number and text as its own element,
                    a magenta line on either side -->
-              <span v-if="guides" class="pw-steplist-gap" :style="stepGapStyle"></span>
+              <span v-if="guides" class="pw-steplist-gap" :class="{ 'is-hot': highlight && highlight.startsWith('item-content-gap') }" :style="stepGapStyle"></span>
               <div class="pw-steplist-content">
                 <div :style="stepHeadingStyle">{{ $t('prw.preview.step.title') }} {{ n }}</div>
                 <div :style="stepTextStyle">{{ $t('prw.preview.step.text') }}</div>
@@ -182,6 +182,8 @@ export default {
     withBlockGuides: { type: Boolean, default: true },
     // steplist: the item style to show (chosen in the design tab)
     stepStyle: { type: String, default: '' },
+    // the value whose row the pointer is over (guides on: its area tinted)
+    highlight: { type: String, default: null },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
     variant: { type: String, default: '' },
   },
@@ -533,7 +535,16 @@ export default {
     // a logo's tile; with guides one of the four corners of the 3×3 tracks
     logoTileStyle(index) {
       const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
-      return this.guides && !this.logosFlexible && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : this.logoStyle;
+      const style = this.guides && !this.logosFlexible && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : { ...this.logoStyle };
+      // a padding row hovered: its bands inside the tile tinted
+      if (this.guides && (this.highlight === 'item-padding' || this.highlight === 'item-padding-y')) {
+        const x = this.itemValue('item-padding');
+        const y = this.itemValue('item-padding-y') || x;
+        style.boxShadow = this.highlight === 'item-padding'
+          ? 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)'
+          : 'inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)';
+      }
+      return style;
     },
     // steplist "connected": the line through all numbers, from the first
     // number's centre to the last one's
@@ -763,6 +774,15 @@ export default {
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
 }
+/* a value's row hovered (guides on): its area tinted in its colour */
+.pw-logocloud-text-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-logocloud-gap.is-column.is-hot,
+.pw-steplist-step-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
+.pw-logocloud-gap.is-row.is-hot { background: rgba(255, 140, 0, 0.18); }
+.pw-steplist-gap.is-hot { background: rgba(255, 0, 170, 0.15); }
+/* flexible (no gap elements): the tiles' edges of that gap stronger */
+.pw-logocloud-preview.is-flexible.is-hot-gap .pw-logocloud-item::before { border-inline-width: 3px; }
+.pw-logocloud-preview.is-flexible.is-hot-row-gap .pw-logocloud-item::before { border-block-width: 3px; }
 /* logocloud guides: the gap between the text and the logos (violet) */
 .pw-logocloud-text-gap {
   box-sizing: border-box;
