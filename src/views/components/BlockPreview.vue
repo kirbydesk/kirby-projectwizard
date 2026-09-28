@@ -3,10 +3,10 @@
        current (also unsaved) values the way the frontend CSS uses them –
        the block frame (background, paddings, corners, grid width) and its
        fields in the element typography with the block's presets. -->
-  <!-- a value's label hovered (guides on): only its guides stay -->
+  <!-- a value's label hovered (guides on): no lines, only its tinted area -->
   <div
     class="pw-element-preview-side pw-block-live-preview"
-    :class="{ 'has-focus': guides && !!highlight, 'focus-padding': highlight === 'item-padding' || highlight === 'item-padding-y', 'focus-padding-x': highlight === 'item-padding', 'focus-padding-y': highlight === 'item-padding-y' }"
+    :class="{ 'has-focus': guides && !!highlight }"
   >
     <div class="pw-preview-switches">
       <!-- guides on/off: the padding line, as in Photoshop -->
@@ -826,26 +826,12 @@ export default {
 .has-focus .pw-logocloud-preview.is-flexible .pw-logocloud-item::before {
   display: none;
 }
-.has-focus:not(.focus-padding) .pw-logocloud-preview.has-guides .pw-logocloud-pad {
-  box-shadow: none;
-}
-.has-focus .pw-logocloud-preview.is-flexible:not(.is-hot-gap):not(.is-hot-row-gap) .pw-logocloud-item::before {
-  display: none;
-}
-.has-focus .pw-logocloud-preview.is-flexible.is-hot-gap .pw-logocloud-item::before {
-  border-block-color: transparent;
-}
-.has-focus .pw-logocloud-preview.is-flexible.is-hot-row-gap .pw-logocloud-item::before {
-  border-inline-color: transparent;
-}
 /* a value's row hovered (guides on): its area tinted in its colour */
 .pw-logocloud-text-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
 .pw-logocloud-gap.is-column.is-hot,
 .pw-steplist-step-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-logocloud-gap.is-row.is-hot { background: rgba(255, 140, 0, 0.18); }
 .pw-steplist-gap.is-hot { background: rgba(255, 0, 170, 0.15); }
-/* flexible (no gap elements): the tiles' edges of that gap stronger */
-.pw-logocloud-preview.is-flexible.is-hot-gap .pw-logocloud-item::before { border-inline-width: 3px; }
 /* logocloud guides: the gap between the text and the logos (violet) */
 .pw-logocloud-text-gap {
   box-sizing: border-box;
