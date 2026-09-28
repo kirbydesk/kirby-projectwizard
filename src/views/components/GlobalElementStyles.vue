@@ -33,7 +33,7 @@
           </div>
           <pw-device-select v-model="previewBp" />
           </div>
-          <div class="pw-element-preview" :class="{ 'pw-element-preview-themed': previewThemed(groupKey), 'has-guides': guides, 'is-marked': groupKey === 'heading' && previewMarked }">
+          <div class="pw-element-preview" :class="{ 'pw-element-preview-themed': previewThemed(groupKey), 'has-guides': guides, 'has-focus': guides && !!hoveredArea, 'is-marked': groupKey === 'heading' && previewMarked }">
             <template v-for="theme in [colorTheme]">
               <div v-for="bp in [previewBp]" :key="theme + '-' + bp" class="pw-element-preview-col" :style="{ backgroundColor: blockBackground(theme) }">
                 <template v-if="groupKey === 'media'">
@@ -68,7 +68,7 @@
                   </span>
                 </template>
                 <template v-else-if="previewParagraphs(groupKey)">
-                  <div class="pw-element-preview-text pw-element-preview-paragraphs" :style="previewStyle(groupKey, bp, theme)">
+                  <div class="pw-element-preview-text pw-element-preview-paragraphs" :class="{ 'is-hot': hoveredArea === groupKey + '-paragraph-spacing' }" :style="{ ...previewStyle(groupKey, bp, theme), '--pw-paragraph-gap': previewParagraphGap(groupKey) }">
                     <p v-for="(para, pIdx) in previewParagraphs(groupKey)" :key="pIdx" :style="pIdx > 0 ? { marginTop: previewParagraphGap(groupKey) } : {}">{{ para }}</p>
                   </div>
                 </template>
@@ -293,7 +293,7 @@
                     <span
                       v-if="guides && hasArea(field.varName)"
                       class="pw-area-hint"
-                      :title="$t('prw.hint.spaceBelow')"
+                      :title="$t(field.varName.endsWith('-paragraph-spacing') ? 'prw.hint.paragraphSpacing' : 'prw.hint.spaceBelow')"
                       @mouseenter="hoveredArea = field.varName"
                       @mouseleave="hoveredArea = null"
                     ><k-icon type="question" /></span>
@@ -890,7 +890,7 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName);
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || varName === 'editor-paragraph-spacing';
     },
     // the space below an element (tagline, heading, text): override, else the plugin's
     spaceBelow(groupKey) {
@@ -2182,7 +2182,22 @@ export default {
   width: 100%;
   border-block: 1px solid rgba(0, 170, 255, 0.8);
 }
-/* its question mark hovered: the area tinted, without lines */
+/* a question mark hovered: its area tinted, all guide lines hidden */
+.pw-element-preview.has-focus .pw-element-space-below,
+.pw-element-preview.has-focus .pw-element-preview-paragraphs p::before,
+.pw-element-preview.has-focus .pw-element-preview-paragraphs p::after,
+.pw-element-preview.has-focus .pw-element-preview-cite::before,
+.pw-element-preview.has-focus .pw-element-preview-cite::after,
+.pw-element-preview.has-focus .pw-element-preview-flourish-box::before,
+.pw-element-preview.has-focus .pw-element-preview-flourish-box::after {
+  border-color: transparent;
+}
+/* the paragraph spacing: the gap above each following paragraph, violet */
+.pw-element-preview.has-focus .pw-element-preview-paragraphs.is-hot p + p::before {
+  top: calc(-1 * var(--pw-paragraph-gap));
+  height: var(--pw-paragraph-gap);
+  background: rgba(130, 80, 255, 0.15);
+}
 .pw-element-space-below.is-hot {
   border-color: transparent;
   background: rgba(0, 170, 255, 0.15);

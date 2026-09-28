@@ -204,6 +204,7 @@
 	'prw.prop.text-transform' => 'Text Transform',
 	'prw.prop.paragraph-spacing' => 'Paragraph Spacing',
 	'prw.hint.spaceBelow' => 'Space to the next element in the block',
+	'prw.hint.paragraphSpacing' => 'Space between two paragraphs',
 	'prw.element.tagline-spacing' => 'Space below',
 	'prw.element.heading-spacing' => 'Space below',
 	'prw.element.editor-spacing' => 'Space below',
