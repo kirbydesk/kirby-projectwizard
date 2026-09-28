@@ -361,20 +361,19 @@
                             :value="stripUnit(getResponsiveOverride(field.varName, bp) || field.def[bp])"
                             @change="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], responsiveUnit(field, bp))"
                           />
-                          <span class="pw-element-unit">{{ responsiveUnit(field, bp) }}</span>
+                          <!-- values with a choice of unit (e.g. the button width: rem or %):
+                               the unit as a select in place of its label -->
+                          <select
+                            v-if="field.def.units"
+                            class="pw-element-unit pw-element-unit-select"
+                            :value="responsiveUnit(field, bp)"
+                            @change="setResponsiveUnit(field, bp, $event.target.value)"
+                          >
+                            <option v-for="u in field.def.units" :key="'u-' + u" :value="u">{{ u }}</option>
+                          </select>
+                          <span v-else class="pw-element-unit">{{ responsiveUnit(field, bp) }}</span>
                         </span>
                         <span v-if="!['px', '%'].includes(responsiveUnit(field, bp))" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit, field.varName) }}</span>
-                      </span>
-                      <!-- values with a choice of unit (e.g. the button width: rem or %) -->
-                      <span v-if="field.def.units" class="pw-pill pw-unit-switch" role="group">
-                        <button
-                          v-for="u in field.def.units"
-                          :key="'u-' + u"
-                          type="button"
-                          class="pw-tool"
-                          :aria-pressed="responsiveUnit(field, previewBp) === u ? 'true' : 'false'"
-                          @click="setResponsiveUnit(field, previewBp, u)"
-                        >{{ u }}</button>
                       </span>
                       <!-- switch the breakpoint (shared with the preview) -->
                       <span class="pw-pill pw-bp-switch" role="group">
@@ -2512,14 +2511,6 @@ export default {
   align-items: center;
 }
 
-.pw-pill.pw-unit-switch {
-  --tool-size: 1.25rem;
-  margin-inline-end: var(--spacing-2);
-}
-.pw-unit-switch .pw-tool {
-  font-size: var(--text-xs);
-  padding-inline: var(--spacing-2);
-}
 .pw-element-unit {
   position: absolute;
   right: var(--spacing-2);
@@ -2528,6 +2519,19 @@ export default {
   pointer-events: none;
 }
 
+/* the unit as a select (rem / %): looks like the unit label, clickable */
+.pw-element-unit.pw-element-unit-select {
+  right: var(--spacing-1);
+  padding: 0 var(--spacing-1);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.pw-element-input-wrap:has(.pw-element-unit-select) .pw-element-input-number {
+  padding-right: 3.25rem;
+}
 .pw-font-select {
   width: 200px;
   cursor: pointer;
