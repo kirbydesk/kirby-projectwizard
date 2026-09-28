@@ -802,7 +802,7 @@
                 :body-background="bodyBackgroundColor"
                 :themes="themes"
                 :guides.sync="previewGuides"
-                :with-block-guides="currentBlockView !== 'design'"
+                :with-block-guides="currentBlockView === 'defaults' && ['layout', 'settings'].includes(blockDrawerTab[block.blockType])"
                 :bp.sync="itemBp"
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="blockValueOverrides[block.blockType] || {}"
@@ -827,6 +827,7 @@
               :writer-active="writerActive[block.blockType] !== false"
               @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
               @update:writer-active="$set(writerActive, block.blockType, $event)"
+              @drawer-tab="$set(blockDrawerTab, block.blockType, $event)"
             />
             <!-- the items' start values (corner toggles, link style) -->
             <template v-if="hasItemFields(block.blockType) && hasItemDefaultFields(block.blockType)">
@@ -1223,6 +1224,9 @@ export default {
       writerActive: {},
       // chosen tab of a block view (design, defaults, presets); null: the first
       blockViewTab: null,
+      // drawer tab shown in a block's start values (per block): the preview's
+      // block guides only in layout and settings
+      blockDrawerTab: {},
       // steplist: item style shown in the design tab and the preview (per block)
       stepPreviewStyle: {},
       // theme shown in the items' colour card

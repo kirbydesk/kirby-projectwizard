@@ -390,6 +390,16 @@ export default {
       return this.block.blockType;
     },
   },
+  watch: {
+    // the drawer tab shown (start values): the preview draws the block's
+    // guides only where they are set (layout, settings)
+    currentDrawerTab: {
+      immediate: true,
+      handler(tab) {
+        if (this.view === 'defaults') this.$emit('drawer-tab', tab);
+      },
+    },
+  },
   methods: {
     // --- Content fields ---
     getContentFields() {
