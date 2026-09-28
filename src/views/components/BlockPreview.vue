@@ -101,6 +101,8 @@
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the features cyan, icon and text violet, title
                and text orange; the tile's padding magenta -->
+          <!-- guides: the gap to the text as an element of its own -->
+          <div v-if="isFeaturelist && guides && featureTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: featureTextGap }"></div>
           <div v-if="isFeaturelist" class="pw-featurelist-items" :class="{ 'has-guides': guides, 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'feature-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="featureGapStyle"></span>
@@ -425,9 +427,9 @@ export default {
     },
     featureItemsStyle() {
       const gap = this.itemValueAt('item-gap');
-      // above the items: the gap after the text; split: 2rem below the intro
-      // on mobile, none beside it
-      const marginTop = this.featureSplit ? (this.hasGrid ? 0 : '2rem') : this.gapBefore('items');
+      // above the items: the gap to the text (with guides an element of its
+      // own); split: none beside the intro
+      const marginTop = this.guides ? 0 : this.featureTextGap;
       const cols = this.featureColumns;
       // guides: the gap is an element of its own – side by side a track
       // between the columns, else one below the other
@@ -441,6 +443,19 @@ export default {
       // the gap only between the features (none below the last)
       if (!this.hasGrid) return { marginTop, display: 'flex', flexDirection: 'column', gap };
       return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap };
+    },
+    // the gap between the text above and the features (none without text,
+    // none beside the intro); the text's space below meets it, the larger wins
+    featureTextGap() {
+      if (this.featureSplit && this.hasGrid) return 0;
+      const idx = this.fields.indexOf('items');
+      if (idx <= 0) return 0;
+      const gap = this.itemValue('item-text-gap');
+      // split: below the intro wrapper (no margins meet there)
+      if (this.featureSplit) return gap;
+      const prev = this.fields[idx - 1];
+      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.elementValue(prev, 'spacing') : '';
+      return after ? 'max(' + gap + ', ' + after + ')' : gap;
     },
     // the gap between two features: as high (one below the other) or as
     // wide (side by side) as the gap
