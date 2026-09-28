@@ -67,7 +67,7 @@
               class="pw-logocloud-item"
               :style="logoTileStyle(index)"
             >
-              <svg viewBox="0 0 120 60" aria-hidden="true" v-html="logo"></svg>
+              <svg :viewBox="'0 0 ' + logo[0] + ' ' + logo[1]" :style="{ aspectRatio: logo[0] + ' / ' + logo[1] }" aria-hidden="true" v-html="logo[2]"></svg>
             </div>
             <!-- guides: the gap as elements of their own, two cyan lines each
                  (between the columns, between the rows) -->
@@ -136,12 +136,13 @@ const GAPS = {
   'heading>media': '1.2rem',
   'editor>media': '1.2rem',
 };
-// made-up sample logos for the logo cloud (a mark and a name each)
+// made-up sample logos for the logo cloud, in different formats (wide,
+// medium, a square mark, very wide): [width, height, svg]
 const DUMMY_LOGOS = [
-  '<circle cx="30" cy="30" r="13" fill="#4b5563"/><circle cx="30" cy="30" r="6" fill="#fff"/><text x="50" y="36" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#4b5563">Lumo</text>',
-  '<path d="M18 42 L30 18 L42 42 Z" fill="#6b7280"/><text x="48" y="36" font-family="Georgia, serif" font-size="17" font-style="italic" fill="#6b7280">Nova</text>',
-  '<rect x="17" y="17" width="26" height="26" rx="5" fill="#374151"/><rect x="24" y="24" width="12" height="12" rx="2" fill="#fff"/><text x="50" y="36" font-family="Helvetica, Arial, sans-serif" font-size="16" letter-spacing="2" fill="#374151">ARCO</text>',
-  '<path d="M14 36 Q22 22 30 36 T46 36" fill="none" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/><text x="52" y="36" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="300" fill="#6b7280">vela</text>',
+  [120, 60, '<circle cx="30" cy="30" r="13" fill="#4b5563"/><circle cx="30" cy="30" r="6" fill="#fff"/><text x="50" y="36" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#4b5563">Lumo</text>'],
+  [90, 60, '<path d="M14 42 L26 18 L38 42 Z" fill="#6b7280"/><text x="44" y="36" font-family="Georgia, serif" font-size="17" font-style="italic" fill="#6b7280">Nova</text>'],
+  [60, 60, '<rect x="14" y="14" width="32" height="32" rx="7" fill="#374151"/><rect x="23" y="23" width="14" height="14" rx="3" fill="#fff"/>'],
+  [180, 60, '<path d="M14 36 Q22 22 30 36 T46 36" fill="none" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/><text x="54" y="37" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="300" letter-spacing="3" fill="#6b7280">velamaris</text>'],
 ];
 
 // device → grid breakpoint (below 640px there is no grid: full width)
