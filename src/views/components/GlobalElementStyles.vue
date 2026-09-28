@@ -2161,11 +2161,14 @@ export default {
 /* in the sidebar: no tile like a block – the whole preview area in the
    variant's background (so the element's colours show as they are), the
    element simply on it */
-.pw-preview-column .pw-element-preview-side:not(.pw-block-live-preview) .pw-element-preview-col {
-  margin: calc(-1 * var(--spacing-6));
-  margin-top: calc(-1 * var(--spacing-6));
-  padding: var(--spacing-6);
-  min-height: calc(100dvh - 3.25rem);
+@media (min-width: 75rem) {
+  /* edge to edge below the toolbar (its bottom margin and the column's
+     padding taken back), down to the bottom of the sidebar */
+  .pw-preview-column .pw-element-preview-side .pw-element-preview-col {
+    margin: calc(-1 * var(--spacing-6));
+    padding: var(--spacing-6);
+    min-height: calc(100dvh - 2 * var(--menu-padding) - 25px);
+  }
 }
 
 
@@ -2186,6 +2189,11 @@ export default {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* text with paragraphs: all of them, so the paragraph spacing shows */
+.pw-element-preview-text.pw-element-preview-paragraphs {
+  display: block;
+  -webkit-line-clamp: none;
 }
 
 /* The marked background reaches above the first line box; without this room
