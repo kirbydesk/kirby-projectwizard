@@ -68,6 +68,7 @@
 	'prw.headline.numbering' => 'Numbering',
 	'prw.label.betweenSteps' => 'Between the steps',
 	'prw.label.backgroundColor' => 'Background color',
+	'prw.label.gridLayout' => 'Grid layout',
 	'prw.label.offset' => 'Vertical offset',
 	'prw.label.gapVertical' => 'Vertical gap',
 	'prw.label.gapHorizontal' => 'Horizontal gap',

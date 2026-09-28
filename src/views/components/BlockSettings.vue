@@ -680,7 +680,7 @@ export default {
         { prefix: 'padding-', label: this.$t('prw.headline.paddings') },
         { prefix: 'radius-', label: this.categoryFieldLabel('radius') },
         { prefix: 'columns-', label: this.$t('pw.headline.columns') },
-        { prefix: 'grid-', label: this.drawerLabel('grid') },
+        { prefix: 'grid-', label: this.$t('prw.label.gridLayout') },
         { prefix: 'margin-', label: this.$t('prw.headline.margins') },
       ];
       const rows = [];
