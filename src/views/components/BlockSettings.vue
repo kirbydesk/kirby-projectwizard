@@ -7,7 +7,7 @@
 
       <!-- a drawer header as in the block's drawer with its tabs; a tab shows
            its cards (tabs without rows in this view are disabled) -->
-      <header v-if="view === 'defaults' || view === 'presets'" class="k-drawer-header pw-drawer-strip">
+      <header v-if="view === 'defaults'" class="k-drawer-header pw-drawer-strip">
         <k-drawer-tabs :tab="currentDrawerTab" :tabs="drawerTabs" @open="drawerTab = $event" />
       </header>
 
@@ -43,11 +43,12 @@
            an eye – hidden from the editors, the field keeps its start value ===== -->
       <template v-if="view === 'presets'">
         <section
-          v-for="group in restrictionGroups(currentDrawerTab)"
+          v-for="group in allRestrictionGroups()"
           :key="'rg-' + group.key"
           class="pw-card-section"
         >
-          <div v-if="group.heading" class="pw-card-heading-row">
+          <!-- the drawer tab as the card's heading (the items' fields: "Items") -->
+          <div class="pw-card-heading-row">
             <h3 class="pw-card-heading">{{ group.heading }}</h3>
           </div>
           <!-- one column, white: a row per field (the card as elsewhere) -->
@@ -681,6 +682,16 @@ export default {
       }
       if (corners.length) rows.push({ id: 'radius', keys: corners, label: this.categoryFieldLabel('radius') });
       return rows.length ? [{ key: tab, heading: null, rows }] : [];
+    },
+    // all drawer tabs one below the other, each a card headed by its name
+    allRestrictionGroups() {
+      const groups = [];
+      for (const tab of this.drawerTabs) {
+        for (const group of this.restrictionGroups(tab.name)) {
+          groups.push({ ...group, key: tab.name + '-' + group.key, heading: group.heading || tab.label });
+        }
+      }
+      return groups;
     },
     // fields hidden from the editors (setting keys)
     hiddenKeys() {
