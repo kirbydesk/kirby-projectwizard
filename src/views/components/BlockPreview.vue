@@ -1143,15 +1143,24 @@ export default {
 /* the block's own space below (guides): a band between two lines, below
    the tagline cyan, the heading violet, the text orange */
 .pw-space-band {
+  position: relative;
+  align-self: stretch;
+}
+/* lines and tint across the whole block (cut off at its edge) */
+.pw-space-band::before {
+  content: "";
+  position: absolute;
+  inset: 0 -100vw;
   box-sizing: border-box;
   border-block: 1px solid rgba(0, 170, 255, 0.8);
+  pointer-events: none;
 }
-.pw-space-band.is-heading { border-color: rgba(130, 80, 255, 0.9); }
-.pw-space-band.is-editor { border-color: rgba(255, 140, 0, 0.9); }
-.pw-space-band.is-tagline.is-hot { background: rgba(0, 170, 255, 0.15); }
-.pw-space-band.is-heading.is-hot { background: rgba(130, 80, 255, 0.15); }
-.pw-space-band.is-editor.is-hot { background: rgba(255, 140, 0, 0.15); }
-.has-focus .pw-space-band {
+.pw-space-band.is-heading::before { border-color: rgba(130, 80, 255, 0.9); }
+.pw-space-band.is-editor::before { border-color: rgba(255, 140, 0, 0.9); }
+.pw-space-band.is-tagline.is-hot::before { background: rgba(0, 170, 255, 0.15); }
+.pw-space-band.is-heading.is-hot::before { background: rgba(130, 80, 255, 0.15); }
+.pw-space-band.is-editor.is-hot::before { background: rgba(255, 140, 0, 0.15); }
+.has-focus .pw-space-band::before {
   border-color: transparent;
 }
 /* hero: a video background marked by a play symbol */
