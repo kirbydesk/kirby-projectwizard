@@ -65,6 +65,9 @@
             >
               <span v-if="currentStepStyle === 'connected'" class="pw-steplist-connector" :style="stepConnectorStyle(n)"></span>
               <div class="pw-steplist-number" :style="stepNumberStyle">{{ n }}</div>
+              <!-- guides: the gap between number and text as its own element,
+                   a magenta line on either side -->
+              <span v-if="guides" class="pw-steplist-gap" :style="stepGapStyle"></span>
               <div class="pw-steplist-content">
                 <div :style="stepHeadingStyle">{{ $t('prw.preview.step.title') }} {{ n }}</div>
                 <div :style="stepTextStyle">{{ $t('prw.preview.step.text') }}</div>
@@ -179,9 +182,17 @@ export default {
         flexDirection: centered ? 'column' : 'row',
         alignItems: centered || align === 'center' ? 'center' : (this.currentStepStyle === 'minimal' ? 'baseline' : 'flex-start'),
         textAlign: centered ? 'center' : null,
-        gap: this.stepValue('item-content-gap'),
+        // with guides the gap is an element of its own (two lines)
+        gap: this.guides ? 0 : this.stepValue('item-content-gap'),
         marginBottom: this.hasGrid ? 0 : this.itemValue('item-gap'),
       };
+    },
+    // the gap element: as wide (beside) or as high (centered) as the gap
+    stepGapStyle() {
+      const gap = this.stepValue('item-content-gap');
+      return this.currentStepStyle === 'centered'
+        ? { height: gap, alignSelf: 'stretch' }
+        : { width: gap, alignSelf: 'stretch', flexShrink: 0 };
     },
     stepNumberStyle() {
       const size = this.stepValue('item-number-size');
@@ -493,42 +504,15 @@ export default {
 .pw-steplist-items.has-guides .pw-steplist-item {
   outline: 1px solid rgba(0, 170, 255, 0.8);
 }
-/* the gap between number and text: two magenta lines, at the number's
-   edge and at the text's start (vertical beside, horizontal when centered) */
-.pw-steplist-items.has-guides .pw-steplist-number,
-.pw-steplist-items.has-guides .pw-steplist-content {
-  position: relative;
+/* the gap between number and text: two magenta lines around it (beside:
+   left and right, centered: above and below) */
+.pw-steplist-gap {
+  box-sizing: border-box;
+  border-inline: 1px solid rgba(255, 0, 170, 0.6);
 }
-.pw-steplist-items.has-guides .pw-steplist-number::after,
-.pw-steplist-items.has-guides .pw-steplist-content::before {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  --pw-gap-line: rgba(255, 0, 170, 0.6);
-}
-.pw-steplist-items.has-guides .pw-steplist-item:not(.is-centered) .pw-steplist-number::after {
-  top: 0;
-  bottom: 0;
-  right: 0;
-  border-right: 1px solid var(--pw-gap-line);
-}
-.pw-steplist-items.has-guides .pw-steplist-item:not(.is-centered) .pw-steplist-content::before {
-  top: 0;
-  bottom: 0;
-  left: 0;
-  border-left: 1px solid var(--pw-gap-line);
-}
-.pw-steplist-items.has-guides .pw-steplist-item.is-centered .pw-steplist-number::after {
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-bottom: 1px solid var(--pw-gap-line);
-}
-.pw-steplist-items.has-guides .pw-steplist-item.is-centered .pw-steplist-content::before {
-  left: 0;
-  right: 0;
-  top: 0;
-  border-top: 1px solid var(--pw-gap-line);
+.pw-steplist-item.is-centered .pw-steplist-gap {
+  border-inline: 0;
+  border-block: 1px solid rgba(255, 0, 170, 0.6);
 }
 /* steplist: the connector line sits behind the numbers */
 .pw-steplist-item {
