@@ -70,6 +70,7 @@
           <div
             :key="varName"
             class="pw-field-row"
+            :data-guide="guides ? guides[varName] || null : null"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
@@ -212,6 +213,8 @@ export default {
     defaults: { type: Object, default: () => ({}) },
     overrides: { type: Object, default: () => ({}) },
     groupLabels: { type: Object, default: null },
+    // guide stripes while the preview guides are on (varName → margin | padding)
+    guides: { type: Object, default: null },
     hideSectionHeaders: { type: Boolean, default: false },
     showOnly: { type: Array, default: null },
     // own labels for some rows (varName → text), e.g. in a card that names the part

@@ -945,6 +945,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepValueKey(block.blockType, 'item-content-gap')]"
+                  :guides="previewGuides ? { [stepValueKey(block.blockType, 'item-content-gap')]: 'margin' } : null"
                   :labels="{ [stepValueKey(block.blockType, 'item-content-gap')]: $t(currentStepStyle(block.blockType) === 'centered' ? 'prw.label.gapVertical' : 'prw.label.gapHorizontal') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
@@ -1008,6 +1009,7 @@
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="block.blockType === 'pwsteplist' ? ['item-gap'] : ['item-number-size', 'item-gap', 'item-content-gap', 'item-connector-width']"
                     :labels="block.blockType === 'pwsteplist' ? { 'item-gap': $t('prw.label.betweenSteps') } : {}"
+                    :guides="previewGuides && block.blockType === 'pwsteplist' ? { 'item-gap': 'margin' } : null"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />

@@ -52,7 +52,9 @@
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
-          <div v-if="isSteplist" class="pw-steplist-items" :style="stepItemsStyle">
+          <!-- guides: the steps' edges (gap between the steps) and the
+               number's and the text's edges (gap between them), cyan -->
+          <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides }" :style="stepItemsStyle">
             <div
               v-for="n in stepCount"
               :key="'step-' + n"
@@ -477,6 +479,13 @@ export default {
    Photoshop / Figma */
 .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 1px solid rgba(255, 0, 170, 0.6);
+}
+/* steplist guides: outlines of the steps, their numbers and texts; the
+   room between them is the gap set in the design */
+.pw-steplist-items.has-guides .pw-steplist-item,
+.pw-steplist-items.has-guides .pw-steplist-number,
+.pw-steplist-items.has-guides .pw-steplist-content {
+  outline: 1px solid rgba(0, 170, 255, 0.8);
 }
 /* steplist: the connector line sits behind the numbers */
 .pw-steplist-item {
