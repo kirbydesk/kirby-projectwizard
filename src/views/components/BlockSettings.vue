@@ -59,8 +59,8 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ row.label }}</label>
-                    <!-- the state as an eye on the right of the label cell -->
-                    <k-icon :type="isHidden(row.keys) ? 'hidden' : 'preview'" class="pw-field-state-eye" />
+                    <!-- hidden: the crossed-out eye on the right of the label cell -->
+                    <k-icon v-if="isHidden(row.keys)" type="hidden" class="pw-field-state-eye" />
                   </div>
                   <div class="pw-field-row-options">
                     <k-toggle-input
