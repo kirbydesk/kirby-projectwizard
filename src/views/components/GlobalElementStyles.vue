@@ -58,7 +58,7 @@
                 </template>
                 <template v-else-if="previewThemed(groupKey)">
                   <!-- two buttons, so the gap between them shows -->
-                  <span class="pw-element-preview-buttons" :class="buttonHotClass()" :style="{ columnGap: buttonGap(), rowGap: buttonGap('button-row-gap'), '--pw-button-gap': buttonGap() }">
+                  <span class="pw-element-preview-buttons" :class="[buttonHotClass(), { 'is-wrapped': buttonsWrapped }]" :style="{ columnGap: buttonGap(), rowGap: buttonGap('button-row-gap'), '--pw-button-gap': buttonGap() }">
                     <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ previewText(groupKey) }}</span></span></span>
                     <span class="pw-element-preview-button pw-element-preview-button-second" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.2') }}</span></span></span>
                     <!-- a third button in a row of its own, so the gap between rows shows -->
@@ -775,6 +775,9 @@ export default {
       previewMarked: false,
       // the value whose question mark is hovered: its area tinted
       hoveredArea: null,
+      // the buttons preview: the second button below the first (then the gap
+      // between them is a row gap)
+      buttonsWrapped: false,
       previewFlourish: false,
       // media preview with a sample image
       // media radii kept while the corners are square
@@ -810,6 +813,17 @@ export default {
       immediate: true,
       handler(key) { this.$emit('update:selectedElement', key); },
     },
+  },
+  mounted() {
+    this.onResize = () => this.measureButtons();
+    window.addEventListener('resize', this.onResize);
+    this.measureButtons();
+  },
+  updated() {
+    this.measureButtons();
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.onResize);
   },
   computed: {
     groups() {
@@ -921,6 +935,17 @@ export default {
       if (!def) return 'none';
       const step = this.getOverrideValue('button-shadow') || def.value;
       return def.generates?.['button-shadow']?.[step] || 'none';
+    },
+    // buttons preview: is the second button in a row of its own? (the
+    // preview sits in the sidebar, moved there by the portal)
+    measureButtons() {
+      this.$nextTick(() => {
+        const box = document.querySelector('.pw-preview-column .pw-element-preview-buttons');
+        const first = box && box.querySelector('.pw-element-preview-button');
+        const second = box && box.querySelector('.pw-element-preview-button-second');
+        const wrapped = !!(first && second && second.offsetTop > first.offsetTop + 1);
+        if (wrapped !== this.buttonsWrapped) this.buttonsWrapped = wrapped;
+      });
     },
     // buttons preview: the area of the hovered question mark
     buttonHotClass() {
@@ -2050,6 +2075,30 @@ export default {
 }
 .pw-element-preview.has-guides .pw-element-preview-button-second::after {
   left: calc(-1px - var(--pw-button-gap, 0px));
+}
+/* the second button below the first: no gap side by side, the gap above
+   it is a row gap – violet lines across the preview as at the third row */
+.pw-element-preview.has-guides .is-wrapped .pw-element-preview-button-second::before,
+.pw-element-preview.has-guides .is-wrapped .pw-element-preview-button-second::after {
+  top: 0;
+  bottom: auto;
+  left: calc(-1 * var(--spacing-6));
+  width: 200vw;
+  border-left: 0;
+  border-top: 1px solid rgba(130, 80, 255, 0.9);
+}
+.pw-element-preview.has-guides .is-wrapped .pw-element-preview-button-second::after {
+  top: calc(-1 * var(--pw-button-row-gap, 0px));
+}
+/* its question mark hovered: the gap side by side is not there; the row
+   gap tints above the second button as well */
+.pw-element-preview.has-guides.has-focus .is-wrapped.is-hot-gap .pw-element-preview-button-second::after {
+  width: 200vw;
+  background: transparent;
+}
+.pw-element-preview.has-guides.has-focus .is-wrapped.is-hot-row .pw-element-preview-button-second::after {
+  height: var(--pw-button-row-gap);
+  background: rgba(130, 80, 255, 0.15);
 }
 /* colours with hover/active: the three states next to each other (as wide
    as their content), hover and active marked by their purple pill */
