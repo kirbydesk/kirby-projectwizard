@@ -1309,6 +1309,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text v-if="currentHeroHeight(block.blockType) !== 'fullscreen'" size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.heroHeight')" />
               <k-text v-else size="tiny" class="k-help pw-card-help">{{ $t('prw.hint.heroFullscreen') }}</k-text>
             </section>
             <section class="pw-card-section">
