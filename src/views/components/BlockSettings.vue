@@ -1624,13 +1624,11 @@ export default {
   font-style: italic;
   color: var(--color-text-dimmed);
 }
-/* the question mark at the right end of the label cell: hovered, the
-   value's area is tinted in the preview */
+/* the question mark right behind the label: hovered, the value's area is
+   tinted in the preview */
 .pw-area-hint {
   --icon-size: 18px;
-  margin-inline-start: auto;
-  /* close to the cell's right edge (into its padding) */
-  margin-inline-end: calc(var(--spacing-1) - var(--table-cell-padding, var(--spacing-3)));
+  /* right behind the label (the label column keeps its gap) */
   color: var(--color-text-dimmed);
   opacity: 0.5;
 }
