@@ -77,6 +77,7 @@
 	'prw.label.height' => 'Höhe',
 	'prw.label.size' => 'Größe',
 	'prw.headline.spacing' => 'Abstände',
+	'prw.headline.spaceBelow' => 'Abstände nach unten',
 	'prw.headline.blockLayout' => 'Block-Einstellungen',
 	'prw.headline.defaultFont' => 'Standardschrift',
 	'prw.headline.margins' => 'Außenabstände',
