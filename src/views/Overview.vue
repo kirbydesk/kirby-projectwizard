@@ -1752,10 +1752,10 @@ export default {
       return this.currentStepStyle(blockType) === 'minimal' ? 'item-number-background' : 'item-number-text';
     },
     // steplist colour rows: the number's colour named "Numbering", its
-    // bubble background "Numbering background"
+    // bubble background "Background colour"
     stepColorLabels(blockType) {
       const labels = { [this.stepNumberColor(blockType)]: this.$t('prw.headline.numbering') };
-      if (this.currentStepStyle(blockType) !== 'minimal') labels['item-number-background'] = this.$t('prw.label.numberingBackground');
+      if (this.currentStepStyle(blockType) !== 'minimal') labels['item-number-background'] = this.$t('prw.label.backgroundColor');
       return labels;
     },
     currentStepStyle(blockType) {

@@ -66,7 +66,6 @@
 	/* -------------- Tabs --------------*/
 	'prw.field.radius' => 'Radii',
 	'prw.headline.numbering' => 'Numbering',
-	'prw.label.numberingBackground' => 'Numbering background',
 	'prw.headline.connector' => 'Connector line',
 	'prw.label.backgroundColor' => 'Background color',
 	'prw.label.offset' => 'Vertical offset',
