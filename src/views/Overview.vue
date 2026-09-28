@@ -1065,6 +1065,17 @@
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
+                  <!-- logocloud: its size (height) right after the format -->
+                  <pw-block-values
+                    v-if="block.blockType === 'pwlogocloud'"
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-size']"
+                    :labels="itemLayoutDefault(block.blockType, 'item-format') === 'flexible' ? { 'item-size': $t('prw.label.height') } : {}"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
                   <pw-block-values
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
@@ -1076,6 +1087,7 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                   <pw-block-values
+                    v-if="block.blockType !== 'pwlogocloud'"
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
