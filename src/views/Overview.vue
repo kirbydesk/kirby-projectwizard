@@ -1323,6 +1323,8 @@ export default {
       hoveredVar: null,
       // theme shown in the items' colour card
       itemColorTheme: 'default',
+      // each block's theme start value (to notice a change)
+      startThemes: {},
       // guides in the block preview (and the matching stripes in the rows)
       previewGuides: (() => { try { return localStorage.getItem('pw-wizard-guides') === 'on'; } catch (e) { return false; } })(),
       // breakpoint shown in the items' responsive rows
@@ -2247,6 +2249,14 @@ export default {
       // everything reading it (e.g. the live preview) notices the change
       overrides = JSON.parse(JSON.stringify(overrides || {}));
       this.$set(this.blockOverrides, blockType, overrides);
+      // the start value of the theme changed: the preview (and the colour
+      // cards) show that variant
+      const theme = overrides?.settings?.fields?.style?.theme?.default
+        || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.theme?.default || 'default';
+      if (this.startThemes[blockType] !== undefined && this.startThemes[blockType] !== theme) {
+        this.itemColorTheme = theme;
+      }
+      this.$set(this.startThemes, blockType, theme);
       const current = JSON.stringify(overrides);
       const snapshot = this.snapshots[blockType] || '{}';
       this.$set(this.dirtyTabs, blockType, current !== snapshot);
