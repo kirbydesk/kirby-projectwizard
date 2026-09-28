@@ -49,6 +49,19 @@
             <h3 class="pw-card-heading">{{ fieldLabel(field.key) }}</h3>
           </div>
           <div class="pw-card pw-field-table">
+            <!-- its dropdowns as in the drawer (the media's alignment) -->
+            <div v-for="item in field.toolbar.items" :key="field.key + '-tb-' + item.key" class="pw-field-row">
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ $t('prw.property.' + item.prop.key) }}</label>
+                  </div>
+                  <div class="pw-field-row-options">
+                    <pw-field-toolbar :items="[item]" @input="setContentPreset(field.toolbar, $event)" />
+                  </div>
+                </span>
+              </div>
+            </div>
             <pw-field-row
               v-for="prop in field.extras"
               :key="field.key + '-' + prop.key"
@@ -813,7 +826,9 @@ export default {
     // the items' fields, each a row with the drawer's dropdowns
     contentToolbarGroups() {
       const groups = [];
-      const own = [...this.presetFields(this.getContentFields())];
+      // (fields with further settings have a card of their own)
+      const extraKeys = this.contentExtraFields().map(f => f.key);
+      const own = this.presetFields(this.getContentFields()).filter(f => !extraKeys.includes(f.key));
       const editor = this.getEditorField();
       if (editor && editor.properties.length) own.push(editor);
       const ownRows = own.map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
@@ -835,6 +850,8 @@ export default {
           key: f.key,
           extras: f.properties.filter(p => !dropdowns.includes(p.key)),
           corners: this.isObject(raw[f.key]) && 'radius-top-left' in raw[f.key],
+          // its dropdowns (the media's alignment) go into the same card
+          toolbar: this.contentToolbarRow(f),
         }))
         .filter(f => f.extras.length);
     },
