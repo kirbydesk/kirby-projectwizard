@@ -1007,7 +1007,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-padding', 'item-padding-y']"
-                  :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'row' } : null"
+                  :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'padding-y' } : null"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />

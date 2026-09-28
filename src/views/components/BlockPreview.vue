@@ -753,13 +753,13 @@ export default {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
 }
 /* the logo's area inside the padding: left and right magenta (horizontal
-   padding), top and bottom orange (vertical padding) */
+   padding), top and bottom green (vertical padding) */
 .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
   box-shadow:
     -1px 0 0 rgba(255, 0, 170, 0.6),
     1px 0 0 rgba(255, 0, 170, 0.6),
-    0 -1px 0 rgba(255, 140, 0, 0.9),
-    0 1px 0 rgba(255, 140, 0, 0.9);
+    0 -1px 0 rgba(0, 180, 90, 0.9),
+    0 1px 0 rgba(0, 180, 90, 0.9);
 }
 /* logocloud: a sample logo in its tile (as "contain" in the frontend) */
 .pw-logocloud-item {

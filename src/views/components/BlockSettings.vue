@@ -1703,6 +1703,11 @@ export default {
 .pw-field-row[data-guide="row"] {
   --pw-guide-color: rgba(255, 140, 0, 0.9);
 }
+/* the vertical padding (e.g. logocloud's tiles), told apart from the
+   horizontal one (magenta) */
+.pw-field-row[data-guide="padding-y"] {
+  --pw-guide-color: rgba(0, 180, 90, 0.9);
+}
 
 /* the global value a switch applies, grey at the right end of the row */
 .pw-field-hint {
