@@ -728,10 +728,18 @@ export default {
         textTransform: this.elementValue(element, 'text-transform'),
       };
     },
+    // the gap above a field: the element before keeps its "space after"
+    // (tagline, heading, text); before the block's own content (items,
+    // media, logos) the block's CSS sets the gap – margins meet there, the
+    // larger one wins as in the frontend
     gapBefore(field) {
       const idx = this.fields.indexOf(field);
       if (idx <= 0) return 0;
-      return GAPS[this.fields[idx - 1] + '>' + field] || 0;
+      const prev = this.fields[idx - 1];
+      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.elementValue(prev, 'spacing') : '';
+      const own = GAPS[prev + '>' + field];
+      if (own && after) return 'max(' + own + ', ' + after + ')';
+      return own || after || 0;
     },
     fieldStyle(field) {
       const style = {

@@ -828,6 +828,8 @@ export default {
     guideType(varName) {
       if (!this.guides) return null;
       if (varName.endsWith('-paragraph-spacing') || varName.endsWith('cite-spacing') || varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
+      // the space after an element (tagline, heading, text)
+      if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'margin';
       if (!this.previewFlourish) return null;
       if (varName.endsWith('-flourish-margin-top') || varName.endsWith('-flourish-margin-bottom')) return 'margin';
       return null;
