@@ -56,6 +56,9 @@
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
           <p v-if="hasField('editor')" class="pw-block-live-text" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} {{ $t('prw.preview.text.link') }}{{ $t('prw.preview.text.after') }}</p>
           </div>
+          <!-- guides: the offset (split layout) as a track of its own, a line on
+               either side -->
+          <span v-if="featureSplit && hasGrid && guides" class="pw-featurelist-offset-gap" :class="{ 'is-hot': highlight === 'item-offset-gap' }"></span>
           <!-- quote: the quote (element typography, its size step and marks)
                and its source below -->
           <figure v-if="isQuote" class="pw-quote-preview">
@@ -229,6 +232,8 @@ export default {
     withBlockGuides: { type: Boolean, default: true },
     // steplist: the item style to show (chosen in the design tab)
     stepStyle: { type: String, default: '' },
+    // featurelist: the layout to show (stacked / split, chosen in the gaps card)
+    featureLayout: { type: String, default: '' },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
@@ -240,7 +245,7 @@ export default {
     highlightsArea() {
       const h = this.highlight || '';
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
-        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding',
+        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding', 'item-offset-gap',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -414,11 +419,14 @@ export default {
     },
     // split layout (from tablet on): intro one third, the items two thirds
     featureSplit() {
-      return this.isFeaturelist && this.setting('style', 'section-layout') === 'split';
+      return this.isFeaturelist && (this.featureLayout || this.setting('style', 'section-layout')) === 'split';
     },
     contentStyle() {
       if (!this.featureSplit || !this.hasGrid) return {};
-      return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', columnGap: this.itemValueAt('item-gap'), alignItems: 'start' };
+      const gap = this.itemValue('item-offset-gap');
+      // guides: the offset is a track of its own (for its lines)
+      if (this.guides) return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) ' + gap + ' minmax(0, 2fr)', alignItems: 'start' };
+      return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', columnGap: gap, alignItems: 'start' };
     },
     // columns of the features at the shown device (mobile: one below the other)
     // (at most as many as sample features shown: no empty column; split:
@@ -1082,11 +1090,19 @@ export default {
 .pw-featurelist-title-gap {
   border-block: 1px solid rgba(215, 160, 0, 0.95);
 }
+/* the offset (split layout): orange, as the gap to the intro */
+.pw-featurelist-offset-gap {
+  align-self: stretch;
+  box-sizing: border-box;
+  border-inline: 1px solid rgba(255, 140, 0, 0.9);
+}
+.pw-featurelist-offset-gap.is-hot { background: rgba(255, 140, 0, 0.15); }
 .pw-featurelist-pad {
   position: absolute;
   outline: 1px solid rgba(255, 0, 170, 0.6);
   pointer-events: none;
 }
+.has-focus .pw-featurelist-offset-gap,
 .has-focus .pw-featurelist-gap,
 .has-focus .pw-featurelist-icon-gap,
 .has-focus .pw-featurelist-title-gap {

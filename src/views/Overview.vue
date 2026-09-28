@@ -807,6 +807,7 @@
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="blockValueOverrides[block.blockType] || {}"
                 :step-style="block.blockType === 'pwsteplist' ? currentStepStyle(block.blockType) : ''"
+                :feature-layout="block.blockType === 'pwfeaturelist' ? currentFeatureLayout(block.blockType) : ''"
                 :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
                 @update:variant="itemColorTheme = $event"
@@ -1216,6 +1217,18 @@
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+                <!-- the layout the preview shows (a view, not saved; at first
+                     the start value): offset adds its gap -->
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="lay in ['stacked', 'split']"
+                    :key="'fl-' + lay"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
+                    @click="$set(featurePreviewLayout, block.blockType, lay)"
+                  >{{ $t('pw.option.' + lay) }}</button>
+                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -1224,6 +1237,17 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="currentFeatureLayout(block.blockType) === 'split'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-offset-gap']"
+                  :guides="previewGuides ? { 'item-offset-gap': 'text' } : null"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -1575,6 +1599,9 @@ export default {
       blockViewTab: null,
       // steplist: item style shown in the design tab and the preview (per block)
       stepPreviewStyle: {},
+      // featurelist: the layout its preview shows (stacked / split), a view
+      featurePreviewLayout: {},
+      startSectionLayouts: {},
       // the value whose row the pointer is over: its area tinted in the preview
       hoveredVar: null,
       // theme shown in the items' colour card
@@ -2128,6 +2155,12 @@ export default {
       if (this.currentStepStyle(blockType) === 'centered') return 'center';
       return this.itemLayoutDefault(blockType, this.stepValueKey(blockType, 'item-number-align')) || 'center';
     },
+    // featurelist: the layout shown (chosen in the gaps card, else the start value)
+    currentFeatureLayout(blockType) {
+      if (this.featurePreviewLayout[blockType]) return this.featurePreviewLayout[blockType];
+      const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['section-layout']?.default;
+      return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['section-layout']?.default || 'stacked';
+    },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['item-style']?.default;
@@ -2538,6 +2571,12 @@ export default {
         this.$delete(this.stepPreviewStyle, blockType);
       }
       this.$set(this.startItemStyles, blockType, itemStyle);
+      // featurelist: the start value of the layout changed – show it
+      const sectionLayout = overrides?.settings?.fields?.style?.['section-layout']?.default;
+      if (blockType in this.startSectionLayouts && this.startSectionLayouts[blockType] !== sectionLayout) {
+        this.$delete(this.featurePreviewLayout, blockType);
+      }
+      this.$set(this.startSectionLayouts, blockType, sectionLayout);
       const current = JSON.stringify(overrides);
       const snapshot = this.snapshots[blockType] || '{}';
       this.$set(this.dirtyTabs, blockType, current !== snapshot);
