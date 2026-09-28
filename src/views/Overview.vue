@@ -1979,11 +1979,14 @@ export default {
           this.$set(this.originalOverrides, block.blockType, JSON.parse(JSON.stringify(overrides)));
           this.$set(this.snapshots, block.blockType, JSON.stringify(overrides));
 
-          // Load per-block CSS-variable defaults + overrides (only useful for items-blocks)
-          if (this.hasItemFields(block.blockType)) {
+          // Load per-block CSS-variable defaults + overrides (the items' values,
+          // the hero's heights …); blocks without values of their own get none
+          {
             try {
               const valuesRes = await this.$api.get('projectwizard/values/' + block.blockType);
-              this.$set(this.blockValueDefaults, block.blockType, valuesRes.defaults || {});
+              const defaults = valuesRes.defaults && !Array.isArray(valuesRes.defaults) ? valuesRes.defaults : {};
+              if (!Object.keys(defaults).length) throw new Error('no values');
+              this.$set(this.blockValueDefaults, block.blockType, defaults);
               const vov = (valuesRes.overrides && !Array.isArray(valuesRes.overrides)) ? valuesRes.overrides : {};
               this.$set(this.blockValueOverrides, block.blockType, JSON.parse(JSON.stringify(vov)));
               this.$set(this.originalBlockValueOverrides, block.blockType, JSON.parse(JSON.stringify(vov)));
