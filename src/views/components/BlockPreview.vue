@@ -190,12 +190,8 @@ const GAPS = {
   'tagline>items': '1rem',
   'heading>items': '1.2rem',
   'editor>items': '2rem',
-  'tagline>heading': '0.5rem',
-  'tagline>editor': '0.3rem',
-  'tagline>buttons': '1rem',
-  'heading>editor': '0.5rem',
-  'heading>buttons': '1.2rem',
-  'editor>buttons': '1.2rem',
+  // (between tagline, heading, text and buttons: only the elements' space
+  // below – the blocks' fixed pair gaps are gone)
   // (kirbyblock-logocloud: before the logos)
   'tagline>logos': '1rem',
   'heading>logos': '2rem',
