@@ -94,7 +94,7 @@
 	'prw.view.presets' => 'Restrictions',
 	'prw.view.design.intro' => 'These values apply to all blocks of this kind, including existing ones.',
 	'prw.view.defaults.intro' => 'Start values apply to newly created blocks. The values can still be changed in the block itself.',
-	'prw.view.presets.intro' => 'Defines which fields are shown in the Panel. Hidden fields keep their start value.',
+	'prw.view.presets.intro' => 'Defines which fields are shown for editing. Hidden fields keep their start value.',
 	'prw.tab.items' => 'Items',
 	'prw.tab.layout' => 'Layout',
 
