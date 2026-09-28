@@ -48,6 +48,12 @@
           <p v-if="hasField('tagline')" :style="fieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</p>
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
           <p v-if="hasField('editor')" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} {{ $t('prw.preview.text.link') }}{{ $t('prw.preview.text.after') }}</p>
+          <!-- quote: the quote (element typography, its size step and marks)
+               and its source below -->
+          <figure v-if="isQuote" class="pw-quote-preview">
+            <blockquote :style="quoteStyle">{{ quoteText }}</blockquote>
+            <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ $t('prw.sample.cite') }}</cite></figcaption>
+          </figure>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
@@ -148,6 +154,34 @@ export default {
     fields() {
       const fields = ['tagline', 'heading', 'editor', 'buttons'].filter(f => this.hasField(f));
       return this.isSteplist ? [...fields, 'items'] : fields;
+    },
+    isQuote() {
+      return this.blockType === 'pwquote';
+    },
+    // the sample quote, with the element's quote marks (or none)
+    quoteText() {
+      const text = this.$t('prw.sample.quote').replace(/^[„"“«»]+|[“"”«»]+$/g, '');
+      const marks = this.elementValue('quote', 'marks') !== 'disabled';
+      return marks ? '\u201E' + text + '\u201C' : text;
+    },
+    quoteStyle() {
+      const size = this.preset('quote', 'sizes') || 'lg';
+      return {
+        ...this.typography('quote'),
+        fontSize: this.sizeStep('quote', size) || this.sizeStep('quote', 'lg'),
+        color: this.elementColor('quote', 'element-quote-text'),
+        textAlign: this.preset('quote', 'align') || 'left',
+        margin: 0,
+      };
+    },
+    citeStyle() {
+      return {
+        ...this.typography('cite'),
+        display: 'block',
+        color: this.elementColor('cite', 'element-cite-text'),
+        textAlign: this.preset('author', 'align') || 'left',
+        marginTop: this.elementValue('cite', 'spacing'),
+      };
     },
     isSteplist() {
       return this.blockType === 'pwsteplist';
