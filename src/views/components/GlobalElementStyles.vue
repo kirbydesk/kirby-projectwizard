@@ -2521,9 +2521,11 @@ export default {
 
 /* the unit as a select (rem / %): looks like the unit label, clickable */
 .pw-element-unit.pw-element-unit-select {
-  padding: 0;
+  /* a small arrow behind the unit (Kirby hides the select's own) */
+  appearance: none;
+  padding: 0 14px 0 0;
   border: 0;
-  background: transparent;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777'%3E%3Cpath d='M12 16l-6-6h12z'/%3E%3C/svg%3E") no-repeat right center / 12px;
   font-family: inherit;
   cursor: pointer;
   pointer-events: auto;
