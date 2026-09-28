@@ -2158,6 +2158,15 @@ export default {
   padding: var(--spacing-4) var(--spacing-4);
   overflow: hidden;
 }
+/* in the sidebar: no tile like a block – the whole preview area in the
+   variant's background (so the element's colours show as they are), the
+   element simply on it */
+.pw-preview-column .pw-element-preview-side:not(.pw-block-live-preview) .pw-element-preview-col {
+  margin: calc(-1 * var(--spacing-6));
+  margin-top: calc(-1 * var(--spacing-6));
+  padding: var(--spacing-6);
+  min-height: calc(100dvh - 3.25rem);
+}
 
 
 /* guides: the space below an element, between two cyan lines */
