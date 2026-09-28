@@ -1857,8 +1857,8 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-buttons-row::after {
   content: "";
   position: absolute;
-  left: calc(-1 * var(--spacing-4));
-  right: calc(-1 * var(--spacing-4));
+  left: calc(-1 * var(--spacing-6));
+  right: calc(-1 * var(--spacing-6));
   border-top: 1px solid rgba(0, 170, 255, 0.8);
   pointer-events: none;
 }
@@ -1961,8 +1961,8 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-cite::after {
   content: "";
   position: absolute;
-  left: calc(-1 * var(--spacing-4));
-  right: calc(-1 * var(--spacing-4));
+  left: calc(-1 * var(--spacing-6));
+  right: calc(-1 * var(--spacing-6));
   border-top: 1px solid rgba(0, 170, 255, 0.8);
   pointer-events: none;
 }
@@ -1998,8 +1998,8 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-flourish-box::after {
   content: "";
   position: absolute;
-  left: calc(-1 * var(--spacing-4));
-  right: calc(-1 * var(--spacing-4));
+  left: calc(-1 * var(--spacing-6));
+  right: calc(-1 * var(--spacing-6));
   border-top: 1px solid rgba(0, 170, 255, 0.8);
   pointer-events: none;
 }
@@ -2191,7 +2191,9 @@ export default {
 .pw-element-space-below {
   display: block;
   box-sizing: border-box;
-  width: 100%;
+  /* across the whole preview, like the paragraph lines */
+  align-self: stretch;
+  margin-inline: calc(-1 * var(--spacing-6));
   border-block: 1px solid rgba(0, 170, 255, 0.8);
 }
 /* a question mark hovered: its area tinted, all guide lines hidden */
