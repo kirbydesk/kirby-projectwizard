@@ -678,9 +678,22 @@ export default {
         return sections;
       }
       if (!fields.length) return [];
+      // start values of the style: a card per choice (variant, the block's
+      // own display …), named after it
+      if (this.view === 'defaults' && cat.key === 'style' && fields.length > 1) {
+        return fields.map(f => ({ key: f.key, heading: this.styleSectionHeading(f.key), fields: [f] }));
+      }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
       return [{ key: 'main', heading: repeats ? null : heading, fields }];
+    },
+
+    // heading of a style card: the variant, else the field's own label
+    styleSectionHeading(key) {
+      if (key === 'theme') return this.$t('prw.headline.variant');
+      const tKey = 'prw.property.' + key;
+      const t = this.$t(tKey);
+      return t && t !== tKey ? t : key;
     },
 
     // name of a drawer tab (as in the block's drawer)
