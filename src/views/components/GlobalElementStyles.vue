@@ -2212,6 +2212,7 @@ export default {
 .pw-element-preview-text.pw-element-preview-paragraphs {
   display: block;
   -webkit-line-clamp: none;
+  overflow: visible;
 }
 
 /* The marked background reaches above the first line box; without this room
