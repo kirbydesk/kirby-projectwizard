@@ -922,6 +922,18 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                 </template>
+                <!-- the number's colour: the digit in the bubble; minimal: the
+                     number is text in the "background" colour -->
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="[stepNumberColor(block.blockType)]"
+                  :labels="{ [stepNumberColor(block.blockType)]: $t('prw.prop.item-number-text') }"
+                  :theme="currentItemColorTheme"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                />
                 <pw-block-values
                   v-if="currentStepStyle(block.blockType) !== 'centered'"
                   :bp.sync="itemBp"
@@ -1151,7 +1163,6 @@
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="itemColorsShowOnly(block.blockType)"
-                    :labels="block.blockType === 'pwsteplist' ? { 'item-number-background': $t('prw.prop.item-number-text') } : {}"
                     :theme="currentItemColorTheme"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
@@ -1655,11 +1666,7 @@ export default {
       if (this.itemLayoutDefault(blockType, 'item-icon-style') === 'tile') {
         list.push('item-icon-tile-background');
       }
-      // steplist: with a bubble its text colour (the background sits in the
-      // form card); minimal: the number is text in the "background" colour
-      if (blockType === 'pwsteplist') {
-        list.push(this.currentStepStyle(blockType) === 'minimal' ? 'item-number-background' : 'item-number-text');
-      }
+      // (steplist: the number's colours sit in the style card)
       // the connector's colour sits in its own card (style "connected")
       if (blockType !== 'pwsteplist') list.push('item-connector');
       return list;
@@ -1754,6 +1761,11 @@ export default {
     stepValueKey(blockType, name) {
       const style = this.currentStepStyle(blockType);
       return style === 'default' ? name : name + '-' + style;
+    },
+    // colour of the number: the digit in the bubble, minimal: the text
+    // (which the steplist CSS colours with the "background" colour)
+    stepNumberColor(blockType) {
+      return this.currentStepStyle(blockType) === 'minimal' ? 'item-number-background' : 'item-number-text';
     },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
