@@ -1296,10 +1296,9 @@
                   >{{ $t('pw.option.' + h) }}</button>
                 </span>
               </div>
-              <div class="pw-card pw-field-table">
+              <div v-if="currentHeroHeight(block.blockType) !== 'fullscreen'" class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  v-if="currentHeroHeight(block.blockType) !== 'fullscreen'"
                   :labels="{ ['height-' + currentHeroHeight(block.blockType)]: $t('prw.label.height') }"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1308,8 +1307,8 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
-                <p v-else class="pw-card-note">{{ $t('prw.hint.heroFullscreen') }}</p>
               </div>
+              <p v-else class="pw-card-help">{{ $t('prw.hint.heroFullscreen') }}</p>
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1328,7 +1327,6 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
-                <p v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'" class="pw-card-note">{{ $t('prw.hint.spacingStandard') }}</p>
                 <pw-block-values
                   v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own'"
                   :bp.sync="itemBp"
@@ -1363,6 +1361,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <p v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'" class="pw-card-help">{{ $t('prw.hint.spacingStandard') }}</p>
             </section>
             </template>
 
@@ -3267,11 +3266,11 @@ export default {
   display: none;
 }
 
-/* a note in a card in place of rows (e.g. the hero's full screen height) */
-.pw-card-note {
-  padding: var(--spacing-2) var(--spacing-3);
+/* a note below a card, on the page background (as Kirby's field help) */
+.pw-card-help {
+  margin-top: var(--spacing-2);
   font-size: var(--text-sm);
-  font-style: italic;
+  line-height: var(--leading-normal);
   color: var(--color-text-dimmed);
 }
 
