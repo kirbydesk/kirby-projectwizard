@@ -7,7 +7,7 @@
 
       <!-- a drawer header as in the block's drawer with its tabs; a tab shows
            its cards (tabs without rows in this view are disabled) -->
-      <header v-if="view !== 'layout'" class="k-drawer-header pw-drawer-strip">
+      <header v-if="view === 'defaults'" class="k-drawer-header pw-drawer-strip">
         <k-drawer-tabs :tab="currentDrawerTab" :tabs="drawerTabs" @open="drawerTab = $event" />
       </header>
 
@@ -39,121 +39,36 @@
         </section>
       </template>
 
-      <!-- ===== Content, restrictions: one card per content field ===== -->
-      <template v-if="view === 'presets' && currentDrawerTab === 'content'">
-
-
-        <!-- Content fields -->
+      <!-- ===== Restrictions: the block's fields (and its items'), each with
+           an eye – a field switched off is not in the drawer and not rendered ===== -->
+      <template v-if="view === 'presets'">
         <section
-          v-for="field in presetFields(getContentFields())"
-          :key="field.key"
+          v-for="group in contentFieldGroups()"
+          :key="'cf-' + group.key"
           class="pw-card-section"
         >
-          <div class="pw-card-heading-row">
-            <h3 class="pw-card-heading">
-              {{ fieldLabel(field.key) }}
-            </h3>
+          <div v-if="group.heading" class="pw-card-heading-row">
+            <h3 class="pw-card-heading">{{ group.heading }}</h3>
           </div>
-          <div v-show="isFieldEnabled(field)" class="pw-card pw-field-table">
-            <pw-field-row
-              v-for="prop in field.properties"
-              :key="field.key + '-' + prop.key"
-              :uid="blockType + '-' + field.key + '-' + prop.key"
-              :label="prop.key"
-              :all-options="prop.allOptions"
-              :active-options="getActiveOptions(field.key, prop.key, prop)"
-              :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
-              :plugin-default="prop.pluginDefault"
-              :enabled="true"
-              :required="prop.required === true"
-              :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
-              :mode="view === 'defaults' ? 'preset' : 'allowed'"
-              :plugin="block.plugin || ''"
-              @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
-              @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
-            />
-          </div>
-        </section>
-
-        <!-- Editor config (content settings + editor.json merged) -->
-        <section v-if="hasEditorCard()" class="pw-card-section">
-          <div class="pw-card-heading-row">
-            <h3 class="pw-card-heading">
-              {{ fieldLabel('editor') }}
-            </h3>
-          </div>
-
-          <div v-show="isFieldEnabled(editorField())" class="pw-card pw-field-table">
-            <!-- Editor content settings (mode, align, sizes) as FieldRows -->
-            <template v-if="view === 'presets' || view === 'defaults'">
-              <pw-field-row
-                v-for="prop in getEditorField().properties"
-                :key="'editor-content-' + prop.key"
-                :uid="blockType + '-editor-' + prop.key"
-                :label="prop.key"
-                :all-options="prop.allOptions"
-                :active-options="getActiveOptions('editor', prop.key, prop)"
-                :current-default="getVal('settings.fields.content.editor.' + prop.key + '.default', prop.pluginDefault)"
-                :plugin-default="prop.pluginDefault"
-                :enabled="true"
-                :modified="hasOverride('settings.fields.content.editor.' + prop.key)"
-                :mode="view === 'defaults' ? 'preset' : 'allowed'"
-              :plugin="block.plugin || ''"
-                @update:options="setEditorContentOptions(prop.key, prop, $event)"
-                @update:default="selectOption('settings.fields.content.editor.' + prop.key + '.default', $event, prop.pluginDefault)"
-              />
-            </template>
-
-            <!-- Editor config (marks, nodes, headings) — only if writer mode available -->
-            <template v-if="view === 'presets' && writerActive !== false" v-for="row in getEditorConfigRows()">
-              <pw-field-row
-                :key="'editor-' + row.key"
-                :uid="blockType + '-editor-' + row.key"
-                :label="row.key"
-                :all-options="row.values"
-                :active-options="getOverrideOnly('editor.' + row.key) || row.values"
-                current-default=""
-                plugin-default=""
-                :enabled="true"
-                :modified="hasOverride('editor.' + row.key)"
-                :no-default="true"
-                @update:options="setEditorArrayDirect(row.key, $event, row.values)"
-              />
-            </template>
-          </div>
-        </section>
-
-        <!-- Item-* content fields (item-tagline, item-heading, item-editor) —
-             rendered AFTER the editor so block-level fields and the editor
-             come before per-item field defaults. -->
-        <section
-          v-for="field in presetFields(getItemDefaultsContentFields())"
-          :key="field.key"
-          class="pw-card-section"
-        >
-          <div class="pw-card-heading-row">
-            <h3 class="pw-card-heading">
-              {{ fieldLabel(field.key) }}
-            </h3>
-          </div>
-          <div v-show="isFieldEnabled(field)" class="pw-card pw-field-table">
-            <pw-field-row
-              v-for="prop in field.properties"
-              :key="field.key + '-' + prop.key"
-              :uid="blockType + '-' + field.key + '-' + prop.key"
-              :label="prop.key"
-              :all-options="prop.allOptions"
-              :active-options="getActiveOptions(field.key, prop.key, prop)"
-              :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
-              :plugin-default="prop.pluginDefault"
-              :enabled="true"
-              :required="prop.required === true"
-              :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
-              :mode="view === 'defaults' ? 'preset' : 'allowed'"
-              :plugin="block.plugin || ''"
-              @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
-              @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
-            />
+          <div class="pw-card pw-field-table">
+            <div v-for="key in group.keys" :key="key" class="pw-field-row">
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <button
+                      type="button"
+                      class="pw-field-eye"
+                      :data-state="isContentFieldOff(key) ? 'off' : 'on'"
+                      :title="$t(isContentFieldOff(key) ? 'prw.field.state.off' : 'prw.field.state.on')"
+                      @click="toggleContentField(key)"
+                    >
+                      <k-icon :type="isContentFieldOff(key) ? 'hidden' : 'preview'" />
+                      <span class="pw-field-row-label">{{ fieldLabel(key) }}</span>
+                    </button>
+                  </div>
+                </span>
+              </div>
+            </div>
           </div>
         </section>
       </template>
@@ -185,7 +100,6 @@
               :enabled="true"
               :modified="hasOverride('settings.fields.' + cat.key + '.' + field.key)"
               :required="field.required === true"
-              :mode="view === 'defaults' ? 'preset' : 'allowed'"
               :plugin="block.plugin || ''"
               @update:options="setCategoryOptions(cat.key, field.key, field, $event)"
               @update:default="selectOption('settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.pluginDefault)"
@@ -686,9 +600,8 @@ export default {
       // restrictions: the option rows (not the grid, it is never limited);
       // start values: everything (option rows as the choice a new block
       // starts with, the grid with all its values)
-      let fields = this.view === 'presets'
-        ? cat.fields.filter(f => cat.key !== 'grid' && f.type === 'fieldrow')
-        : cat.fields;
+      // (restrictions have no category rows: only whole fields are switched off)
+      let fields = this.view === 'presets' ? [] : cat.fields;
       // steplist starting as "connected": always one column, no column rows
       if (this.view === 'defaults' && cat.key === 'layout' && this.blockType === 'pwsteplist'
         && this.getVal('settings.fields.style.item-style.default', 'default') === 'connected') {
@@ -744,16 +657,47 @@ export default {
       });
     },
 
+    // the block's content fields (tagline, heading, editor, buttons, items …)
+    // and its items' fields (item-*), for switching them off
+    contentFieldGroups() {
+      const content = this.getDefault('settings.fields.content') || {};
+      // (lists of allowed blocks, e.g. multicolumn's column blocks, are no field)
+      const isField = (v) => v === 'enabled' || v === true
+        || (this.isObject(v) && Object.values(v).some(p => this.isObject(p) && ('options' in p || 'default' in p)));
+      const keys = Object.keys(content).filter(k => isField(content[k]));
+      const groups = [];
+      const own = keys.filter(k => !k.startsWith('item-'));
+      const items = keys.filter(k => k.startsWith('item-'));
+      if (own.length) groups.push({ key: 'block', heading: null, keys: own });
+      if (items.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), keys: items });
+      return groups;
+    },
+    isContentFieldOff(key) {
+      return this.getOverrideOnly('settings.fields.content.' + key) === false;
+    },
+    // eye clicked: switch the field off (false) or on again (the override goes)
+    toggleContentField(key) {
+      const path = 'settings.fields.content.' + key;
+      if (this.isContentFieldOff(key)) {
+        this.deleteNested(this.overrides || {}, path);
+        ['settings.fields.content', 'settings.fields', 'settings'].forEach(p => this.cleanEmpty(this.overrides || {}, p));
+      } else {
+        this.setVal(path, false);
+      }
+      this.markDirty();
+    },
+
     // start values of the content: the block's fields and (blocks with items)
     // the items' fields, each a row with the drawer's dropdowns
     contentToolbarGroups() {
       const groups = [];
-      const own = [...this.presetFields(this.getContentFields())];
+      const own = this.presetFields(this.getContentFields()).filter(f => !this.isContentFieldOff(f.key));
       const editor = this.getEditorField();
-      if (editor && editor.properties.length) own.push(editor);
+      if (editor && editor.properties.length && !this.isContentFieldOff('editor')) own.push(editor);
       const ownRows = own.map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
       if (ownRows.length) groups.push({ key: 'block', heading: null, rows: ownRows });
       const itemRows = this.presetFields(this.getItemDefaultsContentFields())
+        .filter(f => !this.isContentFieldOff(f.key))
         .map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
       if (itemRows.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: itemRows });
       return groups;
@@ -850,10 +794,9 @@ export default {
     },
 
     // --- Active options ---
+    // the options of a content field's property: always all of them (only
+    // whole fields are switched off)
     getActiveOptions(fieldKey, propKey, prop) {
-      const fullOverride = this.getOverrideOnly('settings.fields.content.' + fieldKey + '.' + propKey);
-      const override = this.isObject(fullOverride) ? fullOverride.options : undefined;
-      if (Array.isArray(override)) return override;
       return prop.allOptions;
     },
 
@@ -1049,8 +992,6 @@ export default {
     },
 
     getCategoryActiveOptions(catKey, fieldKey, field) {
-      const override = this.getOverrideOnly('settings.fields.' + catKey + '.' + fieldKey + '.options');
-      if (Array.isArray(override) && override.length > 0) return override;
       return field.allOptions;
     },
 
@@ -1466,6 +1407,20 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
+}
+
+/* restrictions: a field with its eye (switched off: faded) */
+.pw-field-eye {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  cursor: pointer;
+}
+.pw-field-eye .k-icon {
+  --icon-size: 16px;
+}
+.pw-field-eye[data-state="off"] {
+  opacity: 0.4;
 }
 
 /* a drawer header as in the block's drawer (breadcrumb, tabs) above the

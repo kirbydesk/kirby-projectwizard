@@ -351,8 +351,10 @@ export default {
       const ov = this.nested(this.overrides || {}, path);
       return ov !== undefined ? ov : this.nested(this.config.defaults || {}, path);
     },
+    // a content field of the block, unless switched off in the restrictions
     hasField(field) {
       const content = this.nested(this.config.defaults || {}, 'settings.fields.content') || {};
+      if (this.nested(this.overrides || {}, 'settings.fields.content.' + field) === false) return false;
       return content[field] !== undefined && content[field] !== false;
     },
     globalValue(name) {
