@@ -52,12 +52,12 @@
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
-          <!-- guides: the steps' edges (gap between the steps) and the
-               lines at the number's edge and the text's start (gap between
-               them, magenta) -->
-          <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides }" :style="stepItemsStyle">
+          <!-- guides: the gaps as elements of their own with a line on either
+               side – between the steps cyan, between number and text magenta -->
+          <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides, 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
+            <template v-for="n in stepCount">
+            <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :style="stepStepGapStyle"></span>
             <div
-              v-for="n in stepCount"
               :key="'step-' + n"
               class="pw-steplist-item"
               :class="{ 'is-connected': currentStepStyle === 'connected', 'is-centered': currentStepStyle === 'centered' }"
@@ -73,6 +73,7 @@
                 <div :style="stepTextStyle">{{ $t('prw.preview.step.text') }}</div>
               </div>
             </div>
+            </template>
           </div>
           </div>
           </div>
@@ -160,13 +161,32 @@ export default {
     currentStepStyle() {
       return this.stepStyle || this.setting('style', 'item-style') || 'default';
     },
+    // columns of the steps at the shown device (no grid: one; connected: one)
+    stepColumns() {
+      if (!this.hasGrid || this.currentStepStyle === 'connected') return 1;
+      return Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
+    },
     stepItemsStyle() {
       const gap = this.itemValue('item-gap');
       const style = { marginTop: this.gapBefore('items') };
+      const cols = this.stepColumns;
+      if (this.guides) {
+        // guides: the gaps are elements of their own – side by side a track
+        // between the columns, else one below the other
+        if (cols > 1) {
+          const tracks = Array.from({ length: cols }, () => 'minmax(0, 1fr)').join(' ' + gap + ' ');
+          return { ...style, display: 'grid', gridTemplateColumns: tracks, marginBottom: gap };
+        }
+        return { ...style, display: 'flex', flexDirection: 'column', marginBottom: this.hasGrid ? gap : 0 };
+      }
       if (!this.hasGrid) return style;
-      // connected: always one column (as in the frontend)
-      const cols = this.currentStepStyle === 'connected' ? 1 : Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
       return { ...style, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap, marginBottom: gap };
+    },
+    // the gap between two steps: as high (one below the other) or as wide
+    // (side by side) as the gap
+    stepStepGapStyle() {
+      const gap = this.itemValue('item-gap');
+      return this.stepColumns > 1 ? { width: gap } : { height: gap };
     },
     // the number's alignment of the shown style (centered: always centre)
     stepAlign() {
@@ -184,7 +204,8 @@ export default {
         textAlign: centered ? 'center' : null,
         // with guides the gap is an element of its own (two lines)
         gap: this.guides ? 0 : this.stepValue('item-content-gap'),
-        marginBottom: this.hasGrid ? 0 : this.itemValue('item-gap'),
+        // (with guides the gap below is an element of its own)
+        marginBottom: this.hasGrid || this.guides ? 0 : this.itemValue('item-gap'),
       };
     },
     // the gap element: as wide (beside) or as high (centered) as the gap
@@ -498,11 +519,16 @@ export default {
 .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 1px solid rgba(255, 0, 170, 0.6);
 }
-/* steplist guides: outlines of the steps and their texts; the room
-   between two steps and between the number and the text outline is the gap
-   set in the design (the number shows its edge itself) */
-.pw-steplist-items.has-guides .pw-steplist-item {
-  outline: 1px solid rgba(0, 170, 255, 0.8);
+/* the gap between two steps: two cyan lines around it (one below the
+   other: above and below, side by side: left and right) */
+.pw-steplist-step-gap {
+  display: block;
+  box-sizing: border-box;
+  border-block: 1px solid rgba(0, 170, 255, 0.8);
+}
+.pw-steplist-items.is-row .pw-steplist-step-gap {
+  border-block: 0;
+  border-inline: 1px solid rgba(0, 170, 255, 0.8);
 }
 /* the gap between number and text: two magenta lines around it (beside:
    left and right, centered: above and below) */
