@@ -221,7 +221,7 @@
 	'prw.element.button-shape' => 'Corners',
 	'prw.element.button-width-mode' => 'Width',
 	'prw.element.button-width' => 'Manual width',
-	'prw.element.button-content-align' => 'Alignment',
+	'prw.element.button-content-align' => 'Text alignment',
 	'prw.element.button-row-gap' => 'Vertical',
 	'prw.element.button-icon-size' => 'Size',
 	'prw.element.button-icon-gap' => 'Spacing to Text',

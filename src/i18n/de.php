@@ -221,7 +221,7 @@
 	'prw.element.button-shape' => 'Ecken',
 	'prw.element.button-width-mode' => 'Breite',
 	'prw.element.button-width' => 'Manuelle Breite',
-	'prw.element.button-content-align' => 'Ausrichtung',
+	'prw.element.button-content-align' => 'Textausrichtung',
 	'prw.element.button-row-gap' => 'Vertikal',
 	'prw.element.button-icon-size' => 'Größe',
 	'prw.element.button-icon-gap' => 'Abstand zum Text',
