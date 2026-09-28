@@ -290,14 +290,13 @@
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label" v-html="field.label"></label>
                     <!-- guides on: hovering the question mark tints the value's area in the preview -->
-                    <k-icon
+                    <span
                       v-if="guides && hasArea(field.varName)"
-                      type="question"
                       class="pw-area-hint"
                       :title="$t('prw.hint.spaceBelow')"
-                      @mouseenter.native="hoveredArea = field.varName"
-                      @mouseleave.native="hoveredArea = null"
-                    />
+                      @mouseenter="hoveredArea = field.varName"
+                      @mouseleave="hoveredArea = null"
+                    ><k-icon type="question" /></span>
                   </div>
                   <div class="pw-field-row-options" :class="[fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : '', { 'pw-corner-grid': isCorners(field.def) || isSides(field.def), 'pw-side-grid': isSides(field.def) }]">
                     <!-- Font family selector -->

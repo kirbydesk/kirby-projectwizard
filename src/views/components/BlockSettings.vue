@@ -1633,6 +1633,13 @@ export default {
   color: var(--color-text-dimmed);
   opacity: 0.5;
 }
+/* (the icon inside a span that carries the tooltip) */
+.pw-area-hint {
+  display: inline-flex;
+}
+.pw-area-hint > .k-icon {
+  --icon-size: 16px;
+}
 .pw-area-hint:hover {
   color: var(--color-text);
   opacity: 1;
