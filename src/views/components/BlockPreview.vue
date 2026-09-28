@@ -78,6 +78,10 @@
               <!-- guides: the edge of the padding (inset by exactly its values,
                    so the lines match the tinted bands) -->
               <span v-if="guides" class="pw-logocloud-pad" :style="{ inset: logoPadding }"></span>
+              <!-- guides: the tile's box, the rectangle the gaps and the
+                   padding are measured from – dashed around a round tile;
+                   a padding hovered is tinted in it (square, as its lines) -->
+              <span v-if="guides" class="pw-logocloud-box" :class="{ 'is-rounded': logoRounded }" :style="logoBoxStyle"></span>
             </div>
             <!-- guides: the gap as elements of their own, two cyan lines each
                  (between the columns, between the rows) -->
@@ -320,6 +324,22 @@ export default {
     // the logos' own top margin (with guides the gap is an element above)
     logosMarginTop() {
       return this.guides ? 0 : this.logosTextGap;
+    },
+    // a tile with round corners (circle, pill, custom radii)
+    logoRounded() {
+      const shape = this.setting('layout', 'item-shape') || 'round';
+      return shape !== 'square';
+    },
+    // the tile's box: a padding hovered tinted in it (square bands)
+    logoBoxStyle() {
+      if (this.highlight !== 'item-padding' && this.highlight !== 'item-padding-y') return {};
+      const x = this.itemValue('item-padding');
+      const y = this.itemValue('item-padding-y') || x;
+      return {
+        boxShadow: this.highlight === 'item-padding'
+          ? 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)'
+          : 'inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)',
+      };
     },
     // logocloud format: square tiles or one height ("flexible")
     logosFlexible() {
@@ -583,14 +603,6 @@ export default {
     logoTileStyle(index) {
       const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
       const style = this.guides && !this.logosFlexible && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : { ...this.logoStyle };
-      // a padding row hovered: its bands inside the tile tinted
-      if (this.guides && (this.highlight === 'item-padding' || this.highlight === 'item-padding-y')) {
-        const x = this.itemValue('item-padding');
-        const y = this.itemValue('item-padding-y') || x;
-        style.boxShadow = this.highlight === 'item-padding'
-          ? 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)'
-          : 'inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)';
-      }
       // flexible (no gap elements): a gap hovered – half of it tinted on
       // either side of each tile, two halves make the gap between two tiles
       if (this.guides && this.logosFlexible && (this.highlight === 'item-gap' || this.highlight === 'item-row-gap')) {
@@ -898,9 +910,20 @@ export default {
   width: 100%;
   height: 100%;
 }
-.pw-logocloud-pad {
+.pw-logocloud-pad,
+.pw-logocloud-box {
   position: absolute;
   pointer-events: none;
+}
+.pw-logocloud-box {
+  inset: 0;
+}
+/* round tiles: their box dashed (gaps and padding are measured from it) */
+.pw-logocloud-box.is-rounded {
+  outline: 1px dashed rgba(0, 0, 0, 0.3);
+}
+.has-focus .pw-logocloud-box.is-rounded {
+  outline: 0;
 }
 /* flexible: the logo as wide as its height allows */
 .pw-logocloud-preview.is-flexible .pw-logocloud-item svg {
