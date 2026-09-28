@@ -1708,6 +1708,10 @@ export default {
 .pw-field-row[data-guide="padding-y"] {
   --pw-guide-color: rgba(0, 180, 90, 0.9);
 }
+/* the gap between the text and the items (e.g. logocloud) */
+.pw-field-row[data-guide="text"] {
+  --pw-guide-color: rgba(130, 80, 255, 0.9);
+}
 
 /* the global value a switch applies, grey at the right end of the row */
 .pw-field-hint {

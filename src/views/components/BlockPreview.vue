@@ -763,10 +763,10 @@ export default {
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
 }
-/* logocloud guides: the gap between the text and the logos */
+/* logocloud guides: the gap between the text and the logos (violet) */
 .pw-logocloud-text-gap {
   box-sizing: border-box;
-  border-block: 1px solid rgba(0, 170, 255, 0.8);
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
 /* flexible (the logos wrap freely): the gaps shown at each tile's outer
    edge – left and right cyan (between the logos), top and bottom orange
