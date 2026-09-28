@@ -24,7 +24,7 @@
       </div>
       <pw-device-select :value="bp" @input="$emit('update:bp', $event)" />
       <!-- hero: the background to preview on (a view, not saved) -->
-      <div v-if="isHero" class="pw-pill pw-preview-bp pw-preview-theme" role="group">
+      <div v-if="isHero && designView" class="pw-pill pw-preview-bp pw-preview-theme" role="group">
         <button
           v-for="b in ['color', 'image', 'video']"
           :key="'hb-' + b"
@@ -255,6 +255,9 @@ export default {
     featureLayout: { type: String, default: '' },
     // hero: the height to show (chosen in the design tab's height card)
     heroHeight: { type: String, default: '' },
+    // the design tab: views chosen in the preview (the hero's background)
+    // apply; elsewhere the preview shows the start values
+    designView: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
@@ -448,7 +451,7 @@ export default {
     },
     // the background shown: chosen in the toolbar (a view), else the start value
     heroBackground() {
-      return this.heroBgView || this.setting('style', 'background-type') || 'color';
+      return (this.designView && this.heroBgView) || this.setting('style', 'background-type') || 'color';
     },
     // image or video: the drawn sample image (as in the media preview)
     heroImage() {

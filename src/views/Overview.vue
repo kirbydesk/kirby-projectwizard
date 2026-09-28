@@ -809,6 +809,7 @@
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
                 :feature-layout="block.blockType === 'pwfeaturelist' && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
+                :design-view="currentBlockView === 'design'"
                 :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
                 @update:variant="itemColorTheme = $event"
