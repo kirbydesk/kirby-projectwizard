@@ -784,8 +784,8 @@
           class="pw-wizard-panel"
         >
 
-          <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist so far) -->
-          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist, Hero so far) -->
+          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
                 :block-type="block.blockType"
