@@ -272,6 +272,11 @@ export default {
         marginTop: this.gapBefore('logos'),
       };
     },
+    // the tile's padding: vertical, horizontal (older: one value)
+    logoPadding() {
+      const x = this.itemValue('item-padding');
+      return (this.itemValue('item-padding-y') || x) + ' ' + x;
+    },
     // logocloud format: square tiles or one height ("flexible")
     logosFlexible() {
       return this.setting('layout', 'item-format') === 'flexible';
@@ -285,7 +290,7 @@ export default {
         return {
           height: this.itemValueAt('item-size'),
           maxWidth: '100%',
-          padding: this.itemValue('item-padding'),
+          padding: this.logoPadding,
           backgroundColor: this.itemColor('item-background'),
           borderRadius: { square: 0, round: '999px' }[shape] ?? custom,
         };
@@ -295,7 +300,7 @@ export default {
       return {
         minWidth: 0,
         aspectRatio: '1',
-        padding: this.itemValue('item-padding'),
+        padding: this.logoPadding,
         backgroundColor: this.itemColor('item-background'),
         borderRadius: { square: 0, round: '50%' }[shape] ?? custom,
       };
@@ -747,8 +752,14 @@ export default {
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
 }
+/* the logo's area inside the padding: left and right magenta (horizontal
+   padding), top and bottom orange (vertical padding) */
 .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
-  outline: 1px solid rgba(255, 0, 170, 0.6);
+  box-shadow:
+    -1px 0 0 rgba(255, 0, 170, 0.6),
+    1px 0 0 rgba(255, 0, 170, 0.6),
+    0 -1px 0 rgba(255, 140, 0, 0.9),
+    0 1px 0 rgba(255, 140, 0, 0.9);
 }
 /* logocloud: a sample logo in its tile (as "contain" in the frontend) */
 .pw-logocloud-item {

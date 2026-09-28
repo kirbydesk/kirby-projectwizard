@@ -1006,8 +1006,8 @@
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-padding']"
-                  :guides="previewGuides ? { 'item-padding': 'padding' } : null"
+                  :show-only="['item-padding', 'item-padding-y']"
+                  :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'row' } : null"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />
