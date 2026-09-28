@@ -739,40 +739,70 @@ export default {
 .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 1px solid rgba(255, 0, 170, 0.6);
 }
-/* the gap between two steps: two cyan lines around it (one below the
-   other: above and below, side by side: left and right) */
-.pw-steplist-step-gap {
+/* guides: the gaps as elements of their own; their lines run through the
+   whole block (clipped at its edges), the element's own area is the gap
+   (tinted when its row is hovered) – colour per value:
+   cyan between the steps / logos, orange between the rows, violet to the
+   text, magenta between number and text */
+.pw-steplist-step-gap,
+.pw-steplist-gap,
+.pw-logocloud-gap,
+.pw-logocloud-text-gap {
+  position: relative;
   display: block;
   box-sizing: border-box;
-  border-block: 1px solid rgba(0, 170, 255, 0.8);
 }
-.pw-steplist-items.is-row .pw-steplist-step-gap {
-  border-block: 0;
-  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+.pw-steplist-step-gap,
+.pw-logocloud-gap.is-column { --pw-line: rgba(0, 170, 255, 0.8); }
+.pw-logocloud-gap.is-row { --pw-line: rgba(255, 140, 0, 0.9); }
+.pw-logocloud-text-gap { --pw-line: rgba(130, 80, 255, 0.9); }
+.pw-steplist-gap { --pw-line: rgba(255, 0, 170, 0.6); }
+/* horizontal gaps: a line above and below, across the whole block */
+.pw-steplist-items:not(.is-row) .pw-steplist-step-gap::before,
+.pw-steplist-items:not(.is-row) .pw-steplist-step-gap::after,
+.pw-steplist-item.is-centered .pw-steplist-gap::before,
+.pw-steplist-item.is-centered .pw-steplist-gap::after,
+.pw-logocloud-gap.is-row::before,
+.pw-logocloud-gap.is-row::after,
+.pw-logocloud-text-gap::before,
+.pw-logocloud-text-gap::after {
+  content: "";
+  position: absolute;
+  left: -9999px;
+  right: -9999px;
+  height: 0;
+  border-top: 1px solid var(--pw-line);
+  pointer-events: none;
 }
-/* the gap between number and text: two magenta lines around it (beside:
-   left and right, centered: above and below) */
-.pw-steplist-gap {
-  box-sizing: border-box;
-  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+/* vertical gaps: a line left and right, through the whole block */
+.pw-steplist-items.is-row .pw-steplist-step-gap::before,
+.pw-steplist-items.is-row .pw-steplist-step-gap::after,
+.pw-steplist-item:not(.is-centered) .pw-steplist-gap::before,
+.pw-steplist-item:not(.is-centered) .pw-steplist-gap::after,
+.pw-logocloud-gap.is-column::before,
+.pw-logocloud-gap.is-column::after {
+  content: "";
+  position: absolute;
+  top: -9999px;
+  bottom: -9999px;
+  width: 0;
+  border-left: 1px solid var(--pw-line);
+  pointer-events: none;
 }
-.pw-steplist-item.is-centered .pw-steplist-gap {
-  border-inline: 0;
-  border-block: 1px solid rgba(255, 0, 170, 0.6);
-}
-/* logocloud guides: the gap between the logos (cyan, a line on either
-   side), the logo's area inside the tile's padding (magenta) */
-.pw-logocloud-gap {
-  box-sizing: border-box;
-}
-.pw-logocloud-gap.is-column {
-  border-inline: 1px solid rgba(0, 170, 255, 0.8);
-}
-/* the gap between the rows in orange, told apart from the one between
-   the logos of a row (cyan) */
-.pw-logocloud-gap.is-row {
-  border-block: 1px solid rgba(255, 140, 0, 0.9);
-}
+.pw-steplist-items:not(.is-row) .pw-steplist-step-gap::before,
+.pw-steplist-item.is-centered .pw-steplist-gap::before,
+.pw-logocloud-gap.is-row::before,
+.pw-logocloud-text-gap::before { top: 0; }
+.pw-steplist-items:not(.is-row) .pw-steplist-step-gap::after,
+.pw-steplist-item.is-centered .pw-steplist-gap::after,
+.pw-logocloud-gap.is-row::after,
+.pw-logocloud-text-gap::after { bottom: 0; }
+.pw-steplist-items.is-row .pw-steplist-step-gap::before,
+.pw-steplist-item:not(.is-centered) .pw-steplist-gap::before,
+.pw-logocloud-gap.is-column::before { left: 0; }
+.pw-steplist-items.is-row .pw-steplist-step-gap::after,
+.pw-steplist-item:not(.is-centered) .pw-steplist-gap::after,
+.pw-logocloud-gap.is-column::after { right: 0; }
 /* a value's row hovered (guides on): its area tinted in its colour */
 .pw-logocloud-text-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
 .pw-logocloud-gap.is-column.is-hot,
@@ -782,11 +812,6 @@ export default {
 /* flexible (no gap elements): the tiles' edges of that gap stronger */
 .pw-logocloud-preview.is-flexible.is-hot-gap .pw-logocloud-item::before { border-inline-width: 3px; }
 .pw-logocloud-preview.is-flexible.is-hot-row-gap .pw-logocloud-item::before { border-block-width: 3px; }
-/* logocloud guides: the gap between the text and the logos (violet) */
-.pw-logocloud-text-gap {
-  box-sizing: border-box;
-  border-block: 1px solid rgba(130, 80, 255, 0.9);
-}
 /* flexible (the logos wrap freely): the gaps shown at each tile's outer
    edge – left and right cyan (between the logos), top and bottom orange
    (between the rows); square, also around a pill */
