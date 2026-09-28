@@ -91,7 +91,7 @@
 	'prw.tab.footer' => 'Footer',
 	'prw.view.design' => 'Design',
 	'prw.view.defaults' => 'Start values',
-	'prw.view.presets' => 'Restrictions',
+	'prw.view.presets' => 'Visibility',
 	'prw.view.design.intro' => 'These values apply to all blocks of this kind, including existing ones.',
 	'prw.view.defaults.intro' => 'Start values apply to newly created blocks. The values can still be changed in the block itself.',
 	'prw.view.presets.intro' => 'Defines which fields are shown for editing. Hidden fields keep their start value.',
