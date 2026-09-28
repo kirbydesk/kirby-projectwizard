@@ -68,6 +68,8 @@
 	'prw.headline.connector' => 'Verbindungslinie',
 	'prw.label.backgroundColor' => 'Hintergrundfarbe',
 	'prw.label.offset' => 'Versatz',
+	'prw.label.gapVertical' => 'Vertikaler Abstand',
+	'prw.label.gapHorizontal' => 'Horizontaler Abstand',
 	'prw.label.width' => 'Breite',
 	'prw.label.color' => 'Farbe',
 	'prw.headline.spacing' => 'Abstände',

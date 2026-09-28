@@ -903,7 +903,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepValueKey(block.blockType, 'item-content-gap')]"
-                :labels="{ [stepValueKey(block.blockType, 'item-content-gap')]: $t('prw.prop.gap') }"
+                :labels="{ [stepValueKey(block.blockType, 'item-content-gap')]: $t(currentStepStyle(block.blockType) === 'centered' ? 'prw.label.gapVertical' : 'prw.label.gapHorizontal') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />
