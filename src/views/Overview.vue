@@ -802,6 +802,7 @@
                 :body-background="bodyBackgroundColor"
                 :themes="themes"
                 :guides.sync="previewGuides"
+                :with-block-guides="currentBlockView !== 'design'"
                 :bp.sync="itemBp"
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="blockValueOverrides[block.blockType] || {}"

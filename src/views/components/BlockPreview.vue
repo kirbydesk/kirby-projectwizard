@@ -36,10 +36,10 @@
            (towards the neighbouring blocks) across the whole width -->
       <div
         class="pw-block-live-block"
-        :class="{ 'has-guide-top': guides && setting('settings', 'margin-top') === true, 'has-guide-bottom': guides && setting('settings', 'margin-bottom') === true, 'is-fullscreen': setting('settings', 'block-size') === 'fullscreen' }"
+        :class="{ 'has-guide-top': blockGuides && setting('settings', 'margin-top') === true, 'has-guide-bottom': blockGuides && setting('settings', 'margin-bottom') === true, 'is-fullscreen': setting('settings', 'block-size') === 'fullscreen' }"
         :style="blockStyle"
       >
-      <section class="pw-block-live-section" :class="{ 'has-guides': guides }" :style="sectionStyle">
+      <section class="pw-block-live-section" :class="{ 'has-guides': blockGuides }" :style="sectionStyle">
         <!-- like the frontend: grid (12 columns from tablet on) > item with
              the paddings -->
         <div class="pw-block-live-grid" :style="gridStyle">
@@ -122,12 +122,18 @@ export default {
     // the block's own values (items: sizes, gaps, colours) and their overrides
     valueDefaults: { type: Object, default: () => ({}) },
     valueOverrides: { type: Object, default: () => ({}) },
+    // the block's own guides (paddings, outer spacing): not in the design
+    // tab, which sets the items' values only
+    withBlockGuides: { type: Boolean, default: true },
     // steplist: the item style to show (chosen in the design tab)
     stepStyle: { type: String, default: '' },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
     variant: { type: String, default: '' },
   },
   computed: {
+    blockGuides() {
+      return this.guides && this.withBlockGuides;
+    },
     // the chosen variant (here or in the colour cards), else the block's preset
     currentTheme() {
       const chosen = this.variant || this.setting('style', 'theme') || 'default';
