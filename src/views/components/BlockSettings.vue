@@ -11,8 +11,36 @@
         <k-drawer-tabs :tab="currentDrawerTab" :tabs="drawerTabs" @open="drawerTab = $event" />
       </header>
 
-      <!-- ===== Content: one card per content field ===== -->
-      <template v-if="(view === 'defaults' || view === 'presets') && currentDrawerTab === 'content'">
+      <!-- ===== Content, start values: a row per field with the same
+           dropdowns as in the drawer (the block's fields, then its items') ===== -->
+      <template v-if="view === 'defaults' && currentDrawerTab === 'content'">
+        <section
+          v-for="group in contentToolbarGroups()"
+          :key="'ct-' + group.key"
+          class="pw-card-section"
+        >
+          <div v-if="group.heading" class="pw-card-heading-row">
+            <h3 class="pw-card-heading">{{ group.heading }}</h3>
+          </div>
+          <div class="pw-card pw-field-table">
+            <div v-for="row in group.rows" :key="row.key" class="pw-field-row">
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ fieldLabel(row.key) }}</label>
+                  </div>
+                  <div class="pw-field-row-options">
+                    <pw-field-toolbar :items="row.items" @input="setContentPreset(row, $event)" />
+                  </div>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </template>
+
+      <!-- ===== Content, restrictions: one card per content field ===== -->
+      <template v-if="view === 'presets' && currentDrawerTab === 'content'">
 
 
         <!-- Content fields -->
@@ -714,6 +742,45 @@ export default {
         if (o === 'custom') return this.view !== 'defaults';
         return o === 'default' || !Array.isArray(this.variants) || this.variants.includes(o);
       });
+    },
+
+    // start values of the content: the block's fields and (blocks with items)
+    // the items' fields, each a row with the drawer's dropdowns
+    contentToolbarGroups() {
+      const groups = [];
+      const own = [...this.presetFields(this.getContentFields())];
+      const editor = this.getEditorField();
+      if (editor && editor.properties.length) own.push(editor);
+      const ownRows = own.map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
+      if (ownRows.length) groups.push({ key: 'block', heading: null, rows: ownRows });
+      const itemRows = this.presetFields(this.getItemDefaultsContentFields())
+        .map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
+      if (itemRows.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: itemRows });
+      return groups;
+    },
+    // a content field's dropdowns (as in the drawer: flourish … level, then
+    // the editor mode), each with the allowed options and the start value
+    contentToolbarRow(field) {
+      const order = ['flourish', 'multiline', 'textbackground', 'align', 'sizes', 'level', 'mode'];
+      const items = field.properties
+        .filter(p => order.includes(p.key))
+        .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key))
+        .map(p => {
+          const options = this.getActiveOptions(field.key, p.key, p);
+          const value = this.getVal('settings.fields.content.' + field.key + '.' + p.key + '.default', p.pluginDefault);
+          return {
+            key: p.key === 'sizes' ? 'size' : p.key,
+            prop: p,
+            value: options.includes(value) ? value : options[0],
+            options,
+          };
+        });
+      return { key: field.key, items };
+    },
+    setContentPreset(row, { key, value }) {
+      const item = row.items.find(i => i.key === key);
+      if (!item) return;
+      this.selectOption('settings.fields.content.' + row.key + '.' + item.prop.key + '.default', value, item.prop.pluginDefault);
     },
 
     // a drawer tab has rows in this view
