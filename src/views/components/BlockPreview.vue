@@ -124,7 +124,7 @@
           </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
-               side – between the steps cyan, between number and text magenta -->
+               side – between the steps cyan, between number and text violet -->
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides, 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
             <template v-for="n in stepCount">
             <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="stepStepGapStyle"></span>
@@ -137,7 +137,7 @@
               <span v-if="currentStepStyle === 'connected'" class="pw-steplist-connector" :style="stepConnectorStyle(n)"></span>
               <div class="pw-steplist-number" :style="stepNumberStyle">{{ n }}</div>
               <!-- guides: the gap between number and text as its own element,
-                   a magenta line on either side -->
+                   a violet line on either side -->
               <span v-if="guides" class="pw-steplist-gap" :class="{ 'is-hot': highlight && highlight.startsWith('item-content-gap') }" :style="stepGapStyle"></span>
               <div class="pw-steplist-content">
                 <div :style="stepHeadingStyle">{{ $t('prw.preview.step.title') }} {{ n }}</div>
@@ -973,15 +973,15 @@ export default {
   border-block: 0;
   border-inline: 1px solid rgba(0, 170, 255, 0.8);
 }
-/* the gap between number and text: two magenta lines around it (beside:
-   left and right, centered: above and below) */
+/* the gap between number and text, the second gap: two violet lines
+   around it (beside: left and right, centered: above and below) */
 .pw-steplist-gap {
   box-sizing: border-box;
-  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+  border-inline: 1px solid rgba(130, 80, 255, 0.9);
 }
 .pw-steplist-item.is-centered .pw-steplist-gap {
   border-inline: 0;
-  border-block: 1px solid rgba(255, 0, 170, 0.6);
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
 /* logocloud guides: the gap between the logos (cyan, a line on either
    side), the logo's area inside the tile's padding (magenta) */
@@ -1063,7 +1063,7 @@ export default {
 .pw-logocloud-gap.is-column.is-hot,
 .pw-steplist-step-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-logocloud-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.18); }
-.pw-steplist-gap.is-hot { background: rgba(255, 0, 170, 0.15); }
+.pw-steplist-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
 /* logocloud guides: the gap between the text and the logos (violet) */
 .pw-logocloud-text-gap {
   box-sizing: border-box;
