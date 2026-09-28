@@ -84,6 +84,7 @@
           </figure>
           <!-- media: a sample image (as in the element's preview) with the
                element's corner radii -->
+          <div v-if="isMedia && hasField('media') && spaceBand('media')" class="pw-space-band" :class="['is-' + spaceBand('media').prev, { 'is-hot': highlight === spaceBand('media').prev + '-spacing' }]" :style="{ height: spaceBand('media').height }"></div>
           <div v-if="isMedia && hasField('media')" class="pw-media-preview-img pw-media-preview-photo" :style="mediaStyle"></div>
           <!-- logocloud: four sample logos, two by two (so the gap shows
                between the columns and between the rows), shrinking in a
@@ -148,6 +149,7 @@
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the steps cyan, between number and text violet -->
+          <div v-if="isSteplist && spaceBand('items')" class="pw-space-band" :class="['is-' + spaceBand('items').prev, { 'is-hot': highlight === spaceBand('items').prev + '-spacing' }]" :style="{ height: spaceBand('items').height }"></div>
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides, 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
             <template v-for="n in stepCount">
             <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="stepStepGapStyle"></span>
@@ -319,7 +321,8 @@ export default {
       const widths = { xsmall: '25%', small: '33%', medium: '50%', large: '75%', fullscreen: '100%' };
       const align = this.preset('media', 'align') || 'left';
       return {
-        marginTop: this.gapBefore('media'),
+        // (with a band of its own above: none)
+        marginTop: this.spaceBand('media') ? 0 : this.gapBefore('media'),
         maxWidth: widths[this.preset('media', 'size')] || '33%',
         marginLeft: align === 'left' ? 0 : 'auto',
         marginRight: align === 'right' ? 0 : 'auto',
@@ -675,7 +678,8 @@ export default {
     },
     stepItemsStyle() {
       const gap = this.itemValue('item-gap');
-      const style = { marginTop: this.gapBefore('items') };
+      // (with a band of its own above: none)
+      const style = { marginTop: this.spaceBand('items') ? 0 : this.gapBefore('items') };
       const cols = this.stepColumns;
       if (this.guides) {
         // guides: the gaps are elements of their own – side by side a track
