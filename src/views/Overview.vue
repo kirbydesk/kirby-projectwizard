@@ -1252,6 +1252,18 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+                <!-- offset: the intro at the top or centred to the features -->
+                <pw-block-settings
+                  v-if="currentFeatureLayout(block.blockType) === 'split'"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-offset-align']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
                 <pw-block-values
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-text-gap': 'text' } : null"

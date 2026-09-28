@@ -424,9 +424,11 @@ export default {
     contentStyle() {
       if (!this.featureSplit || !this.hasGrid) return {};
       const gap = this.itemValue('item-offset-gap');
+      // the intro at the top or centred to the features
+      const alignItems = this.setting('layout', 'item-offset-align') === 'center' ? 'center' : 'start';
       // guides: the offset is a track of its own (for its lines)
-      if (this.guides) return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) ' + gap + ' minmax(0, 2fr)', alignItems: 'start' };
-      return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', columnGap: gap, alignItems: 'start' };
+      if (this.guides) return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) ' + gap + ' minmax(0, 2fr)', alignItems };
+      return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', columnGap: gap, alignItems };
     },
     // columns of the features at the shown device (mobile: one below the other)
     // (at most as many as sample features shown: no empty column; split:
