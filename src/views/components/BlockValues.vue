@@ -226,6 +226,7 @@
 
 <script>
 import autosize from '../../directives/autosize.js';
+import { SCREEN_HEIGHTS } from '../../helpers/preview-bp.js';
 
 export default {
   directives: { 'pw-autosize': autosize },
@@ -346,6 +347,8 @@ export default {
       const u = unit || (String(val).match(/(rem|em|px|%)$/) || [, ''])[1];
       if (u === 'rem' || u === 'em') return Math.round(n * 16) + 'px';
       if (u === 'px') return Math.round(n) + 'px';
+      // vh: a share of the device's screen height (as in the preview)
+      if (u === 'vh') return Math.round(n * SCREEN_HEIGHTS[bp || 'default'] / 100) + 'px';
       return '';
     },
     // font size in px next to a line height ("item-title-" → item-title-size

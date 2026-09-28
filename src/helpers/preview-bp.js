@@ -5,6 +5,10 @@
  * blocked site data): then it simply starts with the desktop.
  */
 const KEY = 'pw-preview-bp';
+
+// the screen height of each device (px): vh values in the preview and next
+// to their inputs are worked out with it
+export const SCREEN_HEIGHTS = { default: 800, lg: 768, xl: 900 };
 const DEVICES = ['default', 'lg', 'xl'];
 
 export function readPreviewBp() {

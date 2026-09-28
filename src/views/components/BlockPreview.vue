@@ -178,6 +178,10 @@
 </template>
 
 <script>
+// the screen height of the shown device (px): the preview is as wide as the
+// sidebar, the hero as high as on that device (its heights are vh)
+import { SCREEN_HEIGHTS } from '../../helpers/preview-bp.js';
+
 // fixed gaps between the fields, from the blocks' own CSS (kirbyblock-text,
 // kirbyblock-steplist: tagline / heading / text before the items)
 const GAPS = {
@@ -215,9 +219,6 @@ const FEATURE_ICONS = [
   'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
 ];
 
-// the height of the shown device's screen (px): the preview is as wide as
-// the sidebar, the hero as high as on that device (its heights are vh)
-const SCREEN_HEIGHTS = { default: 800, lg: 768, xl: 900 };
 
 // device → grid breakpoint (below 640px there is no grid: full width)
 const GRID_BP = { default: null, lg: 'lg', xl: 'xl' };
