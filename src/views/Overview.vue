@@ -1041,15 +1041,6 @@
                 <h3 class="pw-card-heading">{{ $t('prw.subtab.text') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="itemLayoutDefault(block.blockType, 'item-title-style') === 'inline' ? ['item-text-size'] : ['item-title-size', 'item-title-line-height', 'item-text-size']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
                 <!-- the title above the text or run-in at its start (then in the
                      text's size: its own size and line height hidden) -->
                 <pw-block-settings
@@ -1061,6 +1052,15 @@
                   :layout-keys="['item-title-style']"
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="itemLayoutDefault(block.blockType, 'item-title-style') === 'inline' ? ['item-text-size'] : ['item-title-size', 'item-title-line-height', 'item-text-size']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
               </div>
             </section>
