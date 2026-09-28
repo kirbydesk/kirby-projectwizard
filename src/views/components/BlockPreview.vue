@@ -6,7 +6,7 @@
   <!-- a value's label hovered (guides on): only its guides stay -->
   <div
     class="pw-element-preview-side pw-block-live-preview"
-    :class="{ 'has-focus': guides && !!highlight, 'focus-padding': highlight === 'item-padding' || highlight === 'item-padding-y' }"
+    :class="{ 'has-focus': guides && !!highlight, 'focus-padding': highlight === 'item-padding' || highlight === 'item-padding-y', 'focus-padding-x': highlight === 'item-padding', 'focus-padding-y': highlight === 'item-padding-y' }"
   >
     <div class="pw-preview-switches">
       <!-- guides on/off: the padding line, as in Photoshop -->
@@ -794,6 +794,13 @@ export default {
 }
 .has-focus:not(.focus-padding) .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
   box-shadow: none;
+}
+/* one padding hovered: only its two lines (sides magenta / top and bottom green) */
+.has-focus.focus-padding-x .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+  box-shadow: -1px 0 0 rgba(255, 0, 170, 0.6), 1px 0 0 rgba(255, 0, 170, 0.6);
+}
+.has-focus.focus-padding-y .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+  box-shadow: 0 -1px 0 rgba(0, 180, 90, 0.9), 0 1px 0 rgba(0, 180, 90, 0.9);
 }
 .has-focus .pw-logocloud-preview.is-flexible:not(.is-hot-gap):not(.is-hot-row-gap) .pw-logocloud-item::before {
   display: none;
