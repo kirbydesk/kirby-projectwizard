@@ -966,6 +966,55 @@
               </div>
             </section>
 
+            <!-- logocloud: the tiles' style – form, radii (custom), background
+                 of the chosen variant -->
+            <section v-if="block.blockType === 'pwlogocloud' && blockValueDefaults[block.blockType]" class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'lth-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-shape']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="isItemRadiusVisible(block.blockType)"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-radius']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-background']"
+                  :labels="{ 'item-background': $t('prw.label.backgroundColor') }"
+                  :theme="currentItemColorTheme"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                />
+              </div>
+            </section>
+
             <!-- Layout section. Order is fixed:
                  padding → radius → border (toggle) → border-width (only if border on) → link-style.
                  Each row uses its own component so we can interleave field-default toggles
@@ -993,13 +1042,13 @@
                     :config="blockConfigs[block.blockType]"
                     :overrides="blockOverrides[block.blockType] || {}"
                     :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="['item-format', 'item-shape']"
+                    :layout-keys="block.blockType === 'pwlogocloud' ? ['item-format'] : ['item-format', 'item-shape']"
                     @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                   <pw-block-values
                     :bp.sync="itemBp"
-                    v-if="isItemRadiusVisible(block.blockType) && block.blockType !== 'pwsteplist'"
+                    v-if="isItemRadiusVisible(block.blockType) && !['pwsteplist', 'pwlogocloud'].includes(block.blockType)"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-radius']"
@@ -1116,8 +1165,8 @@
               </section>
             </template>
 
-            <!-- Colors section (multi-theme) -->
-            <template v-if="blockValueDefaults[block.blockType]">
+            <!-- Colors section (multi-theme; logocloud: its colour is in "Style") -->
+            <template v-if="blockValueDefaults[block.blockType] && block.blockType !== 'pwlogocloud'">
               <section class="pw-card-section">
                 <!-- colours: choose the theme, the rows show only its value -->
                 <div class="pw-card-heading-row">
