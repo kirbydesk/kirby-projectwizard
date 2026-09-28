@@ -23,17 +23,6 @@
         </button>
       </div>
       <pw-device-select :value="bp" @input="$emit('update:bp', $event)" />
-      <!-- hero: the background to preview on (a view, not saved) -->
-      <div v-if="isHero && designView" class="pw-pill pw-preview-bp pw-preview-theme" role="group">
-        <button
-          v-for="b in ['color', 'image', 'video']"
-          :key="'hb-' + b"
-          type="button"
-          class="pw-tool"
-          :aria-pressed="heroBackground === b ? 'true' : 'false'"
-          @click="heroBgView = b"
-        >{{ $t('pw.option.' + b) }}</button>
-      </div>
       <div class="pw-pill pw-preview-bp pw-preview-theme" role="group">
         <button
           v-for="t in themes"
@@ -257,19 +246,10 @@ export default {
     featureLayout: { type: String, default: '' },
     // hero: the height to show (chosen in the design tab's height card)
     heroHeight: { type: String, default: '' },
-    // the design tab: views chosen in the preview (the hero's background)
-    // apply; elsewhere the preview shows the start values
-    designView: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
     variant: { type: String, default: '' },
-  },
-  data() {
-    return {
-      // hero: the background chosen in the toolbar (empty: the start value)
-      heroBgView: '',
-    };
   },
   computed: {
     // a hovered value that has an area to tint (the gaps, the paddings):
@@ -458,9 +438,9 @@ export default {
       return Object.values(this.valueDefaults || {}).some(g => g && g.vars
         && ['tagline-spacing', 'heading-spacing', 'editor-spacing'].some(name => g.vars[name]));
     },
-    // the background shown: chosen in the toolbar (a view), else the start value
+    // the background: the start value
     heroBackground() {
-      return (this.designView && this.heroBgView) || this.setting('style', 'background-type') || 'color';
+      return this.setting('style', 'background-type') || 'color';
     },
     // image or video: the drawn sample image (as in the media preview)
     heroImage() {
