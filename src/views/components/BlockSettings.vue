@@ -1742,19 +1742,21 @@ export default {
 .pw-field-row[data-guide="padding"] {
   --pw-guide-color: rgba(255, 0, 170, 0.6);
 }
-/* the gap between rows (e.g. logocloud's vertical gap), told apart from
-   the gap between the items of a row */
+/* guide colours: the kind picks the family – gaps between things cyan,
+   paddings magenta; a second value of the same kind in one preview gets
+   the second colour (gap violet, padding green), a third gap orange */
+/* the second gap (e.g. logocloud's vertical gap, the paragraph spacing) */
 .pw-field-row[data-guide="row"] {
-  --pw-guide-color: rgba(255, 140, 0, 0.9);
+  --pw-guide-color: rgba(130, 80, 255, 0.9);
 }
 /* the vertical padding (e.g. logocloud's tiles), told apart from the
    horizontal one (magenta) */
 .pw-field-row[data-guide="padding-y"] {
   --pw-guide-color: rgba(0, 180, 90, 0.9);
 }
-/* the gap between the text and the items (e.g. logocloud) */
+/* the third gap: between the text and the items (e.g. logocloud) */
 .pw-field-row[data-guide="text"] {
-  --pw-guide-color: rgba(130, 80, 255, 0.9);
+  --pw-guide-color: rgba(255, 140, 0, 0.9);
 }
 
 /* the global value a switch applies, grey at the right end of the row */

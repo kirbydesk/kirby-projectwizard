@@ -840,7 +840,7 @@ export default {
     // flourish's outer spacing when the flourish is shown (cyan lines)
     guideType(varName) {
       if (!this.guides) return null;
-      // the paragraph spacing orange (inside the element), apart from the
+      // the paragraph spacing violet (inside the element), apart from the
       // cyan space below it
       if (varName.endsWith('-paragraph-spacing')) return 'row';
       if (varName.endsWith('cite-spacing') || varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
@@ -1960,7 +1960,7 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-cite::after {
   top: calc(-1 * var(--pw-cite-gap, 0px));
 }
-/* guides only where they show a value that can be set: at paragraphs orange
+/* guides only where they show a value that can be set: at paragraphs violet
    lines where a paragraph ends and the next begins (the paragraph spacing) */
 .pw-element-preview.has-guides .pw-element-preview-paragraphs p {
   position: relative;
@@ -1971,7 +1971,7 @@ export default {
   position: absolute;
   left: calc(-1 * var(--spacing-6));
   right: calc(-1 * var(--spacing-6));
-  border-top: 1px solid rgba(255, 140, 0, 0.9);
+  border-top: 1px solid rgba(130, 80, 255, 0.9);
   pointer-events: none;
 }
 .pw-element-preview.has-guides .pw-element-preview-paragraphs p + p::before {

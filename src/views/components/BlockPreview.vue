@@ -272,8 +272,8 @@ export default {
         // them tinted while its label is hovered
         const size = this.itemValueAt('item-size');
         // (hovered: the band only, without its lines)
-        const line = this.highlight === 'item-row-gap' ? 'transparent' : 'rgba(255, 140, 0, 0.9)';
-        const fill = this.highlight === 'item-row-gap' ? 'rgba(255, 140, 0, 0.18)' : 'transparent';
+        const line = this.highlight === 'item-row-gap' ? 'transparent' : 'rgba(130, 80, 255, 0.9)';
+        const fill = this.highlight === 'item-row-gap' ? 'rgba(130, 80, 255, 0.18)' : 'transparent';
         const hidden = this.highlight && this.highlight !== 'item-row-gap';
         const end = 'calc(' + size + ' + ' + rowGap + ')';
         const bands = this.guides && !hidden
@@ -842,7 +842,7 @@ export default {
 /* the gap between the rows in orange, told apart from the one between
    the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
-  border-block: 1px solid rgba(255, 140, 0, 0.9);
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
 /* a value's label hovered: every other guide hidden – the block's own
    lines, the other gaps, the padding frames, the flexible tiles' edges */
@@ -865,15 +865,15 @@ export default {
   display: none;
 }
 /* a value's row hovered (guides on): its area tinted in its colour */
-.pw-logocloud-text-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-logocloud-text-gap.is-hot { background: rgba(255, 140, 0, 0.15); }
 .pw-logocloud-gap.is-column.is-hot,
 .pw-steplist-step-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
-.pw-logocloud-gap.is-row.is-hot { background: rgba(255, 140, 0, 0.18); }
+.pw-logocloud-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.18); }
 .pw-steplist-gap.is-hot { background: rgba(255, 0, 170, 0.15); }
 /* logocloud guides: the gap between the text and the logos (violet) */
 .pw-logocloud-text-gap {
   box-sizing: border-box;
-  border-block: 1px solid rgba(130, 80, 255, 0.9);
+  border-block: 1px solid rgba(255, 140, 0, 0.9);
 }
 /* flexible (the logos wrap freely): the gaps shown at each tile's outer
    edge – left and right cyan (between the logos), top and bottom orange
