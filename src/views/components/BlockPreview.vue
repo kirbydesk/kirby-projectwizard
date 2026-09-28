@@ -715,8 +715,10 @@ export default {
 .pw-logocloud-gap.is-column {
   border-inline: 1px solid rgba(0, 170, 255, 0.8);
 }
+/* the gap between the rows in orange, told apart from the one between
+   the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
-  border-block: 1px solid rgba(0, 170, 255, 0.8);
+  border-block: 1px solid rgba(255, 140, 0, 0.9);
 }
 .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
   outline: 1px solid rgba(255, 0, 170, 0.6);

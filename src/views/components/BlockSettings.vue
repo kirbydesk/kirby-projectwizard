@@ -1682,6 +1682,11 @@ export default {
 .pw-field-row[data-guide="padding"] {
   --pw-guide-color: rgba(255, 0, 170, 0.6);
 }
+/* the gap between rows (e.g. logocloud's vertical gap), told apart from
+   the gap between the items of a row */
+.pw-field-row[data-guide="row"] {
+  --pw-guide-color: rgba(255, 140, 0, 0.9);
+}
 
 /* the global value a switch applies, grey at the right end of the row */
 .pw-field-hint {

@@ -1012,7 +1012,7 @@
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="block.blockType === 'pwsteplist' ? ['item-gap'] : ['item-number-size', 'item-gap', 'item-row-gap', 'item-content-gap', 'item-connector-width']"
                     :labels="block.blockType === 'pwsteplist' ? { 'item-gap': $t('prw.label.betweenSteps') } : {}"
-                    :guides="previewGuides ? { 'item-gap': 'margin', 'item-row-gap': 'margin' } : null"
+                    :guides="previewGuides ? { 'item-gap': 'margin', 'item-row-gap': 'row' } : null"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
