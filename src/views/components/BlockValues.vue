@@ -71,12 +71,11 @@
             :key="varName"
             class="pw-field-row"
             :data-guide="guides ? guides[varName] || null : null"
-            @mouseenter="$emit('hover-var', varName)"
-            @mouseleave="$emit('hover-var', null)"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
-                <div class="pw-field-row-label-col">
+                <!-- hovering the label tints the value's area in the preview -->
+                <div class="pw-field-row-label-col" @mouseenter="$emit('hover-var', varName)" @mouseleave="$emit('hover-var', null)">
                   <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
                 </div>
                 <div class="pw-field-row-options" :class="{ 'pw-group-type-responsive': isResponsive(def) && !bp, 'pw-corner-grid': isCorners(def) }">
