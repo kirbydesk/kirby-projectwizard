@@ -2250,10 +2250,11 @@ export default {
 .pw-element-preview.is-marked .pw-element-preview-col {
   padding-top: 0;
 }
-/* the marking switch sits right before the variant pills */
+/* the eye (show flourish / marking in the preview) right behind the card
+   heading; whatever follows (variant pills) stays on the right */
 .pw-card-heading-row .pw-marked-switch {
   display: inline-flex;
-  margin-inline-start: auto;
+  margin-inline: calc(-1 * var(--spacing-2)) auto;
   padding: var(--spacing-1);
   background: transparent;
   color: var(--color-text);
