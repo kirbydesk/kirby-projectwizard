@@ -29,8 +29,6 @@
 	'prw.label.topBottom' => 'Vertical',
 	'prw.label.leftRight' => 'Horizontal',
 	'prw.option.asTyped' => 'As typed',
-	'prw.field.state.on' => 'Visible – click: hide from editors',
-	'prw.field.state.off' => 'Hidden – click: show to editors',
 	'prw.label.variants' => 'Variants',
 	'prw.label.mobile' => 'Mobile',
 	'prw.label.tablet' => 'Tablet',
@@ -63,6 +61,8 @@
 	'prw.subtab.add-font' => 'Add Font',
 
 	/* -------------- Tabs --------------*/
+	'prw.field.visible' => 'Visible',
+	'prw.field.hidden' => 'Hidden',
 	'prw.field.radius' => 'Radii',
 	'prw.headline.variant' => 'Theme',
 	'prw.headline.numbering' => 'Numbering',

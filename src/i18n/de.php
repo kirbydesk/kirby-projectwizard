@@ -29,8 +29,6 @@
 	'prw.label.topBottom' => 'Vertikal',
 	'prw.label.leftRight' => 'Horizontal',
 	'prw.option.asTyped' => 'Wie eingegeben',
-	'prw.field.state.on' => 'Sichtbar – Klick: für Redakteure ausblenden',
-	'prw.field.state.off' => 'Ausgeblendet – Klick: für Redakteure einblenden',
 	'prw.label.variants' => 'Varianten',
 	'prw.label.mobile' => 'Mobil',
 	'prw.label.tablet' => 'Tablet',
@@ -63,6 +61,8 @@
 	'prw.subtab.add-font' => 'Schrift hinzufügen',
 
 	/* -------------- Tabs --------------*/
+	'prw.field.visible' => 'Sichtbar',
+	'prw.field.hidden' => 'Ausgeblendet',
 	'prw.field.radius' => 'Radien',
 	'prw.headline.variant' => 'Theme',
 	'prw.headline.numbering' => 'Nummerierung',

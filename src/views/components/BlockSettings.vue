@@ -51,19 +51,24 @@
           <div class="pw-card-heading-row">
             <h3 class="pw-card-heading">{{ group.heading }}</h3>
           </div>
-          <!-- one column, white: a row per field (the card as elsewhere) -->
-          <div class="pw-card pw-field-table pw-eye-list">
+          <!-- table rows: the field on the left, a switch on the right (on:
+               the editors see it) -->
+          <div class="pw-card pw-field-table">
             <div v-for="row in group.rows" :key="row.id" class="pw-field-row">
-              <button
-                type="button"
-                class="pw-field-eye"
-                :data-state="isHidden(row.keys) ? 'off' : 'on'"
-                :title="$t(isHidden(row.keys) ? 'prw.field.state.off' : 'prw.field.state.on')"
-                @click="toggleHidden(row.keys)"
-              >
-                <k-icon :type="isHidden(row.keys) ? 'hidden' : 'preview'" />
-                <span class="pw-field-row-label">{{ row.label }}</span>
-              </button>
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ row.label }}</label>
+                  </div>
+                  <div class="pw-field-row-options">
+                    <k-toggle-input
+                      :value="!isHidden(row.keys)"
+                      :text="$t(isHidden(row.keys) ? 'prw.field.hidden' : 'prw.field.visible')"
+                      @input="toggleHidden(row.keys)"
+                    />
+                  </div>
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -1452,30 +1457,6 @@ export default {
   padding-left: var(--spacing-2);
 }
 
-/* restrictions: one white column, a row per field with its eye (hidden
-   from the editors: faded); the whole row is the button */
-.pw-eye-list .pw-field-row {
-  display: flex;
-  min-height: var(--table-row-height, 38px);
-}
-.pw-field-eye {
-  display: flex;
-  flex-grow: 1;
-  align-items: center;
-  gap: var(--spacing-2);
-  padding-inline: var(--table-cell-padding, var(--spacing-3));
-  text-align: start;
-  cursor: pointer;
-}
-.pw-field-eye .pw-field-row-label {
-  font-size: var(--text-sm);
-}
-.pw-field-eye .k-icon {
-  --icon-size: 16px;
-}
-.pw-field-eye[data-state="off"] {
-  opacity: 0.4;
-}
 
 /* a drawer header as in the block's drawer (breadcrumb, tabs) above the
    cards of the chosen tab */
