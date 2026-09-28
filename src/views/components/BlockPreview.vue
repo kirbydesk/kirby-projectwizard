@@ -547,6 +547,17 @@ export default {
           ? 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)'
           : 'inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)';
       }
+      // flexible (no gap elements): a gap hovered – half of it tinted on
+      // either side of each tile, two halves make the gap between two tiles
+      if (this.guides && this.logosFlexible && (this.highlight === 'item-gap' || this.highlight === 'item-row-gap')) {
+        if (this.highlight === 'item-gap') {
+          const half = 'calc(' + this.itemValue('item-gap') + ' / 2)';
+          style.boxShadow = half + ' 0 0 0 rgba(0, 170, 255, 0.15), calc(-1 * ' + half + ') 0 0 0 rgba(0, 170, 255, 0.15)';
+        } else {
+          const half = 'calc(' + (this.itemValue('item-row-gap') || this.itemValue('item-gap')) + ' / 2)';
+          style.boxShadow = '0 ' + half + ' 0 0 rgba(255, 140, 0, 0.18), 0 calc(-1 * ' + half + ') 0 0 rgba(255, 140, 0, 0.18)';
+        }
+      }
       return style;
     },
     // steplist "connected": the line through all numbers, from the first
