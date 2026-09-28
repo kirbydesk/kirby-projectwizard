@@ -1310,6 +1310,19 @@
                           <span class="pw-readonly-value">100<span class="pw-element-unit">vh</span></span>
                           <span class="pw-px-calculator">{{ screenHeight(itemBp) }}px</span>
                         </span>
+                        <!-- switch the device (shared by all rows): the px value follows -->
+                        <span class="pw-pill pw-bp-switch" role="group">
+                          <button
+                            v-for="b in ['default', 'lg', 'xl']"
+                            :key="'fs-' + b"
+                            type="button"
+                            class="pw-tool"
+                            :title="$t({ default: 'prw.label.mobile', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[b])"
+                            :aria-label="$t({ default: 'prw.label.mobile', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[b])"
+                            :aria-pressed="itemBp === b ? 'true' : 'false'"
+                            @click="itemBp = b"
+                          ><k-icon :type="{ default: 'mobile', lg: 'tablet', xl: 'display' }[b]" /></button>
+                        </span>
                       </div>
                     </span>
                   </div>
