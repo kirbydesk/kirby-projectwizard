@@ -98,20 +98,29 @@
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
-          <div v-if="isFeaturelist" class="pw-featurelist-items" :style="featureItemsStyle">
-            <div v-for="n in 2" :key="'feature-' + n" class="pw-featurelist-item" :style="featureItemStyle">
+          <!-- guides: the gaps as elements of their own with a line on either
+               side – between the features cyan, icon and text violet, title
+               and text orange; the tile's padding magenta -->
+          <div v-if="isFeaturelist" class="pw-featurelist-items" :class="{ 'has-guides': guides, 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
+            <template v-for="n in 2">
+            <span v-if="guides && n > 1" :key="'feature-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="featureGapStyle"></span>
+            <div :key="'feature-' + n" class="pw-featurelist-item" :class="{ 'is-top': featureIconTop }" :style="featureItemStyle">
               <div class="pw-featurelist-icon" :style="featureIconStyle">
                 <svg viewBox="0 0 24 24" :style="featureSvgStyle" aria-hidden="true"><path :d="featureIcons[n - 1]" /></svg>
+                <span v-if="guides && featureTile" class="pw-featurelist-pad" :style="{ inset: itemValue('item-icon-tile-padding') }"></span>
               </div>
+              <span v-if="guides" class="pw-featurelist-icon-gap" :class="{ 'is-hot': highlight === 'item-icon-gap' }" :style="featureIconGapStyle"></span>
               <div class="pw-featurelist-content">
                 <!-- title as run-in at the start of the text, or above it -->
                 <div v-if="featureTitleInline" :style="featureTextStyle"><strong :style="featureTitleInlineStyle">{{ $t('prw.preview.feature.title') }} {{ n }}.</strong> {{ $t('prw.preview.feature.text') }}</div>
                 <template v-else>
                   <div :style="featureTitleStyle">{{ $t('prw.preview.feature.title') }} {{ n }}</div>
+                  <span v-if="guides" class="pw-featurelist-title-gap" :class="{ 'is-hot': highlight === 'item-title-gap' }" :style="{ height: itemValue('item-title-gap') }"></span>
                   <div :style="featureTextBelowStyle">{{ $t('prw.preview.feature.text') }}</div>
                 </template>
               </div>
             </div>
+            </template>
           </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
@@ -229,6 +238,7 @@ export default {
     highlightsArea() {
       const h = this.highlight || '';
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
+        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -418,28 +428,59 @@ export default {
       // above the items: the gap after the text; split: 2rem below the intro
       // on mobile, none beside it
       const marginTop = this.featureSplit ? (this.hasGrid ? 0 : '2rem') : this.gapBefore('items');
+      const cols = this.featureColumns;
+      // guides: the gap is an element of its own – side by side a track
+      // between the columns, else one below the other
+      if (this.guides) {
+        if (cols > 1) {
+          const tracks = Array.from({ length: cols }, () => 'minmax(0, 1fr)').join(' ' + gap + ' ');
+          return { marginTop, display: 'grid', gridTemplateColumns: tracks };
+        }
+        return { marginTop, display: 'flex', flexDirection: 'column' };
+      }
       // the gap only between the features (none below the last)
       if (!this.hasGrid) return { marginTop, display: 'flex', flexDirection: 'column', gap };
-      return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + this.featureColumns + ', minmax(0, 1fr))', gap };
+      return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap };
+    },
+    // the gap between two features: as high (one below the other) or as
+    // wide (side by side) as the gap
+    featureGapStyle() {
+      const gap = this.itemValueAt('item-gap');
+      return this.featureColumns > 1 ? { width: gap } : { height: gap };
+    },
+    featureIconTop() {
+      return this.setting('layout', 'item-icon-position') === 'top';
+    },
+    featureTile() {
+      return this.setting('layout', 'item-icon-style') === 'tile';
+    },
+    // the gap between icon and text: beside as wide, above as high as it is
+    featureIconGapStyle() {
+      const gap = this.itemValue('item-icon-gap');
+      return this.featureIconTop ? { height: gap, alignSelf: 'stretch' } : { width: gap, alignSelf: 'stretch', flexShrink: 0 };
     },
     featureItemStyle() {
       return {
         display: 'flex',
-        flexDirection: this.setting('layout', 'item-icon-position') === 'top' ? 'column' : 'row',
-        gap: this.itemValue('item-icon-gap'),
+        flexDirection: this.featureIconTop ? 'column' : 'row',
+        // with guides the gap is an element of its own (two lines)
+        gap: this.guides ? 0 : this.itemValue('item-icon-gap'),
         alignItems: 'flex-start',
       };
     },
     // the icon: plain, or on a tile (padding, background, shape)
     featureIconStyle() {
-      const style = { display: 'flex', flexShrink: 0 };
-      if (this.setting('layout', 'item-icon-style') !== 'tile') return style;
+      const style = { display: 'flex', flexShrink: 0, position: 'relative' };
+      if (!this.featureTile) return style;
       const shape = this.setting('layout', 'item-shape') || 'custom';
       const r = this.itemValue('item-radius') || [];
       const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
+      const pad = this.itemValue('item-icon-tile-padding');
       return {
         ...style,
-        padding: this.itemValue('item-icon-tile-padding'),
+        padding: pad,
+        // its padding hovered: tinted all around
+        boxShadow: this.guides && this.highlight === 'item-icon-tile-padding' ? 'inset 0 0 0 ' + pad + ' rgba(255, 0, 170, 0.25)' : null,
         backgroundColor: this.itemColor('item-icon-tile-background'),
         borderRadius: { square: 0, round: '50%' }[shape] ?? custom,
       };
@@ -467,7 +508,8 @@ export default {
     },
     // the text below the title: the title gap above it
     featureTextBelowStyle() {
-      return { ...this.featureTextStyle, marginTop: this.itemValue('item-title-gap') };
+      // (with guides the gap is an element of its own)
+      return { ...this.featureTextStyle, marginTop: this.guides ? 0 : this.itemValue('item-title-gap') };
     },
     featureTextStyle() {
       return {
@@ -954,6 +996,48 @@ export default {
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
+/* featurelist guides: between the features cyan, between icon and text
+   violet, between title and text orange (a line on either side), the
+   icon's area inside the tile's padding magenta */
+.pw-featurelist-gap,
+.pw-featurelist-icon-gap,
+.pw-featurelist-title-gap {
+  display: block;
+  box-sizing: border-box;
+}
+.pw-featurelist-gap {
+  border-block: 1px solid rgba(0, 170, 255, 0.8);
+}
+.pw-featurelist-items.is-row .pw-featurelist-gap {
+  border-block: 0;
+  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+}
+.pw-featurelist-icon-gap {
+  border-inline: 1px solid rgba(130, 80, 255, 0.9);
+}
+.pw-featurelist-item.is-top .pw-featurelist-icon-gap {
+  border-inline: 0;
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
+}
+.pw-featurelist-title-gap {
+  border-block: 1px solid rgba(255, 140, 0, 0.9);
+}
+.pw-featurelist-pad {
+  position: absolute;
+  outline: 1px solid rgba(255, 0, 170, 0.6);
+  pointer-events: none;
+}
+.has-focus .pw-featurelist-gap,
+.has-focus .pw-featurelist-icon-gap,
+.has-focus .pw-featurelist-title-gap {
+  border-color: transparent;
+}
+.has-focus .pw-featurelist-pad {
+  display: none;
+}
+.pw-featurelist-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
+.pw-featurelist-icon-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-featurelist-title-gap.is-hot { background: rgba(255, 140, 0, 0.15); }
 /* a value's label hovered: every other guide hidden – the block's own
    lines, the other gaps, the padding frames, the flexible tiles' edges */
 .has-focus .pw-block-live-block::before,
