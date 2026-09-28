@@ -28,6 +28,7 @@
 	'prw.label.showInPreview' => 'Show in preview',
 	'prw.label.topBottom' => 'Vertical',
 	'prw.label.leftRight' => 'Horizontal',
+	'prw.label.unit' => 'Unit',
 	'prw.option.asTyped' => 'As typed',
 	'prw.label.variants' => 'Variants',
 	'prw.label.mobile' => 'Mobile',

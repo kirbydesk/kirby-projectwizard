@@ -363,14 +363,16 @@
                           />
                           <!-- values with a choice of unit (e.g. the button width: rem or %):
                                the unit as a select in place of its label -->
-                          <select
-                            v-if="field.def.units"
-                            class="pw-element-unit pw-element-unit-select"
-                            :value="responsiveUnit(field, bp)"
-                            @change="setResponsiveUnit(field, bp, $event.target.value)"
-                          >
-                            <option v-for="u in field.def.units" :key="'u-' + u" :value="u">{{ u }}</option>
-                          </select>
+                          <span v-if="field.def.units" class="pw-element-unit pw-element-unit-choice">
+                            {{ responsiveUnit(field, bp) }}<k-icon type="angle-dropdown" />
+                            <select
+                              :value="responsiveUnit(field, bp)"
+                              :aria-label="$t('prw.label.unit')"
+                              @change="setResponsiveUnit(field, bp, $event.target.value)"
+                            >
+                              <option v-for="u in field.def.units" :key="'u-' + u" :value="u">{{ u }}</option>
+                            </select>
+                          </span>
                           <span v-else class="pw-element-unit">{{ responsiveUnit(field, bp) }}</span>
                         </span>
                         <span v-if="!['px', '%'].includes(responsiveUnit(field, bp))" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit, field.varName) }}</span>
@@ -2519,16 +2521,24 @@ export default {
   pointer-events: none;
 }
 
-/* the unit as a select (rem / %): looks like the unit label, clickable */
-.pw-element-unit.pw-element-unit-select {
-  /* a small arrow behind the unit (Kirby hides the select's own) */
-  appearance: none;
-  padding: 0 14px 0 0;
-  border: 0;
-  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777'%3E%3Cpath d='M12 16l-6-6h12z'/%3E%3C/svg%3E") no-repeat right center / 12px;
-  font-family: inherit;
+/* the unit as a choice (rem / %): the unit with Kirby's arrow right
+   behind it, the native select invisible on top of both */
+.pw-element-unit.pw-element-unit-choice {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
   pointer-events: auto;
+}
+.pw-element-unit-choice .k-icon {
+  --icon-size: 12px;
+}
+.pw-element-unit-choice select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 .pw-font-select {
   width: 200px;

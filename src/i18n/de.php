@@ -28,6 +28,7 @@
 	'prw.label.showInPreview' => 'In der Vorschau zeigen',
 	'prw.label.topBottom' => 'Vertikal',
 	'prw.label.leftRight' => 'Horizontal',
+	'prw.label.unit' => 'Einheit',
 	'prw.option.asTyped' => 'Wie eingegeben',
 	'prw.label.variants' => 'Varianten',
 	'prw.label.mobile' => 'Mobil',

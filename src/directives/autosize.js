@@ -77,7 +77,8 @@ export default {
 		const wrap = el.parentNode;
 		if (wrap) {
 			wrap.addEventListener('mousedown', (event) => {
-				if (event.target === el) return;
+				// the input itself, or a control of its own (e.g. the unit choice)
+				if (event.target === el || event.target.closest('select, button')) return;
 				event.preventDefault();
 				el.focus();
 			});
