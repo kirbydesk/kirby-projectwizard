@@ -91,7 +91,7 @@
                narrow preview -->
           <!-- guides: the gap to the text as an element of its own, a cyan line
                above (end of the text) and below (start of the logos) -->
-          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: logosTextGap }"></div>
+          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: logosTextGap }"></div>
           <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible, 'is-hot-gap': highlight === 'item-gap', 'is-hot-row-gap': highlight === 'item-row-gap' }" :style="logosStyle">
             <div
               v-for="(logo, index) in dummyLogos"
@@ -124,7 +124,7 @@
                side – between the features cyan, icon and text violet, title
                and text gold; the tile's padding magenta -->
           <!-- guides: the gap to the text as an element of its own -->
-          <div v-if="isFeaturelist && guides && featureTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: featureTextGap }"></div>
+          <div v-if="isFeaturelist && guides && featureTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: featureTextGap }"></div>
           <div v-if="isFeaturelist" class="pw-featurelist-items" :class="{ 'has-guides': guides, 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'feature-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="featureGapStyle"></span>
@@ -486,6 +486,13 @@ export default {
         marginTop: v === 'top' ? 0 : 'auto',
         marginBottom: v === 'bottom' ? 0 : 'auto',
       };
+    },
+    // the element right before the block's items / logos (its space below
+    // meets the gap to the intro there: hovering either tints that gap)
+    introGapElement() {
+      const target = this.isLogocloud ? 'logos' : 'items';
+      const idx = this.fields.indexOf(target);
+      return idx > 0 ? this.fields[idx - 1] : '';
     },
     isFeaturelist() {
       return this.blockType === 'pwfeaturelist';
