@@ -2263,10 +2263,12 @@ export default {
 .pw-card-heading-row .pw-marked-switch .k-icon {
   --icon-size: 16px;
 }
-/* dimmed like the question marks behind the labels */
+/* off: dimmed like the question marks behind the labels */
 .pw-card-heading-row .pw-marked-switch {
   opacity: 0.5;
 }
+/* switched on (shown in the preview) or hovered: full opacity */
+.pw-card-heading-row .pw-marked-switch[aria-pressed="true"],
 .pw-card-heading-row .pw-marked-switch:hover {
   opacity: 1;
 }
