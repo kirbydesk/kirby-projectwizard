@@ -23,6 +23,17 @@
         </button>
       </div>
       <pw-device-select :value="bp" @input="$emit('update:bp', $event)" />
+      <!-- hero: the background to preview on (a view, not saved) -->
+      <div v-if="isHero" class="pw-pill pw-preview-bp pw-preview-theme" role="group">
+        <button
+          v-for="b in ['color', 'image', 'video']"
+          :key="'hb-' + b"
+          type="button"
+          class="pw-tool"
+          :aria-pressed="heroBackground === b ? 'true' : 'false'"
+          @click="heroBgView = b"
+        >{{ $t('pw.option.' + b) }}</button>
+      </div>
       <div class="pw-pill pw-preview-bp pw-preview-theme" role="group">
         <button
           v-for="t in themes"
@@ -101,6 +112,8 @@
               <span class="pw-logocloud-gap is-row" :class="{ 'is-hot': highlight === 'item-row-gap' }" style="grid-area: 2 / 1 / 3 / 4"></span>
             </template>
           </div>
+          <!-- hero guides: the gap to the buttons as an element of its own -->
+          <div v-if="isHero && guides && hasField('buttons') && gapBefore('buttons')" class="pw-hero-buttons-gap" :class="{ 'is-hot': highlight === 'buttons-gap' }" :style="{ height: gapBefore('buttons') }"></div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
@@ -202,9 +215,8 @@ const FEATURE_ICONS = [
   'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
 ];
 
-// hero heights (vh) and the height of the shown device's screen (px): the
-// preview is as wide as the sidebar, the hero as high as on that device
-const HERO_HEIGHTS = { small: 25, medium: 50, large: 75, fullscreen: 100 };
+// the height of the shown device's screen (px): the preview is as wide as
+// the sidebar, the hero as high as on that device (its heights are vh)
 const SCREEN_HEIGHTS = { default: 800, lg: 768, xl: 900 };
 
 // device → grid breakpoint (below 640px there is no grid: full width)
@@ -243,10 +255,18 @@ export default {
     stepStyle: { type: String, default: '' },
     // featurelist: the layout to show (stacked / split, chosen in the gaps card)
     featureLayout: { type: String, default: '' },
+    // hero: the height to show (chosen in the design tab's height card)
+    heroHeight: { type: String, default: '' },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
     variant: { type: String, default: '' },
+  },
+  data() {
+    return {
+      // hero: the background chosen in the toolbar (empty: the start value)
+      heroBgView: '',
+    };
   },
   computed: {
     // a hovered value that has an area to tint (the gaps, the paddings):
@@ -254,7 +274,7 @@ export default {
     highlightsArea() {
       const h = this.highlight || '';
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
-        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding', 'item-offset-gap',
+        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding', 'item-offset-gap', 'buttons-gap',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -423,16 +443,20 @@ export default {
     isHero() {
       return this.blockType === 'pwhero';
     },
+    // the background shown: chosen in the toolbar (a view), else the start value
     heroBackground() {
-      return this.setting('style', 'background-type') || 'color';
+      return this.heroBgView || this.setting('style', 'background-type') || 'color';
     },
     // image or video: the drawn sample image (as in the media preview)
     heroImage() {
       return this.isHero && ['image', 'video'].includes(this.heroBackground);
     },
     // its height: a share of the device's screen, "auto" as its content
-    heroHeight() {
-      const vh = HERO_HEIGHTS[this.setting('style', 'height')];
+    heroHeightPx() {
+      const height = this.heroHeight || this.setting('style', 'height');
+      if (height === 'fullscreen') return SCREEN_HEIGHTS[this.bp] + 'px';
+      // small, medium, large: the design values (vh) at the shown device
+      const vh = parseFloat(this.itemValueAt('height-' + height));
       return vh ? Math.round(SCREEN_HEIGHTS[this.bp] * vh / 100) + 'px' : null;
     },
     // the content's place (as the frontend's data-h / data-v margins)
@@ -730,7 +754,7 @@ export default {
       const corner = (key, idx) => (layout('radius-' + key) === true ? radius[idx] || 0 : 0);
       return {
         // hero: its height, a sample image as background
-        ...(this.isHero ? { height: this.heroHeight } : {}),
+        ...(this.isHero ? { height: this.heroHeightPx } : {}),
         backgroundColor: this.heroImage ? null : this.globalColor('block-background'),
         // global- values: top-left, top-right, bottom-left, bottom-right
         borderRadius: [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' '),
@@ -806,7 +830,7 @@ export default {
       return {
         display: 'flex',
         justifyContent: { left: 'flex-start', center: 'center', right: 'flex-end' }[align] || 'flex-start',
-        marginTop: this.gapBefore('buttons'),
+        marginTop: this.isHero && this.guides ? 0 : this.gapBefore('buttons'),
       };
     },
     buttonStyle() {
@@ -973,6 +997,8 @@ export default {
     gapBefore(field) {
       const idx = this.fields.indexOf(field);
       if (idx <= 0) return 0;
+      // hero: the buttons' own gap, in place of the text's space below
+      if (this.isHero && field === 'buttons') return this.itemValue('buttons-gap') || 0;
       const prev = this.fields[idx - 1];
       const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.elementValue(prev, 'spacing') : '';
       const own = GAPS[prev + '>' + field];
@@ -1081,6 +1107,15 @@ export default {
    the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(130, 80, 255, 0.9);
+}
+/* hero guides: the gap to the buttons (cyan, a line above and below) */
+.pw-hero-buttons-gap {
+  box-sizing: border-box;
+  border-block: 1px solid rgba(0, 170, 255, 0.8);
+}
+.pw-hero-buttons-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
+.has-focus .pw-hero-buttons-gap {
+  border-color: transparent;
 }
 /* hero: a video background marked by a play symbol */
 .pw-block-live-section.is-hero {

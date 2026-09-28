@@ -808,6 +808,7 @@
                 :value-overrides="blockValueOverrides[block.blockType] || {}"
                 :step-style="block.blockType === 'pwsteplist' ? currentStepStyle(block.blockType) : ''"
                 :feature-layout="block.blockType === 'pwfeaturelist' ? currentFeatureLayout(block.blockType) : ''"
+                :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
                 :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
                 @update:variant="itemColorTheme = $event"
@@ -1278,11 +1279,62 @@
             </section>
             </template>
 
+            <!-- hero: its heights (the one chosen in the pills, a view; full
+                 screen is always 100vh) and the gap to the buttons -->
+            <template v-if="block.blockType === 'pwhero' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.label.height') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="h in ['small', 'medium', 'large', 'fullscreen']"
+                    :key="'hh-' + h"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentHeroHeight(block.blockType) === h ? 'true' : 'false'"
+                    @click="$set(heroPreviewHeight, block.blockType, h)"
+                  >{{ $t('pw.option.' + h) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  v-if="currentHeroHeight(block.blockType) !== 'fullscreen'"
+                  :labels="{ ['height-' + currentHeroHeight(block.blockType)]: $t('prw.label.height') }"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['height-' + currentHeroHeight(block.blockType)]"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <p v-else class="pw-card-note">{{ $t('prw.hint.heroFullscreen') }}</p>
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'buttons-gap': 'margin' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['buttons-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+            </section>
+            </template>
+
             <!-- Layout section. Order is fixed:
                  padding → radius → border (toggle) → border-width (only if border on) → link-style.
                  Each row uses its own component so we can interleave field-default toggles
                  with css-variable inputs in the desired sequence. -->
-            <template v-if="blockValueDefaults[block.blockType] && block.blockType !== 'pwfeaturelist'">
+            <template v-if="blockValueDefaults[block.blockType] && !['pwfeaturelist', 'pwhero'].includes(block.blockType)">
               <section class="pw-card-section">
                 <div class="pw-card-heading-row">
                   <!-- steplist: only the gap between the steps is left here -->
@@ -1498,7 +1550,7 @@
             </template>
 
             <!-- Colors section (multi-theme; logocloud: its colour is in "Style") -->
-            <template v-if="blockValueDefaults[block.blockType] && !['pwlogocloud', 'pwfeaturelist'].includes(block.blockType)">
+            <template v-if="blockValueDefaults[block.blockType] && !['pwlogocloud', 'pwfeaturelist', 'pwhero'].includes(block.blockType)">
               <section class="pw-card-section">
                 <!-- colours: choose the theme, the rows show only its value -->
                 <div class="pw-card-heading-row">
@@ -1613,6 +1665,8 @@ export default {
       stepPreviewStyle: {},
       // featurelist: the layout its preview shows (stacked / split), a view
       featurePreviewLayout: {},
+      // hero: the height its preview shows (small … fullscreen), a view
+      heroPreviewHeight: {},
       startSectionLayouts: {},
       // the value whose row the pointer is over: its area tinted in the preview
       hoveredVar: null,
@@ -2173,6 +2227,13 @@ export default {
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['section-layout']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['section-layout']?.default || 'stacked';
     },
+    // hero: the height shown (chosen in the height card, else the start value)
+    currentHeroHeight(blockType) {
+      if (this.heroPreviewHeight[blockType]) return this.heroPreviewHeight[blockType];
+      const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.height?.default;
+      const h = ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.height?.default;
+      return ['small', 'medium', 'large', 'fullscreen'].includes(h) ? h : 'small';
+    },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['item-style']?.default;
@@ -2198,9 +2259,10 @@ export default {
       const content = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields && cfg.defaults.settings.fields.content || {};
       return content.blocks !== undefined && content.blocks !== false;
     },
-    // a block with values of its own (the items' CSS variables)
+    // a block with values of its own (the items' CSS variables, the hero's
+    // heights and gaps)
     hasDesign(blockType) {
-      return this.hasItemFields(blockType) && !!this.blockValueDefaults[blockType];
+      return !!this.blockValueDefaults[blockType];
     },
     hasItemDefaultFields(blockType) {
       // The Defaults sub-section inside Items only makes sense when the plugin
@@ -3147,6 +3209,14 @@ export default {
 }
 .pw-field-table .pw-group-end {
   display: none;
+}
+
+/* a note in a card in place of rows (e.g. the hero's full screen height) */
+.pw-card-note {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--color-text-dimmed);
 }
 
 /* Block view: page heading like Kirby's view header */
