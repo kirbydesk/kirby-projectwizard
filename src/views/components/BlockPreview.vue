@@ -250,7 +250,7 @@ export default {
           justifyContent: { left: 'flex-start', right: 'flex-end' }[align] || 'center',
           columnGap: gap,
           rowGap,
-          marginTop: this.gapBefore('logos'),
+          marginTop: this.logosTextGap,
         };
       }
       // guides: the gaps are tracks of their own (for their lines)
@@ -260,7 +260,7 @@ export default {
           gridTemplateColumns: 'minmax(0, ' + size + ') ' + gap + ' minmax(0, ' + size + ')',
           gridTemplateRows: 'auto ' + rowGap + ' auto',
           justifyContent: justify,
-          marginTop: this.gapBefore('logos'),
+          marginTop: this.logosTextGap,
         };
       }
       return {
@@ -269,13 +269,17 @@ export default {
         justifyContent: justify,
         columnGap: gap,
         rowGap,
-        marginTop: this.gapBefore('logos'),
+        marginTop: this.logosTextGap,
       };
     },
     // the tile's padding: vertical, horizontal (older: one value)
     logoPadding() {
       const x = this.itemValue('item-padding');
       return (this.itemValue('item-padding-y') || x) + ' ' + x;
+    },
+    // the gap between the text above and the logos (none without text)
+    logosTextGap() {
+      return this.gapBefore('logos') ? this.itemValue('item-text-gap') || this.gapBefore('logos') : 0;
     },
     // logocloud format: square tiles or one height ("flexible")
     logosFlexible() {
