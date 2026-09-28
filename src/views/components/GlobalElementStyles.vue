@@ -2184,8 +2184,8 @@ export default {
 }
 /* a question mark hovered: its area tinted, all guide lines hidden */
 .pw-element-preview.has-focus .pw-element-space-below,
-.pw-element-preview.has-focus .pw-element-preview-paragraphs p::before,
-.pw-element-preview.has-focus .pw-element-preview-paragraphs p::after,
+.pw-element-preview.has-guides.has-focus .pw-element-preview-paragraphs p + p::before,
+.pw-element-preview.has-guides.has-focus .pw-element-preview-paragraphs p:not(:last-child)::after,
 .pw-element-preview.has-focus .pw-element-preview-cite::before,
 .pw-element-preview.has-focus .pw-element-preview-cite::after,
 .pw-element-preview.has-focus .pw-element-preview-flourish-box::before,
