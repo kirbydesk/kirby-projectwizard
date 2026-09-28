@@ -191,9 +191,16 @@
             <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
-                  <!-- hovering the label tints the value's area in the preview -->
-                  <div class="pw-field-row-label-col" @mouseenter="$emit('hover-var', field.key)" @mouseleave="$emit('hover-var', null)">
+                  <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}<span v-if="field.required" class="pw-field-required">*</span></label>
+                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
+                    <k-icon
+                      v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
+                      type="question"
+                      class="pw-area-hint"
+                      @mouseenter.native="$emit('hover-var', field.key)"
+                      @mouseleave.native="$emit('hover-var', null)"
+                    />
                   </div>
                   <div class="pw-field-row-options">
                     <k-toggles-input
@@ -217,8 +224,16 @@
             <div v-else-if="field.type === 'toggle-group'" :key="field.key" class="pw-field-row">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col" @mouseenter="$emit('hover-var', field.key)" @mouseleave="$emit('hover-var', null)">
+                  <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
+                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
+                    <k-icon
+                      v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
+                      type="question"
+                      class="pw-area-hint"
+                      @mouseenter.native="$emit('hover-var', field.key)"
+                      @mouseleave.native="$emit('hover-var', null)"
+                    />
                   </div>
                   <div class="pw-field-row-options pw-toggle-group" :class="{ 'pw-corner-grid': isCornerGroup(field) }">
                     <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell">
@@ -241,8 +256,16 @@
             <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col" @mouseenter="$emit('hover-var', field.key)" @mouseleave="$emit('hover-var', null)">
+                  <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
+                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
+                    <k-icon
+                      v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
+                      type="question"
+                      class="pw-area-hint"
+                      @mouseenter.native="$emit('hover-var', field.key)"
+                      @mouseleave.native="$emit('hover-var', null)"
+                    />
                   </div>
                   <div class="pw-field-row-options">
                     <!-- Boolean: toggle -->
@@ -1600,6 +1623,17 @@ export default {
   font-size: var(--text-sm);
   font-style: italic;
   color: var(--color-text-dimmed);
+}
+/* the question mark at the right end of the label cell: hovered, the
+   value's area is tinted in the preview */
+.pw-area-hint {
+  --icon-size: 14px;
+  margin-inline-start: auto;
+  color: var(--color-text-dimmed);
+  cursor: help;
+}
+.pw-area-hint:hover {
+  color: var(--color-text);
 }
 /* restrictions: the eye at the right end of the label cell */
 .pw-field-state-eye {
