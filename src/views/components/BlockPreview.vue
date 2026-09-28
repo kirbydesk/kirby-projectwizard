@@ -752,6 +752,20 @@ export default {
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
 }
+/* flexible (the logos wrap freely): the gaps shown at each tile's outer
+   edge – left and right cyan (between the logos), top and bottom orange
+   (between the rows); square, also around a pill */
+.pw-logocloud-preview.is-flexible.has-guides .pw-logocloud-item {
+  position: relative;
+}
+.pw-logocloud-preview.is-flexible.has-guides .pw-logocloud-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+  border-block: 1px solid rgba(255, 140, 0, 0.9);
+  pointer-events: none;
+}
 /* the logo's area inside the padding: left and right magenta (horizontal
    padding), top and bottom green (vertical padding) */
 .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
