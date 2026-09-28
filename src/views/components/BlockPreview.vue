@@ -238,13 +238,15 @@ export default {
       const size = this.itemValueAt('item-size');
       const align = this.preset('logos', 'align') || 'center';
       const justify = { left: 'start', right: 'end' }[align] || 'center';
+      // between the logos of a row / between the rows (older: one gap)
       const gap = this.itemValue('item-gap');
-      // guides: the gap is a track of its own (for its lines)
+      const rowGap = this.itemValue('item-row-gap') || gap;
+      // guides: the gaps are tracks of their own (for their lines)
       if (this.guides) {
         return {
           display: 'grid',
           gridTemplateColumns: 'minmax(0, ' + size + ') ' + gap + ' minmax(0, ' + size + ')',
-          gridTemplateRows: 'auto ' + gap + ' auto',
+          gridTemplateRows: 'auto ' + rowGap + ' auto',
           justifyContent: justify,
           marginTop: this.gapBefore('logos'),
         };
@@ -253,7 +255,8 @@ export default {
         display: 'grid',
         gridTemplateColumns: 'repeat(2, minmax(0, ' + size + '))',
         justifyContent: justify,
-        gap,
+        columnGap: gap,
+        rowGap,
         marginTop: this.gapBefore('logos'),
       };
     },
