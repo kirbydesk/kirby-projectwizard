@@ -1034,7 +1034,7 @@
               </div>
             </section>
 
-            <!-- featurelist: text, style (the icon and its tile), layout, gaps -->
+            <!-- featurelist: text, style (the icon: position, size, colour, tile), gaps -->
             <template v-if="block.blockType === 'pwfeaturelist' && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1092,6 +1092,27 @@
                 </span>
               </div>
               <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-icon-position']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <!-- with an icon: its size, colour, tile -->
+                <template v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none'">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-icon-size']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
                 <pw-block-values
                   :bp.sync="itemBp"
                   :theme="currentItemColorTheme"
@@ -1156,32 +1177,7 @@
                   @hover-var="hoveredVar = $event"
                 />
                 </template>
-              </div>
-            </section>
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.subtab.layout') }}</h3>
-              </div>
-              <div class="pw-card pw-field-table">
-                <pw-block-settings
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-icon-position']"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
-                />
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-icon-size']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
+                </template>
               </div>
             </section>
             <section class="pw-card-section">
@@ -1210,6 +1206,7 @@
                   @hover-var="hoveredVar = $event"
                 />
                 <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none'"
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-icon-gap': 'row' } : null"
                   :defaults="blockValueDefaults[block.blockType]"

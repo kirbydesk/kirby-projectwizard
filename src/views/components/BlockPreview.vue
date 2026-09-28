@@ -107,11 +107,11 @@
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'feature-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="featureGapStyle"></span>
             <div :key="'feature-' + n" class="pw-featurelist-item" :class="{ 'is-top': featureIconTop }" :style="featureItemStyle">
-              <div class="pw-featurelist-icon" :style="featureIconStyle">
+              <div v-if="!featureNoIcon" class="pw-featurelist-icon" :style="featureIconStyle">
                 <svg viewBox="0 0 24 24" :style="featureSvgStyle" aria-hidden="true"><path :d="featureIcons[n - 1]" /></svg>
                 <span v-if="guides && featureTile" class="pw-featurelist-pad" :style="{ inset: itemValue('item-icon-tile-padding') }"></span>
               </div>
-              <span v-if="guides" class="pw-featurelist-icon-gap" :class="{ 'is-hot': highlight === 'item-icon-gap' }" :style="featureIconGapStyle"></span>
+              <span v-if="guides && !featureNoIcon" class="pw-featurelist-icon-gap" :class="{ 'is-hot': highlight === 'item-icon-gap' }" :style="featureIconGapStyle"></span>
               <div class="pw-featurelist-content">
                 <!-- title as run-in at the start of the text, or above it -->
                 <div v-if="featureTitleInline" :style="featureTextStyle"><strong :style="featureTitleInlineStyle">{{ $t('prw.preview.feature.title') }} {{ n }}.</strong> {{ $t('prw.preview.feature.text') }}</div>
@@ -462,6 +462,10 @@ export default {
     featureGapStyle() {
       const gap = this.itemValueAt('item-gap');
       return this.featureColumns > 1 ? { width: gap } : { height: gap };
+    },
+    // icon position "none": the features without icons
+    featureNoIcon() {
+      return this.setting('layout', 'item-icon-position') === 'none';
     },
     featureIconTop() {
       return this.setting('layout', 'item-icon-position') === 'top';
