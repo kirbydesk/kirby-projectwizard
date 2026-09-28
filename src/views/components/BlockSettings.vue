@@ -39,6 +39,7 @@
               :enabled="true"
               :required="prop.required === true"
               :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
+              :mode="view === 'defaults' ? 'preset' : 'allowed'"
               @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
             />
@@ -55,7 +56,7 @@
 
           <div v-show="isFieldEnabled(editorField())" class="pw-card pw-field-table">
             <!-- Editor content settings (mode, align, sizes) as FieldRows -->
-            <template v-if="view === 'presets'">
+            <template v-if="view === 'presets' || view === 'defaults'">
               <pw-field-row
                 v-for="prop in getEditorField().properties"
                 :key="'editor-content-' + prop.key"
@@ -67,6 +68,7 @@
                 :plugin-default="prop.pluginDefault"
                 :enabled="true"
                 :modified="hasOverride('settings.fields.content.editor.' + prop.key)"
+                :mode="view === 'defaults' ? 'preset' : 'allowed'"
                 @update:options="setEditorContentOptions(prop.key, prop, $event)"
                 @update:default="selectOption('settings.fields.content.editor.' + prop.key + '.default', $event, prop.pluginDefault)"
               />
@@ -117,6 +119,7 @@
               :enabled="true"
               :required="prop.required === true"
               :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
+              :mode="view === 'defaults' ? 'preset' : 'allowed'"
               @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
             />
@@ -144,13 +147,14 @@
               :key="field.key"
               :uid="blockType + '-' + cat.key + '-' + field.key"
               :label="field.key"
-              :all-options="field.allOptions"
-              :active-options="getCategoryActiveOptions(cat.key, field.key, field)"
+              :all-options="fieldOptions(field)"
+              :active-options="getCategoryActiveOptions(cat.key, field.key, field).filter(o => fieldOptions(field).includes(o))"
               :current-default="getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.pluginDefault)"
               :plugin-default="field.pluginDefault"
               :enabled="true"
               :modified="hasOverride('settings.fields.' + cat.key + '.' + field.key)"
               :required="field.required === true"
+              :mode="view === 'defaults' ? 'preset' : 'allowed'"
               @update:options="setCategoryOptions(cat.key, field.key, field, $event)"
               @update:default="selectOption('settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.pluginDefault)"
             />
@@ -363,6 +367,11 @@ export default {
     block: {
       type: Object,
       required: true,
+    },
+    // the project's variants switched on (variant, variant2 …); null: all
+    variants: {
+      type: Array,
+      default: null,
     },
     config: {
       type: Object,
@@ -623,13 +632,16 @@ export default {
     },
 
     // content fields with preset rows (presets view only)
+    // (start values: which option a new block starts with; restrictions:
+    // which options are allowed)
     presetFields(fields) {
-      return this.view === 'presets' ? fields.filter(f => f.properties.length) : [];
+      return this.view === 'presets' || this.view === 'defaults' ? fields.filter(f => f.properties.length) : [];
     },
 
     // the editor card sits in the presets: mode/align/size, then (writer)
     // formatting and lists
     hasEditorCard() {
+      if (this.view === 'defaults') return !!(this.getEditorField() && this.getEditorField().properties.length);
       if (this.view !== 'presets') return false;
       return !!(this.getEditorField() && this.getEditorField().properties.length)
         || (this.writerActive !== false && this.getEditorConfigRows().length > 0);
@@ -639,8 +651,12 @@ export default {
     // and offsets, allowed on every block) in "presets", the rest in "defaults"
     viewFields(cat) {
       if (this.view === 'layout') return cat.fields;
+      // restrictions: the option rows and the grid; start values: everything
+      // but the grid (option rows as the choice a new block starts with)
       const isPreset = f => cat.key === 'grid' || f.type === 'fieldrow';
-      let fields = cat.fields.filter(f => isPreset(f) === (this.view === 'presets'));
+      let fields = this.view === 'presets'
+        ? cat.fields.filter(isPreset)
+        : cat.fields.filter(f => cat.key !== 'grid');
       return fields;
     },
 
@@ -666,6 +682,12 @@ export default {
     // name of a drawer tab (as in the block's drawer)
     drawerLabel(key) {
       return this.$t('pw.tab.' + key);
+    },
+
+    // options of an option row; the variant only with the project's variants
+    fieldOptions(field) {
+      if (field.key !== 'theme' || !Array.isArray(this.variants)) return field.allOptions;
+      return field.allOptions.filter(o => o === 'default' || o === 'custom' || this.variants.includes(o));
     },
 
     // a drawer tab has rows in this view

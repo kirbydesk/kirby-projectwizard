@@ -9,22 +9,29 @@
           <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
         </div>
         <div class="pw-field-row-options">
-          <!-- the options as Kirby's toggles (same markup, so they look like
-               the other toggles): greyed = not allowed, black text = allowed,
-               black pill = preset; a click switches greyed ↔ allowed, a double
-               click makes the preset (the pill itself stays, nothing jumps) -->
-          <div class="k-toggles-input pw-option-toggles">
+          <!-- start values: the preset, one of the allowed options (Kirby's toggles) -->
+          <k-toggles-input
+            v-if="mode === 'preset'"
+            :value="defaultValue"
+            :options="allowedOptions.map(o => ({ value: o, text: optionLabel(o) }))"
+            :grow="false"
+            :required="true"
+            @input="setDefault"
+          />
+          <!-- restrictions: the options as Kirby's toggles (same markup, so
+               they look like the other toggles): black text = allowed,
+               greyed = not allowed; a click switches -->
+          <div v-else class="k-toggles-input pw-option-toggles">
             <ul>
               <li v-for="opt in options" :key="opt" :data-state="optionState(opt)">
                 <!-- no checkbox: the state alone decides the look (a prevented
-                     checkbox click let the browser undo it, two presets showed) -->
+                     checkbox click let the browser undo it) -->
                 <label
                   role="button"
                   tabindex="0"
                   :title="$t('prw.option.state.' + optionState(opt))"
-                  @click="clickOption(opt, $event)"
-                  @dblclick="makePreset(opt)"
-                  @keydown.enter.space.prevent="clickOption(opt)"
+                  @click="toggleOption(opt)"
+                  @keydown.enter.space.prevent="toggleOption(opt)"
                 >
                   <span class="k-toggles-text">{{ optionLabel(opt) }}</span>
                 </label>
@@ -50,6 +57,9 @@ export default {
     modified: { type: Boolean, default: false },
     noDefault: { type: Boolean, default: false },
     required: { type: Boolean, default: false },
+    // "allowed": which options editors may choose (restrictions);
+    // "preset": which one a new block starts with (start values)
+    mode: { type: String, default: 'allowed' },
   },
   data() {
     return {
@@ -105,32 +115,12 @@ export default {
       }
       return opt;
     },
-    // preset (black), allowed (white) or not allowed (greyed)
+    // allowed (black text) or not allowed (greyed)
     optionState(opt) {
-      if (!this.localActive.includes(opt)) return 'disabled';
-      return !this.noDefault && opt === this.defaultValue ? 'preset' : 'allowed';
+      return this.localActive.includes(opt) ? 'allowed' : 'disabled';
     },
-    // click: not allowed ↔ allowed; the preset stays (another option has to
-    // become the preset first)
-    // (a mouse click waits a moment: when a double click follows, only the
-    // preset is set, the option doesn't switch back and forth first)
-    clickOption(opt, event) {
-      if (this.optionState(opt) === 'preset') return;
-      const timers = this.clickTimers || (this.clickTimers = {});
-      clearTimeout(timers[opt]);
-      if (!event || event.detail === 0) return this.toggleOption(opt);
-      if (event.detail > 1) return;
-      timers[opt] = setTimeout(() => this.toggleOption(opt), 250);
-    },
-    // double click: the option becomes the preset (allowed if it wasn't); the
-    // old preset stays allowed
-    makePreset(opt) {
-      clearTimeout((this.clickTimers || {})[opt]);
-      if (this.noDefault) return;
-      if (!this.localActive.includes(opt)) this.toggleOption(opt);
-      this.setDefault(opt);
-    },
-    // allow/disallow the option (at least one stays allowed)
+    // allow/disallow the option (at least one stays allowed; the start value
+    // moves to the first allowed option when its own is disallowed)
     toggleOption(opt) {
       const allowed = this.localActive.includes(opt);
       if (allowed && this.allowedOptions.length <= 1) return;
@@ -192,15 +182,8 @@ export default {
   flex-wrap: wrap;
 }
 
-/* the preset: a black pill */
-/* no text selection on a double click */
 .pw-option-toggles label {
   user-select: none;
-}
-.pw-option-toggles li[data-state="preset"] label {
-  border-radius: 999px;
-  background: var(--color-black);
-  color: var(--color-white);
 }
 /* options not allowed: greyed text only */
 .pw-option-toggles li[data-state="disabled"] label {

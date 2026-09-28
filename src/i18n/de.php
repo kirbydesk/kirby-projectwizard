@@ -29,8 +29,7 @@
 	'prw.label.topBottom' => 'Vertikal',
 	'prw.label.leftRight' => 'Horizontal',
 	'prw.option.asTyped' => 'Wie eingegeben',
-	'prw.option.state.preset' => 'Vorgabe – eine andere Option per Doppelklick zur Vorgabe machen',
-	'prw.option.state.allowed' => 'Erlaubt – Klick: nicht erlauben, Doppelklick: Vorgabe',
+	'prw.option.state.allowed' => 'Erlaubt – Klick: nicht erlauben',
 	'prw.option.state.disabled' => 'Nicht erlaubt – Klick: erlauben',
 	'prw.label.variants' => 'Varianten',
 	'prw.label.mobile' => 'Mobil',
@@ -93,7 +92,7 @@
 	'prw.view.presets' => 'Einschränkungen',
 	'prw.view.design.intro' => 'Diese Werte gelten für alle Blöcke dieser Art, auch bereits angelegte.',
 	'prw.view.defaults.intro' => 'Startwerte gelten für neu angelegte Blöcke. Im Block selbst lassen sich die Werte weiterhin ändern.',
-	'prw.view.presets.intro' => 'Schränkt ein, welche Optionen Redakteure im Block auswählen können, und legt fest, was ein neuer Block vorausgewählt hat.',
+	'prw.view.presets.intro' => 'Schränkt ein, welche Optionen Redakteure im Block auswählen können.',
 	'prw.tab.items' => 'Einträge',
 	'prw.tab.layout' => 'Layout',
 

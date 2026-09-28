@@ -29,8 +29,7 @@
 	'prw.label.topBottom' => 'Vertical',
 	'prw.label.leftRight' => 'Horizontal',
 	'prw.option.asTyped' => 'As typed',
-	'prw.option.state.preset' => 'Preset – double-click another option to make it the preset',
-	'prw.option.state.allowed' => 'Allowed – click: disallow, double-click: preset',
+	'prw.option.state.allowed' => 'Allowed – click: disallow',
 	'prw.option.state.disabled' => 'Not allowed – click: allow',
 	'prw.label.variants' => 'Variants',
 	'prw.label.mobile' => 'Mobile',
@@ -93,7 +92,7 @@
 	'prw.view.presets' => 'Restrictions',
 	'prw.view.design.intro' => 'These values apply to all blocks of this kind, including existing ones.',
 	'prw.view.defaults.intro' => 'Start values apply to newly created blocks. The values can still be changed in the block itself.',
-	'prw.view.presets.intro' => 'Limits which options editors can choose in the block and sets what a new block has preselected.',
+	'prw.view.presets.intro' => 'Limits which options editors can choose in the block.',
 	'prw.tab.items' => 'Items',
 	'prw.tab.layout' => 'Layout',
 

@@ -817,6 +817,7 @@
           <div v-show="currentBlockView === 'defaults'" v-if="blockConfigs[block.blockType]">
             <pw-block-settings
               view="defaults"
+              :variants="activeVariants"
               :global-values="globalLayoutValues"
               :guides="previewGuides"
               :block="block"
@@ -851,6 +852,7 @@
           <div v-show="currentBlockView === 'presets'" v-if="blockConfigs[block.blockType]">
             <pw-block-settings
               view="presets"
+              :variants="activeVariants"
               :block="block"
               :config="blockConfigs[block.blockType]"
               :overrides="blockOverrides[block.blockType] || {}"
