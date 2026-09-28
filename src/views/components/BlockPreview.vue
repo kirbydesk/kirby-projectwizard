@@ -252,11 +252,20 @@ export default {
       const rowGap = this.itemValue('item-row-gap') || gap;
       // flexible: one height, each tile as wide as its logo, wrapping
       if (this.logosFlexible) {
-        // the gap between the rows hovered: all tiles have one height, so the
-        // rows repeat every height + gap – bands across the whole width
+        // guides: the gap between the rows – all tiles have one height, so
+        // the rows repeat every height + gap: a line at the end of a row and
+        // at the start of the next across the whole width, the band between
+        // them tinted while its label is hovered
         const size = this.itemValueAt('item-size');
-        const bands = this.guides && this.highlight === 'item-row-gap'
-          ? 'repeating-linear-gradient(to bottom, transparent 0, transparent ' + size + ', rgba(255, 140, 0, 0.18) ' + size + ', rgba(255, 140, 0, 0.18) calc(' + size + ' + ' + rowGap + '))'
+        const line = 'rgba(255, 140, 0, 0.9)';
+        const fill = this.highlight === 'item-row-gap' ? 'rgba(255, 140, 0, 0.18)' : 'transparent';
+        const hidden = this.highlight && this.highlight !== 'item-row-gap';
+        const end = 'calc(' + size + ' + ' + rowGap + ')';
+        const bands = this.guides && !hidden
+          ? 'repeating-linear-gradient(to bottom, transparent 0, transparent ' + size
+            + ', ' + line + ' ' + size + ', ' + line + ' calc(' + size + ' + 1px)'
+            + ', ' + fill + ' calc(' + size + ' + 1px), ' + fill + ' calc(' + end + ' - 1px)'
+            + ', ' + line + ' calc(' + end + ' - 1px), ' + line + ' ' + end + ')'
           : null;
         return {
           backgroundImage: bands,
@@ -835,7 +844,6 @@ export default {
 .pw-steplist-gap.is-hot { background: rgba(255, 0, 170, 0.15); }
 /* flexible (no gap elements): the tiles' edges of that gap stronger */
 .pw-logocloud-preview.is-flexible.is-hot-gap .pw-logocloud-item::before { border-inline-width: 3px; }
-.pw-logocloud-preview.is-flexible.is-hot-row-gap .pw-logocloud-item::before { border-block-width: 3px; }
 /* logocloud guides: the gap between the text and the logos (violet) */
 .pw-logocloud-text-gap {
   box-sizing: border-box;
@@ -852,7 +860,6 @@ export default {
   position: absolute;
   inset: 0;
   border-inline: 1px solid rgba(0, 170, 255, 0.8);
-  border-block: 1px solid rgba(255, 140, 0, 0.9);
   pointer-events: none;
 }
 /* the logo's area inside the padding: left and right magenta (horizontal
