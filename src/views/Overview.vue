@@ -1572,6 +1572,7 @@ export default {
     // another block: start on its first tab
     activeTab() {
       this.blockViewTab = null;
+      this.showStartTheme();
     },
     blockType: {
       immediate: true,
@@ -1588,6 +1589,7 @@ export default {
   },
   async created() {
     await this.load();
+    this.showStartTheme();
     this._onKeydown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -2244,6 +2246,14 @@ export default {
     },
 
     // --- Block overrides ---
+    // a block opened: the preview (and the colour cards) start with the
+    // variant a new block of it starts with
+    showStartTheme() {
+      const blockType = this.activeTab;
+      if (!blockType || blockType === 'global' || !this.blockConfigs[blockType]) return;
+      this.itemColorTheme = this.blockOverrides[blockType]?.settings?.fields?.style?.theme?.default
+        || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.theme?.default || 'default';
+    },
     onBlockOverridesUpdate(blockType, overrides) {
       // BlockSettings changes the object in place: store a fresh copy, so
       // everything reading it (e.g. the live preview) notices the change
