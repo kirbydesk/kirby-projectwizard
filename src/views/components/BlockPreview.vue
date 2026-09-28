@@ -75,10 +75,9 @@
             <!-- guides: the gap as elements of their own, two cyan lines each
                  (between the columns, between the rows) -->
             <template v-if="guides && !logosFlexible">
-              <span class="pw-logocloud-gap is-column" :class="{ 'is-hot': highlight === 'item-gap' }" style="grid-area: 1 / 2"></span>
-              <span class="pw-logocloud-gap is-column" :class="{ 'is-hot': highlight === 'item-gap' }" style="grid-area: 3 / 2"></span>
-              <span class="pw-logocloud-gap is-row" :class="{ 'is-hot': highlight === 'item-row-gap' }" style="grid-area: 2 / 1"></span>
-              <span class="pw-logocloud-gap is-row" :class="{ 'is-hot': highlight === 'item-row-gap' }" style="grid-area: 2 / 3"></span>
+              <!-- each gap through the whole grid (they cross in the middle) -->
+              <span class="pw-logocloud-gap is-column" :class="{ 'is-hot': highlight === 'item-gap' }" style="grid-area: 1 / 2 / 4 / 3"></span>
+              <span class="pw-logocloud-gap is-row" :class="{ 'is-hot': highlight === 'item-row-gap' }" style="grid-area: 2 / 1 / 3 / 4"></span>
             </template>
           </div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
