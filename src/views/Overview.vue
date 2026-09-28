@@ -2273,7 +2273,7 @@ export default {
       this.$set(this.startThemes, blockType, theme);
       // steplist: the start value of the item style changed – show it
       const itemStyle = overrides?.settings?.fields?.style?.['item-style']?.default;
-      if (itemStyle !== undefined && this.startItemStyles[blockType] !== itemStyle) {
+      if (blockType in this.startItemStyles && this.startItemStyles[blockType] !== itemStyle) {
         this.$delete(this.stepPreviewStyle, blockType);
       }
       this.$set(this.startItemStyles, blockType, itemStyle);
