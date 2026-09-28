@@ -820,6 +820,7 @@
               view="defaults"
               :variants="activeVariants"
               :global-values="globalLayoutValues"
+              :media-radius="mediaRadiusValues"
               :guides="previewGuides"
               :block="block"
               :config="blockConfigs[block.blockType]"
@@ -1408,6 +1409,11 @@ export default {
       return active.vars;
     },
     // global layout values (defaults + overrides), e.g. global-padding-left
+    // the media's corner radii (Elements › Media › Form): override, else the plugin's
+    mediaRadiusValues() {
+      const ov = (this.elementOverrides.global || {})['media-radius'];
+      return Array.isArray(ov) ? ov : (this.elementDefaults.media?.vars?.['media-radius']?.value || []);
+    },
     globalLayoutValues() {
       const vars = this.globalDefaults.layout?.vars || {};
       const ov = this.globalOverrides.global || {};

@@ -76,6 +76,11 @@
                         :text="toggleOptionLabel(corner)"
                         @input="setVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', $event)"
                       />
+                      <!-- the radius this corner gets (0rem while off) -->
+                      <span
+                        class="pw-field-hint"
+                        :class="{ 'is-zero': !getVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', false) }"
+                      >{{ cornerHint(corner, getVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', false), mediaRadius) }}</span>
                     </span>
                   </div>
                 </span>
@@ -387,6 +392,12 @@ export default {
     // the items' corner radii (top-left, top-right, bottom-left, bottom-right)
     // shown next to the item radius switches
     itemRadius: {
+      type: Array,
+      default: () => [],
+    },
+    // the media's corner radii (Elements › Media › Form), shown next to the
+    // media's corner switches
+    mediaRadius: {
       type: Array,
       default: () => [],
     },
