@@ -688,7 +688,10 @@ export default {
       for (const k of keys) {
         const group = together.find(g => k.startsWith(g.prefix));
         if (!group) {
-          rows.push({ id: k, keys: [k], label: this.categoryFieldLabel(k) });
+          // the name of an option row (Darstellung der Schritte …), else the field's
+          const pKey = 'prw.property.' + k;
+          const pLabel = this.$t(pKey);
+          rows.push({ id: k, keys: [k], label: pLabel && pLabel !== pKey ? pLabel : this.categoryFieldLabel(k) });
         } else if (!rows.some(r => r.id === group.prefix)) {
           rows.push({ id: group.prefix, keys: keys.filter(x => x.startsWith(group.prefix)), label: group.label });
         }
