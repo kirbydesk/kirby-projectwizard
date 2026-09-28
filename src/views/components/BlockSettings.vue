@@ -888,8 +888,15 @@ export default {
       // (fields with further settings have a card of their own)
       const extraKeys = this.contentExtraFields().map(f => f.key);
       const own = this.presetFields(this.getContentFields()).filter(f => !extraKeys.includes(f.key));
+      // the text (handled apart: textarea or writer) at its place among the
+      // fields, as in the drawer (before the hero's buttons)
       const editor = this.getEditorField();
-      if (editor && editor.properties.length) own.push(editor);
+      if (editor && editor.properties.length) {
+        const order = Object.keys(this.getDefault('settings.fields.content') || {});
+        const at = own.findIndex(f => order.indexOf(f.key) > order.indexOf('editor'));
+        if (order.includes('editor') && at >= 0) own.splice(at, 0, editor);
+        else own.push(editor);
+      }
       const ownRows = own.map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
       if (ownRows.length) groups.push({ key: 'block', heading: null, rows: ownRows });
       const itemRows = this.presetFields(this.getItemDefaultsContentFields())
