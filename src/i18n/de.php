@@ -203,6 +203,7 @@
 	'prw.prop.letter-spacing' => 'Zeichenabstand',
 	'prw.prop.text-transform' => 'Groß-/Kleinschreibung',
 	'prw.prop.paragraph-spacing' => 'Absatzabstand',
+	'prw.hint.spaceBelow' => 'Abstand zum nächsten Element im Block',
 	'prw.element.tagline-spacing' => 'Abstand nach unten',
 	'prw.element.heading-spacing' => 'Abstand nach unten',
 	'prw.element.editor-spacing' => 'Abstand nach unten',

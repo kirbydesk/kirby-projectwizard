@@ -294,6 +294,7 @@
                       v-if="guides && hasArea(field.varName)"
                       type="question"
                       class="pw-area-hint"
+                      :title="$t('prw.hint.spaceBelow')"
                       @mouseenter.native="hoveredArea = field.varName"
                       @mouseleave.native="hoveredArea = null"
                     />
