@@ -890,7 +890,7 @@
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />
-                <!-- styles with a bubble (not minimal): its form and background -->
+                <!-- styles with a bubble (not minimal): its form -->
                 <template v-if="currentStepStyle(block.blockType) !== 'minimal'">
                   <pw-block-settings
                     view="items-layout"
@@ -911,25 +911,27 @@
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-number-background']"
-                    :labels="{ 'item-number-background': $t('prw.label.backgroundColor') }"
-                    :theme="currentItemColorTheme"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  />
                 </template>
-                <!-- the number's colour: the digit in the bubble; minimal: the
-                     number is text in the "background" colour -->
+                <!-- the number's colour (the digit in the bubble; minimal: the
+                     number is text in the "background" colour), then the
+                     bubble's background -->
                 <pw-block-values
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepNumberColor(block.blockType)]"
                   :labels="{ [stepNumberColor(block.blockType)]: $t('prw.label.color') }"
+                  :theme="currentItemColorTheme"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="currentStepStyle(block.blockType) !== 'minimal'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-number-background']"
+                  :labels="{ 'item-number-background': $t('prw.label.backgroundColor') }"
                   :theme="currentItemColorTheme"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
