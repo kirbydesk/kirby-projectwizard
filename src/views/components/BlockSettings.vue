@@ -674,13 +674,24 @@ export default {
       // drawer fields only: no "enabled" markers, no item-* values (those
       // are the items' design), fields with a start value
       const keys = Object.keys(all).filter(k => !k.startsWith('item-') && this.isObject(all[k]) && 'default' in all[k]);
+      // fields that belong together (one headline in the drawer) share a row,
+      // at the place of their first field
+      const together = [
+        { prefix: 'padding-', label: this.$t('prw.headline.paddings') },
+        { prefix: 'radius-', label: this.categoryFieldLabel('radius') },
+        { prefix: 'columns-', label: this.$t('pw.headline.columns') },
+        { prefix: 'grid-', label: this.drawerLabel('grid') },
+        { prefix: 'margin-', label: this.$t('prw.headline.margins') },
+      ];
       const rows = [];
-      const corners = keys.filter(k => k.startsWith('radius-'));
       for (const k of keys) {
-        if (k.startsWith('radius-')) continue;
-        rows.push({ id: k, keys: [k], label: this.categoryFieldLabel(k) });
+        const group = together.find(g => k.startsWith(g.prefix));
+        if (!group) {
+          rows.push({ id: k, keys: [k], label: this.categoryFieldLabel(k) });
+        } else if (!rows.some(r => r.id === group.prefix)) {
+          rows.push({ id: group.prefix, keys: keys.filter(x => x.startsWith(group.prefix)), label: group.label });
+        }
       }
-      if (corners.length) rows.push({ id: 'radius', keys: corners, label: this.categoryFieldLabel('radius') });
       return rows.length ? [{ key: tab, heading: null, rows }] : [];
     },
     // all drawer tabs one below the other, each a card headed by its name
