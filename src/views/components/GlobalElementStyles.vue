@@ -2564,6 +2564,17 @@ export default {
   font-family: var(--font-sans);
   font-size: var(--text-sm);
 }
+/* as the other menus: Kirby's padding so the focus outline is not clipped,
+   the focused item above its neighbour (whose hover would paint over it) */
+.pw-unit-menu.k-dropdown-content {
+  padding: var(--dropdown-padding, var(--spacing-2));
+  overflow: visible;
+}
+.pw-unit-menu .k-dropdown-item:focus,
+.pw-unit-menu .k-dropdown-item:focus-visible {
+  position: relative;
+  z-index: 1;
+}
 /* only as wide as the units */
 .pw-unit-menu .pw-menu-item .k-button-text {
   min-width: 0;
