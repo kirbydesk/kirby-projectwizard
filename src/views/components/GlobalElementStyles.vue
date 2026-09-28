@@ -283,7 +283,7 @@
             <!-- the base font size only while the step "normal" is chosen; the
                  button's and media's corner radii only for custom corners -->
             <div
-              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(field.varName === 'button-width' && buttonWidthMode() !== 'manual')"
+              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(['button-width', 'button-content-align'].includes(field.varName) && buttonWidthMode() !== 'manual')"
               :key="'vf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :data-guide="guideType(field.varName)"
@@ -1222,6 +1222,10 @@ export default {
     },
     filteredOptions(varName, options) {
       if (!varName.endsWith('-font-weight')) {
+        // alignment: Kirby's text-left/-center/-right icons, the name as tooltip
+        if (varName.endsWith('-content-align')) {
+          return options.map(o => ({ value: o, icon: 'text-' + o, text: this.optionText(o) }));
+        }
         // text transform: glyph icons, the name as tooltip ("none": as typed)
         if (varName.endsWith('text-transform')) {
           const icons = { none: 'prw-case-none', uppercase: 'prw-case-upper', lowercase: 'prw-case-lower', capitalize: 'prw-case-capitalize' };
@@ -1576,7 +1580,7 @@ export default {
       if (varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
       if (varName === 'button-shape' || varName === 'button-border-radius') return 'shape';
       // buttons: the width (auto or manual) with the form
-      if (varName === 'button-width-mode' || varName === 'button-width') return 'shape';
+      if (varName === 'button-width-mode' || varName === 'button-width' || varName === 'button-content-align') return 'shape';
       // media: the corner radii
       if (varName === 'media-radius') return 'shape';
       if (varName === 'button-border-width' || varName === 'button-shadow') return 'style';
@@ -1757,7 +1761,7 @@ export default {
         borderStyle: 'solid',
         padding: Array.isArray(padding) ? padding.join(' ') : padding,
         // manual width: all buttons equally wide, the text cut off with "…"
-        ...(this.buttonWidthMode() === 'manual' ? { width: responsiveVal('width'), justifyContent: 'center', '--pw-btn-white-space': 'nowrap' } : {}),
+        ...(this.buttonWidthMode() === 'manual' ? { width: responsiveVal('width'), justifyContent: { left: 'flex-start', right: 'flex-end' }[get('content-align') || defVal('content-align')] || 'center', '--pw-btn-white-space': 'nowrap' } : {}),
         // the sides for the tinted paddings (guides)
         '--pw-btn-pt': padding[0],
         '--pw-btn-pr': padding[1],
