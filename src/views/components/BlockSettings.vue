@@ -1630,9 +1630,11 @@ export default {
   --icon-size: 18px;
   margin-inline-start: auto;
   color: var(--color-text-dimmed);
+  opacity: 0.5;
 }
 .pw-area-hint:hover {
   color: var(--color-text);
+  opacity: 1;
 }
 /* restrictions: the eye at the right end of the label cell */
 .pw-field-state-eye {
