@@ -1325,6 +1325,8 @@ export default {
       itemColorTheme: 'default',
       // each block's theme start value (to notice a change)
       startThemes: {},
+      // steplist: each block's item style start value (to notice a change)
+      startItemStyles: {},
       // guides in the block preview (and the matching stripes in the rows)
       previewGuides: (() => { try { return localStorage.getItem('pw-wizard-guides') === 'on'; } catch (e) { return false; } })(),
       // breakpoint shown in the items' responsive rows
@@ -2253,6 +2255,8 @@ export default {
       if (!blockType || blockType === 'global' || !this.blockConfigs[blockType]) return;
       this.itemColorTheme = this.blockOverrides[blockType]?.settings?.fields?.style?.theme?.default
         || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.theme?.default || 'default';
+      // steplist: the item style a new block starts with (no pill chosen)
+      this.$delete(this.stepPreviewStyle, blockType);
     },
     onBlockOverridesUpdate(blockType, overrides) {
       // BlockSettings changes the object in place: store a fresh copy, so
@@ -2267,6 +2271,12 @@ export default {
         this.itemColorTheme = theme;
       }
       this.$set(this.startThemes, blockType, theme);
+      // steplist: the start value of the item style changed – show it
+      const itemStyle = overrides?.settings?.fields?.style?.['item-style']?.default;
+      if (itemStyle !== undefined && this.startItemStyles[blockType] !== itemStyle) {
+        this.$delete(this.stepPreviewStyle, blockType);
+      }
+      this.$set(this.startItemStyles, blockType, itemStyle);
       const current = JSON.stringify(overrides);
       const snapshot = this.snapshots[blockType] || '{}';
       this.$set(this.dirtyTabs, blockType, current !== snapshot);
