@@ -356,14 +356,25 @@
                             inputmode="decimal"
                             :step="field.def.step || 0.1"
                             :min="field.def.min"
-                            :max="field.def.max"
+                            :max="responsiveUnit(field, bp) === '%' ? 100 : field.def.max"
                             class="pw-element-input pw-element-input-number pw-px-calculator-input"
                             :value="stripUnit(getResponsiveOverride(field.varName, bp) || field.def[bp])"
-                            @change="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], field.def.unit)"
+                            @change="setResponsiveValue(field.varName, bp, $event.target.value, field.def[bp], responsiveUnit(field, bp))"
                           />
-                          <span class="pw-element-unit">{{ field.def.unit }}</span>
+                          <span class="pw-element-unit">{{ responsiveUnit(field, bp) }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit, field.varName) }}</span>
+                        <span v-if="!['px', '%'].includes(responsiveUnit(field, bp))" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit, field.varName) }}</span>
+                      </span>
+                      <!-- values with a choice of unit (e.g. the button width: rem or %) -->
+                      <span v-if="field.def.units" class="pw-pill pw-unit-switch" role="group">
+                        <button
+                          v-for="u in field.def.units"
+                          :key="'u-' + u"
+                          type="button"
+                          class="pw-tool"
+                          :aria-pressed="responsiveUnit(field, previewBp) === u ? 'true' : 'false'"
+                          @click="setResponsiveUnit(field, previewBp, u)"
+                        >{{ u }}</button>
                       </span>
                       <!-- switch the breakpoint (shared with the preview) -->
                       <span class="pw-pill pw-bp-switch" role="group">
@@ -1318,7 +1329,18 @@ export default {
     // --- Style methods ---
     stripUnit(val) {
       if (!val) return '';
-      return val.replace(/(rem|em|px)$/, '');
+      return val.replace(/(rem|em|px|%)$/, '');
+    },
+    // unit of a responsive value at a device: % when set so, else the field's
+    responsiveUnit(field, bp) {
+      const val = this.getResponsiveOverride(field.varName, bp) || field.def[bp] || '';
+      return String(val).endsWith('%') ? '%' : field.def.unit;
+    },
+    // switching the unit: % starts at 100, the field's unit at its default
+    setResponsiveUnit(field, bp, unit) {
+      if (unit === this.responsiveUnit(field, bp)) return;
+      const value = unit === '%' ? '100' : this.stripUnit(field.def[bp]);
+      this.setResponsiveValue(field.varName, bp, value, field.def[bp], unit);
     },
     setUnitValue(varName, value, defaultVal, unit) {
       const num = parseFloat(String(value).replace(',', '.'));
@@ -2490,6 +2512,14 @@ export default {
   align-items: center;
 }
 
+.pw-pill.pw-unit-switch {
+  --tool-size: 1.25rem;
+  margin-inline-end: var(--spacing-2);
+}
+.pw-unit-switch .pw-tool {
+  font-size: var(--text-xs);
+  padding-inline: var(--spacing-2);
+}
 .pw-element-unit {
   position: absolute;
   right: var(--spacing-2);
