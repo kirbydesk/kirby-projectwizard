@@ -53,7 +53,7 @@
           </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the steps' edges (gap between the steps) and the
-               number's and the text's edges (gap between them), cyan -->
+               text's edge (gap to the number), cyan -->
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides }" :style="stepItemsStyle">
             <div
               v-for="n in stepCount"
@@ -486,10 +486,10 @@ export default {
 .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 1px solid rgba(255, 0, 170, 0.6);
 }
-/* steplist guides: outlines of the steps, their numbers and texts; the
-   room between them is the gap set in the design */
+/* steplist guides: outlines of the steps and their texts; the room
+   between two steps and between the number and the text outline is the gap
+   set in the design (the number shows its edge itself) */
 .pw-steplist-items.has-guides .pw-steplist-item,
-.pw-steplist-items.has-guides .pw-steplist-number,
 .pw-steplist-items.has-guides .pw-steplist-content {
   outline: 1px solid rgba(0, 170, 255, 0.8);
 }
