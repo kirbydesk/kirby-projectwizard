@@ -1431,16 +1431,6 @@
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-text-gap']"
-                    :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-gap']"
                     :guides="previewGuides ? { 'item-gap': 'margin' } : null"
                     :hide-section-headers="true"
@@ -1453,6 +1443,16 @@
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-row-gap']"
                     :guides="previewGuides ? { 'item-row-gap': 'row' } : null"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
+                  />
+                  <pw-block-values
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-text-gap']"
+                    :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                     @hover-var="hoveredVar = $event"
