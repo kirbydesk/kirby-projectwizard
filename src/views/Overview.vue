@@ -1006,6 +1006,15 @@
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-padding']"
+                  :guides="previewGuides ? { 'item-padding': 'padding' } : null"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-background']"
                   :labels="{ 'item-background': $t('prw.label.backgroundColor') }"
                   :theme="currentItemColorTheme"
@@ -1027,6 +1036,7 @@
                 </div>
                 <div class="pw-card pw-field-table">
                   <pw-block-values
+                    v-if="block.blockType !== 'pwlogocloud'"
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
