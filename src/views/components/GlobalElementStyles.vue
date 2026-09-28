@@ -364,14 +364,28 @@
                           <!-- values with a choice of unit (e.g. the button width: rem or %):
                                the unit as a select in place of its label -->
                           <span v-if="field.def.units" class="pw-element-unit pw-element-unit-choice">
-                            {{ responsiveUnit(field, bp) }}<k-icon type="angle-down" />
-                            <select
-                              :value="responsiveUnit(field, bp)"
+                            <button
+                              type="button"
+                              class="pw-unit-button"
+                              aria-haspopup="menu"
                               :aria-label="$t('prw.label.unit')"
-                              @change="setResponsiveUnit(field, bp, $event.target.value)"
-                            >
-                              <option v-for="u in field.def.units" :key="'u-' + u" :value="u">{{ u }}</option>
-                            </select>
+                              @click="unitMenu(field.varName).toggle()"
+                            >{{ responsiveUnit(field, bp) }}<k-icon type="angle-down" /></button>
+                            <k-dropdown-content :ref="'unit-' + field.varName" align-x="start" class="pw-unit-menu">
+                              <nav class="k-navigate">
+                                <button
+                                  v-for="u in field.def.units"
+                                  :key="'u-' + u"
+                                  type="button"
+                                  class="k-dropdown-item k-button pw-menu-item"
+                                  data-has-text="true"
+                                  :aria-current="responsiveUnit(field, bp) === u ? 'true' : undefined"
+                                  @click="unitMenu(field.varName).close(); setResponsiveUnit(field, bp, u)"
+                                >
+                                  <span class="k-button-text">{{ u }}</span>
+                                </button>
+                              </nav>
+                            </k-dropdown-content>
                           </span>
                           <span v-else class="pw-element-unit">{{ responsiveUnit(field, bp) }}</span>
                         </span>
@@ -1336,6 +1350,11 @@ export default {
     responsiveUnit(field, bp) {
       const val = this.getResponsiveOverride(field.varName, bp) || field.def[bp] || '';
       return String(val).endsWith('%') ? '%' : field.def.unit;
+    },
+    // the unit dropdown of a field (refs inside v-for come as arrays)
+    unitMenu(varName) {
+      const ref = this.$refs['unit-' + varName];
+      return Array.isArray(ref) ? ref[0] : ref;
     },
     // switching the unit: % starts at 100, the field's unit at its default
     setResponsiveUnit(field, bp, unit) {
@@ -2522,26 +2541,27 @@ export default {
 }
 
 /* the unit as a choice (rem / %): the unit with Kirby's arrow right
-   behind it, the native select invisible on top of both */
+   behind it, opening Kirby's dropdown */
 .pw-element-unit.pw-element-unit-choice {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
   pointer-events: auto;
 }
-.pw-element-unit-choice .k-icon {
+.pw-unit-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.pw-unit-button .k-icon {
   --icon-size: 14px;
   margin-inline-start: 1px;
 }
-/* invisible, on top of unit and arrow; small type keeps its list narrow */
-.pw-element-unit-choice select {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  opacity: 0;
-  font-size: var(--text-xs);
-  cursor: pointer;
+/* only as wide as the units */
+.pw-unit-menu .pw-menu-item .k-button-text {
+  min-width: 0;
+  gap: 0;
 }
 .pw-font-select {
   width: 200px;
