@@ -528,12 +528,13 @@ export default {
         // between the columns, else one below the other
         if (cols > 1) {
           const tracks = Array.from({ length: cols }, () => 'minmax(0, 1fr)').join(' ' + gap + ' ');
-          return { ...style, display: 'grid', gridTemplateColumns: tracks, marginBottom: gap };
+          return { ...style, display: 'grid', gridTemplateColumns: tracks };
         }
-        return { ...style, display: 'flex', flexDirection: 'column', marginBottom: this.hasGrid ? gap : 0 };
+        return { ...style, display: 'flex', flexDirection: 'column' };
       }
-      if (!this.hasGrid) return style;
-      return { ...style, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap, marginBottom: gap };
+      // the gap only between the steps (none below the last)
+      if (!this.hasGrid) return { ...style, display: 'flex', flexDirection: 'column', gap };
+      return { ...style, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap };
     },
     // the gap between two steps: as high (one below the other) or as wide
     // (side by side) as the gap
@@ -557,8 +558,6 @@ export default {
         textAlign: centered ? 'center' : null,
         // with guides the gap is an element of its own (two lines)
         gap: this.guides ? 0 : this.stepValue('item-content-gap'),
-        // (with guides the gap below is an element of its own)
-        marginBottom: this.hasGrid || this.guides ? 0 : this.itemValue('item-gap'),
       };
     },
     // the gap element: as wide (beside) or as high (centered) as the gap
