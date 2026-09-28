@@ -257,11 +257,6 @@ export default {
         marginTop: this.gapBefore('logos'),
       };
     },
-    // a logo's tile; with guides one of the four corners of the 3×3 tracks
-    logoTileStyle(index) {
-      const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
-      return this.guides && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : this.logoStyle;
-    },
     // a logo's tile: size, padding, shape and background as in the frontend
     logoStyle() {
       const shape = this.setting('layout', 'item-shape') || 'round';
@@ -489,6 +484,11 @@ export default {
     },
   },
   methods: {
+    // a logo's tile; with guides one of the four corners of the 3×3 tracks
+    logoTileStyle(index) {
+      const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
+      return this.guides && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : this.logoStyle;
+    },
     // steplist "connected": the line through all numbers, from the first
     // number's centre to the last one's
     stepConnectorStyle(n) {
