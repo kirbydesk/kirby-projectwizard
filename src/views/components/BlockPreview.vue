@@ -43,7 +43,11 @@
         :class="{ 'has-guide-top': blockGuides && setting('settings', 'margin-top') === true, 'has-guide-bottom': blockGuides && setting('settings', 'margin-bottom') === true, 'is-fullscreen': setting('settings', 'block-size') === 'fullscreen' }"
         :style="blockStyle"
       >
-      <section class="pw-block-live-section" :class="{ 'has-guides': blockGuides }" :style="sectionStyle">
+      <section class="pw-block-live-section" :class="{ 'has-guides': blockGuides, 'is-hero': isHero, 'pw-media-preview-photo': heroImage }" :style="sectionStyle">
+        <!-- hero with a video background: the sample image and a play mark -->
+        <span v-if="isHero && heroBackground === 'video'" class="pw-hero-video-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+        </span>
         <!-- like the frontend: grid (12 columns from tablet on) > item with
              the paddings -->
         <div class="pw-block-live-grid" :style="gridStyle">
@@ -197,6 +201,11 @@ const FEATURE_ICONS = [
   'M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z',
   'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
 ];
+
+// hero heights (vh) and the height of the shown device's screen (px): the
+// preview is as wide as the sidebar, the hero as high as on that device
+const HERO_HEIGHTS = { small: 25, medium: 50, large: 75, fullscreen: 100 };
+const SCREEN_HEIGHTS = { default: 800, lg: 768, xl: 900 };
 
 // device → grid breakpoint (below 640px there is no grid: full width)
 const GRID_BP = { default: null, lg: 'lg', xl: 'xl' };
@@ -411,6 +420,34 @@ export default {
     isQuote() {
       return this.blockType === 'pwquote';
     },
+    isHero() {
+      return this.blockType === 'pwhero';
+    },
+    heroBackground() {
+      return this.setting('style', 'background-type') || 'color';
+    },
+    // image or video: the drawn sample image (as in the media preview)
+    heroImage() {
+      return this.isHero && ['image', 'video'].includes(this.heroBackground);
+    },
+    // its height: a share of the device's screen, "auto" as its content
+    heroHeight() {
+      const vh = HERO_HEIGHTS[this.setting('style', 'height')];
+      return vh ? Math.round(SCREEN_HEIGHTS[this.bp] * vh / 100) + 'px' : null;
+    },
+    // the content's place (as the frontend's data-h / data-v margins)
+    heroContentStyle() {
+      const h = this.setting('layout', 'position-horizontal') || 'left';
+      const v = this.setting('layout', 'position-vertical') || 'middle';
+      return {
+        display: 'flex',
+        flexDirection: 'column',
+        marginLeft: h === 'left' ? 0 : 'auto',
+        marginRight: h === 'right' ? 0 : 'auto',
+        marginTop: v === 'top' ? 0 : 'auto',
+        marginBottom: v === 'bottom' ? 0 : 'auto',
+      };
+    },
     isFeaturelist() {
       return this.blockType === 'pwfeaturelist';
     },
@@ -422,6 +459,7 @@ export default {
       return this.isFeaturelist && (this.featureLayout || this.setting('style', 'section-layout')) === 'split';
     },
     contentStyle() {
+      if (this.isHero) return this.heroContentStyle;
       if (!this.featureSplit || !this.hasGrid) return {};
       const gap = this.itemValue('item-offset-gap');
       // the intro at the top or centred to the features
@@ -691,7 +729,9 @@ export default {
       const radius = this.globalValue('global-') || [];
       const corner = (key, idx) => (layout('radius-' + key) === true ? radius[idx] || 0 : 0);
       return {
-        backgroundColor: this.globalColor('block-background'),
+        // hero: its height, a sample image as background
+        ...(this.isHero ? { height: this.heroHeight } : {}),
+        backgroundColor: this.heroImage ? null : this.globalColor('block-background'),
         // global- values: top-left, top-right, bottom-left, bottom-right
         borderRadius: [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' '),
       };
@@ -713,8 +753,11 @@ export default {
       return !!GRID_BP[this.bp];
     },
     gridStyle() {
-      if (!this.hasGrid) return { display: 'block' };
+      // hero: grid and item as high as the section (content placed in it)
+      const fill = this.isHero ? { height: '100%' } : {};
+      if (!this.hasGrid) return { display: 'block', ...fill };
       return {
+        ...fill,
         display: 'grid',
         gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
         columnGap: GRID_GAP[this.bp],
@@ -745,6 +788,11 @@ export default {
       };
       const value = { 'padding-top': style.paddingTop, 'padding-bottom': style.paddingBottom, 'padding-left': style.paddingLeft, 'padding-right': style.paddingRight }[this.highlight];
       if (this.guides && sides[this.highlight] && value) style.boxShadow = sides[this.highlight]();
+      if (this.isHero) {
+        style.display = 'flex';
+        style.height = '100%';
+        style.boxSizing = 'border-box';
+      }
       if (this.hasGrid) {
         const gbp = GRID_BP[this.bp];
         const size = Number(this.setting('grid', 'grid-size-' + gbp)) || 12;
@@ -1033,6 +1081,23 @@ export default {
    the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(130, 80, 255, 0.9);
+}
+/* hero: a video background marked by a play symbol */
+.pw-block-live-section.is-hero {
+  background-size: cover;
+  background-position: center;
+}
+.pw-hero-video-mark {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
+  display: flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.25rem;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
 }
 /* featurelist: a feature and its content may shrink to their column,
    long words break (the narrow sidebar) */
