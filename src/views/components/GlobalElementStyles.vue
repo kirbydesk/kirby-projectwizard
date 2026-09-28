@@ -1451,9 +1451,9 @@ export default {
     },
     elementSubtabs(groupKey) {
       const tabs = {
-        heading:    ['text', 'sizes', 'marked', 'flourish', 'spacing', 'colors'],
-        tagline:    ['text', 'spacing', 'colors'],
-        editor:     ['text', 'sizes', 'spacing', 'colors'],
+        heading:    ['text', 'sizes', 'marked', 'flourish', 'colors'],
+        tagline:    ['text', 'colors'],
+        editor:     ['text', 'sizes', 'colors'],
         quote:      ['text', 'sizes', 'colors'],
         button:     ['text', 'padding', 'margin', 'shape', 'style', 'icon', 'colors'],
         caption:    ['text', 'colors'],
@@ -1466,8 +1466,8 @@ export default {
     varCategory(varName) {
       // source: its gap to the quote sits in the source card
       if (varName === 'cite-spacing') return 'text';
-      // the space after an element: a card of its own
-      if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'spacing';
+      // the space below an element: with its text settings
+      if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'text';
       // buttons: paddings, outer spacing (gap between buttons), form and icon
       if (varName === 'button-padding') return 'padding';
       if (varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
@@ -1498,7 +1498,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') , spacing: this.$t('prw.headline.spacing') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
