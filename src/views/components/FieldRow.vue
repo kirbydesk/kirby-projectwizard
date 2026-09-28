@@ -194,12 +194,12 @@ export default {
   flex-wrap: wrap;
 }
 
-/* restrictions: the options side by side, each an eye with the option */
+/* restrictions: the options one below the other, each an eye with the option */
 .pw-option-eyes {
   display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--spacing-4);
-  row-gap: var(--spacing-1);
+  flex-direction: column;
+  align-items: flex-start;
+  padding-block: var(--spacing-1);
 }
 .pw-option-eye {
   display: inline-flex;
