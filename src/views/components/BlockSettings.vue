@@ -59,6 +59,8 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ row.label }}</label>
+                    <!-- the state as an eye on the right of the label cell -->
+                    <k-icon :type="isHidden(row.keys) ? 'hidden' : 'preview'" class="pw-field-state-eye" />
                   </div>
                   <div class="pw-field-row-options">
                     <k-toggle-input
@@ -1455,6 +1457,11 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
+}
+/* restrictions: the eye at the right end of the label cell */
+.pw-field-state-eye {
+  --icon-size: 14px;
+  margin-inline-start: auto;
 }
 
 
