@@ -5,16 +5,9 @@
          "presets" the rows with allowed options + a preset (pills) ===== -->
     <div v-if="view === 'defaults' || view === 'presets' || view === 'layout'" class="pw-wizard-tab-content">
 
-      <!-- a drawer header as in the block's drawer: the block, its tabs; a
-           tab shows its cards (tabs without rows in this view are disabled) -->
+      <!-- a drawer header as in the block's drawer with its tabs; a tab shows
+           its cards (tabs without rows in this view are disabled) -->
       <header v-if="view !== 'layout'" class="k-drawer-header pw-drawer-strip">
-        <nav class="k-breadcrumb k-drawer-breadcrumb">
-          <ol>
-            <li>
-              <k-button class="k-breadcrumb-link" :icon="block.icon || 'box'" :text="blockTitle" :current="true" variant="dimmed" />
-            </li>
-          </ol>
-        </nav>
         <k-drawer-tabs :tab="currentDrawerTab" :tabs="drawerTabs" @open="drawerTab = $event" />
       </header>
 
@@ -429,12 +422,6 @@ export default {
     currentDrawerTab() {
       const usable = this.drawerTabs.filter(t => !t.disabled).map(t => t.name);
       return usable.includes(this.drawerTab) ? this.drawerTab : (usable[0] || 'content');
-    },
-    blockTitle() {
-      if (this.block.name) return this.block.name;
-      const tKey = this.block.plugin + '.name';
-      const t = this.$t(tKey);
-      return t && t !== tKey ? t : this.blockType;
     },
     // blocks are square: all four global corner radii are 0
     blocksSquare() {
