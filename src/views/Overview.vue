@@ -1297,7 +1297,9 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                     @hover-var="hoveredVar = $event"
                   />
+                  <!-- (logocloud: its gaps in a card of their own below) -->
                   <pw-block-values
+                    v-if="block.blockType !== 'pwlogocloud'"
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1412,6 +1414,48 @@
                     :layout-keys="['item-link-decoration', 'item-link-icon']"
                     @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
+                  />
+                </div>
+              </section>
+            </template>
+
+            <!-- logocloud: the gaps (as the featurelist's): to the intro, between
+                 the logos of a row, between the rows -->
+            <template v-if="block.blockType === 'pwlogocloud' && blockValueDefaults[block.blockType]">
+              <section class="pw-card-section">
+                <div class="pw-card-heading-row">
+                  <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+                </div>
+                <div class="pw-card pw-field-table">
+                  <pw-block-values
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-text-gap']"
+                    :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
+                  />
+                  <pw-block-values
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-gap']"
+                    :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
+                  />
+                  <pw-block-values
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-row-gap']"
+                    :guides="previewGuides ? { 'item-row-gap': 'row' } : null"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
                   />
                 </div>
               </section>
