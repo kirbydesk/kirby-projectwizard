@@ -51,6 +51,23 @@
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
+          <!-- steplist: three steps (number, title, text) as in its snippet -->
+          <div v-if="isSteplist" class="pw-steplist-items" :style="stepItemsStyle">
+            <div
+              v-for="n in 3"
+              :key="'step-' + n"
+              class="pw-steplist-item"
+              :class="{ 'is-connected': stepStyle === 'connected' }"
+              :style="stepItemStyle"
+            >
+              <span v-if="stepStyle === 'connected'" class="pw-steplist-connector" :style="stepConnectorStyle(n)"></span>
+              <div class="pw-steplist-number" :style="stepNumberStyle">{{ n }}</div>
+              <div class="pw-steplist-content">
+                <div :style="stepHeadingStyle">{{ $t('prw.preview.step.title') }} {{ n }}</div>
+                <div :style="stepTextStyle">{{ $t('prw.preview.step.text') }}</div>
+              </div>
+            </div>
+          </div>
           </div>
           </div>
         </div>
@@ -61,8 +78,12 @@
 </template>
 
 <script>
-// fixed gaps between the fields, from the block's own CSS (kirbyblock-text)
+// fixed gaps between the fields, from the blocks' own CSS (kirbyblock-text,
+// kirbyblock-steplist: tagline / heading / text before the items)
 const GAPS = {
+  'tagline>items': '1rem',
+  'heading>items': '1.2rem',
+  'editor>items': '2rem',
   'tagline>heading': '0.5rem',
   'tagline>editor': '0.3rem',
   'tagline>buttons': '1rem',
@@ -78,6 +99,8 @@ const GRID_GAP = { lg: 48 / 1024 * 100 + '%', xl: 64 / 1280 * 100 + '%' };
 
 export default {
   props: {
+    // the block (pwtext, pwsteplist …): decides the parts after the fields
+    blockType: { type: String, default: '' },
     config: { type: Object, default: () => ({}) },
     overrides: { type: Object, default: () => ({}) },
     elementDefaults: { type: Object, default: () => ({}) },
@@ -94,6 +117,9 @@ export default {
     bp: { type: String, default: 'default' },
     // guides on/off (shared with the settings rows, .sync)
     guides: { type: Boolean, default: false },
+    // the block's own values (items: sizes, gaps, colours) and their overrides
+    valueDefaults: { type: Object, default: () => ({}) },
+    valueOverrides: { type: Object, default: () => ({}) },
   },
   data() {
     return {
@@ -106,9 +132,69 @@ export default {
       const chosen = this.theme || this.setting('style', 'theme') || 'default';
       return this.themes.includes(chosen) ? chosen : 'default';
     },
-    // fields shown in the order of the snippet
+    // fields shown in the order of the snippet (steplist: its items last)
     fields() {
-      return ['tagline', 'heading', 'editor', 'buttons'].filter(f => this.hasField(f));
+      const fields = ['tagline', 'heading', 'editor', 'buttons'].filter(f => this.hasField(f));
+      return this.isSteplist ? [...fields, 'items'] : fields;
+    },
+    isSteplist() {
+      return this.blockType === 'pwsteplist';
+    },
+    // steplist: item style (default, centered, connected, minimal), number
+    // alignment, the items' grid and their parts as in its CSS
+    stepStyle() {
+      return this.setting('style', 'item-style') || 'default';
+    },
+    stepItemsStyle() {
+      const gap = this.itemValue('item-gap');
+      const style = { marginTop: this.gapBefore('items') };
+      if (!this.hasGrid) return style;
+      const cols = Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
+      return { ...style, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap, marginBottom: gap };
+    },
+    stepItemStyle() {
+      const centered = this.stepStyle === 'centered';
+      const align = this.setting('style', 'item-number-align') || 'center';
+      return {
+        display: 'flex',
+        flexDirection: centered ? 'column' : 'row',
+        alignItems: centered || align === 'center' ? 'center' : (this.stepStyle === 'minimal' ? 'baseline' : 'flex-start'),
+        textAlign: centered ? 'center' : null,
+        gap: this.itemValue('item-content-gap'),
+        marginBottom: this.hasGrid ? 0 : this.itemValue('item-gap'),
+      };
+    },
+    stepNumberStyle() {
+      const size = this.itemValue('item-number-size');
+      if (this.stepStyle === 'minimal') {
+        return { color: this.itemColor('item-number-background'), fontSize: size, fontWeight: 700 };
+      }
+      const shape = this.setting('layout', 'item-shape') || 'round';
+      const r = this.itemValue('item-radius') || [];
+      const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
+      return {
+        flexShrink: 0,
+        width: size,
+        height: size,
+        fontSize: 'calc(' + size + ' * 0.4)',
+        fontWeight: 700,
+        lineHeight: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        zIndex: 1,
+        backgroundColor: this.itemColor('item-number-background'),
+        color: this.itemColor('item-number-text'),
+        borderRadius: { round: '50%', square: 0 }[shape] ?? custom,
+      };
+    },
+    // item title and text: heading at its "lg" step, text like the editor
+    stepHeadingStyle() {
+      return { ...this.typography('heading'), fontSize: this.sizeStep('heading', 'lg'), color: this.itemColor('item-heading-text') };
+    },
+    stepTextStyle() {
+      return { ...this.typography('editor'), marginTop: '0.2rem', color: this.itemColor('item-editor-text') };
     },
     sectionStyle() {
       const layout = (key) => this.setting('layout', key);
@@ -191,6 +277,37 @@ export default {
     },
   },
   methods: {
+    // steplist "connected": the line through all numbers, from the first
+    // number's centre to the last one's
+    stepConnectorStyle(n) {
+      const size = this.itemValue('item-number-size');
+      const width = this.itemValue('item-connector-width');
+      const centre = (this.setting('style', 'item-number-align') || 'center') === 'center' ? '50%' : 'calc(' + size + ' / 2)';
+      return {
+        left: 'calc(' + size + ' / 2 - ' + width + ' / 2)',
+        width,
+        top: n === 1 ? centre : 0,
+        bottom: n === 3 ? 'calc(100% - ' + centre + ')' : 'calc(' + this.itemValue('item-gap') + ' * -1)',
+        background: this.itemColor('item-connector'),
+      };
+    },
+    // a value of the block's own (item-gap, item-radius …): override, else the plugin's
+    itemValue(name) {
+      const ov = (this.valueOverrides || {})[name];
+      if (ov !== undefined && ov !== '') return ov;
+      for (const group of Object.values(this.valueDefaults || {})) {
+        if (group && group.vars && group.vars[name]) return group.vars[name].value;
+      }
+      return undefined;
+    },
+    itemColor(name) {
+      const ov = ((this.valueOverrides || {})[this.currentTheme] || {})[name];
+      if (ov) return ov;
+      for (const group of Object.values(this.valueDefaults || {})) {
+        if (group && group.colors && group.colors[name]) return group.colors[name][this.currentTheme] || '';
+      }
+      return '';
+    },
     toggleGuides() {
       this.$emit('update:guides', !this.guides);
     },
@@ -331,6 +448,17 @@ export default {
    Photoshop / Figma */
 .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 1px solid rgba(255, 0, 170, 0.6);
+}
+/* steplist: the connector line sits behind the numbers */
+.pw-steplist-item {
+  position: relative;
+}
+.pw-steplist-connector {
+  position: absolute;
+  opacity: 0.4;
+}
+.pw-steplist-content {
+  flex: 1;
 }
 /* order of the toolbar: see Overview (variants left, guides right) */
 </style>

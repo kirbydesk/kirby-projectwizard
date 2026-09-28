@@ -362,6 +362,8 @@
 	'prw.preview.text.before' => 'Zwölf Boxkämpfer jagen',
 	'prw.preview.text.link' => 'Viktor quer über den großen',
 	'prw.preview.text.after' => ' Sylter Deich. Falsches Üben von Xylophonmusik quält jeden größeren Zwerg.',
+	'prw.preview.step.title' => 'Schritt',
+	'prw.preview.step.text' => 'Kurze Beschreibung, was in diesem Schritt passiert.',
 	'prw.preview.guides' => 'Hilfslinien',
 	'prw.sample.heading' => 'Franz jagt im __marked__komplett verwahrlosten__/marked__ Taxi quer durch Bayern',
 	'prw.sample.tagline' => 'Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich',

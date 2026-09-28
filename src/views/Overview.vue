@@ -784,10 +784,11 @@
           class="pw-wizard-panel"
         >
 
-          <!-- Live preview of the block in the sidebar (Text for now) -->
-          <pw-portal v-if="block.blockType === 'pwtext' && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <!-- Live preview of the block in the sidebar (Text, Steplist so far) -->
+          <pw-portal v-if="['pwtext', 'pwsteplist'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
+                :block-type="block.blockType"
                 :config="blockConfigs[block.blockType]"
                 :overrides="blockOverrides[block.blockType] || {}"
                 :element-defaults="elementDefaults"
@@ -802,6 +803,8 @@
                 :themes="themes"
                 :guides.sync="previewGuides"
                 :bp.sync="itemBp"
+                :value-defaults="blockValueDefaults[block.blockType] || {}"
+                :value-overrides="blockValueOverrides[block.blockType] || {}"
               />
             </div>
           </pw-portal>
