@@ -1336,8 +1336,12 @@
                         <div class="pw-field-row-label-col">
                           <label class="pw-field-row-label">{{ $t('prw.prop.' + el + '-spacing') }}</label>
                         </div>
+                        <!-- as the editable rows: the px cell first, then the value -->
                         <div class="pw-field-row-options">
-                          <span class="pw-field-hint">{{ globalElementSpacing(el) }}</span>
+                          <span class="pw-element-field">
+                            <span class="pw-readonly-value">{{ globalElementSpacing(el).replace(/rem$/, '') }}<span class="pw-element-unit">rem</span></span>
+                            <span class="pw-px-calculator">{{ remToPx(globalElementSpacing(el)) }}</span>
+                          </span>
                         </div>
                       </span>
                     </div>
@@ -2281,6 +2285,11 @@ export default {
       if (this.featurePreviewLayout[blockType]) return this.featurePreviewLayout[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['section-layout']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['section-layout']?.default || 'stacked';
+    },
+    // a rem value in px (16px root), as the px cells
+    remToPx(val) {
+      const n = parseFloat(val);
+      return isNaN(n) ? '' : Math.round(n * 16) + 'px';
     },
     // the global elements' space below (Elements page: override, else default)
     globalElementSpacing(el) {
@@ -3294,6 +3303,17 @@ export default {
   display: none;
 }
 
+/* a value shown, not editable (e.g. the global elements' spacing): as an
+   input's value, dimmed */
+.pw-field-table .pw-readonly-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-dimmed);
+}
+.pw-field-table .pw-readonly-value .pw-element-unit {
+  position: static;
+  margin-inline-start: 0.35em;
+}
 /* a note below a card: Kirby's field help (k-text.k-help), with the gap
    of its field footer */
 .pw-card-help {
