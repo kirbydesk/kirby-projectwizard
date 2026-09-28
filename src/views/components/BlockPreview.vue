@@ -57,9 +57,10 @@
           <!-- media: a sample image (as in the element's preview) with the
                element's corner radii -->
           <div v-if="isMedia && hasField('media')" class="pw-media-preview-img pw-media-preview-photo" :style="mediaStyle"></div>
-          <!-- logocloud: sample logos in their tiles, as many per row as set -->
+          <!-- logocloud: two sample logos side by side (so the gap shows),
+               shrinking in a narrow preview -->
           <div v-if="isLogocloud" class="pw-logocloud-preview" :style="logosStyle">
-            <div v-for="n in 6" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
+            <div v-for="n in 2" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
               <k-icon type="image" />
             </div>
           </div>
@@ -214,7 +215,7 @@ export default {
       const align = this.preset('logos', 'align') || 'center';
       return {
         display: 'flex',
-        flexWrap: 'wrap',
+        flexWrap: 'nowrap',
         justifyContent: { left: 'flex-start', right: 'flex-end' }[align] || 'center',
         gap,
         maxWidth: 'calc(' + perRow + ' * ' + size + ' + ' + (perRow - 1) + ' * ' + gap + ')',
@@ -229,7 +230,8 @@ export default {
       const r = this.itemValue('item-radius') || [];
       const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
       return {
-        flex: '0 0 ' + this.itemValueAt('item-size'),
+        flex: '0 1 ' + this.itemValueAt('item-size'),
+        minWidth: 0,
         maxWidth: '100%',
         aspectRatio: '1',
         padding: this.itemValue('item-padding'),
