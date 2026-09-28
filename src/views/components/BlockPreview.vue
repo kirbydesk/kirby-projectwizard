@@ -48,7 +48,7 @@
              the paddings -->
         <div class="pw-block-live-grid" :style="gridStyle">
           <div class="pw-block-live-item" :style="itemStyle">
-          <div class="pw-block-live-content" :style="contentStyle">
+          <div class="pw-block-live-content" :class="{ 'is-split': featureSplit && hasGrid }" :style="contentStyle">
           <!-- tagline, heading, text; in the featurelist's split layout a
                column of their own next to the items -->
           <div class="pw-block-live-intro">
@@ -1037,6 +1037,21 @@ export default {
 }
 .pw-block-live-intro {
   min-width: 0;
+}
+/* split (intro in a narrow column): tagline and heading on one line, the
+   text on three, each cut off with "…" – the layout reads, not the words */
+.pw-block-live-content.is-split .pw-block-live-intro > * {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pw-block-live-content.is-split .pw-block-live-intro > p:last-child {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
+.pw-block-live-intro {
   overflow-wrap: break-word;
   hyphens: auto;
 }
