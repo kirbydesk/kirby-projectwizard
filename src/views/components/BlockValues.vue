@@ -102,6 +102,9 @@
                           v-pw-autosize
                           type="text"
                           inputmode="decimal"
+                          :step="def.step"
+                          :min="def.min"
+                          :max="def.max"
                           class="pw-element-input pw-element-input-number"
                           :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !responsiveAt(varName, bp) }"
                           :value="stripUnit(responsiveAt(varName, bp) || def[bp], def.unit)"
@@ -138,6 +141,9 @@
                           v-pw-autosize
                           type="text"
                           inputmode="decimal"
+                          :step="def.step"
+                          :min="def.min"
+                          :max="def.max"
                           class="pw-element-input pw-element-input-number"
                           :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !overrideAt(varName, idx) }"
                           :value="stripUnit(overrideAt(varName, idx) || def.value[idx], def.unit)"
@@ -161,6 +167,9 @@
                           v-pw-autosize
                           type="text"
                           inputmode="decimal"
+                          :step="def.step"
+                          :min="def.min"
+                          :max="def.max"
                           class="pw-element-input pw-element-input-number"
                           :class="{ 'pw-px-calculator-input': showCalculator(def.unit) }"
                           :value="stripUnit(overrideAt(varName, idx) || def.value[idx], def.unit)"
@@ -180,6 +189,9 @@
                           v-pw-autosize
                           type="text"
                           inputmode="decimal"
+                          :step="def.step"
+                          :min="def.min"
+                          :max="def.max"
                           class="pw-element-input pw-element-input-number"
                           :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !getOverride(varName) }"
                           :value="stripUnit(getOverride(varName) || def.value, def.unit)"
