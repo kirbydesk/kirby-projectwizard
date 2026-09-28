@@ -1115,6 +1115,16 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-icon-gap': 'row' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-icon-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1201,17 +1211,6 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-gap']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-                <pw-block-values
-                  v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none'"
-                  :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-icon-gap': 'row' } : null"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-icon-gap']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
