@@ -1148,7 +1148,7 @@
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-title-size', 'item-title-line-height', 'item-title-gap', 'item-text-size']"
-                    :guides="previewGuides ? { 'item-title-gap': 'text' } : null"
+                    :guides="previewGuides ? { 'item-title-gap': 'gap-4' } : null"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                     @hover-var="hoveredVar = $event"

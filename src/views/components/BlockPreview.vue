@@ -100,7 +100,7 @@
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the features cyan, icon and text violet, title
-               and text orange; the tile's padding magenta -->
+               and text gold; the tile's padding magenta -->
           <!-- guides: the gap to the text as an element of its own -->
           <div v-if="isFeaturelist && guides && featureTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: featureTextGap }"></div>
           <div v-if="isFeaturelist" class="pw-featurelist-items" :class="{ 'has-guides': guides, 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
@@ -1012,7 +1012,8 @@ export default {
   border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
 /* featurelist guides: between the features cyan, between icon and text
-   violet, between title and text orange (a line on either side), the
+   violet, between title and text gold (to the text above: orange; a line
+   on either side), the
    icon's area inside the tile's padding magenta */
 .pw-featurelist-gap,
 .pw-featurelist-icon-gap,
@@ -1035,7 +1036,7 @@ export default {
   border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
 .pw-featurelist-title-gap {
-  border-block: 1px solid rgba(255, 140, 0, 0.9);
+  border-block: 1px solid rgba(215, 160, 0, 0.95);
 }
 .pw-featurelist-pad {
   position: absolute;
@@ -1052,7 +1053,7 @@ export default {
 }
 .pw-featurelist-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-featurelist-icon-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
-.pw-featurelist-title-gap.is-hot { background: rgba(255, 140, 0, 0.15); }
+.pw-featurelist-title-gap.is-hot { background: rgba(215, 160, 0, 0.18); }
 /* a value's label hovered: every other guide hidden – the block's own
    lines, the other gaps, the padding frames, the flexible tiles' edges */
 .has-focus .pw-block-live-block::before,

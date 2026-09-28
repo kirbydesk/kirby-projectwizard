@@ -1744,7 +1744,8 @@ export default {
 }
 /* guide colours: the kind picks the family – gaps between things cyan,
    paddings magenta; a second value of the same kind in one preview gets
-   the second colour (gap violet, padding green), a third gap orange */
+   the second colour (gap violet, padding green), a third gap orange, a
+   fourth gold */
 /* the second gap (e.g. logocloud's vertical gap, the paragraph spacing) */
 .pw-field-row[data-guide="row"] {
   --pw-guide-color: rgba(130, 80, 255, 0.9);
@@ -1757,6 +1758,10 @@ export default {
 /* the third gap: between the text and the items (e.g. logocloud) */
 .pw-field-row[data-guide="text"] {
   --pw-guide-color: rgba(255, 140, 0, 0.9);
+}
+/* a fourth gap in one preview (e.g. featurelist: between title and text) */
+.pw-field-row[data-guide="gap-4"] {
+  --pw-guide-color: rgba(215, 160, 0, 0.95);
 }
 
 /* the global value a switch applies, grey at the right end of the row */
