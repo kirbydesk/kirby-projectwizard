@@ -54,7 +54,7 @@
           <div class="pw-block-live-intro">
           <p v-if="hasField('tagline')" :style="fieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</p>
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
-          <p v-if="hasField('editor')" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} {{ $t('prw.preview.text.link') }}{{ $t('prw.preview.text.after') }}</p>
+          <p v-if="hasField('editor')" class="pw-block-live-text" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} {{ $t('prw.preview.text.link') }}{{ $t('prw.preview.text.after') }}</p>
           </div>
           <!-- quote: the quote (element typography, its size step and marks)
                and its source below -->
@@ -1045,7 +1045,7 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.pw-block-live-content.is-split .pw-block-live-intro > p:last-child {
+.pw-block-live-content.is-split .pw-block-live-intro > .pw-block-live-text {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
