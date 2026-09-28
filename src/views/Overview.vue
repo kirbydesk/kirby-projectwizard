@@ -809,7 +809,6 @@
           <!-- Start values: the block's field defaults, then (blocks with items)
                the items' ones -->
           <div v-show="currentBlockView === 'defaults'" v-if="blockConfigs[block.blockType]">
-            <h2 v-if="hasItemFields(block.blockType) && hasItemDefaultFields(block.blockType)" class="pw-group-title">{{ $t('prw.heading.block') }}</h2>
             <pw-block-settings
               view="defaults"
               :global-values="globalLayoutValues"
