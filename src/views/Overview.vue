@@ -1177,7 +1177,6 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :labels="{ 'item-icon-tile-background': $t('prw.label.backgroundColor') }"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
