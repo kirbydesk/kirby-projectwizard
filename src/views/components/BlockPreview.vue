@@ -421,9 +421,10 @@ export default {
       return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', columnGap: this.itemValueAt('item-gap'), alignItems: 'start' };
     },
     // columns of the features at the shown device (mobile: one below the other)
-    // (at most as many as sample features shown: no empty column)
+    // (at most as many as sample features shown: no empty column; split:
+    // one below the other, so the layout reads in the narrow sidebar)
     featureColumns() {
-      if (!this.hasGrid) return 1;
+      if (!this.hasGrid || this.featureSplit) return 1;
       return Math.min(Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1, 2);
     },
     featureItemsStyle() {
