@@ -1629,6 +1629,8 @@ export default {
 .pw-area-hint {
   --icon-size: 18px;
   margin-inline-start: auto;
+  /* close to the cell's right edge (into its padding) */
+  margin-inline-end: calc(var(--spacing-1) - var(--table-cell-padding, var(--spacing-3)));
   color: var(--color-text-dimmed);
   opacity: 0.5;
 }
