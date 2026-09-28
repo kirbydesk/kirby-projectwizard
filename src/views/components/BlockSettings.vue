@@ -76,11 +76,11 @@
                         :text="toggleOptionLabel(corner)"
                         @input="setVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', $event)"
                       />
-                      <!-- the radius this corner gets (0rem while off) -->
+                      <!-- the radius set for this corner (fainter while it is off) -->
                       <span
                         class="pw-field-hint"
                         :class="{ 'is-zero': !getVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', false) }"
-                      >{{ cornerHint(corner, getVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', false), mediaRadius) }}</span>
+                      >{{ cornerHint(corner, true, mediaRadius) }}</span>
                     </span>
                   </div>
                 </span>
