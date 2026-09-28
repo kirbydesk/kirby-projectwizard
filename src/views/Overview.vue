@@ -1328,6 +1328,7 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
+                <p v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'" class="pw-card-note">{{ $t('prw.hint.spacingStandard') }}</p>
                 <pw-block-values
                   v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own'"
                   :bp.sync="itemBp"
