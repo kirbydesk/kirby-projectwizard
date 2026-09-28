@@ -351,10 +351,12 @@ export default {
       const ov = this.nested(this.overrides || {}, path);
       return ov !== undefined ? ov : this.nested(this.config.defaults || {}, path);
     },
-    // a content field of the block, unless switched off in the restrictions
+    // a content field of the block, unless hidden from the editors (then
+    // nobody fills it in)
     hasField(field) {
       const content = this.nested(this.config.defaults || {}, 'settings.fields.content') || {};
-      if (this.nested(this.overrides || {}, 'settings.fields.content.' + field) === false) return false;
+      const hidden = this.nested(this.overrides || {}, 'settings.hidden');
+      if (Array.isArray(hidden) && hidden.includes(field)) return false;
       return content[field] !== undefined && content[field] !== false;
     },
     globalValue(name) {

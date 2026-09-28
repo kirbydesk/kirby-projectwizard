@@ -7,7 +7,7 @@
 
       <!-- a drawer header as in the block's drawer with its tabs; a tab shows
            its cards (tabs without rows in this view are disabled) -->
-      <header v-if="view === 'defaults'" class="k-drawer-header pw-drawer-strip">
+      <header v-if="view === 'defaults' || view === 'presets'" class="k-drawer-header pw-drawer-strip">
         <k-drawer-tabs :tab="currentDrawerTab" :tabs="drawerTabs" @open="drawerTab = $event" />
       </header>
 
@@ -39,31 +39,31 @@
         </section>
       </template>
 
-      <!-- ===== Restrictions: the block's fields (and its items'), each with
-           an eye – a field switched off is not in the drawer and not rendered ===== -->
+      <!-- ===== Restrictions: the fields of the chosen drawer tab, each with
+           an eye – hidden from the editors, the field keeps its start value ===== -->
       <template v-if="view === 'presets'">
         <section
-          v-for="group in contentFieldGroups()"
-          :key="'cf-' + group.key"
+          v-for="group in restrictionGroups(currentDrawerTab)"
+          :key="'rg-' + group.key"
           class="pw-card-section"
         >
           <div v-if="group.heading" class="pw-card-heading-row">
             <h3 class="pw-card-heading">{{ group.heading }}</h3>
           </div>
           <div class="pw-card pw-field-table">
-            <div v-for="key in group.keys" :key="key" class="pw-field-row">
+            <div v-for="row in group.rows" :key="row.id" class="pw-field-row">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <button
                       type="button"
                       class="pw-field-eye"
-                      :data-state="isContentFieldOff(key) ? 'off' : 'on'"
-                      :title="$t(isContentFieldOff(key) ? 'prw.field.state.off' : 'prw.field.state.on')"
-                      @click="toggleContentField(key)"
+                      :data-state="isHidden(row.keys) ? 'off' : 'on'"
+                      :title="$t(isHidden(row.keys) ? 'prw.field.state.off' : 'prw.field.state.on')"
+                      @click="toggleHidden(row.keys)"
                     >
-                      <k-icon :type="isContentFieldOff(key) ? 'hidden' : 'preview'" />
-                      <span class="pw-field-row-label">{{ fieldLabel(key) }}</span>
+                      <k-icon :type="isHidden(row.keys) ? 'hidden' : 'preview'" />
+                      <span class="pw-field-row-label">{{ row.label }}</span>
                     </button>
                   </div>
                 </span>
@@ -657,32 +657,54 @@ export default {
       });
     },
 
-    // the block's content fields (tagline, heading, editor, buttons, items …)
-    // and its items' fields (item-*), for switching them off
-    contentFieldGroups() {
-      const content = this.getDefault('settings.fields.content') || {};
-      // (lists of allowed blocks, e.g. multicolumn's column blocks, are no field)
-      const isField = (v) => v === 'enabled' || v === true
-        || (this.isObject(v) && Object.values(v).some(p => this.isObject(p) && ('options' in p || 'default' in p)));
-      const keys = Object.keys(content).filter(k => isField(content[k]));
-      const groups = [];
-      const own = keys.filter(k => !k.startsWith('item-'));
-      const items = keys.filter(k => k.startsWith('item-'));
-      if (own.length) groups.push({ key: 'block', heading: null, keys: own });
-      if (items.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), keys: items });
-      return groups;
+    // the fields of a drawer tab for the restrictions: content (the block's
+    // fields, then its items'), else the tab's settings keys (the four
+    // corners together, as in the drawer); each row: its keys and label
+    restrictionGroups(tab) {
+      const all = this.getDefault('settings.fields.' + tab) || {};
+      if (tab === 'content') {
+        // (lists of allowed blocks, e.g. multicolumn's column blocks, are no field)
+        const isField = (v) => v === 'enabled' || v === true
+          || (this.isObject(v) && Object.values(v).some(p => this.isObject(p) && ('options' in p || 'default' in p)));
+        const keys = Object.keys(all).filter(k => isField(all[k]));
+        const row = (k) => ({ id: k, keys: [k], label: this.fieldLabel(k) });
+        const groups = [];
+        const own = keys.filter(k => !k.startsWith('item-')).map(row);
+        const items = keys.filter(k => k.startsWith('item-')).map(row);
+        if (own.length) groups.push({ key: 'block', heading: null, rows: own });
+        if (items.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: items });
+        return groups;
+      }
+      // drawer fields only: no "enabled" markers, no item-* values (those
+      // are the items' design), fields with a start value
+      const keys = Object.keys(all).filter(k => !k.startsWith('item-') && this.isObject(all[k]) && 'default' in all[k]);
+      const rows = [];
+      const corners = keys.filter(k => k.startsWith('radius-'));
+      for (const k of keys) {
+        if (k.startsWith('radius-')) continue;
+        rows.push({ id: k, keys: [k], label: this.categoryFieldLabel(k) });
+      }
+      if (corners.length) rows.push({ id: 'radius', keys: corners, label: this.categoryFieldLabel('radius') });
+      return rows.length ? [{ key: tab, heading: null, rows }] : [];
     },
-    isContentFieldOff(key) {
-      return this.getOverrideOnly('settings.fields.content.' + key) === false;
+    // fields hidden from the editors (setting keys)
+    hiddenKeys() {
+      const list = this.getOverrideOnly('settings.hidden');
+      return Array.isArray(list) ? list : [];
     },
-    // eye clicked: switch the field off (false) or on again (the override goes)
-    toggleContentField(key) {
-      const path = 'settings.fields.content.' + key;
-      if (this.isContentFieldOff(key)) {
-        this.deleteNested(this.overrides || {}, path);
-        ['settings.fields.content', 'settings.fields', 'settings'].forEach(p => this.cleanEmpty(this.overrides || {}, p));
+    isHidden(keys) {
+      const hidden = this.hiddenKeys();
+      return keys.every(k => hidden.includes(k));
+    },
+    // eye clicked: hide the row's fields from the editors or show them again
+    toggleHidden(keys) {
+      const hidden = this.hiddenKeys().filter(k => !keys.includes(k));
+      if (!this.isHidden(keys)) hidden.push(...keys);
+      if (hidden.length) {
+        this.setNested(this.overrides, 'settings.hidden', hidden);
       } else {
-        this.setVal(path, false);
+        this.deleteNested(this.overrides || {}, 'settings.hidden');
+        this.cleanEmpty(this.overrides || {}, 'settings');
       }
       this.markDirty();
     },
@@ -691,13 +713,12 @@ export default {
     // the items' fields, each a row with the drawer's dropdowns
     contentToolbarGroups() {
       const groups = [];
-      const own = this.presetFields(this.getContentFields()).filter(f => !this.isContentFieldOff(f.key));
+      const own = [...this.presetFields(this.getContentFields())];
       const editor = this.getEditorField();
-      if (editor && editor.properties.length && !this.isContentFieldOff('editor')) own.push(editor);
+      if (editor && editor.properties.length) own.push(editor);
       const ownRows = own.map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
       if (ownRows.length) groups.push({ key: 'block', heading: null, rows: ownRows });
       const itemRows = this.presetFields(this.getItemDefaultsContentFields())
-        .filter(f => !this.isContentFieldOff(f.key))
         .map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
       if (itemRows.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: itemRows });
       return groups;
@@ -729,6 +750,7 @@ export default {
 
     // a drawer tab has rows in this view
     drawerTabHasRows(key) {
+      if (this.view === 'presets') return this.restrictionGroups(key).length > 0;
       if (key === 'content') {
         return this.presetFields(this.getContentFields()).length > 0 || this.hasEditorCard()
           || this.presetFields(this.getItemDefaultsContentFields()).length > 0;
