@@ -861,34 +861,6 @@
           <!-- Design: the items' values (CSS variables), for all blocks at once -->
           <div v-show="currentBlockView === 'design'" v-if="blockConfigs[block.blockType] && hasDesign(block.blockType)">
 
-            <!-- steplist: the colours of the steps' title and text first, as "Text" -->
-            <section v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType]" class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.subtab.text') }}</h3>
-                <span class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="theme in themes"
-                    :key="'tth-' + theme"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
-                    @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
-                </span>
-              </div>
-              <div class="pw-card pw-field-table">
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="itemColorsShowOnly(block.blockType)"
-                  :theme="currentItemColorTheme"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                />
-              </div>
-            </section>
-
             <!-- steplist: the item styles as pills (a view, not saved: the
                  preview shows that style) and the values that matter for it –
                  the number's size (bubble or, minimal, plain text), the
@@ -1170,8 +1142,8 @@
               </section>
             </template>
 
-            <!-- Colors section (multi-theme; steplist: its "Text" card on top) -->
-            <template v-if="blockValueDefaults[block.blockType] && block.blockType !== 'pwsteplist'">
+            <!-- Colors section (multi-theme) -->
+            <template v-if="blockValueDefaults[block.blockType]">
               <section class="pw-card-section">
                 <!-- colours: choose the theme, the rows show only its value -->
                 <div class="pw-card-heading-row">
