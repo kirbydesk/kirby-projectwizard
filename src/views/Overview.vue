@@ -1045,12 +1045,13 @@
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-title-size', 'item-title-line-height', 'item-text-size']"
+                  :show-only="itemLayoutDefault(block.blockType, 'item-title-style') === 'inline' ? ['item-text-size'] : ['item-title-size', 'item-title-line-height', 'item-text-size']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
-                <!-- the title above the text or run-in at its start -->
+                <!-- the title above the text or run-in at its start (then in the
+                     text's size: its own size and line height hidden) -->
                 <pw-block-settings
                   view="items-layout"
                   :block="block"
