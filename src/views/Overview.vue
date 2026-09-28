@@ -806,6 +806,8 @@
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="blockValueOverrides[block.blockType] || {}"
                 :step-style="block.blockType === 'pwsteplist' ? currentStepStyle(block.blockType) : ''"
+                :variant="currentItemColorTheme"
+                @update:variant="itemColorTheme = $event"
               />
             </div>
           </pw-portal>

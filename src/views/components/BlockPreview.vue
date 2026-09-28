@@ -26,7 +26,7 @@
           type="button"
           class="pw-tool"
           :aria-pressed="currentTheme === t ? 'true' : 'false'"
-          @click="theme = t"
+          @click="$emit('update:variant', t)"
         >{{ $t('pw.option.' + t) }}</button>
       </div>
     </div>
@@ -122,16 +122,13 @@ export default {
     valueOverrides: { type: Object, default: () => ({}) },
     // steplist: the item style to show (chosen in the design tab)
     stepStyle: { type: String, default: '' },
-  },
-  data() {
-    return {
-      theme: null,
-    };
+    // variant shown, shared with the colour cards (.sync); empty: the block's preset
+    variant: { type: String, default: '' },
   },
   computed: {
-    // the block's preset theme until one is chosen here
+    // the chosen variant (here or in the colour cards), else the block's preset
     currentTheme() {
-      const chosen = this.theme || this.setting('style', 'theme') || 'default';
+      const chosen = this.variant || this.setting('style', 'theme') || 'default';
       return this.themes.includes(chosen) ? chosen : 'default';
     },
     // fields shown in the order of the snippet (steplist: its items last)
