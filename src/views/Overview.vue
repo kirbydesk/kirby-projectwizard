@@ -1328,6 +1328,21 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
+                <!-- standard: the global elements' values, grey (not editable here) -->
+                <template v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'">
+                  <div v-for="el in ['tagline', 'heading', 'editor']" :key="'gs-' + el" class="pw-field-row">
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <label class="pw-field-row-label">{{ $t('prw.prop.' + el + '-spacing') }}</label>
+                        </div>
+                        <div class="pw-field-row-options">
+                          <span class="pw-field-hint">{{ globalElementSpacing(el) }}</span>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </template>
                 <pw-block-values
                   v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own'"
                   :bp.sync="itemBp"
@@ -2266,6 +2281,11 @@ export default {
       if (this.featurePreviewLayout[blockType]) return this.featurePreviewLayout[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['section-layout']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['section-layout']?.default || 'stacked';
+    },
+    // the global elements' space below (Elements page: override, else default)
+    globalElementSpacing(el) {
+      const name = el + '-spacing';
+      return (this.elementOverrides.global || {})[name] || this.elementDefaults[el]?.vars?.[name]?.value || '';
     },
     // own space below (tagline, heading, text): values not set yet take the
     // elements' current (global) ones, so the block starts where it was
