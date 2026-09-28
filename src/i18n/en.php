@@ -207,7 +207,7 @@
 	'prw.prop.paragraph-spacing' => 'Paragraph Spacing',
 	'prw.hint.spaceBelow' => 'Space to the next element in the block',
 	'prw.hint.heroFullscreen' => 'Full screen always matches the full screen height.',
-	'prw.hint.heroHeight' => 'The height is a share of the screen height: <code>100vh</code> = the whole screen. The px value is a guide for the chosen device.',
+	'prw.hint.heroHeight' => 'The height is a percentage of the screen height. The px value is a guide for the chosen device.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.hint.paragraphSpacing' => 'Space between two paragraphs',

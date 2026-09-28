@@ -207,7 +207,7 @@
 	'prw.prop.paragraph-spacing' => 'Absatzabstand',
 	'prw.hint.spaceBelow' => 'Abstand zum nächsten Element im Block',
 	'prw.hint.heroFullscreen' => 'Vollbild entspricht immer der kompletten Bildschirmhöhe.',
-	'prw.hint.heroHeight' => 'Die Höhe ist ein Anteil der Bildschirmhöhe: <code>100vh</code> = ganzer Bildschirm. Der px-Wert ist ein Richtwert für das gewählte Gerät.',
+	'prw.hint.heroHeight' => 'Die Höhe ist ein prozentualer Anteil der Bildschirmhöhe. Der px-Wert ist ein Richtwert für das gewählte Gerät.',
 	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht, eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.globalValue' => 'Globaler Wert',
 	'prw.hint.paragraphSpacing' => 'Abstand zwischen zwei Absätzen',
