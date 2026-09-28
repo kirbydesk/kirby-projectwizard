@@ -54,6 +54,9 @@
             <blockquote :style="quoteStyle">{{ quoteText }}</blockquote>
             <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ $t('prw.sample.cite') }}</cite></figcaption>
           </figure>
+          <!-- media: a sample image (as in the element's preview) with the
+               element's corner radii -->
+          <div v-if="isMedia && hasField('media')" class="pw-media-preview-img pw-media-preview-photo" :style="mediaStyle"></div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
@@ -103,6 +106,10 @@ const GAPS = {
   'heading>editor': '0.5rem',
   'heading>buttons': '1.2rem',
   'editor>buttons': '1.2rem',
+  // (kirbyblock-media: before the image, slideshow or video)
+  'tagline>media': '0.8rem',
+  'heading>media': '1.2rem',
+  'editor>media': '1.2rem',
 };
 // device → grid breakpoint (below 640px there is no grid: full width)
 const GRID_BP = { default: null, lg: 'lg', xl: 'xl' };
@@ -153,7 +160,22 @@ export default {
     // fields shown in the order of the snippet (steplist: its items last)
     fields() {
       const fields = ['tagline', 'heading', 'editor', 'buttons'].filter(f => this.hasField(f));
-      return this.isSteplist ? [...fields, 'items'] : fields;
+      if (this.isSteplist) return [...fields, 'items'];
+      if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
+      return fields;
+    },
+    isMedia() {
+      return this.blockType === 'pwmedia';
+    },
+    // the media's corners: the element's radii (Elements › Media › Form)
+    mediaStyle() {
+      const def = this.elementDefaults.media?.vars?.['media-radius']?.value || [];
+      const ov = (this.elementOverrides.global || {})['media-radius'];
+      const r = Array.isArray(ov) ? ov : def;
+      return {
+        marginTop: this.gapBefore('media'),
+        borderRadius: r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0,
+      };
     },
     isQuote() {
       return this.blockType === 'pwquote';
