@@ -654,7 +654,7 @@ export default {
         const paddings = fields.filter(f => f.key !== 'radius');
         const sections = [];
         if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), fields: paddings });
-        if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.element.button-shape'), fields: [radius] });
+        if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), fields: [radius] });
         return sections;
       }
       if (!fields.length) return [];
