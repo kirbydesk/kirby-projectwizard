@@ -53,13 +53,14 @@
           </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the steps' edges (gap between the steps) and the
-               text's edge (gap to the number), cyan -->
+               lines at the number's edge and the text's start (gap between
+               them, magenta) -->
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides }" :style="stepItemsStyle">
             <div
               v-for="n in stepCount"
               :key="'step-' + n"
               class="pw-steplist-item"
-              :class="{ 'is-connected': currentStepStyle === 'connected' }"
+              :class="{ 'is-connected': currentStepStyle === 'connected', 'is-centered': currentStepStyle === 'centered' }"
               :style="stepItemStyle"
             >
               <span v-if="currentStepStyle === 'connected'" class="pw-steplist-connector" :style="stepConnectorStyle(n)"></span>
@@ -492,10 +493,42 @@ export default {
 .pw-steplist-items.has-guides .pw-steplist-item {
   outline: 1px solid rgba(0, 170, 255, 0.8);
 }
-/* the text's edge in magenta (like the content edge of the block), so it
-   is told apart from the steps' cyan */
+/* the gap between number and text: two magenta lines, at the number's
+   edge and at the text's start (vertical beside, horizontal when centered) */
+.pw-steplist-items.has-guides .pw-steplist-number,
 .pw-steplist-items.has-guides .pw-steplist-content {
-  outline: 1px solid rgba(255, 0, 170, 0.6);
+  position: relative;
+}
+.pw-steplist-items.has-guides .pw-steplist-number::after,
+.pw-steplist-items.has-guides .pw-steplist-content::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  --pw-gap-line: rgba(255, 0, 170, 0.6);
+}
+.pw-steplist-items.has-guides .pw-steplist-item:not(.is-centered) .pw-steplist-number::after {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  border-right: 1px solid var(--pw-gap-line);
+}
+.pw-steplist-items.has-guides .pw-steplist-item:not(.is-centered) .pw-steplist-content::before {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-left: 1px solid var(--pw-gap-line);
+}
+.pw-steplist-items.has-guides .pw-steplist-item.is-centered .pw-steplist-number::after {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-bottom: 1px solid var(--pw-gap-line);
+}
+.pw-steplist-items.has-guides .pw-steplist-item.is-centered .pw-steplist-content::before {
+  left: 0;
+  right: 0;
+  top: 0;
+  border-top: 1px solid var(--pw-gap-line);
 }
 /* steplist: the connector line sits behind the numbers */
 .pw-steplist-item {
