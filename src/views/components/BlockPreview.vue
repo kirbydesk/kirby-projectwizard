@@ -48,10 +48,14 @@
              the paddings -->
         <div class="pw-block-live-grid" :style="gridStyle">
           <div class="pw-block-live-item" :style="itemStyle">
-          <div class="pw-block-live-content">
+          <div class="pw-block-live-content" :style="contentStyle">
+          <!-- tagline, heading, text; in the featurelist's split layout a
+               column of their own next to the items -->
+          <div class="pw-block-live-intro">
           <p v-if="hasField('tagline')" :style="fieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</p>
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
           <p v-if="hasField('editor')" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} {{ $t('prw.preview.text.link') }}{{ $t('prw.preview.text.after') }}</p>
+          </div>
           <!-- quote: the quote (element typography, its size step and marks)
                and its source below -->
           <figure v-if="isQuote" class="pw-quote-preview">
@@ -93,6 +97,22 @@
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
+          <!-- featurelist: two features (icon, title, text) as in its snippet -->
+          <div v-if="isFeaturelist" class="pw-featurelist-items" :style="featureItemsStyle">
+            <div v-for="n in 2" :key="'feature-' + n" class="pw-featurelist-item" :style="featureItemStyle">
+              <div class="pw-featurelist-icon" :style="featureIconStyle">
+                <svg viewBox="0 0 24 24" :style="featureSvgStyle" aria-hidden="true"><path :d="featureIcons[n - 1]" /></svg>
+              </div>
+              <div class="pw-featurelist-content">
+                <!-- title as run-in at the start of the text, or above it -->
+                <div v-if="featureTitleInline" :style="featureTextStyle"><strong :style="featureTitleInlineStyle">{{ $t('prw.preview.feature.title') }} {{ n }}.</strong> {{ $t('prw.preview.feature.text') }}</div>
+                <template v-else>
+                  <div :style="featureTitleStyle">{{ $t('prw.preview.feature.title') }} {{ n }}</div>
+                  <div :style="featureTextBelowStyle">{{ $t('prw.preview.feature.text') }}</div>
+                </template>
+              </div>
+            </div>
+          </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the steps cyan, between number and text magenta -->
@@ -130,6 +150,7 @@
 // fixed gaps between the fields, from the blocks' own CSS (kirbyblock-text,
 // kirbyblock-steplist: tagline / heading / text before the items)
 const GAPS = {
+  // (also kirbyblock-featurelist: before the items)
   'tagline>items': '1rem',
   'heading>items': '1.2rem',
   'editor>items': '2rem',
@@ -155,6 +176,12 @@ const DUMMY_LOGOS = [
   [90, 60, '<path d="M14 42 L26 18 L38 42 Z" fill="#6b7280"/><text x="44" y="36" font-family="Georgia, serif" font-size="17" font-style="italic" fill="#6b7280">Nova</text>'],
   [60, 60, '<rect x="14" y="14" width="32" height="32" rx="7" fill="#374151"/><rect x="23" y="23" width="14" height="14" rx="3" fill="#fff"/>'],
   [180, 60, '<path d="M14 36 Q22 22 30 36 T46 36" fill="none" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/><text x="54" y="37" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="300" letter-spacing="3" fill="#6b7280">velamaris</text>'],
+];
+
+// sample icons of the featurelist (24×24): a check mark, a star
+const FEATURE_ICONS = [
+  'M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z',
+  'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
 ];
 
 // device → grid breakpoint (below 640px there is no grid: full width)
@@ -222,6 +249,7 @@ export default {
       if (this.isSteplist) return [...fields, 'items'];
       if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
       if (this.isLogocloud) return [...fields, 'logos'];
+      if (this.isFeaturelist) return [...fields, 'items'];
       return fields;
     },
     isMedia() {
@@ -365,6 +393,90 @@ export default {
     },
     isQuote() {
       return this.blockType === 'pwquote';
+    },
+    isFeaturelist() {
+      return this.blockType === 'pwfeaturelist';
+    },
+    featureIcons() {
+      return FEATURE_ICONS;
+    },
+    // split layout (from tablet on): intro one third, the items two thirds
+    featureSplit() {
+      return this.isFeaturelist && this.setting('style', 'section-layout') === 'split';
+    },
+    contentStyle() {
+      if (!this.featureSplit || !this.hasGrid) return {};
+      return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', columnGap: this.itemValueAt('item-gap'), alignItems: 'start' };
+    },
+    // columns of the features at the shown device (mobile: one below the other)
+    featureColumns() {
+      if (!this.hasGrid) return 1;
+      return Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
+    },
+    featureItemsStyle() {
+      const gap = this.itemValueAt('item-gap');
+      // above the items: the gap after the text; split: 2rem below the intro
+      // on mobile, none beside it
+      const marginTop = this.featureSplit ? (this.hasGrid ? 0 : '2rem') : this.gapBefore('items');
+      if (!this.hasGrid) return { marginTop };
+      return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + this.featureColumns + ', minmax(0, 1fr))', gap, marginBottom: gap };
+    },
+    featureItemStyle() {
+      return {
+        display: 'flex',
+        flexDirection: this.setting('layout', 'item-icon-position') === 'top' ? 'column' : 'row',
+        gap: this.itemValue('item-icon-gap'),
+        alignItems: 'flex-start',
+        // mobile: the gap below each feature (no grid)
+        marginBottom: this.hasGrid ? 0 : this.itemValueAt('item-gap'),
+      };
+    },
+    // the icon: plain, or on a tile (padding, background, shape)
+    featureIconStyle() {
+      const style = { display: 'flex', flexShrink: 0 };
+      if (this.setting('layout', 'item-icon-style') !== 'tile') return style;
+      const shape = this.setting('layout', 'item-shape') || 'custom';
+      const r = this.itemValue('item-radius') || [];
+      const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
+      return {
+        ...style,
+        padding: this.itemValue('item-icon-tile-padding'),
+        backgroundColor: this.itemColor('item-icon-tile-background'),
+        borderRadius: { square: 0, round: '50%' }[shape] ?? custom,
+      };
+    },
+    featureSvgStyle() {
+      const size = this.itemValueAt('item-icon-size');
+      return { width: size, height: size, fill: this.itemColor('item-icon-fill') };
+    },
+    featureTitleInline() {
+      return this.setting('layout', 'item-title-style') === 'inline';
+    },
+    // title: the heading's type at the item's size; text: the editor's
+    featureTitleStyle() {
+      return {
+        ...this.typography('heading'),
+        fontSize: this.itemValueAt('item-title-size'),
+        lineHeight: this.itemValueAt('item-title-line-height'),
+        color: this.elementColor('heading', 'element-heading-text'),
+        textAlign: this.preset('blocks', 'align') || 'left',
+      };
+    },
+    featureTitleInlineStyle() {
+      const heading = this.typography('heading');
+      return { fontFamily: heading.fontFamily, fontWeight: heading.fontWeight, color: this.elementColor('heading', 'element-heading-text') };
+    },
+    // the text below the title: the title gap above it
+    featureTextBelowStyle() {
+      return { ...this.featureTextStyle, marginTop: this.itemValue('item-title-gap') };
+    },
+    featureTextStyle() {
+      return {
+        ...this.typography('editor'),
+        fontSize: this.itemValueAt('item-text-size'),
+        color: this.elementColor('editor', 'element-editor-text'),
+        textAlign: this.preset('blocks', 'align') || 'left',
+      };
     },
     // the sample quote, with the element's quote marks (or none)
     quoteText() {

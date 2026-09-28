@@ -405,6 +405,8 @@
 	'prw.preview.text.after' => '. How vexingly quick daft zebras jump. The five boxing wizards jump quickly at dawn.',
 	'prw.preview.step.title' => 'Step',
 	'prw.preview.step.text' => 'A short description of what happens in this step.',
+	'prw.preview.feature.title' => 'Feature',
+	'prw.preview.feature.text' => 'A short description of what this feature offers.',
 	'prw.preview.guides' => 'Guides',
 	'prw.sample.heading' => 'The quick __marked__brown fox__/marked__ jumps over the lazy dog and keeps on running',
 	'prw.sample.tagline' => 'The quick brown fox jumps over the lazy dog and keeps on running through the field',
