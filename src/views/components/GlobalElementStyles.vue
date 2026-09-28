@@ -265,7 +265,7 @@
                           />
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || field.def.value[idx], field.def.unit) }}</span>
+                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || field.def.value[idx], field.def.unit, field.varName) }}</span>
                         <k-icon :type="['grid-top', 'grid-right', 'grid-bottom', 'grid-left'][idx]" class="pw-side-icon" />
                       </span>
                     </div>
@@ -334,7 +334,7 @@
                           />
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit) }}</span>
+                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit, field.varName) }}</span>
                         <!-- paddings: the side as Kirby's grid icon -->
                         <k-icon v-if="isSides(field.def)" :type="['grid-top', 'grid-right', 'grid-bottom', 'grid-left'][idx]" class="pw-side-icon" />
                       </span>
@@ -356,7 +356,7 @@
                           />
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
+                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit, field.varName) }}</span>
                       </span>
                       <!-- switch the breakpoint (shared with the preview) -->
                       <span class="pw-pill pw-bp-switch" role="group">
@@ -389,7 +389,7 @@
                           />
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
+                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit, field.varName) }}</span>
                       </span>
                     </template>
                   </div>
@@ -507,7 +507,7 @@
                           />
                           <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit) }}</span>
+                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getQuadValue(field.varName, idx) || val, field.def.unit, field.varName) }}</span>
                       </span>
                     </template>
                     <!-- Responsive (default/lg/xl) -->
@@ -528,7 +528,7 @@
                           />
                           <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit) }}</span>
+                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getResponsiveOverride(field.varName, bp) || field.def[bp], field.def.unit, field.varName) }}</span>
                       </span>
                       <!-- switch the breakpoint (shared with the preview) -->
                       <span class="pw-pill pw-bp-switch" role="group">
@@ -590,7 +590,7 @@
                           />
                           <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit) }}</span>
+                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit, field.varName) }}</span>
                       </span>
                       <span v-if="field.def.help" class="pw-element-help">{{ helpText(field.def.help) }}</span>
                     </template>
@@ -1293,14 +1293,26 @@ export default {
       const withUnit = (value === '' || isNaN(num)) ? '' : num + (unit || '');
       this.setValue(varName, withUnit, defaultVal);
     },
-    toPx(val, unit) {
+    // em values relate to their element's font size (step and device shown)
+    toPx(val, unit, varName) {
       if (!val) return '';
       const num = parseFloat(val);
       if (isNaN(num)) return '';
       if (unit === 'rem' || val.endsWith('rem')) return Math.round(num * 16) + 'px';
-      if (unit === 'em' || val.endsWith('em')) return Math.round(num * 16) + 'px';
+      if (unit === 'em' || val.endsWith('em')) return Math.round(num * this.emBasePx(varName)) + 'px';
       if (unit === '' && num > 0) return Math.round(num * 16) + 'px'; // unitless line-height
       return '';
+    },
+    // font size in px an em value of this variable relates to: its
+    // element's size at the chosen step and device, else 16px
+    emBasePx(varName) {
+      const elementKey = (varName || '').split('-')[0];
+      if (!this.elementDefaults[elementKey]) return 16;
+      const size = String(this.previewStyle(elementKey, this.previewBp, this.colorTheme).fontSize || '');
+      const num = parseFloat(size);
+      if (isNaN(num)) return 16;
+      if (size.endsWith('px')) return num;
+      return num * 16;
     },
     helpText(key) {
       const tKey = 'prw.help.' + key;
