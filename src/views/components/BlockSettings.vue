@@ -1627,8 +1627,9 @@ export default {
 /* the question mark right behind the label: hovered, the value's area is
    tinted in the preview */
 .pw-area-hint {
-  --icon-size: 18px;
-  /* right behind the label (the label column keeps its gap) */
+  --icon-size: 14px;
+  /* right behind the label: closer than the label column's gap */
+  margin-inline-start: -6px;
   color: var(--color-text-dimmed);
   opacity: 0.5;
 }
