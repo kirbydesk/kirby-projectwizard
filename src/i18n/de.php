@@ -73,6 +73,7 @@
 	'prw.label.offset' => 'Vertikaler Versatz',
 	'prw.label.gapVertical' => 'Vertikaler Abstand',
 	'prw.label.gapHorizontal' => 'Horizontaler Abstand',
+	'prw.label.height' => 'Höhe',
 	'prw.label.size' => 'Größe',
 	'prw.headline.spacing' => 'Abstände',
 	'prw.headline.blockLayout' => 'Block-Einstellungen',

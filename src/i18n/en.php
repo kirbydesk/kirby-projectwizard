@@ -73,6 +73,7 @@
 	'prw.label.offset' => 'Vertical offset',
 	'prw.label.gapVertical' => 'Vertical gap',
 	'prw.label.gapHorizontal' => 'Horizontal gap',
+	'prw.label.height' => 'Height',
 	'prw.label.size' => 'Size',
 	'prw.headline.spacing' => 'Spacing',
 	'prw.headline.blockLayout' => 'Block settings',
