@@ -1308,7 +1308,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
-              <p v-else class="pw-card-help">{{ $t('prw.hint.heroFullscreen') }}</p>
+              <k-text v-else class="k-help pw-card-help">{{ $t('prw.hint.heroFullscreen') }}</k-text>
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1361,7 +1361,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
-              <p v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'" class="pw-card-help">{{ $t('prw.hint.spacingStandard') }}</p>
+              <k-text v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'" class="k-help pw-card-help">{{ $t('prw.hint.spacingStandard') }}</k-text>
             </section>
             </template>
 
@@ -3266,12 +3266,10 @@ export default {
   display: none;
 }
 
-/* a note below a card, on the page background (as Kirby's field help) */
+/* a note below a card: Kirby's field help (k-text.k-help), with the gap
+   of its field footer */
 .pw-card-help {
   margin-top: var(--spacing-2);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  color: var(--color-text-dimmed);
 }
 
 /* Block view: page heading like Kirby's view header */
