@@ -2829,9 +2829,9 @@ export default {
         this.$set(this.snapshots, blockType, JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, blockType, false);
 
-        // Items-blocks: also persist the per-block CSS-variable overrides
-        // (the rem-inputs in the Layout tab).
-        if (this.hasItemFields(blockType)) {
+        // Blocks with values of their own (items, the hero): also persist
+        // the per-block CSS-variable overrides (the design tab's inputs)
+        if (this.hasDesign(blockType)) {
           const valuesRes = await this.$api.post(
             'projectwizard/values/' + blockType,
             this.blockValueOverrides[blockType] || {}
