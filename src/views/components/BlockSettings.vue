@@ -820,7 +820,12 @@ export default {
       // drawer fields only: no "enabled" markers, fields with a start value;
       // item-* in the layout are the items' design (not in the drawer), in
       // other tabs they are block fields (steplist's item style)
-      const keys = Object.keys(all).filter(k => !(tab === 'layout' && k.startsWith('item-')) && this.isObject(all[k]) && 'default' in all[k]);
+      let keys = Object.keys(all).filter(k => !(tab === 'layout' && k.startsWith('item-')) && this.isObject(all[k]) && 'default' in all[k]);
+      // layout as in the drawer: paddings, radii, then the block's own fields
+      if (tab === 'layout') {
+        const rank = (k) => (k.startsWith('padding') ? 0 : k.startsWith('radius') ? 1 : 2);
+        keys = keys.map((k, i) => [k, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(([k]) => k);
+      }
       // fields that belong together (one headline in the drawer) share a row,
       // at the place of their first field
       const together = [
