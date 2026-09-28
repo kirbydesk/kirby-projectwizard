@@ -1297,8 +1297,25 @@
                   >{{ $t('pw.option.' + h) }}</button>
                 </span>
               </div>
-              <div v-if="currentHeroHeight(block.blockType) !== 'fullscreen'" class="pw-card pw-field-table">
+              <div class="pw-card pw-field-table">
+                <!-- full screen: always 100vh, shown but not editable -->
+                <div v-if="currentHeroHeight(block.blockType) === 'fullscreen'" class="pw-field-row">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('prw.label.height') }}</label>
+                      </div>
+                      <div class="pw-field-row-options">
+                        <span class="pw-element-field">
+                          <span class="pw-readonly-value">100<span class="pw-element-unit">vh</span></span>
+                          <span class="pw-px-calculator">{{ screenHeight(itemBp) }}px</span>
+                        </span>
+                      </div>
+                    </span>
+                  </div>
+                </div>
                 <pw-block-values
+                  v-else
                   :bp.sync="itemBp"
                   :labels="{ ['height-' + currentHeroHeight(block.blockType)]: $t('prw.label.height') }"
                   :defaults="blockValueDefaults[block.blockType]"
@@ -1685,7 +1702,7 @@
 
 <script>
 import autosize from '../directives/autosize.js';
-import { readPreviewBp, savePreviewBp } from '../helpers/preview-bp.js';
+import { readPreviewBp, savePreviewBp, SCREEN_HEIGHTS } from '../helpers/preview-bp.js';
 
 export default {
   directives: { 'pw-autosize': autosize },
@@ -2305,6 +2322,10 @@ export default {
       if (this.featurePreviewLayout[blockType]) return this.featurePreviewLayout[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['section-layout']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['section-layout']?.default || 'stacked';
+    },
+    // the screen height of a device (px), as the preview assumes it
+    screenHeight(bp) {
+      return SCREEN_HEIGHTS[bp] || SCREEN_HEIGHTS.default;
     },
     // a rem value in px (16px root), as the px cells
     remToPx(val) {
