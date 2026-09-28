@@ -62,10 +62,10 @@
                narrow preview -->
           <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides }" :style="logosStyle">
             <div
-              v-for="(logo, n) in dummyLogos"
-              :key="'logo-' + n"
+              v-for="(logo, index) in dummyLogos"
+              :key="'logo-' + index"
               class="pw-logocloud-item"
-              :style="{ ...logoStyle, ...logoCell(n) }"
+              :style="logoTileStyle(index)"
             >
               <svg viewBox="0 0 120 60" aria-hidden="true" v-html="logo"></svg>
             </div>
@@ -257,10 +257,10 @@ export default {
         marginTop: this.gapBefore('logos'),
       };
     },
-    // (guides: the four logos in the corners of the 3×3 tracks)
-    logoCell(n) {
-      if (!this.guides) return {};
-      return { gridArea: [[1, 1], [1, 3], [3, 1], [3, 3]][n].join(' / ') };
+    // a logo's tile; with guides one of the four corners of the 3×3 tracks
+    logoTileStyle(index) {
+      const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
+      return this.guides && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : this.logoStyle;
     },
     // a logo's tile: size, padding, shape and background as in the frontend
     logoStyle() {
