@@ -49,6 +49,20 @@
             <h3 class="pw-card-heading">{{ fieldLabel(field.key) }}</h3>
           </div>
           <div class="pw-card pw-field-table">
+            <!-- the field's type first (the media type) -->
+            <pw-field-row
+              v-for="prop in field.lead"
+              :key="field.key + '-' + prop.key"
+              :uid="blockType + '-' + field.key + '-' + prop.key"
+              :label="prop.key"
+              :plugin="block.plugin || ''"
+              :all-options="prop.allOptions"
+              :active-options="prop.allOptions"
+              :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
+              :plugin-default="prop.pluginDefault"
+              :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
+              @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
+            />
             <!-- its dropdowns as in the drawer (the media's alignment) -->
             <div v-for="item in field.toolbar.items" :key="field.key + '-tb-' + item.key" class="pw-field-row">
               <div class="k-input" data-type="text">
@@ -751,7 +765,7 @@ export default {
         // type) are left out, they always stay
         const extras = {};
         for (const f of this.contentExtraFields()) {
-          extras[f.key] = f.extras.filter(p => !(this.isObject(all[f.key][p.key]) && all[f.key][p.key].locked === true)).map(p => {
+          extras[f.key] = [...f.lead, ...f.extras].filter(p => !(this.isObject(all[f.key][p.key]) && all[f.key][p.key].locked === true)).map(p => {
             const pKey = 'prw.property.' + p.key;
             const pLabel = this.$t(pKey);
             return { id: f.key + '-' + p.key, keys: [f.key + '-' + p.key], label: pLabel && pLabel !== pKey ? pLabel : p.key };
@@ -848,12 +862,14 @@ export default {
       return this.getContentFields()
         .map(f => ({
           key: f.key,
-          extras: f.properties.filter(p => !dropdowns.includes(p.key)),
+          // the type of a field (the media type) leads, before its dropdowns
+          lead: f.properties.filter(p => p.key === 'type'),
+          extras: f.properties.filter(p => !dropdowns.includes(p.key) && p.key !== 'type'),
           corners: this.isObject(raw[f.key]) && 'radius-top-left' in raw[f.key],
           // its dropdowns (the media's alignment) go into the same card
           toolbar: this.contentToolbarRow(f),
         }))
-        .filter(f => f.extras.length);
+        .filter(f => f.lead.length || f.extras.length);
     },
     contentToolbarRow(field) {
       const order = ['flourish', 'multiline', 'textbackground', 'align', 'sizes', 'level', 'mode'];
