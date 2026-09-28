@@ -1063,6 +1063,18 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+                <!-- paragraph: the gap between title and text -->
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  v-if="itemLayoutDefault(block.blockType, 'item-title-style') !== 'inline'"
+                  :guides="previewGuides ? { 'item-title-gap': 'gap-4' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-title-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
               </div>
             </section>
             <section class="pw-card-section">
@@ -1203,17 +1215,6 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-icon-gap']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  v-if="itemLayoutDefault(block.blockType, 'item-title-style') !== 'inline'"
-                  :guides="previewGuides ? { 'item-title-gap': 'gap-4' } : null"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-title-gap']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
