@@ -733,12 +733,23 @@ export default {
     // a card's heading is left out when it just repeats the drawer tab
     catSections(cat) {
       const fields = this.viewFields(cat);
+      // layout as in the drawer: paddings, radii, then the block's own fields
+      // (the hero's content position, the columns …) under their drawer headline
       if (this.view === 'defaults' && cat.key === 'layout') {
         const radius = fields.find(f => f.key === 'radius');
-        const paddings = fields.filter(f => f.key !== 'radius');
+        const paddings = fields.filter(f => f.key.startsWith('padding'));
+        const others = fields.filter(f => f !== radius && !paddings.includes(f));
         const sections = [];
         if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), fields: paddings });
         if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), fields: [radius] });
+        const headings = { 'position-': 'pw.headline.contentposition', 'columns-': 'pw.headline.columns' };
+        for (const f of others) {
+          const prefix = Object.keys(headings).find(p => f.key.startsWith(p));
+          const key = prefix || f.key;
+          const section = sections.find(sec => sec.key === key);
+          if (section) section.fields.push(f);
+          else sections.push({ key, heading: prefix ? this.$t(headings[prefix]) : null, fields: [f] });
+        }
         return sections;
       }
       if (!fields.length) return [];
