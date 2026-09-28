@@ -63,7 +63,9 @@
                     <k-icon v-if="isHidden(row.keys)" type="hidden" class="pw-field-state-eye" />
                   </div>
                   <div class="pw-field-row-options">
+                    <span v-if="row.locked" class="pw-field-locked">{{ $t('prw.field.locked') }}</span>
                     <k-toggle-input
+                      v-else
                       :value="!isHidden(row.keys)"
                       :text="$t(isHidden(row.keys) ? 'prw.field.hidden' : 'prw.field.visible')"
                       @input="toggleHidden(row.keys)"
@@ -670,7 +672,9 @@ export default {
         const isField = (v) => v === 'enabled' || v === true
           || (this.isObject(v) && Object.values(v).some(p => this.isObject(p) && ('options' in p || 'default' in p)));
         const keys = Object.keys(all).filter(k => isField(all[k]));
-        const row = (k) => ({ id: k, keys: [k], label: this.fieldLabel(k) });
+        // a field the block needs (locked, e.g. the text of the text block)
+        // cannot be hidden
+        const row = (k) => ({ id: k, keys: [k], label: this.fieldLabel(k), locked: this.isObject(all[k]) && all[k].locked === true });
         const groups = [];
         const own = keys.filter(k => !k.startsWith('item-')).map(row);
         const items = keys.filter(k => k.startsWith('item-')).map(row);
@@ -1457,6 +1461,13 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
+}
+/* restrictions: a field that cannot be hidden, a note instead of the switch */
+.pw-field-locked {
+  padding-inline: var(--spacing-3);
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--color-text-dimmed);
 }
 /* restrictions: the eye at the right end of the label cell */
 .pw-field-state-eye {

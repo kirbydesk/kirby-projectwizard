@@ -61,6 +61,7 @@
 	'prw.subtab.add-font' => 'Add Font',
 
 	/* -------------- Tabs --------------*/
+	'prw.field.locked' => 'Cannot be hidden, the block needs this field.',
 	'prw.field.visible' => 'Visible',
 	'prw.field.hidden' => 'Hidden',
 	'prw.field.radius' => 'Radii',
