@@ -75,6 +75,9 @@
               :style="logoTileStyle(index)"
             >
               <svg :viewBox="'0 0 ' + logo[0] + ' ' + logo[1]" :style="{ aspectRatio: logo[0] + ' / ' + logo[1] }" aria-hidden="true" v-html="logo[2]"></svg>
+              <!-- guides: the edge of the padding (inset by exactly its values,
+                   so the lines match the tinted bands) -->
+              <span v-if="guides" class="pw-logocloud-pad" :style="{ inset: logoPadding }"></span>
             </div>
             <!-- guides: the gap as elements of their own, two cyan lines each
                  (between the columns, between the rows) -->
@@ -817,14 +820,14 @@ export default {
 .has-focus .pw-logocloud-text-gap:not(.is-hot) {
   border-color: transparent;
 }
-.has-focus:not(.focus-padding) .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+.has-focus:not(.focus-padding) .pw-logocloud-preview.has-guides .pw-logocloud-pad {
   box-shadow: none;
 }
 /* one padding hovered: only its two lines (sides magenta / top and bottom green) */
-.has-focus.focus-padding-x .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+.has-focus.focus-padding-x .pw-logocloud-preview.has-guides .pw-logocloud-pad {
   box-shadow: -1px 0 0 rgba(255, 0, 170, 0.6), 1px 0 0 rgba(255, 0, 170, 0.6);
 }
-.has-focus.focus-padding-y .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+.has-focus.focus-padding-y .pw-logocloud-preview.has-guides .pw-logocloud-pad {
   box-shadow: 0 -1px 0 rgba(0, 180, 90, 0.9), 0 1px 0 rgba(0, 180, 90, 0.9);
 }
 .has-focus .pw-logocloud-preview.is-flexible:not(.is-hot-gap):not(.is-hot-row-gap) .pw-logocloud-item::before {
@@ -864,7 +867,7 @@ export default {
 }
 /* the logo's area inside the padding: left and right magenta (horizontal
    padding), top and bottom green (vertical padding) */
-.pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+.pw-logocloud-preview.has-guides .pw-logocloud-pad {
   box-shadow:
     -1px 0 0 rgba(255, 0, 170, 0.6),
     1px 0 0 rgba(255, 0, 170, 0.6),
@@ -879,9 +882,16 @@ export default {
   box-sizing: border-box;
   color: var(--color-gray-400);
 }
+.pw-logocloud-item {
+  position: relative;
+}
 .pw-logocloud-item svg {
   width: 100%;
   height: 100%;
+}
+.pw-logocloud-pad {
+  position: absolute;
+  pointer-events: none;
 }
 /* flexible: the logo as wide as its height allows */
 .pw-logocloud-preview.is-flexible .pw-logocloud-item svg {
