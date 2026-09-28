@@ -31,11 +31,6 @@
       </div>
     </div>
 
-    <!-- the block is built at the device's real width (375 / 1024 / 1280
-         px) and scaled down to the sidebar, so everything keeps its true
-         proportions (sizes, gaps, text, grid) -->
-    <div ref="viewport" class="pw-block-live-viewport" :style="{ height: scaledHeight, backgroundColor: bodyBackground }">
-    <div ref="canvas" class="pw-block-live-canvas" :style="{ width: deviceWidth + 'px', transform: 'scale(' + scale + ')' }">
     <div class="pw-block-live-body" :style="{ backgroundColor: bodyBackground }">
       <!-- outer spacing as padding of a wrapper: the guides mark its edge
            (towards the neighbouring blocks) across the whole width -->
@@ -116,8 +111,6 @@
       </section>
       </div>
     </div>
-    </div>
-    </div>
   </div>
 </template>
 
@@ -153,10 +146,9 @@ const DUMMY_LOGOS = [
 
 // device → grid breakpoint (below 640px there is no grid: full width)
 const GRID_BP = { default: null, lg: 'lg', xl: 'xl' };
-// column gap of the frontend grid (gap-12 at lg, gap-16 at xl)
-const GRID_GAP = { lg: '3rem', xl: '4rem' };
-// the devices' widths the block is built at (then scaled to the sidebar)
-const DEVICE_WIDTH = { default: 375, lg: 1024, xl: 1280 };
+// column gap of the frontend grid (gap-12 at lg, gap-16 at xl) as a share
+// of the device width, so the grid fits the narrow preview
+const GRID_GAP = { lg: 48 / 1024 * 100 + '%', xl: 64 / 1280 * 100 + '%' };
 
 export default {
   props: {
@@ -189,23 +181,7 @@ export default {
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
     variant: { type: String, default: '' },
   },
-  data() {
-    return {
-      // the sidebar's width and the canvas's (unscaled) height, measured
-      availableWidth: 0,
-      canvasHeight: 0,
-    };
-  },
   computed: {
-    deviceWidth() {
-      return DEVICE_WIDTH[this.bp] || DEVICE_WIDTH.default;
-    },
-    scale() {
-      return this.availableWidth ? this.availableWidth / this.deviceWidth : 1;
-    },
-    scaledHeight() {
-      return this.canvasHeight ? this.canvasHeight * this.scale + 'px' : null;
-    },
     dummyLogos() {
       return DUMMY_LOGOS;
     },
@@ -510,18 +486,6 @@ export default {
       };
     },
   },
-  mounted() {
-    // follow the sidebar's width and the block's height
-    this.sizeObserver = new ResizeObserver(() => {
-      if (this.$refs.viewport) this.availableWidth = this.$refs.viewport.clientWidth;
-      if (this.$refs.canvas) this.canvasHeight = this.$refs.canvas.offsetHeight;
-    });
-    this.sizeObserver.observe(this.$refs.viewport);
-    this.sizeObserver.observe(this.$refs.canvas);
-  },
-  beforeDestroy() {
-    if (this.sizeObserver) this.sizeObserver.disconnect();
-  },
   methods: {
     // a logo's tile; with guides one of the four corners of the 3×3 tracks
     logoTileStyle(index) {
@@ -682,14 +646,6 @@ export default {
   position: relative;
   overflow: hidden;
 }
-/* the sidebar's width; the device-wide canvas inside, scaled to it */
-.pw-block-live-viewport {
-  position: relative;
-  overflow: hidden;
-}
-.pw-block-live-canvas {
-  transform-origin: 0 0;
-}
 .pw-block-live-block {
   position: relative;
 }
@@ -701,8 +657,8 @@ export default {
   content: "";
   position: absolute;
   z-index: 1;
-  /* edge to edge of the device: past the page's padding */
-  inset-inline: calc(-1 * var(--spacing-3));
+  /* edge to edge: past the preview's own padding and the sidebar's */
+  inset-inline: calc(-1 * (var(--spacing-3) + var(--spacing-6)));
   height: 0;
   border-top: 1px solid rgba(0, 170, 255, 0.8);
   pointer-events: none;
@@ -713,9 +669,9 @@ export default {
 .pw-block-live-block.has-guide-bottom::after {
   bottom: 0;
 }
-/* block size "fullscreen": the block runs edge to edge of the device */
+/* block size "fullscreen": the block runs edge to edge of the sidebar */
 .pw-block-live-block.is-fullscreen {
-  margin-inline: calc(-1 * var(--spacing-3));
+  margin-inline: calc(-1 * (var(--spacing-3) + var(--spacing-6)));
 }
 .pw-block-live-block.is-fullscreen::before,
 .pw-block-live-block.is-fullscreen::after {
