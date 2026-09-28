@@ -1280,7 +1280,7 @@
             </template>
 
             <!-- hero: its heights (the one chosen in the pills, a view; full
-                 screen is always 100vh) and the gap to the buttons -->
+                 screen is always 100vh) and the space below its elements -->
             <template v-if="block.blockType === 'pwhero' && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1316,12 +1316,47 @@
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
+                <!-- the space below tagline, heading and text: the elements'
+                     (global) or the block's own values -->
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-spacing']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
                 <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own'"
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'buttons-gap': 'margin' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['buttons-gap']"
+                  :show-only="['tagline-spacing']"
+                  :guides="previewGuides ? { 'tagline-spacing': 'margin' } : null"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['heading-spacing']"
+                  :guides="previewGuides ? { 'heading-spacing': 'row' } : null"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['editor-spacing']"
+                  :guides="previewGuides ? { 'editor-spacing': 'text' } : null"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -2230,6 +2265,20 @@ export default {
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['section-layout']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['section-layout']?.default || 'stacked';
     },
+    // own space below (tagline, heading, text): values not set yet take the
+    // elements' current (global) ones, so the block starts where it was
+    seedOwnSpacing(blockType) {
+      const ov = JSON.parse(JSON.stringify(this.blockValueOverrides[blockType] || {}));
+      let changed = false;
+      for (const el of ['tagline', 'heading', 'editor']) {
+        const name = el + '-spacing';
+        const own = Object.values(this.blockValueDefaults[blockType] || {}).some(g => g && g.vars && g.vars[name]);
+        if (!own || ov[name] !== undefined) continue;
+        const global = (this.elementOverrides.global || {})[name] || this.elementDefaults[el]?.vars?.[name]?.value;
+        if (global) { ov[name] = global; changed = true; }
+      }
+      if (changed) this.onBlockValueOverridesUpdate(blockType, ov);
+    },
     // hero: the height shown (chosen in the height card, else the start value)
     currentHeroHeight(blockType) {
       if (this.heroPreviewHeight[blockType]) return this.heroPreviewHeight[blockType];
@@ -2654,6 +2703,9 @@ export default {
         this.$delete(this.featurePreviewLayout, blockType);
       }
       this.$set(this.startSectionLayouts, blockType, sectionLayout);
+      // own space below switched on: start from the elements' current values
+      const spacing = overrides?.settings?.fields?.layout?.['item-spacing']?.default;
+      if (spacing === 'own' && this.blockValueDefaults[blockType]) this.seedOwnSpacing(blockType);
       const current = JSON.stringify(overrides);
       const snapshot = this.snapshots[blockType] || '{}';
       this.$set(this.dirtyTabs, blockType, current !== snapshot);

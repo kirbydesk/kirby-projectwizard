@@ -68,7 +68,9 @@
                column of their own next to the items -->
           <div class="pw-block-live-intro">
           <p v-if="hasField('tagline')" :style="fieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</p>
+          <div v-if="hasField('heading') && spaceBand('heading')" class="pw-space-band" :class="['is-' + spaceBand('heading').prev, { 'is-hot': highlight === spaceBand('heading').prev + '-spacing' }]" :style="{ height: spaceBand('heading').height }"></div>
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
+          <div v-if="hasField('editor') && spaceBand('editor')" class="pw-space-band" :class="['is-' + spaceBand('editor').prev, { 'is-hot': highlight === spaceBand('editor').prev + '-spacing' }]" :style="{ height: spaceBand('editor').height }"></div>
           <p v-if="hasField('editor')" class="pw-block-live-text" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} {{ $t('prw.preview.text.link') }}{{ $t('prw.preview.text.after') }}</p>
           </div>
           <!-- guides: the offset (split layout) as a track of its own, a line on
@@ -112,8 +114,7 @@
               <span class="pw-logocloud-gap is-row" :class="{ 'is-hot': highlight === 'item-row-gap' }" style="grid-area: 2 / 1 / 3 / 4"></span>
             </template>
           </div>
-          <!-- hero guides: the gap to the buttons as an element of its own -->
-          <div v-if="isHero && guides && hasField('buttons') && gapBefore('buttons')" class="pw-hero-buttons-gap" :class="{ 'is-hot': highlight === 'buttons-gap' }" :style="{ height: gapBefore('buttons') }"></div>
+          <div v-if="hasField('buttons') && spaceBand('buttons')" class="pw-space-band" :class="['is-' + spaceBand('buttons').prev, { 'is-hot': highlight === spaceBand('buttons').prev + '-spacing' }]" :style="{ height: spaceBand('buttons').height }"></div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
@@ -275,7 +276,8 @@ export default {
     highlightsArea() {
       const h = this.highlight || '';
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
-        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding', 'item-offset-gap', 'buttons-gap',
+        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding', 'item-offset-gap',
+        'tagline-spacing', 'heading-spacing', 'editor-spacing',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -443,6 +445,10 @@ export default {
     },
     isHero() {
       return this.blockType === 'pwhero';
+    },
+    // the block's own space below its tagline, heading and text (hero)
+    ownSpacing() {
+      return this.setting('layout', 'item-spacing') === 'own';
     },
     // the background shown: chosen in the toolbar (a view), else the start value
     heroBackground() {
@@ -831,7 +837,7 @@ export default {
       return {
         display: 'flex',
         justifyContent: { left: 'flex-start', center: 'center', right: 'flex-end' }[align] || 'flex-start',
-        marginTop: this.isHero && this.guides ? 0 : this.gapBefore('buttons'),
+        marginTop: this.spaceBand('buttons') ? 0 : this.gapBefore('buttons'),
       };
     },
     buttonStyle() {
@@ -998,13 +1004,31 @@ export default {
     gapBefore(field) {
       const idx = this.fields.indexOf(field);
       if (idx <= 0) return 0;
-      // hero: the buttons' own gap, in place of the text's space below
-      if (this.isHero && field === 'buttons') return this.itemValue('buttons-gap') || 0;
       const prev = this.fields[idx - 1];
-      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.elementValue(prev, 'spacing') : '';
+      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
       const own = GAPS[prev + '>' + field];
       if (own && after) return 'max(' + own + ', ' + after + ')';
       return own || after || 0;
+    },
+    // the space below an element: the block's own (switched on in its design
+    // tab) or the element's
+    spaceAfter(element) {
+      if (this.ownSpacing) {
+        const own = this.itemValue(element + '-spacing');
+        if (own) return own;
+      }
+      return this.elementValue(element, 'spacing');
+    },
+    // guides with the block's own space below: the gap above a field as a
+    // band of its own, coloured by the element above (tagline cyan, heading
+    // violet, text orange)
+    spaceBand(field) {
+      if (!this.guides || !this.ownSpacing) return null;
+      const idx = this.fields.indexOf(field);
+      const prev = idx > 0 ? this.fields[idx - 1] : '';
+      if (!['tagline', 'heading', 'editor'].includes(prev)) return null;
+      const height = this.gapBefore(field);
+      return height ? { height, prev } : null;
     },
     fieldStyle(field) {
       const style = {
@@ -1012,7 +1036,8 @@ export default {
         color: this.elementColor(field, 'element-' + field + '-text'),
         textAlign: this.preset(field, 'align') || 'left',
         margin: 0,
-        marginTop: this.gapBefore(field),
+        // (with a band of its own above: none)
+        marginTop: this.spaceBand(field) ? 0 : this.gapBefore(field),
       };
       // the preset size step (heading and editor); "normal" keeps the element
       // size; a heading without a step gets "lg", as in the frontend
@@ -1109,13 +1134,18 @@ export default {
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
-/* hero guides: the gap to the buttons (cyan, a line above and below) */
-.pw-hero-buttons-gap {
+/* the block's own space below (guides): a band between two lines, below
+   the tagline cyan, the heading violet, the text orange */
+.pw-space-band {
   box-sizing: border-box;
   border-block: 1px solid rgba(0, 170, 255, 0.8);
 }
-.pw-hero-buttons-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
-.has-focus .pw-hero-buttons-gap {
+.pw-space-band.is-heading { border-color: rgba(130, 80, 255, 0.9); }
+.pw-space-band.is-editor { border-color: rgba(255, 140, 0, 0.9); }
+.pw-space-band.is-tagline.is-hot { background: rgba(0, 170, 255, 0.15); }
+.pw-space-band.is-heading.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-space-band.is-editor.is-hot { background: rgba(255, 140, 0, 0.15); }
+.has-focus .pw-space-band {
   border-color: transparent;
 }
 /* hero: a video background marked by a play symbol */
