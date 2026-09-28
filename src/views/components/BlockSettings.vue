@@ -191,7 +191,8 @@
             <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
+                  <!-- hovering the label tints the value's area in the preview -->
+                  <div class="pw-field-row-label-col" @mouseenter="$emit('hover-var', field.key)" @mouseleave="$emit('hover-var', null)">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}<span v-if="field.required" class="pw-field-required">*</span></label>
                   </div>
                   <div class="pw-field-row-options">
@@ -216,7 +217,7 @@
             <div v-else-if="field.type === 'toggle-group'" :key="field.key" class="pw-field-row">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
+                  <div class="pw-field-row-label-col" @mouseenter="$emit('hover-var', field.key)" @mouseleave="$emit('hover-var', null)">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
                   </div>
                   <div class="pw-field-row-options pw-toggle-group" :class="{ 'pw-corner-grid': isCornerGroup(field) }">
@@ -240,7 +241,7 @@
             <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
+                  <div class="pw-field-row-label-col" @mouseenter="$emit('hover-var', field.key)" @mouseleave="$emit('hover-var', null)">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
                   </div>
                   <div class="pw-field-row-options">

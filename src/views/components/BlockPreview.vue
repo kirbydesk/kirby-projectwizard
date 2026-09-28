@@ -198,7 +198,8 @@ export default {
     // only then the other guides give way
     highlightsArea() {
       const h = this.highlight || '';
-      return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y'].includes(h)
+      return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
+        'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
     dummyLogos() {
@@ -496,7 +497,13 @@ export default {
       const margin = (key, name) => (this.setting('settings', key) === true ? this.globalValue(name) || '0px' : '0px');
       const top = margin('margin-top', 'global-margin-top');
       const bottom = margin('margin-bottom', 'global-margin-bottom');
-      return { paddingTop: top, paddingBottom: bottom };
+      // a margin's label hovered: its room above / below tinted
+      const tint = 'rgba(0, 170, 255, 0.15)';
+      const shadow = !this.guides ? null
+        : this.highlight === 'margin-top' ? 'inset 0 ' + top + ' 0 0 ' + tint
+        : this.highlight === 'margin-bottom' ? 'inset 0 calc(-1 * ' + bottom + ') 0 0 ' + tint
+        : null;
+      return { paddingTop: top, paddingBottom: bottom, boxShadow: shadow };
     },
     hasGrid() {
       return !!GRID_BP[this.bp];
@@ -524,6 +531,16 @@ export default {
         paddingLeft: layout('padding-left') === true ? this.globalValue('global-padding-left') : 0,
         paddingRight: layout('padding-right') === true ? this.globalValue('global-padding-right') : 0,
       };
+      // a padding's label hovered: that side's padding tinted
+      const tint = ' 0 0 rgba(255, 0, 170, 0.15)';
+      const sides = {
+        'padding-top': () => 'inset 0 ' + style.paddingTop + tint,
+        'padding-bottom': () => 'inset 0 calc(-1 * ' + style.paddingBottom + ')' + tint,
+        'padding-left': () => 'inset ' + style.paddingLeft + ' 0' + tint,
+        'padding-right': () => 'inset calc(-1 * ' + style.paddingRight + ') 0' + tint,
+      };
+      const value = { 'padding-top': style.paddingTop, 'padding-bottom': style.paddingBottom, 'padding-left': style.paddingLeft, 'padding-right': style.paddingRight }[this.highlight];
+      if (this.guides && sides[this.highlight] && value) style.boxShadow = sides[this.highlight]();
       if (this.hasGrid) {
         const gbp = GRID_BP[this.bp];
         const size = Number(this.setting('grid', 'grid-size-' + gbp)) || 12;

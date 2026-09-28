@@ -820,6 +820,7 @@
             <pw-block-settings
               view="defaults"
               :variants="activeVariants"
+              @hover-var="hoveredVar = $event"
               :global-values="globalLayoutValues"
               :media-radius="mediaRadiusValues"
               :guides="previewGuides"
