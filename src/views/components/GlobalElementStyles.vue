@@ -83,7 +83,7 @@
                 </template>
                 <!-- guides: the space below the element (tagline, heading, text) as
                      a band of its height between two cyan lines -->
-                <span v-if="guides && spaceBelow(groupKey)" class="pw-element-space-below" :style="{ height: spaceBelow(groupKey) }"></span>
+                <span v-if="guides && spaceBelow(groupKey)" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === groupKey + '-spacing' }" :style="{ height: spaceBelow(groupKey) }"></span>
                 <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
                   <!-- the source keeps its gap to the quote (cite-spacing) -->
                   <span
@@ -289,6 +289,14 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label" v-html="field.label"></label>
+                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
+                    <k-icon
+                      v-if="guides && hasArea(field.varName)"
+                      type="question"
+                      class="pw-area-hint"
+                      @mouseenter.native="hoveredArea = field.varName"
+                      @mouseleave.native="hoveredArea = null"
+                    />
                   </div>
                   <div class="pw-field-row-options" :class="[fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : '', { 'pw-corner-grid': isCorners(field.def) || isSides(field.def), 'pw-side-grid': isSides(field.def) }]">
                     <!-- Font family selector -->
@@ -732,6 +740,8 @@ export default {
       previewSteps: {},
       // heading preview with the text marking / the flourish
       previewMarked: false,
+      // the value whose question mark is hovered: its area tinted
+      hoveredArea: null,
       previewFlourish: false,
       // media preview with a sample image
       // media radii kept while the corners are square
@@ -875,6 +885,10 @@ export default {
       return this.getOverrideValue(name) || this.elementDefaults.button?.vars?.[name]?.value || '';
     },
     // gap between quote and source, as in the frontend
+    // a value with an area in the preview (tinted while its question mark is hovered)
+    hasArea(varName) {
+      return /^(tagline|heading|editor)-spacing$/.test(varName);
+    },
     // the space below an element (tagline, heading, text): override, else the plugin's
     spaceBelow(groupKey) {
       if (!['tagline', 'heading', 'editor'].includes(groupKey)) return '';
@@ -2152,6 +2166,11 @@ export default {
   box-sizing: border-box;
   width: 100%;
   border-block: 1px solid rgba(0, 170, 255, 0.8);
+}
+/* its question mark hovered: the area tinted, without lines */
+.pw-element-space-below.is-hot {
+  border-color: transparent;
+  background: rgba(0, 170, 255, 0.15);
 }
 .pw-element-preview-text {
   display: -webkit-box;
