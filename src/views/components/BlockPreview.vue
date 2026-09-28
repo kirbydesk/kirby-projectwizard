@@ -6,7 +6,7 @@
   <!-- a value's label hovered (guides on): no lines, only its tinted area -->
   <div
     class="pw-element-preview-side pw-block-live-preview"
-    :class="{ 'has-focus': guides && !!highlight }"
+    :class="{ 'has-focus': guides && highlightsArea }"
   >
     <div class="pw-preview-switches">
       <!-- guides on/off: the padding line, as in Photoshop -->
@@ -194,6 +194,13 @@ export default {
     variant: { type: String, default: '' },
   },
   computed: {
+    // a hovered value that has an area to tint (the gaps, the paddings):
+    // only then the other guides give way
+    highlightsArea() {
+      const h = this.highlight || '';
+      return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y'].includes(h)
+        || h.startsWith('item-content-gap');
+    },
     dummyLogos() {
       return DUMMY_LOGOS;
     },
