@@ -18,25 +18,23 @@
             :required="true"
             @input="setDefault"
           />
-          <!-- restrictions: the options as Kirby's toggles (same markup, so
-               they look like the other toggles): black text = allowed,
-               greyed = not allowed; a click switches -->
-          <div v-else class="k-toggles-input pw-option-toggles">
-            <ul>
-              <li v-for="opt in options" :key="opt" :data-state="optionState(opt)">
-                <!-- no checkbox: the state alone decides the look (a prevented
-                     checkbox click let the browser undo it) -->
-                <label
-                  role="button"
-                  tabindex="0"
-                  :title="$t('prw.option.state.' + optionState(opt))"
-                  @click="toggleOption(opt)"
-                  @keydown.enter.space.prevent="toggleOption(opt)"
-                >
-                  <span class="k-toggles-text">{{ optionLabel(opt) }}</span>
-                </label>
-              </li>
-            </ul>
+          <!-- restrictions: each option with an eye (visible to the editors
+               or hidden, then faded) and as in the drawer (its icon, else its
+               name); a click switches -->
+          <div v-else class="pw-option-eyes">
+            <button
+              v-for="opt in options"
+              :key="opt"
+              type="button"
+              class="pw-option-eye"
+              :data-state="optionState(opt)"
+              :title="$t('prw.option.state.' + optionState(opt))"
+              @click="toggleOption(opt)"
+            >
+              <k-icon :type="optionState(opt) === 'allowed' ? 'preview' : 'hidden'" class="pw-option-eye-icon" />
+              <pw-option-icon v-if="drawerType" :type="drawerType" :value="opt" />
+              <span v-else class="pw-option-eye-text">{{ optionLabel(opt) }}</span>
+            </button>
           </div>
         </div>
       </span>
@@ -75,6 +73,12 @@ export default {
     },
     allowedOptions() {
       return this.options.filter(o => this.localActive.includes(o));
+    },
+    // a content field's property shown as in the drawer (pagewizard's
+    // pw-option-icon); other rows show the option's name
+    drawerType() {
+      const types = { level: 'level', sizes: 'size', align: 'align', textbackground: 'textbackground', flourish: 'flourish', multiline: 'multiline', mode: 'mode' };
+      return types[this.label] || null;
     },
     // preset shown in the dropdown: the chosen one, else the current/plugin default
     defaultValue() {
@@ -190,13 +194,34 @@ export default {
   flex-wrap: wrap;
 }
 
-.pw-option-toggles label {
-  user-select: none;
+/* restrictions: the options side by side, each an eye with the option */
+.pw-option-eyes {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--spacing-4);
+  row-gap: var(--spacing-1);
 }
-/* options not allowed: greyed text only */
-.pw-option-toggles li[data-state="disabled"] label {
+.pw-option-eye {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  height: 24px;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.pw-option-eye .k-button-icon,
+.pw-option-eye .k-button-text {
+  display: inline-flex;
+  align-items: center;
+}
+.pw-option-eye-icon {
+  --icon-size: 14px;
   color: var(--color-text-dimmed);
-  opacity: 0.5;
+}
+/* hidden from the editors: faded */
+.pw-option-eye[data-state="disabled"] {
+  opacity: 0.4;
 }
 
 .pw-field-required {
