@@ -88,7 +88,7 @@
                   <!-- the source keeps its gap to the quote (cite-spacing) -->
                   <span
                     class="pw-element-preview-text"
-                    :class="{ 'pw-element-preview-cite': previewChildKey(groupKey) === 'cite' }"
+                    :class="{ 'pw-element-preview-cite': previewChildKey(groupKey) === 'cite', 'is-hot': previewChildKey(groupKey) === 'cite' && hoveredArea === 'cite-spacing' }"
                     :style="{ ...previewStyle(previewChildKey(groupKey), bp, theme), ...citeGapStyle(previewChildKey(groupKey)) }"
                   >{{ previewChildText(groupKey) }}</span>
                 </template>
@@ -293,7 +293,7 @@
                     <span
                       v-if="guides && hasArea(field.varName)"
                       class="pw-area-hint"
-                      :title="$t(field.varName.endsWith('-paragraph-spacing') ? 'prw.hint.paragraphSpacing' : 'prw.hint.spaceBelow')"
+                      :title="$t(areaHint(field.varName))"
                       @mouseenter="hoveredArea = field.varName"
                       @mouseleave="hoveredArea = null"
                     ><k-icon type="question" /></span>
@@ -890,9 +890,15 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || varName === 'editor-paragraph-spacing';
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || varName === 'editor-paragraph-spacing' || varName === 'cite-spacing';
     },
     // the space below an element (tagline, heading, text): override, else the plugin's
+    // tooltip of a value's question mark
+    areaHint(varName) {
+      if (varName.endsWith('-paragraph-spacing')) return 'prw.hint.paragraphSpacing';
+      if (varName === 'cite-spacing') return 'prw.hint.citeSpacing';
+      return 'prw.hint.spaceBelow';
+    },
     spaceBelow(groupKey) {
       if (!['tagline', 'heading', 'editor'].includes(groupKey)) return '';
       const name = groupKey + '-spacing';
@@ -2205,6 +2211,11 @@ export default {
 .pw-element-preview.has-focus .pw-element-preview-flourish-box::before,
 .pw-element-preview.has-focus .pw-element-preview-flourish-box::after {
   border-color: transparent;
+}
+/* the gap between quote and source, cyan */
+.pw-element-preview.has-focus .pw-element-preview-cite.is-hot::after {
+  height: var(--pw-cite-gap);
+  background: rgba(0, 170, 255, 0.15);
 }
 /* the paragraph spacing: the gap above each following paragraph, violet */
 .pw-element-preview.has-focus .pw-element-preview-paragraphs.is-hot p + p::before {

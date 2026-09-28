@@ -205,6 +205,7 @@
 	'prw.prop.paragraph-spacing' => 'Absatzabstand',
 	'prw.hint.spaceBelow' => 'Abstand zum nächsten Element im Block',
 	'prw.hint.paragraphSpacing' => 'Abstand zwischen zwei Absätzen',
+	'prw.hint.citeSpacing' => 'Abstand zwischen Zitat und Quelle',
 	'prw.element.tagline-spacing' => 'Abstand nach unten',
 	'prw.element.heading-spacing' => 'Abstand nach unten',
 	'prw.element.editor-spacing' => 'Abstand nach unten',
