@@ -367,7 +367,7 @@
                 <k-toggles-input
                   v-else-if="field.type === 'select'"
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
-                  :options="field.options.map(o => ({ value: o, text: $t('pw.option.' + o) || o }))"
+                  :options="field.options.map(o => ({ value: o, text: itemOptionLabel(field, o) }))"
                   :grow="false"
                   :required="true"
                   @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
@@ -695,6 +695,11 @@ export default {
       if (this.view === 'defaults' && cat.key === 'layout' && this.blockType === 'pwsteplist'
         && this.getVal('settings.fields.style.item-style.default', 'default') === 'connected') {
         fields = fields.filter(f => !f.key.startsWith('columns-'));
+      }
+      // logocloud in the "flexible" format: no logos per row
+      if (this.view === 'defaults' && cat.key === 'layout' && this.blockType === 'pwlogocloud'
+        && this.getVal('settings.fields.layout.item-format.default', 'square') === 'flexible') {
+        fields = fields.filter(f => !f.key.startsWith('logos-'));
       }
       return fields;
     },
@@ -1355,6 +1360,17 @@ export default {
       return '';
     },
 
+    // an option of an item setting: the block's own wording (its label key
+    // + the value, e.g. kirbyblock-logocloud.item-format.flexible), else the general one
+    itemOptionLabel(field, val) {
+      if (field.label) {
+        const own = this.$t(field.label + '.' + val);
+        if (own && own !== field.label + '.' + val) return own;
+      }
+      const pwKey = 'pw.option.' + val;
+      const pw = this.$t(pwKey);
+      return pw && pw !== pwKey ? pw : val;
+    },
     toggleOptionLabel(val) {
       const pwKey = 'pw.option.' + val;
       const pwT = this.$t(pwKey);

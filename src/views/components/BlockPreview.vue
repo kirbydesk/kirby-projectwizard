@@ -60,7 +60,7 @@
           <!-- logocloud: four sample logos, two by two (so the gap shows
                between the columns and between the rows), shrinking in a
                narrow preview -->
-          <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides }" :style="logosStyle">
+          <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible }" :style="logosStyle">
             <div
               v-for="(logo, index) in dummyLogos"
               :key="'logo-' + index"
@@ -71,7 +71,7 @@
             </div>
             <!-- guides: the gap as elements of their own, two cyan lines each
                  (between the columns, between the rows) -->
-            <template v-if="guides">
+            <template v-if="guides && !logosFlexible">
               <span class="pw-logocloud-gap is-column" style="grid-area: 1 / 2"></span>
               <span class="pw-logocloud-gap is-column" style="grid-area: 3 / 2"></span>
               <span class="pw-logocloud-gap is-row" style="grid-area: 2 / 1"></span>
@@ -241,6 +241,17 @@ export default {
       // between the logos of a row / between the rows (older: one gap)
       const gap = this.itemValue('item-gap');
       const rowGap = this.itemValue('item-row-gap') || gap;
+      // flexible: one height, each tile as wide as its logo, wrapping
+      if (this.logosFlexible) {
+        return {
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: { left: 'flex-start', right: 'flex-end' }[align] || 'center',
+          columnGap: gap,
+          rowGap,
+          marginTop: this.gapBefore('logos'),
+        };
+      }
       // guides: the gaps are tracks of their own (for their lines)
       if (this.guides) {
         return {
@@ -260,9 +271,24 @@ export default {
         marginTop: this.gapBefore('logos'),
       };
     },
+    // logocloud format: square tiles or one height ("flexible")
+    logosFlexible() {
+      return this.setting('layout', 'item-format') === 'flexible';
+    },
     // a logo's tile: size, padding, shape and background as in the frontend
     logoStyle() {
       const shape = this.setting('layout', 'item-shape') || 'round';
+      if (this.logosFlexible) {
+        const r = this.itemValue('item-radius') || [];
+        const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
+        return {
+          height: this.itemValueAt('item-size'),
+          maxWidth: '100%',
+          padding: this.itemValue('item-padding'),
+          backgroundColor: this.itemColor('item-background'),
+          borderRadius: { square: 0, round: '999px' }[shape] ?? custom,
+        };
+      }
       const r = this.itemValue('item-radius') || [];
       const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
       return {
@@ -490,7 +516,7 @@ export default {
     // a logo's tile; with guides one of the four corners of the 3×3 tracks
     logoTileStyle(index) {
       const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
-      return this.guides && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : this.logoStyle;
+      return this.guides && !this.logosFlexible && cells[index] ? { ...this.logoStyle, gridArea: cells[index] } : this.logoStyle;
     },
     // steplist "connected": the line through all numbers, from the first
     // number's centre to the last one's
@@ -734,6 +760,11 @@ export default {
 .pw-logocloud-item svg {
   width: 100%;
   height: 100%;
+}
+/* flexible: the logo as wide as its height allows */
+.pw-logocloud-preview.is-flexible .pw-logocloud-item svg {
+  width: auto;
+  max-width: 100%;
 }
 /* steplist: the connector line sits behind the numbers */
 .pw-steplist-item {
