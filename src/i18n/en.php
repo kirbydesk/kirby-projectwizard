@@ -65,6 +65,9 @@
 
 	/* -------------- Tabs --------------*/
 	'prw.field.radius' => 'Radii',
+	'prw.headline.connector' => 'Connector line',
+	'prw.label.width' => 'Width',
+	'prw.label.color' => 'Color',
 	'prw.headline.spacing' => 'Spacing',
 	'prw.headline.blockLayout' => 'Block settings',
 	'prw.headline.defaultFont' => 'Default font',

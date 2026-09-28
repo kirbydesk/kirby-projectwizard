@@ -864,7 +864,7 @@
             <!-- steplist: the item styles as pills (a view, not saved: the
                  preview shows that style) and the values that matter for it –
                  the number (bubble or, minimal, plain text), its vertical
-                 offset, its gap to the text, the connector line -->
+                 offset, its gap to the text -->
             <section v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType]" class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
@@ -934,15 +934,45 @@
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
-                  <pw-block-values
-                    v-if="currentStepStyle(block.blockType) === 'connected'"
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-connector-width']"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  />
+              </div>
+            </section>
+
+            <!-- steplist, style "connected": the connector line (width, colour
+                 of the chosen variant) -->
+            <section v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType] && currentStepStyle(block.blockType) === 'connected'" class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.connector') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'cth-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-connector-width']"
+                  :labels="{ 'item-connector-width': $t('prw.label.width') }"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-connector']"
+                  :labels="{ 'item-connector': $t('prw.label.color') }"
+                  :theme="currentItemColorTheme"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                />
               </div>
             </section>
 
@@ -1620,9 +1650,10 @@ export default {
       // Steplist-specific colors (filtered out by BlockValues when not defined)
       list.push(
         'item-number-background',
-        'item-number-text',
-        'item-connector'
+        'item-number-text'
       );
+      // the connector's colour sits in its own card (style "connected")
+      if (blockType !== 'pwsteplist') list.push('item-connector');
       return list;
     },
     // square: all radii 0 (the custom ones kept for switching back);

@@ -214,6 +214,8 @@ export default {
     groupLabels: { type: Object, default: null },
     hideSectionHeaders: { type: Boolean, default: false },
     showOnly: { type: Array, default: null },
+    // own labels for some rows (varName → text), e.g. in a card that names the part
+    labels: { type: Object, default: () => ({}) },
     // one theme (e.g. "variant"): the colour rows show only its value
     theme: { type: String, default: null },
     // one breakpoint (default / lg / xl): responsive rows show only its
@@ -283,6 +285,7 @@ export default {
       return key.charAt(0).toUpperCase() + key.slice(1);
     },
     varLabel(varName) {
+      if (this.labels[varName]) return this.labels[varName];
       // A value may bring its own label key (block-specific wording, e.g.
       // logocloud's gap) — the shared prw.prop.* keys are global.
       for (const group of Object.values(this.defaults || {})) {
