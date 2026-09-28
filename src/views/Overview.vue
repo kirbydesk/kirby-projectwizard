@@ -1362,7 +1362,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
-              <k-text size="tiny" class="k-help pw-card-help">{{ $t('prw.hint.elementSpacing') }}</k-text>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing')" />
             </section>
             </template>
 

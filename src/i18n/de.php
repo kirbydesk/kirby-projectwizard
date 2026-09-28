@@ -207,7 +207,7 @@
 	'prw.prop.paragraph-spacing' => 'Absatzabstand',
 	'prw.hint.spaceBelow' => 'Abstand zum nächsten Element im Block',
 	'prw.hint.heroFullscreen' => 'Vollbild ist immer so hoch wie der Bildschirm (100vh).',
-	'prw.hint.elementSpacing' => 'Standard übernimmt die Abstands-Werte der globalen Elemente, Benutzerdefiniert legt eigene fest.',
+	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.paragraphSpacing' => 'Abstand zwischen zwei Absätzen',
 	'prw.hint.citeSpacing' => 'Abstand zwischen Zitat und Quelle',
 	'prw.hint.buttonGap' => 'Abstand zwischen zwei Buttons nebeneinander',

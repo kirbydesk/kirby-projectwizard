@@ -207,7 +207,7 @@
 	'prw.prop.paragraph-spacing' => 'Paragraph Spacing',
 	'prw.hint.spaceBelow' => 'Space to the next element in the block',
 	'prw.hint.heroFullscreen' => 'Full screen is always as high as the screen (100vh).',
-	'prw.hint.elementSpacing' => 'Default takes the spacing values of the global elements, custom sets its own.',
+	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.paragraphSpacing' => 'Space between two paragraphs',
 	'prw.hint.citeSpacing' => 'Space between quote and source',
 	'prw.hint.buttonGap' => 'Space between two buttons side by side',
