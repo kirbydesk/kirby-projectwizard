@@ -2558,6 +2558,12 @@ export default {
   --icon-size: 14px;
   margin-inline-start: 1px;
 }
+/* the menu sits inside the unit label: Kirby's own type again, not the
+   label's small mono font */
+.pw-unit-menu {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+}
 /* only as wide as the units */
 .pw-unit-menu .pw-menu-item .k-button-text {
   min-width: 0;
