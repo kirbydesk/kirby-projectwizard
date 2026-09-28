@@ -57,6 +57,12 @@
           <!-- media: a sample image (as in the element's preview) with the
                element's corner radii -->
           <div v-if="isMedia && hasField('media')" class="pw-media-preview-img pw-media-preview-photo" :style="mediaStyle"></div>
+          <!-- logocloud: sample logos in their tiles, as many per row as set -->
+          <div v-if="isLogocloud" class="pw-logocloud-preview" :style="logosStyle">
+            <div v-for="n in 6" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
+              <k-icon type="image" />
+            </div>
+          </div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
@@ -106,6 +112,10 @@ const GAPS = {
   'heading>editor': '0.5rem',
   'heading>buttons': '1.2rem',
   'editor>buttons': '1.2rem',
+  // (kirbyblock-logocloud: before the logos)
+  'tagline>logos': '1rem',
+  'heading>logos': '2rem',
+  'editor>logos': '2rem',
   // (kirbyblock-media: before the image, slideshow or video)
   'tagline>media': '0.8rem',
   'heading>media': '1.2rem',
@@ -162,6 +172,7 @@ export default {
       const fields = ['tagline', 'heading', 'editor', 'buttons'].filter(f => this.hasField(f));
       if (this.isSteplist) return [...fields, 'items'];
       if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
+      if (this.isLogocloud) return [...fields, 'logos'];
       return fields;
     },
     isMedia() {
@@ -190,6 +201,40 @@ export default {
         borderRadius: r.length === 4
           ? [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' ')
           : 0,
+      };
+    },
+    isLogocloud() {
+      return this.blockType === 'pwlogocloud';
+    },
+    // the logos' row: at most "per row" logos wide, wrapping, aligned as set
+    logosStyle() {
+      const size = this.itemValueAt('item-size');
+      const gap = this.itemValue('item-gap');
+      const perRow = Number(this.setting('layout', 'logos-' + ({ default: 'sm', lg: 'lg', xl: 'xl' }[this.bp]))) || 2;
+      const align = this.preset('logos', 'align') || 'center';
+      return {
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: { left: 'flex-start', right: 'flex-end' }[align] || 'center',
+        gap,
+        maxWidth: 'calc(' + perRow + ' * ' + size + ' + ' + (perRow - 1) + ' * ' + gap + ')',
+        marginTop: this.gapBefore('logos'),
+        marginLeft: align === 'left' ? 0 : 'auto',
+        marginRight: align === 'right' ? 0 : 'auto',
+      };
+    },
+    // a logo's tile: size, padding, shape and background as in the frontend
+    logoStyle() {
+      const shape = this.setting('layout', 'item-shape') || 'round';
+      const r = this.itemValue('item-radius') || [];
+      const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
+      return {
+        flex: '0 0 ' + this.itemValueAt('item-size'),
+        maxWidth: '100%',
+        aspectRatio: '1',
+        padding: this.itemValue('item-padding'),
+        backgroundColor: this.itemColor('item-background'),
+        borderRadius: { square: 0, round: '50%' }[shape] ?? custom,
       };
     },
     isQuote() {
@@ -428,6 +473,16 @@ export default {
       const style = this.currentStepStyle;
       return this.itemValue(style === 'default' ? name : name + '-' + style);
     },
+    // a responsive value of the block's own (item-size …) at the shown device
+    itemValueAt(name) {
+      const ov = (this.valueOverrides || {})[name];
+      if (ov && typeof ov === 'object' && !Array.isArray(ov) && ov[this.bp]) return ov[this.bp];
+      for (const group of Object.values(this.valueDefaults || {})) {
+        const def = group && group.vars && group.vars[name];
+        if (def) return def[this.bp] || def.default || def.value;
+      }
+      return undefined;
+    },
     // a value of the block's own (item-gap, item-radius …): override, else the plugin's
     itemValue(name) {
       const ov = (this.valueOverrides || {})[name];
@@ -610,6 +665,19 @@ export default {
 .pw-steplist-item.is-centered .pw-steplist-gap {
   border-inline: 0;
   border-block: 1px solid rgba(255, 0, 170, 0.6);
+}
+/* logocloud: a sample logo in the middle of its tile */
+.pw-logocloud-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: var(--color-gray-400);
+}
+.pw-logocloud-item .k-icon {
+  --icon-size: 40%;
+  width: 40%;
+  height: 40%;
 }
 /* steplist: the connector line sits behind the numbers */
 .pw-steplist-item {
