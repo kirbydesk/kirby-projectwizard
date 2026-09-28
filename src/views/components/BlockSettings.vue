@@ -671,9 +671,10 @@ export default {
         if (items.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: items });
         return groups;
       }
-      // drawer fields only: no "enabled" markers, no item-* values (those
-      // are the items' design), fields with a start value
-      const keys = Object.keys(all).filter(k => !k.startsWith('item-') && this.isObject(all[k]) && 'default' in all[k]);
+      // drawer fields only: no "enabled" markers, fields with a start value;
+      // item-* in the layout are the items' design (not in the drawer), in
+      // other tabs they are block fields (steplist's item style)
+      const keys = Object.keys(all).filter(k => !(tab === 'layout' && k.startsWith('item-')) && this.isObject(all[k]) && 'default' in all[k]);
       // fields that belong together (one headline in the drawer) share a row,
       // at the place of their first field
       const together = [
