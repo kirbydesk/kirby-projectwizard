@@ -64,7 +64,7 @@
 
 	/* -------------- Tabs --------------*/
 	'prw.field.radius' => 'Radien',
-	'prw.headline.variant' => 'Variante',
+	'prw.headline.variant' => 'Theme',
 	'prw.headline.numbering' => 'Nummerierung',
 	'prw.label.betweenSteps' => 'Zwischen den Schritten',
 	'prw.label.backgroundColor' => 'Hintergrundfarbe',

@@ -64,7 +64,7 @@
 
 	/* -------------- Tabs --------------*/
 	'prw.field.radius' => 'Radii',
-	'prw.headline.variant' => 'Variant',
+	'prw.headline.variant' => 'Theme',
 	'prw.headline.numbering' => 'Numbering',
 	'prw.label.betweenSteps' => 'Between the steps',
 	'prw.label.backgroundColor' => 'Background color',
