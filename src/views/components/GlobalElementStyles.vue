@@ -707,6 +707,7 @@
 
 <script>
 import autosize from '../../directives/autosize.js';
+import { readPreviewBp, savePreviewBp } from '../../helpers/preview-bp.js';
 
 export default {
   directives: { 'pw-autosize': autosize },
@@ -764,7 +765,7 @@ export default {
     return {
       activeElement: null,
       // breakpoint shown in the preview sidebar
-      previewBp: 'xl',
+      previewBp: readPreviewBp(),
       // theme whose colours the colour rows show
       colorTheme: 'default',
       // size step shown in the preview (headings without a base size)
@@ -787,6 +788,10 @@ export default {
     };
   },
   watch: {
+    // remembered for the next visit
+    previewBp(bp) {
+      savePreviewBp(bp);
+    },
     savedOverrides: {
       handler() { this.resetFields = new Set(); },
     },

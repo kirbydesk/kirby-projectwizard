@@ -1522,6 +1522,7 @@
 
 <script>
 import autosize from '../directives/autosize.js';
+import { readPreviewBp, savePreviewBp } from '../helpers/preview-bp.js';
 
 export default {
   directives: { 'pw-autosize': autosize },
@@ -1585,7 +1586,8 @@ export default {
       // guides in the block preview (and the matching stripes in the rows)
       previewGuides: (() => { try { return localStorage.getItem('pw-wizard-guides') === 'on'; } catch (e) { return false; } })(),
       // breakpoint shown in the items' responsive rows
-      itemBp: 'default',
+      // device of the preview: the last one chosen (see helpers/preview-bp.js)
+      itemBp: readPreviewBp(),
       globalDefaults: {},
       globalOverrides: {},
       originalGlobalOverrides: {},
@@ -1826,6 +1828,10 @@ export default {
     },
   },
   watch: {
+    // remembered for the next visit
+    itemBp(bp) {
+      savePreviewBp(bp);
+    },
     // another block: start on its first tab
     activeTab() {
       this.blockViewTab = null;
