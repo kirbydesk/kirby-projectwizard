@@ -155,9 +155,15 @@ export default {
       const cols = Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
       return { ...style, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap, marginBottom: gap };
     },
+    // the number's alignment of the shown style (centered: always centre)
+    stepAlign() {
+      if (this.currentStepStyle === 'centered') return 'center';
+      const key = 'item-number-align' + (this.currentStepStyle === 'default' ? '' : '-' + this.currentStepStyle);
+      return this.setting('layout', key) || 'center';
+    },
     stepItemStyle() {
       const centered = this.currentStepStyle === 'centered';
-      const align = this.setting('style', 'item-number-align') || 'center';
+      const align = this.stepAlign;
       return {
         display: 'flex',
         flexDirection: centered ? 'column' : 'row',
@@ -293,7 +299,7 @@ export default {
       const size = this.stepValue('item-number-size');
       const width = this.itemValue('item-connector-width');
       const offset = this.stepOffset;
-      const centre = (this.setting('style', 'item-number-align') || 'center') === 'center'
+      const centre = this.stepAlign === 'center'
         ? 'calc(50% + ' + offset + ')'
         : 'calc(' + size + ' / 2 + ' + offset + ')';
       return {

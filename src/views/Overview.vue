@@ -916,6 +916,20 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                 </template>
+                <!-- beside the text (not centered): the number's alignment
+                     (top / centre) and its fine vertical offset -->
+                <pw-block-settings
+                  v-if="currentStepStyle(block.blockType) !== 'centered'"
+                  :key="'align-' + currentStepStyle(block.blockType)"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="[stepValueKey(block.blockType, 'item-number-align')]"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
                 <pw-block-values
                   v-if="currentStepStyle(block.blockType) !== 'centered'"
                   :bp.sync="itemBp"
