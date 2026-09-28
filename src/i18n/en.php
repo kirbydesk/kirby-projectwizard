@@ -64,7 +64,7 @@
 	'prw.subtab.add-font' => 'Add Font',
 
 	/* -------------- Tabs --------------*/
-	'prw.headline.blockLayout' => 'Block layout',
+	'prw.headline.blockLayout' => 'Block settings',
 	'prw.headline.defaultFont' => 'Default font',
 	'prw.headline.margins' => 'Margins',
 	'prw.headline.links' => 'Links',

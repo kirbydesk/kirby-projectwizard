@@ -64,7 +64,7 @@
 	'prw.subtab.add-font' => 'Schrift hinzufügen',
 
 	/* -------------- Tabs --------------*/
-	'prw.headline.blockLayout' => 'Block-Layout',
+	'prw.headline.blockLayout' => 'Block-Einstellungen',
 	'prw.headline.defaultFont' => 'Standardschrift',
 	'prw.headline.margins' => 'Außenabstände',
 	'prw.headline.links' => 'Links',
