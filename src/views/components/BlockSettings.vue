@@ -203,7 +203,7 @@
                         v-if="isCornerGroup(field)"
                         class="pw-field-hint"
                         :class="{ 'is-zero': !getVal('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default', sub.defaultValue) }"
-                      >{{ cornerHint(sub.label, getVal('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default', sub.defaultValue), globalValues['global-']) }}</span>
+                      >{{ cornerHint(sub.label, true, globalValues['global-']) }}</span>
                     </span>
                   </div>
                 </span>
@@ -302,7 +302,7 @@
                     v-if="isCornerGroup(field)"
                     class="pw-field-hint"
                     :class="{ 'is-zero': !getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue) }"
-                  >{{ cornerHint(sub.label, getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue), itemRadius) }}</span>
+                  >{{ cornerHint(sub.label, true, itemRadius) }}</span>
                 </span>
               </div>
             </span>
@@ -1272,8 +1272,9 @@ export default {
 
     // radius a corner switch applies: its value from the four corner values
     // (top-left, top-right, bottom-left, bottom-right); off → 0rem
+    // the radius set for a corner (shown also while the corner is off, then
+    // fainter)
     cornerHint(corner, on, values) {
-      if (!on) return '0rem';
       const idx = ['top-left', 'top-right', 'bottom-left', 'bottom-right'].indexOf(corner);
       return (Array.isArray(values) && values[idx]) || '';
     },
