@@ -242,9 +242,10 @@ export default {
           for (const [vn, def] of Object.entries(v.vars || {})) {
             if (this.showOnly.includes(vn)) filteredVars[vn] = def;
           }
+          // colours in the order of showOnly (the card decides it)
           filteredColors = {};
-          for (const [vn, def] of Object.entries(v.colors || {})) {
-            if (this.showOnly.includes(vn)) filteredColors[vn] = def;
+          for (const vn of this.showOnly) {
+            if ((v.colors || {})[vn]) filteredColors[vn] = v.colors[vn];
           }
         }
 
