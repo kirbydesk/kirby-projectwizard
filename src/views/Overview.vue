@@ -1050,6 +1050,17 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+                <!-- the title above the text or run-in at its start -->
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-title-style']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
               </div>
             </section>
             <section class="pw-card-section">
@@ -1156,16 +1167,6 @@
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
-                />
-                <pw-block-settings
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-title-style']"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
               </div>
             </section>
