@@ -60,10 +60,23 @@
           <!-- logocloud: four sample logos, two by two (so the gap shows
                between the columns and between the rows), shrinking in a
                narrow preview -->
-          <div v-if="isLogocloud" class="pw-logocloud-preview" :style="logosStyle">
-            <div v-for="(logo, n) in dummyLogos" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
+          <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides }" :style="logosStyle">
+            <div
+              v-for="(logo, n) in dummyLogos"
+              :key="'logo-' + n"
+              class="pw-logocloud-item"
+              :style="{ ...logoStyle, ...logoCell(n) }"
+            >
               <svg viewBox="0 0 120 60" aria-hidden="true" v-html="logo"></svg>
             </div>
+            <!-- guides: the gap as elements of their own, two cyan lines each
+                 (between the columns, between the rows) -->
+            <template v-if="guides">
+              <span class="pw-logocloud-gap is-column" style="grid-area: 1 / 2"></span>
+              <span class="pw-logocloud-gap is-column" style="grid-area: 3 / 2"></span>
+              <span class="pw-logocloud-gap is-row" style="grid-area: 2 / 1"></span>
+              <span class="pw-logocloud-gap is-row" style="grid-area: 2 / 3"></span>
+            </template>
           </div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
@@ -224,13 +237,30 @@ export default {
     logosStyle() {
       const size = this.itemValueAt('item-size');
       const align = this.preset('logos', 'align') || 'center';
+      const justify = { left: 'start', right: 'end' }[align] || 'center';
+      const gap = this.itemValue('item-gap');
+      // guides: the gap is a track of its own (for its lines)
+      if (this.guides) {
+        return {
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, ' + size + ') ' + gap + ' minmax(0, ' + size + ')',
+          gridTemplateRows: 'auto ' + gap + ' auto',
+          justifyContent: justify,
+          marginTop: this.gapBefore('logos'),
+        };
+      }
       return {
         display: 'grid',
         gridTemplateColumns: 'repeat(2, minmax(0, ' + size + '))',
-        justifyContent: { left: 'start', right: 'end' }[align] || 'center',
-        gap: this.itemValue('item-gap'),
+        justifyContent: justify,
+        gap,
         marginTop: this.gapBefore('logos'),
       };
+    },
+    // (guides: the four logos in the corners of the 3×3 tracks)
+    logoCell(n) {
+      if (!this.guides) return {};
+      return { gridArea: [[1, 1], [1, 3], [3, 1], [3, 3]][n].join(' / ') };
     },
     // a logo's tile: size, padding, shape and background as in the frontend
     logoStyle() {
@@ -673,6 +703,20 @@ export default {
 .pw-steplist-item.is-centered .pw-steplist-gap {
   border-inline: 0;
   border-block: 1px solid rgba(255, 0, 170, 0.6);
+}
+/* logocloud guides: the gap between the logos (cyan, a line on either
+   side), the logo's area inside the tile's padding (magenta) */
+.pw-logocloud-gap {
+  box-sizing: border-box;
+}
+.pw-logocloud-gap.is-column {
+  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+}
+.pw-logocloud-gap.is-row {
+  border-block: 1px solid rgba(0, 170, 255, 0.8);
+}
+.pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+  outline: 1px solid rgba(255, 0, 170, 0.6);
 }
 /* logocloud: a sample logo in its tile (as "contain" in the frontend) */
 .pw-logocloud-item {
