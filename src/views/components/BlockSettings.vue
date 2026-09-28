@@ -50,24 +50,19 @@
           <div v-if="group.heading" class="pw-card-heading-row">
             <h3 class="pw-card-heading">{{ group.heading }}</h3>
           </div>
-          <div class="pw-card pw-field-table">
+          <!-- one column, white: a row per field (the card as elsewhere) -->
+          <div class="pw-card pw-field-table pw-eye-list">
             <div v-for="row in group.rows" :key="row.id" class="pw-field-row">
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <button
-                      type="button"
-                      class="pw-field-eye"
-                      :data-state="isHidden(row.keys) ? 'off' : 'on'"
-                      :title="$t(isHidden(row.keys) ? 'prw.field.state.off' : 'prw.field.state.on')"
-                      @click="toggleHidden(row.keys)"
-                    >
-                      <k-icon :type="isHidden(row.keys) ? 'hidden' : 'preview'" />
-                      <span class="pw-field-row-label">{{ row.label }}</span>
-                    </button>
-                  </div>
-                </span>
-              </div>
+              <button
+                type="button"
+                class="pw-field-eye"
+                :data-state="isHidden(row.keys) ? 'off' : 'on'"
+                :title="$t(isHidden(row.keys) ? 'prw.field.state.off' : 'prw.field.state.on')"
+                @click="toggleHidden(row.keys)"
+              >
+                <k-icon :type="isHidden(row.keys) ? 'hidden' : 'preview'" />
+                <span class="pw-field-row-label">{{ row.label }}</span>
+              </button>
             </div>
           </div>
         </section>
@@ -1431,12 +1426,23 @@ export default {
   padding-left: var(--spacing-2);
 }
 
-/* restrictions: a field with its eye (switched off: faded) */
+/* restrictions: one white column, a row per field with its eye (hidden
+   from the editors: faded); the whole row is the button */
+.pw-eye-list .pw-field-row {
+  display: flex;
+  min-height: var(--table-row-height, 38px);
+}
 .pw-field-eye {
-  display: inline-flex;
+  display: flex;
+  flex-grow: 1;
   align-items: center;
   gap: var(--spacing-2);
+  padding-inline: var(--table-cell-padding, var(--spacing-3));
+  text-align: start;
   cursor: pointer;
+}
+.pw-field-eye .pw-field-row-label {
+  font-size: var(--text-sm);
 }
 .pw-field-eye .k-icon {
   --icon-size: 16px;
