@@ -65,6 +65,7 @@
 
 	/* -------------- Tabs --------------*/
 	'prw.field.radius' => 'Radien',
+	'prw.headline.numbering' => 'Nummerierung',
 	'prw.headline.connector' => 'Verbindungslinie',
 	'prw.label.backgroundColor' => 'Hintergrundfarbe',
 	'prw.label.offset' => 'Vertikaler Versatz',

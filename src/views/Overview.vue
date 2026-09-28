@@ -868,7 +868,7 @@
                  the colour cards), its vertical offset, its gap to the text -->
             <section v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType]" class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
+                <h3 class="pw-card-heading">{{ $t('prw.headline.numbering') }}</h3>
                 <span class="pw-pill pw-theme-switch" role="group">
                   <button
                     v-for="st in stepStyleOptions(block.blockType)"
