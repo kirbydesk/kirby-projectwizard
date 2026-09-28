@@ -1360,6 +1360,10 @@ export default {
   border-radius: var(--rounded);
   box-shadow: var(--shadow);
 }
+/* the tabs start on the left (the drawer has its breadcrumb there) */
+.pw-drawer-strip .k-drawer-tabs.k-tabs {
+  justify-content: start;
+}
 
 .pw-field-row-options .k-toggles-input ul {
   display: flex !important;
