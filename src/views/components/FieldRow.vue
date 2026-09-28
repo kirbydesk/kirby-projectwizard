@@ -60,6 +60,8 @@ export default {
     // "allowed": which options editors may choose (restrictions);
     // "preset": which one a new block starts with (start values)
     mode: { type: String, default: 'allowed' },
+    // the block's plugin (kirbyblock-steplist): its own option labels
+    plugin: { type: String, default: '' },
   },
   data() {
     return {
@@ -101,6 +103,12 @@ export default {
       return (translated && translated !== tKey) ? translated : key;
     },
     optionLabel(opt) {
+      // the block's own wording first (kirbyblock-steplist.item-style.centered …)
+      if (this.plugin) {
+        const ownKey = this.plugin + '.' + this.label + '.' + opt;
+        const own = this.$t(ownKey);
+        if (own && own !== ownKey) return own;
+      }
       const pwKey = 'pw.option.' + opt;
       const pwTranslated = this.$t(pwKey);
       if (pwTranslated && pwTranslated !== pwKey) return pwTranslated;

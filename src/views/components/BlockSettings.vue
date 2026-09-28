@@ -40,6 +40,7 @@
               :required="prop.required === true"
               :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
               :mode="view === 'defaults' ? 'preset' : 'allowed'"
+              :plugin="block.plugin || ''"
               @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
             />
@@ -69,6 +70,7 @@
                 :enabled="true"
                 :modified="hasOverride('settings.fields.content.editor.' + prop.key)"
                 :mode="view === 'defaults' ? 'preset' : 'allowed'"
+              :plugin="block.plugin || ''"
                 @update:options="setEditorContentOptions(prop.key, prop, $event)"
                 @update:default="selectOption('settings.fields.content.editor.' + prop.key + '.default', $event, prop.pluginDefault)"
               />
@@ -120,6 +122,7 @@
               :required="prop.required === true"
               :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
               :mode="view === 'defaults' ? 'preset' : 'allowed'"
+              :plugin="block.plugin || ''"
               @update:options="setActiveOptions(field.key, prop.key, prop, $event)"
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
             />
@@ -155,6 +158,7 @@
               :modified="hasOverride('settings.fields.' + cat.key + '.' + field.key)"
               :required="field.required === true"
               :mode="view === 'defaults' ? 'preset' : 'allowed'"
+              :plugin="block.plugin || ''"
               @update:options="setCategoryOptions(cat.key, field.key, field, $event)"
               @update:default="selectOption('settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.pluginDefault)"
             />
@@ -684,10 +688,14 @@ export default {
       return this.$t('pw.tab.' + key);
     },
 
-    // options of an option row; the variant only with the project's variants
+    // options of an option row; the variant only with the project's variants,
+    // and "custom" (own colours) never as a start value
     fieldOptions(field) {
-      if (field.key !== 'theme' || !Array.isArray(this.variants)) return field.allOptions;
-      return field.allOptions.filter(o => o === 'default' || o === 'custom' || this.variants.includes(o));
+      if (field.key !== 'theme') return field.allOptions;
+      return field.allOptions.filter(o => {
+        if (o === 'custom') return this.view !== 'defaults';
+        return o === 'default' || !Array.isArray(this.variants) || this.variants.includes(o);
+      });
     },
 
     // a drawer tab has rows in this view
