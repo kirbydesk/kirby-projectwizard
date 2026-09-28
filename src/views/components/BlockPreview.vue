@@ -489,9 +489,13 @@ export default {
 /* steplist guides: outlines of the steps and their texts; the room
    between two steps and between the number and the text outline is the gap
    set in the design (the number shows its edge itself) */
-.pw-steplist-items.has-guides .pw-steplist-item,
-.pw-steplist-items.has-guides .pw-steplist-content {
+.pw-steplist-items.has-guides .pw-steplist-item {
   outline: 1px solid rgba(0, 170, 255, 0.8);
+}
+/* the text's edge in magenta (like the content edge of the block), so it
+   is told apart from the steps' cyan */
+.pw-steplist-items.has-guides .pw-steplist-content {
+  outline: 1px solid rgba(255, 0, 170, 0.6);
 }
 /* steplist: the connector line sits behind the numbers */
 .pw-steplist-item {
