@@ -933,42 +933,13 @@
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />
-              </div>
-            </section>
-
-            <!-- steplist, style "connected": the connector line (width, colour
-                 of the chosen variant) -->
-            <section v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType] && currentStepStyle(block.blockType) === 'connected'" class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.connector') }}</h3>
-                <span class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="theme in themes"
-                    :key="'cth-' + theme"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
-                    @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
-                </span>
-              </div>
-              <div class="pw-card pw-field-table">
+                <!-- "connected": the width of the line (its colour: colours card) -->
                 <pw-block-values
+                  v-if="currentStepStyle(block.blockType) === 'connected'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-connector-width']"
-                  :labels="{ 'item-connector-width': $t('prw.label.width') }"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                />
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-connector']"
-                  :labels="{ 'item-connector': $t('prw.label.color') }"
-                  :theme="currentItemColorTheme"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />
@@ -1654,9 +1625,11 @@ export default {
       if (blockType === 'pwsteplist') {
         list.push(this.stepNumberColor(blockType));
         if (this.currentStepStyle(blockType) !== 'minimal') list.push('item-number-background');
+        // the connector line only with the style "connected"
+        if (this.currentStepStyle(blockType) === 'connected') list.push('item-connector');
+      } else {
+        list.push('item-connector');
       }
-      // the connector's colour sits in its own card (style "connected")
-      if (blockType !== 'pwsteplist') list.push('item-connector');
       return list;
     },
     // square: all radii 0 (the custom ones kept for switching back);
