@@ -50,7 +50,6 @@
 	'prw.subtab.sizes' => 'Größe',
 	'prw.subtab.marked' => 'Text-Markierung',
 	'prw.subtab.shape' => 'Form',
-	'prw.subtab.spacing' => 'Abstand',
 	'prw.subtab.slideshow' => 'Slideshow',
 	'prw.subtab.zoom' => 'Zoom-Icon',
 	'prw.subtab.icon' => 'Icon',

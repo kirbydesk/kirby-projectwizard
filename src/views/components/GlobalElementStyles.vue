@@ -1489,7 +1489,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') , spacing: this.$t('prw.subtab.spacing') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') , spacing: this.$t('prw.headline.spacing') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
