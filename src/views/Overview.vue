@@ -982,7 +982,8 @@
             <template v-if="blockValueDefaults[block.blockType]">
               <section class="pw-card-section">
                 <div class="pw-card-heading-row">
-                  <h3 class="pw-card-heading">{{ $t('prw.subtab.layout') }}</h3>
+                  <!-- steplist: only the gap between the steps is left here -->
+                  <h3 class="pw-card-heading">{{ $t(block.blockType === 'pwsteplist' ? 'prw.headline.spacing' : 'prw.subtab.layout') }}</h3>
                 </div>
                 <div class="pw-card pw-field-table">
                   <pw-block-values
@@ -1018,6 +1019,7 @@
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="block.blockType === 'pwsteplist' ? ['item-gap'] : ['item-number-size', 'item-gap', 'item-content-gap', 'item-connector-width']"
+                    :labels="block.blockType === 'pwsteplist' ? { 'item-gap': $t('prw.label.betweenSteps') } : {}"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
