@@ -885,7 +885,7 @@
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-number-size']"
+                    :show-only="[stepValueKey(block.blockType, 'item-number-size')]"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -914,7 +914,7 @@
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-number-size-minimal']"
+                    :show-only="[stepValueKey(block.blockType, 'item-number-size')]"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -922,7 +922,7 @@
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-number-offset']"
+                    :show-only="[stepValueKey(block.blockType, 'item-number-offset')]"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -930,7 +930,7 @@
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-content-gap']"
+                    :show-only="[stepValueKey(block.blockType, 'item-content-gap')]"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -1709,6 +1709,12 @@ export default {
     stepStyleOptions(blockType) {
       const def = this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['item-style'];
       return (def && def.options) || ['default'];
+    },
+    // a value of the shown style: "default" uses the plain name, the other
+    // styles their own (item-number-size-centered …)
+    stepValueKey(blockType, name) {
+      const style = this.currentStepStyle(blockType);
+      return style === 'default' ? name : name + '-' + style;
     },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];

@@ -166,14 +166,14 @@ export default {
         flexDirection: centered ? 'column' : 'row',
         alignItems: centered || align === 'center' ? 'center' : (this.currentStepStyle === 'minimal' ? 'baseline' : 'flex-start'),
         textAlign: centered ? 'center' : null,
-        gap: this.itemValue('item-content-gap'),
+        gap: this.stepValue('item-content-gap'),
         marginBottom: this.hasGrid ? 0 : this.itemValue('item-gap'),
       };
     },
     stepNumberStyle() {
-      const size = this.itemValue('item-number-size');
+      const size = this.stepValue('item-number-size');
       if (this.currentStepStyle === 'minimal') {
-        return { color: this.itemColor('item-number-background'), fontSize: this.itemValue('item-number-size-minimal'), fontWeight: 700, translate: '0 ' + this.stepOffset };
+        return { color: this.itemColor('item-number-background'), fontSize: this.stepValue('item-number-size'), fontWeight: 700, translate: '0 ' + this.stepOffset };
       }
       const shape = this.setting('layout', 'item-shape') || 'round';
       const r = this.itemValue('item-radius') || [];
@@ -198,7 +198,7 @@ export default {
     },
     // the number's fine vertical offset
     stepOffset() {
-      return this.itemValue('item-number-offset') || '0rem';
+      return this.stepValue('item-number-offset') || '0rem';
     },
     // item title and text: heading at its "lg" step, text like the editor
     stepHeadingStyle() {
@@ -291,7 +291,7 @@ export default {
     // steplist "connected": the line through all numbers, from the first
     // number's centre to the last one's
     stepConnectorStyle(n) {
-      const size = this.itemValue('item-number-size');
+      const size = this.stepValue('item-number-size');
       const width = this.itemValue('item-connector-width');
       const offset = this.stepOffset;
       const centre = (this.setting('style', 'item-number-align') || 'center') === 'center'
@@ -304,6 +304,11 @@ export default {
         bottom: n === this.stepCount ? 'calc(100% - ' + centre + ')' : 'calc(' + this.itemValue('item-gap') + ' * -1)',
         background: this.itemColor('item-connector'),
       };
+    },
+    // a value of the shown item style ("default": the plain name)
+    stepValue(name) {
+      const style = this.currentStepStyle;
+      return this.itemValue(style === 'default' ? name : name + '-' + style);
     },
     // a value of the block's own (item-gap, item-radius …): override, else the plugin's
     itemValue(name) {
