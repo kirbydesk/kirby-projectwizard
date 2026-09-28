@@ -863,8 +863,8 @@
 
             <!-- steplist: the item styles as pills (a view, not saved: the
                  preview shows that style) and the values that matter for it –
-                 the number (bubble or, minimal, plain text), its gap to the
-                 text, the connector line -->
+                 the number (bubble or, minimal, plain text), its vertical
+                 offset, its gap to the text, the connector line -->
             <section v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType]" class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
@@ -915,6 +915,14 @@
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-number-size-minimal']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-number-offset']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />

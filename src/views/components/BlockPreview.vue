@@ -173,7 +173,7 @@ export default {
     stepNumberStyle() {
       const size = this.itemValue('item-number-size');
       if (this.currentStepStyle === 'minimal') {
-        return { color: this.itemColor('item-number-background'), fontSize: this.itemValue('item-number-size-minimal'), fontWeight: 700 };
+        return { color: this.itemColor('item-number-background'), fontSize: this.itemValue('item-number-size-minimal'), fontWeight: 700, translate: '0 ' + this.stepOffset };
       }
       const shape = this.setting('layout', 'item-shape') || 'round';
       const r = this.itemValue('item-radius') || [];
@@ -193,7 +193,12 @@ export default {
         backgroundColor: this.itemColor('item-number-background'),
         color: this.itemColor('item-number-text'),
         borderRadius: { round: '50%', square: 0 }[shape] ?? custom,
+        translate: '0 ' + this.stepOffset,
       };
+    },
+    // the number's fine vertical offset
+    stepOffset() {
+      return this.itemValue('item-number-offset') || '0rem';
     },
     // item title and text: heading at its "lg" step, text like the editor
     stepHeadingStyle() {
@@ -288,7 +293,10 @@ export default {
     stepConnectorStyle(n) {
       const size = this.itemValue('item-number-size');
       const width = this.itemValue('item-connector-width');
-      const centre = (this.setting('style', 'item-number-align') || 'center') === 'center' ? '50%' : 'calc(' + size + ' / 2)';
+      const offset = this.stepOffset;
+      const centre = (this.setting('style', 'item-number-align') || 'center') === 'center'
+        ? 'calc(50% + ' + offset + ')'
+        : 'calc(' + size + ' / 2 + ' + offset + ')';
       return {
         left: 'calc(' + size + ' / 2 - ' + width + ' / 2)',
         width,
