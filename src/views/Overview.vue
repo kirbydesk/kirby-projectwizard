@@ -1058,6 +1058,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="itemLayoutDefault(block.blockType, 'item-title-style') === 'inline' ? ['item-text-size'] : ['item-title-size', 'item-title-line-height', 'item-text-size']"
+                  :labels="itemLayoutDefault(block.blockType, 'item-title-style') === 'inline' ? { 'item-text-size': $t('prw.prop.font-size') } : {}"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
