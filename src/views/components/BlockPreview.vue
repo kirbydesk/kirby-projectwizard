@@ -61,8 +61,8 @@
                between the columns and between the rows), shrinking in a
                narrow preview -->
           <div v-if="isLogocloud" class="pw-logocloud-preview" :style="logosStyle">
-            <div v-for="n in 4" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
-              <k-icon type="image" />
+            <div v-for="(logo, n) in dummyLogos" :key="'logo-' + n" class="pw-logocloud-item" :style="logoStyle">
+              <svg viewBox="0 0 120 60" aria-hidden="true" v-html="logo"></svg>
             </div>
           </div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
@@ -123,6 +123,14 @@ const GAPS = {
   'heading>media': '1.2rem',
   'editor>media': '1.2rem',
 };
+// made-up sample logos for the logo cloud (a mark and a name each)
+const DUMMY_LOGOS = [
+  '<circle cx="30" cy="30" r="13" fill="#4b5563"/><circle cx="30" cy="30" r="6" fill="#fff"/><text x="50" y="36" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#4b5563">Lumo</text>',
+  '<path d="M18 42 L30 18 L42 42 Z" fill="#6b7280"/><text x="48" y="36" font-family="Georgia, serif" font-size="17" font-style="italic" fill="#6b7280">Nova</text>',
+  '<rect x="17" y="17" width="26" height="26" rx="5" fill="#374151"/><rect x="24" y="24" width="12" height="12" rx="2" fill="#fff"/><text x="50" y="36" font-family="Helvetica, Arial, sans-serif" font-size="16" letter-spacing="2" fill="#374151">ARCO</text>',
+  '<path d="M14 36 Q22 22 30 36 T46 36" fill="none" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/><text x="52" y="36" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="300" fill="#6b7280">vela</text>',
+];
+
 // device → grid breakpoint (below 640px there is no grid: full width)
 const GRID_BP = { default: null, lg: 'lg', xl: 'xl' };
 // column gap of the frontend grid (gap-12 at lg, gap-16 at xl) as a share
@@ -161,6 +169,9 @@ export default {
     variant: { type: String, default: '' },
   },
   computed: {
+    dummyLogos() {
+      return DUMMY_LOGOS;
+    },
     blockGuides() {
       return this.guides && this.withBlockGuides;
     },
@@ -663,7 +674,7 @@ export default {
   border-inline: 0;
   border-block: 1px solid rgba(255, 0, 170, 0.6);
 }
-/* logocloud: a sample logo in the middle of its tile */
+/* logocloud: a sample logo in its tile (as "contain" in the frontend) */
 .pw-logocloud-item {
   display: flex;
   align-items: center;
@@ -671,10 +682,9 @@ export default {
   box-sizing: border-box;
   color: var(--color-gray-400);
 }
-.pw-logocloud-item .k-icon {
-  --icon-size: 40%;
-  width: 40%;
-  height: 40%;
+.pw-logocloud-item svg {
+  width: 100%;
+  height: 100%;
 }
 /* steplist: the connector line sits behind the numbers */
 .pw-steplist-item {
