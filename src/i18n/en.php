@@ -77,7 +77,7 @@
 	'prw.label.height' => 'Height',
 	'prw.label.size' => 'Size',
 	'prw.headline.spacing' => 'Spacing',
-	'prw.headline.spaceBelow' => 'Space below',
+	'prw.headline.spaceBelow' => 'Element spacing below',
 	'prw.headline.blockLayout' => 'Block settings',
 	'prw.headline.defaultFont' => 'Default font',
 	'prw.headline.margins' => 'Margins',
