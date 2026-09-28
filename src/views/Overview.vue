@@ -1330,11 +1330,24 @@
                 />
                 <!-- standard: the global elements' values, grey (not editable here) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'">
-                  <div v-for="el in ['tagline', 'heading', 'editor']" :key="'gs-' + el" class="pw-field-row">
+                  <div
+                    v-for="el in ['tagline', 'heading', 'editor']"
+                    :key="'gs-' + el"
+                    class="pw-field-row"
+                    :data-guide="previewGuides ? { tagline: 'margin', heading: 'row', editor: 'text' }[el] : null"
+                  >
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
                           <label class="pw-field-row-label">{{ $t('prw.prop.' + el + '-spacing') }}</label>
+                          <!-- guides on: hovering the question mark tints the space in the preview -->
+                          <span
+                            v-if="previewGuides"
+                            class="pw-area-hint"
+                            :title="$t('prw.hint.spaceBelow')"
+                            @mouseenter="hoveredVar = el + '-spacing'"
+                            @mouseleave="hoveredVar = null"
+                          ><k-icon type="question" /></span>
                         </div>
                         <!-- as the editable rows: the px cell first, then the value -->
                         <div class="pw-field-row-options">

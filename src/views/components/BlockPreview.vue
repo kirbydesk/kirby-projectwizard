@@ -449,6 +449,11 @@ export default {
     ownSpacing() {
       return this.setting('layout', 'item-spacing') === 'own';
     },
+    // the block brings values for its own space below (then its design tab
+    // shows the space, own or global, with guides)
+    hasOwnSpacingValues() {
+      return Object.values(this.valueDefaults || {}).some(g => g && g.vars && g.vars['heading-spacing']);
+    },
     // the background shown: chosen in the toolbar (a view), else the start value
     heroBackground() {
       return (this.designView && this.heroBgView) || this.setting('style', 'background-type') || 'color';
@@ -1022,7 +1027,8 @@ export default {
     // band of its own, coloured by the element above (tagline cyan, heading
     // violet, text orange)
     spaceBand(field) {
-      if (!this.guides || !this.ownSpacing) return null;
+      // (blocks with values for it: the hero – own or the global elements')
+      if (!this.guides || !this.hasOwnSpacingValues) return null;
       const idx = this.fields.indexOf(field);
       const prev = idx > 0 ? this.fields[idx - 1] : '';
       if (!['tagline', 'heading', 'editor'].includes(prev)) return null;
