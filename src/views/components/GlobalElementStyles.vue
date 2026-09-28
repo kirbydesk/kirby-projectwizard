@@ -1824,8 +1824,7 @@ export default {
       return {
         fontSize: iconSizeOv || iconSizeDef,
         marginRight: iconGapOv || iconGapDef,
-        // the gap for its guide, in the button's font size (the icon's own
-        // size would change the em)
+        // the gap for its guide (resolved in the icon's font size, as the margin)
         '--pw-icon-gap': iconGapOv || iconGapDef,
       };
     },
