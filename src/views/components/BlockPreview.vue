@@ -260,7 +260,8 @@ export default {
         // at the start of the next across the whole width, the band between
         // them tinted while its label is hovered
         const size = this.itemValueAt('item-size');
-        const line = 'rgba(255, 140, 0, 0.9)';
+        // (hovered: the band only, without its lines)
+        const line = this.highlight === 'item-row-gap' ? 'transparent' : 'rgba(255, 140, 0, 0.9)';
         const fill = this.highlight === 'item-row-gap' ? 'rgba(255, 140, 0, 0.18)' : 'transparent';
         const hidden = this.highlight && this.highlight !== 'item-row-gap';
         const end = 'calc(' + size + ' + ' + rowGap + ')';
@@ -814,21 +815,19 @@ export default {
 .has-focus .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 0;
 }
-.has-focus .pw-steplist-step-gap:not(.is-hot),
-.has-focus .pw-steplist-gap:not(.is-hot),
-.has-focus .pw-logocloud-gap:not(.is-hot),
-.has-focus .pw-logocloud-text-gap:not(.is-hot) {
+/* (the hovered value too: only its tinted area shows, no lines) */
+.has-focus .pw-steplist-step-gap,
+.has-focus .pw-steplist-gap,
+.has-focus .pw-logocloud-gap,
+.has-focus .pw-logocloud-text-gap {
   border-color: transparent;
+}
+.has-focus .pw-logocloud-preview.has-guides .pw-logocloud-pad,
+.has-focus .pw-logocloud-preview.is-flexible .pw-logocloud-item::before {
+  display: none;
 }
 .has-focus:not(.focus-padding) .pw-logocloud-preview.has-guides .pw-logocloud-pad {
   box-shadow: none;
-}
-/* one padding hovered: only its two lines (sides magenta / top and bottom green) */
-.has-focus.focus-padding-x .pw-logocloud-preview.has-guides .pw-logocloud-pad {
-  box-shadow: -1px 0 0 rgba(255, 0, 170, 0.6), 1px 0 0 rgba(255, 0, 170, 0.6);
-}
-.has-focus.focus-padding-y .pw-logocloud-preview.has-guides .pw-logocloud-pad {
-  box-shadow: 0 -1px 0 rgba(0, 180, 90, 0.9), 0 1px 0 rgba(0, 180, 90, 0.9);
 }
 .has-focus .pw-logocloud-preview.is-flexible:not(.is-hot-gap):not(.is-hot-row-gap) .pw-logocloud-item::before {
   display: none;
