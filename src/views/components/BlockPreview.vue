@@ -78,10 +78,9 @@
               <!-- guides: the edge of the padding (inset by exactly its values,
                    so the lines match the tinted bands) -->
               <span v-if="guides" class="pw-logocloud-pad" :style="{ inset: logoPadding }"></span>
-              <!-- guides: the tile's box, the rectangle the gaps and the
-                   padding are measured from – dashed around a round tile;
-                   a padding hovered is tinted in it (square, as its lines) -->
-              <span v-if="guides" class="pw-logocloud-box" :class="{ 'is-rounded': logoRounded }" :style="logoBoxStyle"></span>
+              <!-- guides: the tile's box (a rectangle, also around a round
+                   tile) – a padding hovered is tinted in it, square as its lines -->
+              <span v-if="guides" class="pw-logocloud-box" :style="logoBoxStyle"></span>
             </div>
             <!-- guides: the gap as elements of their own, two cyan lines each
                  (between the columns, between the rows) -->
@@ -324,11 +323,6 @@ export default {
     // the logos' own top margin (with guides the gap is an element above)
     logosMarginTop() {
       return this.guides ? 0 : this.logosTextGap;
-    },
-    // a tile with round corners (circle, pill, custom radii)
-    logoRounded() {
-      const shape = this.setting('layout', 'item-shape') || 'round';
-      return shape !== 'square';
     },
     // the tile's box: a padding hovered tinted in it (square bands)
     logoBoxStyle() {
@@ -917,13 +911,6 @@ export default {
 }
 .pw-logocloud-box {
   inset: 0;
-}
-/* round tiles: their box dashed (gaps and padding are measured from it) */
-.pw-logocloud-box.is-rounded {
-  outline: 1px dashed rgba(0, 0, 0, 0.3);
-}
-.has-focus .pw-logocloud-box.is-rounded {
-  outline: 0;
 }
 /* flexible: the logo as wide as its height allows */
 .pw-logocloud-preview.is-flexible .pw-logocloud-item svg {
