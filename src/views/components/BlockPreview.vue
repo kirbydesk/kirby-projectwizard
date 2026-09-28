@@ -57,10 +57,10 @@
               v-for="n in stepCount"
               :key="'step-' + n"
               class="pw-steplist-item"
-              :class="{ 'is-connected': stepStyle === 'connected' }"
+              :class="{ 'is-connected': currentStepStyle === 'connected' }"
               :style="stepItemStyle"
             >
-              <span v-if="stepStyle === 'connected'" class="pw-steplist-connector" :style="stepConnectorStyle(n)"></span>
+              <span v-if="currentStepStyle === 'connected'" class="pw-steplist-connector" :style="stepConnectorStyle(n)"></span>
               <div class="pw-steplist-number" :style="stepNumberStyle">{{ n }}</div>
               <div class="pw-steplist-content">
                 <div :style="stepHeadingStyle">{{ $t('prw.preview.step.title') }} {{ n }}</div>
@@ -120,6 +120,8 @@ export default {
     // the block's own values (items: sizes, gaps, colours) and their overrides
     valueDefaults: { type: Object, default: () => ({}) },
     valueOverrides: { type: Object, default: () => ({}) },
+    // steplist: the item style to show (chosen in the design tab)
+    stepStyle: { type: String, default: '' },
   },
   data() {
     return {
@@ -146,8 +148,8 @@ export default {
     stepCount() {
       return 2;
     },
-    stepStyle() {
-      return this.setting('style', 'item-style') || 'default';
+    currentStepStyle() {
+      return this.stepStyle || this.setting('style', 'item-style') || 'default';
     },
     stepItemsStyle() {
       const gap = this.itemValue('item-gap');
@@ -157,12 +159,12 @@ export default {
       return { ...style, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap, marginBottom: gap };
     },
     stepItemStyle() {
-      const centered = this.stepStyle === 'centered';
+      const centered = this.currentStepStyle === 'centered';
       const align = this.setting('style', 'item-number-align') || 'center';
       return {
         display: 'flex',
         flexDirection: centered ? 'column' : 'row',
-        alignItems: centered || align === 'center' ? 'center' : (this.stepStyle === 'minimal' ? 'baseline' : 'flex-start'),
+        alignItems: centered || align === 'center' ? 'center' : (this.currentStepStyle === 'minimal' ? 'baseline' : 'flex-start'),
         textAlign: centered ? 'center' : null,
         gap: this.itemValue('item-content-gap'),
         marginBottom: this.hasGrid ? 0 : this.itemValue('item-gap'),
@@ -170,8 +172,8 @@ export default {
     },
     stepNumberStyle() {
       const size = this.itemValue('item-number-size');
-      if (this.stepStyle === 'minimal') {
-        return { color: this.itemColor('item-number-background'), fontSize: size, fontWeight: 700 };
+      if (this.currentStepStyle === 'minimal') {
+        return { color: this.itemColor('item-number-background'), fontSize: this.itemValue('item-number-size-minimal'), fontWeight: 700 };
       }
       const shape = this.setting('layout', 'item-shape') || 'round';
       const r = this.itemValue('item-radius') || [];

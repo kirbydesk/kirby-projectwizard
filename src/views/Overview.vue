@@ -805,6 +805,7 @@
                 :bp.sync="itemBp"
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="blockValueOverrides[block.blockType] || {}"
+                :step-style="block.blockType === 'pwsteplist' ? currentStepStyle(block.blockType) : ''"
               />
             </div>
           </pw-portal>
@@ -860,6 +861,83 @@
           <!-- Design: the items' values (CSS variables), for all blocks at once -->
           <div v-show="currentBlockView === 'design'" v-if="blockConfigs[block.blockType] && hasDesign(block.blockType)">
 
+            <!-- steplist: the item styles as pills (a view, not saved: the
+                 preview shows that style) and the values that matter for it –
+                 the number (bubble or, minimal, plain text), its gap to the
+                 text, the connector line -->
+            <section v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType]" class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="st in stepStyleOptions(block.blockType)"
+                    :key="'st-' + st"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentStepStyle(block.blockType) === st ? 'true' : 'false'"
+                    @click="$set(stepPreviewStyle, block.blockType, st)"
+                  >{{ $t('kirbyblock-steplist.item-style.' + st) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <template v-if="currentStepStyle(block.blockType) !== 'minimal'">
+                  <pw-block-values
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-number-size']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-settings
+                    view="items-layout"
+                    :block="block"
+                    :config="blockConfigs[block.blockType]"
+                    :overrides="blockOverrides[block.blockType] || {}"
+                    :writer-active="writerActive[block.blockType] !== false"
+                    :layout-keys="['item-shape']"
+                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                    @update:writer-active="$set(writerActive, block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    v-if="isItemRadiusVisible(block.blockType)"
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-radius']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                </template>
+                  <pw-block-values
+                    v-else
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-number-size-minimal']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-content-gap']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+                  <pw-block-values
+                    v-if="currentStepStyle(block.blockType) === 'connected'"
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="['item-connector-width']"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  />
+              </div>
+            </section>
+
             <!-- Layout section. Order is fixed:
                  padding → radius → border (toggle) → border-width (only if border on) → link-style.
                  Each row uses its own component so we can interleave field-default toggles
@@ -879,7 +957,7 @@
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
                   <pw-block-settings
-                    v-if="isItemShapeVisible(block.blockType)"
+                    v-if="isItemShapeVisible(block.blockType) && block.blockType !== 'pwsteplist'"
                     view="items-layout"
                     :block="block"
                     :config="blockConfigs[block.blockType]"
@@ -891,7 +969,7 @@
                   />
                   <pw-block-values
                     :bp.sync="itemBp"
-                    v-if="isItemRadiusVisible(block.blockType)"
+                    v-if="isItemRadiusVisible(block.blockType) && block.blockType !== 'pwsteplist'"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-radius']"
@@ -902,7 +980,7 @@
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
                     :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-number-size', 'item-gap', 'item-content-gap', 'item-connector-width']"
+                    :show-only="block.blockType === 'pwsteplist' ? ['item-gap'] : ['item-number-size', 'item-gap', 'item-content-gap', 'item-connector-width']"
                     :hide-section-headers="true"
                     @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   />
@@ -1114,6 +1192,8 @@ export default {
       writerActive: {},
       // chosen tab of a block view (design, defaults, presets); null: the first
       blockViewTab: null,
+      // steplist: item style shown in the design tab and the preview (per block)
+      stepPreviewStyle: {},
       // theme shown in the items' colour card
       itemColorTheme: 'default',
       // guides in the block preview (and the matching stripes in the rows)
@@ -1615,6 +1695,17 @@ export default {
         if (def && Array.isArray(def.value)) return def.value;
       }
       return [];
+    },
+    // steplist: the item styles to choose from, and the one shown (the pill
+    // chosen, else the block's preset)
+    stepStyleOptions(blockType) {
+      const def = this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['item-style'];
+      return (def && def.options) || ['default'];
+    },
+    currentStepStyle(blockType) {
+      if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
+      const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['item-style']?.default;
+      return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['item-style']?.default || 'default';
     },
     itemLayoutDefault(blockType, key) {
       // Resolve current default for a settings.fields.layout.<key>: override wins,
