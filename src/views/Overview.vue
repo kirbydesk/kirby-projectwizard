@@ -931,7 +931,7 @@
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
                 <pw-block-values
-                  v-if="currentStepStyle(block.blockType) !== 'centered'"
+                  v-if="currentStepStyle(block.blockType) !== 'centered' && stepAlign(block.blockType) === 'top'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1751,6 +1751,11 @@ export default {
       const labels = { [this.stepNumberColor(blockType)]: this.$t('prw.headline.numbering') };
       if (this.currentStepStyle(blockType) !== 'minimal') labels['item-number-background'] = this.$t('prw.label.backgroundColor');
       return labels;
+    },
+    // alignment of the number in the shown style (centered: always centre)
+    stepAlign(blockType) {
+      if (this.currentStepStyle(blockType) === 'centered') return 'center';
+      return this.itemLayoutDefault(blockType, this.stepValueKey(blockType, 'item-number-align')) || 'center';
     },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
