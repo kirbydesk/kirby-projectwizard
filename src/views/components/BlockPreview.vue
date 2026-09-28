@@ -198,6 +198,8 @@ export default {
     },
     // the number's fine vertical offset
     stepOffset() {
+      // centered: no offset (the number sits above the text)
+      if (this.currentStepStyle === 'centered') return '0rem';
       return this.stepValue('item-number-offset') || '0rem';
     },
     // item title and text: heading at its "lg" step, text like the editor

@@ -67,7 +67,7 @@
 	'prw.field.radius' => 'Radii',
 	'prw.headline.connector' => 'Connector line',
 	'prw.label.backgroundColor' => 'Background color',
-	'prw.label.offset' => 'Offset',
+	'prw.label.offset' => 'Vertical offset',
 	'prw.label.gapVertical' => 'Vertical gap',
 	'prw.label.gapHorizontal' => 'Horizontal gap',
 	'prw.label.width' => 'Width',

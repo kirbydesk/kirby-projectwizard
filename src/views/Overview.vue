@@ -890,6 +890,7 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />
                 <pw-block-values
+                v-if="currentStepStyle(block.blockType) !== 'centered'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"

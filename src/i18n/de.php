@@ -67,7 +67,7 @@
 	'prw.field.radius' => 'Radien',
 	'prw.headline.connector' => 'Verbindungslinie',
 	'prw.label.backgroundColor' => 'Hintergrundfarbe',
-	'prw.label.offset' => 'Versatz',
+	'prw.label.offset' => 'Vertikaler Versatz',
 	'prw.label.gapVertical' => 'Vertikaler Abstand',
 	'prw.label.gapHorizontal' => 'Horizontaler Abstand',
 	'prw.label.width' => 'Breite',
