@@ -1243,8 +1243,10 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+                <!-- offset: its gap and the intro's alignment only where it is
+                     offset (from tablet on); on mobile the intro stays on top -->
                 <pw-block-values
-                  v-if="currentFeatureLayout(block.blockType) === 'split'"
+                  v-if="currentFeatureLayout(block.blockType) === 'split' && itemBp !== 'default'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1256,7 +1258,7 @@
                 />
                 <!-- offset: the intro at the top or centred to the features -->
                 <pw-block-settings
-                  v-if="currentFeatureLayout(block.blockType) === 'split'"
+                  v-if="currentFeatureLayout(block.blockType) === 'split' && itemBp !== 'default'"
                   view="items-layout"
                   :block="block"
                   :config="blockConfigs[block.blockType]"
@@ -1266,7 +1268,10 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
+                <!-- the gap to the intro above: offset, only on mobile (there the
+                     intro is above the features) -->
                 <pw-block-values
+                  v-if="currentFeatureLayout(block.blockType) !== 'split' || itemBp === 'default'"
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
