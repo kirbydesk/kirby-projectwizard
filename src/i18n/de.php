@@ -102,6 +102,8 @@
 	'prw.property.level' => 'Ebene',
 	'prw.property.sizes' => 'Größen',
 	'prw.property.mode' => 'Editor-Modus',
+	'prw.property.textbackground' => 'Textmarkierung',
+	'prw.property.flourish' => 'Zierelement',
 	'prw.property.marks' => 'Formatierungen',
 	'prw.property.nodes' => 'Elemente',
 	'prw.property.headings' => 'Überschriften',

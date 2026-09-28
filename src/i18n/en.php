@@ -102,6 +102,8 @@
 	'prw.property.level' => 'Level',
 	'prw.property.sizes' => 'Sizes',
 	'prw.property.mode' => 'Editor Mode',
+	'prw.property.textbackground' => 'Text marking',
+	'prw.property.flourish' => 'Flourish',
 	'prw.property.marks' => 'Marks',
 	'prw.property.nodes' => 'Nodes',
 	'prw.property.headings' => 'Headings',
