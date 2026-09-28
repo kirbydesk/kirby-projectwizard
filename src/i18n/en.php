@@ -218,6 +218,8 @@
 	'prw.element.button-shadow' => 'Shadow',
 	'prw.element.media-radius' => 'Radii',
 	'prw.element.button-shape' => 'Corners',
+	'prw.element.button-width-mode' => 'Width',
+	'prw.element.button-width' => 'Manual width',
 	'prw.element.button-row-gap' => 'Vertical',
 	'prw.element.button-icon-size' => 'Size',
 	'prw.element.button-icon-gap' => 'Spacing to Text',

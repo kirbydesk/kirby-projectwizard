@@ -59,11 +59,11 @@
                 <template v-else-if="previewThemed(groupKey)">
                   <!-- two buttons, so the gap between them shows -->
                   <span class="pw-element-preview-buttons" :class="buttonHotClass()" :style="{ columnGap: buttonGap(), rowGap: buttonGap('button-row-gap'), '--pw-button-gap': buttonGap() }">
-                    <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>{{ previewText(groupKey) }}</span></span>
-                    <span class="pw-element-preview-button pw-element-preview-button-second" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>{{ $t('prw.sample.button.2') }}</span></span>
+                    <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ previewText(groupKey) }}</span></span></span>
+                    <span class="pw-element-preview-button pw-element-preview-button-second" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.2') }}</span></span></span>
                     <!-- a third button in a row of its own, so the gap between rows shows -->
                     <span class="pw-element-preview-buttons-row" :style="{ '--pw-button-row-gap': buttonGap('button-row-gap') }">
-                      <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>{{ $t('prw.sample.button.3') }}</span></span>
+                      <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.3') }}</span></span></span>
                     </span>
                   </span>
                 </template>
@@ -283,7 +283,7 @@
             <!-- the base font size only while the step "normal" is chosen; the
                  button's and media's corner radii only for custom corners -->
             <div
-              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom')"
+              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(field.varName === 'button-width' && buttonWidthMode() !== 'manual')"
               :key="'vf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :data-guide="guideType(field.varName)"
@@ -884,6 +884,10 @@ export default {
     },
     buttonShape() {
       return this.getOverrideValue('button-shape') || this.elementDefaults.button?.vars?.['button-shape']?.value || 'custom';
+    },
+    // button width: automatic or the same manual width for all buttons
+    buttonWidthMode() {
+      return this.getOverrideValue('button-width-mode') || this.elementDefaults.button?.vars?.['button-width-mode']?.value || 'auto';
     },
     // button shadow: the chosen step's CSS (generates in elements.json)
     buttonShadow() {
@@ -1529,6 +1533,8 @@ export default {
       if (varName === 'button-padding') return 'padding';
       if (varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
       if (varName === 'button-shape' || varName === 'button-border-radius') return 'shape';
+      // buttons: the width (auto or manual) with the form
+      if (varName === 'button-width-mode' || varName === 'button-width') return 'shape';
       // media: the corner radii
       if (varName === 'media-radius') return 'shape';
       if (varName === 'button-border-width' || varName === 'button-shadow') return 'style';
@@ -1708,6 +1714,8 @@ export default {
         boxShadow: this.buttonShadow(),
         borderStyle: 'solid',
         padding: Array.isArray(padding) ? padding.join(' ') : padding,
+        // manual width: all buttons equally wide, the text cut off with "…"
+        ...(this.buttonWidthMode() === 'manual' ? { width: responsiveVal('width'), justifyContent: 'center', '--pw-btn-white-space': 'nowrap' } : {}),
         // the sides for the tinted paddings (guides)
         '--pw-btn-pt': padding[0],
         '--pw-btn-pr': padding[1],
@@ -1900,6 +1908,22 @@ export default {
 }
 .pw-element-preview.has-guides .pw-element-preview-buttons-row::after {
   top: calc(-1 * var(--pw-button-row-gap, 0px));
+}
+/* manual width: the buttons never wider than the preview, the text on one
+   line and cut off with "…" (as in the frontend) */
+.pw-element-preview-button {
+  max-width: 100%;
+  min-width: 0;
+}
+.pw-element-preview-button .pw-button-content {
+  min-width: 0;
+  max-width: 100%;
+}
+.pw-button-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: var(--pw-btn-white-space);
+  text-overflow: ellipsis;
 }
 /* the button's content (icon and text); guides: its edge where the
    paddings end, left/right magenta, top/bottom green */
