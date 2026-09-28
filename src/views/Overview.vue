@@ -1220,20 +1220,20 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-text-gap']"
+                  :show-only="['item-gap']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-gap']"
+                  :show-only="['item-text-gap']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
