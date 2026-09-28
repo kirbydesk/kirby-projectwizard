@@ -152,7 +152,8 @@ export default {
       const gap = this.itemValue('item-gap');
       const style = { marginTop: this.gapBefore('items') };
       if (!this.hasGrid) return style;
-      const cols = Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
+      // connected: always one column (as in the frontend)
+      const cols = this.currentStepStyle === 'connected' ? 1 : Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
       return { ...style, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap, marginBottom: gap };
     },
     // the number's alignment of the shown style (centered: always centre)

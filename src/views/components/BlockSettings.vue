@@ -661,6 +661,11 @@ export default {
       let fields = this.view === 'presets'
         ? cat.fields.filter(isPreset)
         : cat.fields.filter(f => cat.key !== 'grid');
+      // steplist starting as "connected": always one column, no column rows
+      if (this.view === 'defaults' && cat.key === 'layout' && this.blockType === 'pwsteplist'
+        && this.getVal('settings.fields.style.item-style.default', 'default') === 'connected') {
+        fields = fields.filter(f => !f.key.startsWith('columns-'));
+      }
       return fields;
     },
 
