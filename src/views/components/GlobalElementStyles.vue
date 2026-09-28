@@ -364,7 +364,7 @@
                           <!-- values with a choice of unit (e.g. the button width: rem or %):
                                the unit as a select in place of its label -->
                           <span v-if="field.def.units" class="pw-element-unit pw-element-unit-choice">
-                            {{ responsiveUnit(field, bp) }}<k-icon type="angle-dropdown" />
+                            {{ responsiveUnit(field, bp) }}<k-icon type="angle-down" />
                             <select
                               :value="responsiveUnit(field, bp)"
                               :aria-label="$t('prw.label.unit')"
@@ -2531,13 +2531,16 @@ export default {
   pointer-events: auto;
 }
 .pw-element-unit-choice .k-icon {
-  --icon-size: 12px;
+  --icon-size: 14px;
+  margin-inline-start: 1px;
 }
+/* invisible, on top of unit and arrow; small type keeps its list narrow */
 .pw-element-unit-choice select {
   position: absolute;
   inset: 0;
   width: 100%;
   opacity: 0;
+  font-size: var(--text-xs);
   cursor: pointer;
 }
 .pw-font-select {
