@@ -1315,6 +1315,7 @@
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spaceBelow') }}</h3>
               </div>
+              <k-text class="k-help pw-card-intro">{{ $t('prw.hint.elementSpacing') }}</k-text>
               <div class="pw-card pw-field-table">
                 <!-- the space below tagline, heading and text: the elements'
                      (global) or the block's own values -->
@@ -1362,7 +1363,6 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
-              <k-text v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'" class="k-help pw-card-help">{{ $t('prw.hint.spacingStandard') }}</k-text>
             </section>
             </template>
 
@@ -3278,6 +3278,10 @@ export default {
    of its field footer */
 .pw-card-help {
   margin-top: var(--spacing-2);
+}
+/* a help text between a card's heading and the card */
+.pw-card-intro {
+  margin-bottom: var(--spacing-3);
 }
 
 /* Block view: page heading like Kirby's view header */
