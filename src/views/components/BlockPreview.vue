@@ -452,7 +452,8 @@ export default {
     // the block brings values for its own space below (then its design tab
     // shows the space, own or global, with guides)
     hasOwnSpacingValues() {
-      return Object.values(this.valueDefaults || {}).some(g => g && g.vars && g.vars['heading-spacing']);
+      return Object.values(this.valueDefaults || {}).some(g => g && g.vars
+        && ['tagline-spacing', 'heading-spacing', 'editor-spacing'].some(name => g.vars[name]));
     },
     // the background shown: chosen in the toolbar (a view), else the start value
     heroBackground() {
