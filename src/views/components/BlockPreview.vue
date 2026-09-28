@@ -421,9 +421,10 @@ export default {
       return { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', columnGap: this.itemValueAt('item-gap'), alignItems: 'start' };
     },
     // columns of the features at the shown device (mobile: one below the other)
+    // (at most as many as sample features shown: no empty column)
     featureColumns() {
       if (!this.hasGrid) return 1;
-      return Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
+      return Math.min(Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1, 2);
     },
     featureItemsStyle() {
       const gap = this.itemValueAt('item-gap');
@@ -1021,6 +1022,22 @@ export default {
    the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(130, 80, 255, 0.9);
+}
+/* featurelist: a feature and its content may shrink to their column,
+   long words break (the narrow sidebar) */
+.pw-featurelist-item,
+.pw-featurelist-content {
+  min-width: 0;
+}
+.pw-featurelist-content {
+  flex: 1;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+.pw-block-live-intro {
+  min-width: 0;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 /* featurelist guides: between the features cyan, between icon and text
    violet, between title and text gold (to the text above: orange; a line
