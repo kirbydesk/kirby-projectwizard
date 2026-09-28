@@ -2090,6 +2090,11 @@ export default {
 .pw-element-preview.has-guides .is-wrapped .pw-element-preview-button-second::after {
   top: calc(-1 * var(--pw-button-row-gap, 0px));
 }
+/* a question mark hovered: these lines hidden as well */
+.pw-element-preview.has-guides.has-focus .is-wrapped .pw-element-preview-button-second::before,
+.pw-element-preview.has-guides.has-focus .is-wrapped .pw-element-preview-button-second::after {
+  border-color: transparent;
+}
 /* its question mark hovered: the gap side by side is not there; the row
    gap tints above the second button as well */
 .pw-element-preview.has-guides.has-focus .is-wrapped.is-hot-gap .pw-element-preview-button-second::after {
