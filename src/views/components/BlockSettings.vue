@@ -733,11 +733,12 @@ export default {
         // cannot be hidden
         const row = (k) => ({ id: k, keys: [k], label: this.fieldLabel(k), locked: this.isObject(all[k]) && all[k].locked === true });
         const groups = [];
-        // below a field its further settings (the media's type, size, corner
-        // style: media-type → the drawer's mediaType …)
+        // below a field its further settings (the media's size, corner style:
+        // media-size → the drawer's mediaSize …); locked ones (the media
+        // type) are left out, they always stay
         const extras = {};
         for (const f of this.contentExtraFields()) {
-          extras[f.key] = f.extras.map(p => {
+          extras[f.key] = f.extras.filter(p => !(this.isObject(all[f.key][p.key]) && all[f.key][p.key].locked === true)).map(p => {
             const pKey = 'prw.property.' + p.key;
             const pLabel = this.$t(pKey);
             return { id: f.key + '-' + p.key, keys: [f.key + '-' + p.key], label: pLabel && pLabel !== pKey ? pLabel : p.key };
