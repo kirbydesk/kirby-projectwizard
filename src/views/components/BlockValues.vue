@@ -209,6 +209,7 @@
                       </span>
                       <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(getOverride(varName) || def.value, def.unit, varName) }}</span>
                     </span>
+                    <span v-if="hints && hints[varName]" class="pw-field-hint" :title="hintTitle">{{ hints[varName] }}</span>
                   </template>
 
                 </div>
@@ -245,6 +246,10 @@ export default {
     // one breakpoint (default / lg / xl): responsive rows show only its
     // value plus the device switch (.sync)
     bp: { type: String, default: null },
+    // a reference value per row, grey at its end (varName → text), e.g. the
+    // global elements' value next to a block's own
+    hints: { type: Object, default: null },
+    hintTitle: { type: String, default: '' },
   },
   data() {
     return { open: {} };
