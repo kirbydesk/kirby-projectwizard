@@ -886,7 +886,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepValueKey(block.blockType, 'item-number-size')]"
-                  :labels="currentStepStyle(block.blockType) === 'minimal' ? { 'item-number-size-minimal': $t('prw.prop.font-size') } : {}"
+                  :labels="{ [stepValueKey(block.blockType, 'item-number-size')]: $t(currentStepStyle(block.blockType) === 'minimal' ? 'prw.prop.font-size' : 'prw.label.size') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                 />
@@ -929,7 +929,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepNumberColor(block.blockType)]"
-                  :labels="{ [stepNumberColor(block.blockType)]: $t('prw.prop.item-number-text') }"
+                  :labels="{ [stepNumberColor(block.blockType)]: $t('prw.label.color') }"
                   :theme="currentItemColorTheme"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"

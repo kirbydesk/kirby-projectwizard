@@ -71,6 +71,7 @@
 	'prw.label.offset' => 'Vertical offset',
 	'prw.label.gapVertical' => 'Vertical gap',
 	'prw.label.gapHorizontal' => 'Horizontal gap',
+	'prw.label.size' => 'Size',
 	'prw.label.width' => 'Width',
 	'prw.label.color' => 'Color',
 	'prw.headline.spacing' => 'Spacing',
