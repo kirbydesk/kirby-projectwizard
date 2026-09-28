@@ -3,7 +3,11 @@
        current (also unsaved) values the way the frontend CSS uses them –
        the block frame (background, paddings, corners, grid width) and its
        fields in the element typography with the block's presets. -->
-  <div class="pw-element-preview-side pw-block-live-preview">
+  <!-- a value's label hovered (guides on): only its guides stay -->
+  <div
+    class="pw-element-preview-side pw-block-live-preview"
+    :class="{ 'has-focus': guides && !!highlight, 'focus-padding': highlight === 'item-padding' || highlight === 'item-padding-y' }"
+  >
     <div class="pw-preview-switches">
       <!-- guides on/off: the padding line, as in Photoshop -->
       <div class="pw-pill pw-guides-switch" role="group">
@@ -772,6 +776,33 @@ export default {
    the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
+}
+/* a value's label hovered: every other guide hidden – the block's own
+   lines, the other gaps, the padding frames, the flexible tiles' edges */
+.has-focus .pw-block-live-block::before,
+.has-focus .pw-block-live-block::after {
+  display: none;
+}
+.has-focus .pw-block-live-section.has-guides .pw-block-live-content {
+  outline: 0;
+}
+.has-focus .pw-steplist-step-gap:not(.is-hot),
+.has-focus .pw-steplist-gap:not(.is-hot),
+.has-focus .pw-logocloud-gap:not(.is-hot),
+.has-focus .pw-logocloud-text-gap:not(.is-hot) {
+  border-color: transparent;
+}
+.has-focus:not(.focus-padding) .pw-logocloud-preview.has-guides .pw-logocloud-item svg {
+  box-shadow: none;
+}
+.has-focus .pw-logocloud-preview.is-flexible:not(.is-hot-gap):not(.is-hot-row-gap) .pw-logocloud-item::before {
+  display: none;
+}
+.has-focus .pw-logocloud-preview.is-flexible.is-hot-gap .pw-logocloud-item::before {
+  border-block-color: transparent;
+}
+.has-focus .pw-logocloud-preview.is-flexible.is-hot-row-gap .pw-logocloud-item::before {
+  border-inline-color: transparent;
 }
 /* a value's row hovered (guides on): its area tinted in its colour */
 .pw-logocloud-text-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
