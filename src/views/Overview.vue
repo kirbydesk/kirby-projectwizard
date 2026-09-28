@@ -1309,7 +1309,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
-              <k-text v-else class="k-help pw-card-help">{{ $t('prw.hint.heroFullscreen') }}</k-text>
+              <k-text v-else size="tiny" class="k-help pw-card-help">{{ $t('prw.hint.heroFullscreen') }}</k-text>
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1362,7 +1362,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
-              <k-text class="k-help pw-card-help">{{ $t('prw.hint.elementSpacing') }}</k-text>
+              <k-text size="tiny" class="k-help pw-card-help">{{ $t('prw.hint.elementSpacing') }}</k-text>
             </section>
             </template>
 
