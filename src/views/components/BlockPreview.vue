@@ -60,6 +60,9 @@
           <!-- logocloud: four sample logos, two by two (so the gap shows
                between the columns and between the rows), shrinking in a
                narrow preview -->
+          <!-- guides: the gap to the text as an element of its own, a cyan line
+               above (end of the text) and below (start of the logos) -->
+          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :style="{ height: logosTextGap }"></div>
           <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible }" :style="logosStyle">
             <div
               v-for="(logo, index) in dummyLogos"
@@ -250,7 +253,7 @@ export default {
           justifyContent: { left: 'flex-start', right: 'flex-end' }[align] || 'center',
           columnGap: gap,
           rowGap,
-          marginTop: this.logosTextGap,
+          marginTop: this.logosMarginTop,
         };
       }
       // guides: the gaps are tracks of their own (for their lines)
@@ -260,7 +263,7 @@ export default {
           gridTemplateColumns: 'minmax(0, ' + size + ') ' + gap + ' minmax(0, ' + size + ')',
           gridTemplateRows: 'auto ' + rowGap + ' auto',
           justifyContent: justify,
-          marginTop: this.logosTextGap,
+          marginTop: this.logosMarginTop,
         };
       }
       return {
@@ -269,7 +272,7 @@ export default {
         justifyContent: justify,
         columnGap: gap,
         rowGap,
-        marginTop: this.logosTextGap,
+        marginTop: this.logosMarginTop,
       };
     },
     // the tile's padding: vertical, horizontal (older: one value)
@@ -280,6 +283,10 @@ export default {
     // the gap between the text above and the logos (none without text)
     logosTextGap() {
       return this.gapBefore('logos') ? this.itemValue('item-text-gap') || this.gapBefore('logos') : 0;
+    },
+    // the logos' own top margin (with guides the gap is an element above)
+    logosMarginTop() {
+      return this.guides ? 0 : this.logosTextGap;
     },
     // logocloud format: square tiles or one height ("flexible")
     logosFlexible() {
@@ -755,6 +762,11 @@ export default {
    the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
+}
+/* logocloud guides: the gap between the text and the logos */
+.pw-logocloud-text-gap {
+  box-sizing: border-box;
+  border-block: 1px solid rgba(0, 170, 255, 0.8);
 }
 /* flexible (the logos wrap freely): the gaps shown at each tile's outer
    edge – left and right cyan (between the logos), top and bottom orange
