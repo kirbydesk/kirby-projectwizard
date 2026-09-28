@@ -94,7 +94,7 @@
 	'prw.view.presets' => 'Einschränkungen',
 	'prw.view.design.intro' => 'Diese Werte gelten für alle Blöcke dieser Art, auch bereits angelegte.',
 	'prw.view.defaults.intro' => 'Startwerte gelten für neu angelegte Blöcke. Im Block selbst lassen sich die Werte weiterhin ändern.',
-	'prw.view.presets.intro' => 'Schränkt ein, welche Optionen Redakteure im Block auswählen können.',
+	'prw.view.presets.intro' => 'Legt fest, welche Felder Redakteure im Block sehen. Ausgeblendete Felder behalten ihren Startwert.',
 	'prw.tab.items' => 'Einträge',
 	'prw.tab.layout' => 'Layout',
 
