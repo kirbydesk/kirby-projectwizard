@@ -58,7 +58,7 @@
                 </template>
                 <template v-else-if="previewThemed(groupKey)">
                   <!-- two buttons, so the gap between them shows -->
-                  <span class="pw-element-preview-buttons" :style="{ columnGap: buttonGap(), rowGap: buttonGap('button-row-gap'), '--pw-button-gap': buttonGap() }">
+                  <span class="pw-element-preview-buttons" :class="buttonHotClass()" :style="{ columnGap: buttonGap(), rowGap: buttonGap('button-row-gap'), '--pw-button-gap': buttonGap() }">
                     <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>{{ previewText(groupKey) }}</span></span>
                     <span class="pw-element-preview-button pw-element-preview-button-second" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>{{ $t('prw.sample.button.2') }}</span></span>
                     <!-- a third button in a row of its own, so the gap between rows shows -->
@@ -242,12 +242,19 @@
                 v-for="axis in [{ key: 'h', label: 'prw.label.leftRight', idx: [3, 1] }, { key: 'v', label: 'prw.label.topBottom', idx: [0, 2] }]"
                 :key="'ax-' + gIdx + '-' + fIdx + '-' + axis.key"
                 class="pw-field-row"
-                :data-guide="guides ? 'padding' : null"
+                :data-guide="guides ? (axis.key === 'v' ? 'padding-y' : 'padding') : null"
               >
                 <div class="k-input" data-type="text">
                   <span class="k-input-element pw-field-row-inner">
                     <div class="pw-field-row-label-col">
                       <label class="pw-field-row-label">{{ $t(axis.label) }}</label>
+                      <span
+                        v-if="guides"
+                        class="pw-area-hint"
+                        :title="$t(areaHint(field.varName + '-' + axis.key))"
+                        @mouseenter="hoveredArea = field.varName + '-' + axis.key"
+                        @mouseleave="hoveredArea = null"
+                      ><k-icon type="question" /></span>
                     </div>
                     <div class="pw-field-row-options pw-corner-grid pw-side-grid pw-axis-grid">
                       <span v-for="idx in axis.idx" :key="idx" class="pw-element-field">
@@ -843,7 +850,9 @@ export default {
       // the paragraph spacing violet (inside the element), apart from the
       // cyan space below it
       if (varName.endsWith('-paragraph-spacing')) return 'row';
-      if (varName.endsWith('cite-spacing') || varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
+      // buttons: the gap between rows is the second gap (violet)
+      if (varName === 'button-row-gap') return 'row';
+      if (varName.endsWith('cite-spacing') || varName === 'button-gap') return 'margin';
       // the space after an element (tagline, heading, text)
       if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'margin';
       if (!this.previewFlourish) return null;
@@ -883,6 +892,15 @@ export default {
       const step = this.getOverrideValue('button-shadow') || def.value;
       return def.generates?.['button-shadow']?.[step] || 'none';
     },
+    // buttons preview: the area of the hovered question mark
+    buttonHotClass() {
+      return {
+        'button-gap': 'is-hot-gap',
+        'button-row-gap': 'is-hot-row',
+        'button-padding-h': 'is-hot-padding-h',
+        'button-padding-v': 'is-hot-padding-v',
+      }[this.hoveredArea] || null;
+    },
     // gap between buttons (button-gap), as in the frontend
     buttonGap(name = 'button-gap') {
       return this.getOverrideValue(name) || this.elementDefaults.button?.vars?.[name]?.value || '';
@@ -890,13 +908,17 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || varName === 'editor-paragraph-spacing' || varName === 'cite-spacing';
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap'].includes(varName);
     },
     // the space below an element (tagline, heading, text): override, else the plugin's
     // tooltip of a value's question mark
     areaHint(varName) {
       if (varName.endsWith('-paragraph-spacing')) return 'prw.hint.paragraphSpacing';
       if (varName === 'cite-spacing') return 'prw.hint.citeSpacing';
+      if (varName === 'button-gap') return 'prw.hint.buttonGap';
+      if (varName === 'button-row-gap') return 'prw.hint.buttonRowGap';
+      if (varName.endsWith('-padding-h')) return 'prw.hint.paddingX';
+      if (varName.endsWith('-padding-v')) return 'prw.hint.paddingY';
       return 'prw.hint.spaceBelow';
     },
     spaceBelow(groupKey) {
@@ -1686,6 +1708,11 @@ export default {
         boxShadow: this.buttonShadow(),
         borderStyle: 'solid',
         padding: Array.isArray(padding) ? padding.join(' ') : padding,
+        // the sides for the tinted paddings (guides)
+        '--pw-btn-pt': padding[0],
+        '--pw-btn-pr': padding[1],
+        '--pw-btn-pb': padding[2],
+        '--pw-btn-pl': padding[3],
         borderRadius: { square: '0', round: '999px' }[this.buttonShape()] || (Array.isArray(radius) ? radius.join(' ') : radius),
       };
     },
@@ -1858,14 +1885,14 @@ export default {
   display: flex;
   justify-content: flex-start;
 }
-/* guides: cyan lines where the first row ends and the second begins */
+/* guides: violet lines where the first row ends and the second begins */
 .pw-element-preview.has-guides .pw-element-preview-buttons-row::before,
 .pw-element-preview.has-guides .pw-element-preview-buttons-row::after {
   content: "";
   position: absolute;
   left: calc(-1 * var(--spacing-6));
   right: calc(-1 * var(--spacing-6));
-  border-top: 1px solid rgba(0, 170, 255, 0.8);
+  border-top: 1px solid rgba(130, 80, 255, 0.9);
   pointer-events: none;
 }
 .pw-element-preview.has-guides .pw-element-preview-buttons-row::before {
@@ -1874,14 +1901,48 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-buttons-row::after {
   top: calc(-1 * var(--pw-button-row-gap, 0px));
 }
-/* the button's content (icon and text); guides: its edge in magenta, where
-   the paddings end */
+/* the button's content (icon and text); guides: its edge where the
+   paddings end, left/right magenta, top/bottom green */
 .pw-button-content {
+  position: relative;
   display: inline-flex;
   align-items: center;
 }
-.pw-element-preview.has-guides .pw-button-content {
-  outline: 1px solid rgba(255, 0, 170, 0.6);
+.pw-element-preview.has-guides .pw-button-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+  border-block: 1px solid rgba(0, 180, 90, 0.9);
+  pointer-events: none;
+}
+/* a question mark hovered: the buttons' guide lines hidden */
+.pw-element-preview.has-guides.has-focus .pw-element-preview-buttons-row::before,
+.pw-element-preview.has-guides.has-focus .pw-element-preview-buttons-row::after,
+.pw-element-preview.has-guides.has-focus .pw-element-preview-button-second::before,
+.pw-element-preview.has-guides.has-focus .pw-element-preview-button-second::after,
+.pw-element-preview.has-guides.has-focus .pw-button-content::before {
+  border-color: transparent;
+}
+/* ... and its area tinted: the gap between buttons (cyan), between rows
+   (violet), the paddings left/right (magenta) or top/bottom (green) */
+.pw-element-preview.has-guides.has-focus .is-hot-gap .pw-element-preview-button-second::after {
+  width: var(--pw-button-gap);
+  background: rgba(0, 170, 255, 0.15);
+}
+.pw-element-preview.has-guides.has-focus .is-hot-row .pw-element-preview-buttons-row::after {
+  height: var(--pw-button-row-gap);
+  background: rgba(130, 80, 255, 0.15);
+}
+.pw-element-preview.has-focus .is-hot-padding-h .pw-element-preview-button {
+  background-image: linear-gradient(to right,
+    rgba(255, 0, 170, 0.3) var(--pw-btn-pl), transparent var(--pw-btn-pl),
+    transparent calc(100% - var(--pw-btn-pr)), rgba(255, 0, 170, 0.3) calc(100% - var(--pw-btn-pr)));
+}
+.pw-element-preview.has-focus .is-hot-padding-v .pw-element-preview-button {
+  background-image: linear-gradient(to bottom,
+    rgba(0, 180, 90, 0.3) var(--pw-btn-pt), transparent var(--pw-btn-pt),
+    transparent calc(100% - var(--pw-btn-pb)), rgba(0, 180, 90, 0.3) calc(100% - var(--pw-btn-pb)));
 }
 /* side grid (paddings): the side icon instead of the corner glyph */
 .pw-field-table .pw-side-grid > *::after {
