@@ -51,10 +51,10 @@
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
-          <!-- steplist: three steps (number, title, text) as in its snippet -->
+          <!-- steplist: two steps (number, title, text) as in its snippet -->
           <div v-if="isSteplist" class="pw-steplist-items" :style="stepItemsStyle">
             <div
-              v-for="n in 3"
+              v-for="n in stepCount"
               :key="'step-' + n"
               class="pw-steplist-item"
               :class="{ 'is-connected': stepStyle === 'connected' }"
@@ -142,6 +142,10 @@ export default {
     },
     // steplist: item style (default, centered, connected, minimal), number
     // alignment, the items' grid and their parts as in its CSS
+    // steps shown in the preview
+    stepCount() {
+      return 2;
+    },
     stepStyle() {
       return this.setting('style', 'item-style') || 'default';
     },
@@ -287,7 +291,7 @@ export default {
         left: 'calc(' + size + ' / 2 - ' + width + ' / 2)',
         width,
         top: n === 1 ? centre : 0,
-        bottom: n === 3 ? 'calc(100% - ' + centre + ')' : 'calc(' + this.itemValue('item-gap') + ' * -1)',
+        bottom: n === this.stepCount ? 'calc(100% - ' + centre + ')' : 'calc(' + this.itemValue('item-gap') + ' * -1)',
         background: this.itemColor('item-connector'),
       };
     },
