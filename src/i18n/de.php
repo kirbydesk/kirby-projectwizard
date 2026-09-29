@@ -210,7 +210,7 @@
 	'prw.hint.heroHeight' => 'Die Höhe ist ein prozentualer Anteil der Bildschirmhöhe. Der px-Wert ist ein Richtwert für das gewählte Gerät.',
 	'prw.hint.heroOverlay' => 'Ob und wie stark überlagert wird, legt jeder Hero selbst fest. Die Vorschau hier zeigt eine einfarbige Überlagerung mit 50 % über die komplette Fläche.',
 	'prw.hint.contentPosition' => 'Legt fest, wo der Textblock steht: horizontal innerhalb des Rasterbereichs, vertikal innerhalb der Höhe, jeweils ohne Innenabstände. Über das Raster lassen sich die maximale Breite des Textblocks und seine Lage festlegen.',
-	'prw.hint.blockPaddings' => 'Legt fest, welche Innenabstände ein neuer Block hat. Oben und unten stehen ein kleiner und ein großer Abstand zur Wahl, deren Werte global unter <code>Blöcke</code> festgelegt werden.',
+	'prw.hint.blockPaddings' => 'Legt fest, welche Innenabstände ein neuer Block hat. Oben und unten stehen ein kleiner und ein großer Abstand zur Auswahl. Die Werte werden global unter <code>Blöcke</code> festgelegt.',
 	'prw.hint.blockRadius' => 'Welche Ecken eines neuen Blocks abgerundet sind. Der Radius selbst wird global unter <code>Blöcke</code> festgelegt.',
 	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht, eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.globalValue' => 'Globaler Wert',
