@@ -210,6 +210,8 @@
               <span v-if="guides" class="pw-steplist-gap" :class="{ 'is-hot': highlight && highlight.startsWith('item-content-gap') }" :style="stepGapStyle"></span>
               <div class="pw-steplist-content">
                 <div :style="stepHeadingStyle">{{ $t('prw.preview.step.title') }} {{ n }}</div>
+                <!-- guides: the gap between title and text (gold), as the featurelist's -->
+                <span v-if="guides" class="pw-featurelist-title-gap" :class="{ 'is-hot': highlight === 'item-title-spacing' }" :style="{ height: entryValue('item-title-spacing') }"></span>
                 <div :style="stepTextStyle">{{ $t('prw.preview.step.text') }}</div>
               </div>
             </div>
@@ -1022,7 +1024,8 @@ export default {
       return this.entryTypography('title');
     },
     stepTextStyle() {
-      return { ...this.entryTypography('text'), marginTop: this.entryValue('item-title-spacing') };
+      // (with guides the gap is a band of its own)
+      return { ...this.entryTypography('text'), marginTop: this.guides ? 0 : this.entryValue('item-title-spacing') };
     },
     sectionStyle() {
       const layout = (key) => this.setting('layout', key);
