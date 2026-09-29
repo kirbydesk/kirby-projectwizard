@@ -19,25 +19,18 @@
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
-                <div class="pw-field-row-label-col">
+                <div class="pw-field-row-label-col pw-active-label-col">
                   <!-- its icon (as in the blocks menu) before the name -->
                   <label class="pw-field-row-label pw-active-label">
                     <k-icon :type="block.icon || 'box'" class="pw-active-icon" />
                     <span>{{ blockLabel(block.blockType) }}</span>
                   </label>
-                </div>
-                <div class="pw-field-row-options">
-                  <!-- one switch; at the end how often the block is used -->
-                  <k-toggle-input
-                    :value="block.active"
-                    @input="$emit('toggle', { blockType: block.blockType, checked: $event })"
-                  />
                   <!-- used: a click lists the pages (loaded then), each opens in the panel -->
                   <span v-if="usage[block.blockType]" class="pw-active-count pw-active-usage">
                     <button type="button" class="pw-active-usage-button" @click="openUsage(block.blockType)">
                       {{ $t('prw.label.usedTimes', { count: usage[block.blockType] }) }}<k-icon type="angle-down" />
                     </button>
-                    <k-dropdown-content :ref="'usage-' + block.blockType" align-x="end">
+                    <k-dropdown-content :ref="'usage-' + block.blockType" align-x="start">
                       <nav class="k-navigate">
                         <p v-if="!usagePages[block.blockType]" class="pw-active-usage-loading">…</p>
                         <button
@@ -54,6 +47,13 @@
                     </k-dropdown-content>
                   </span>
                   <span v-else class="pw-active-count">{{ $t('prw.label.unused') }}</span>
+                </div>
+                <div class="pw-field-row-options">
+                  <!-- one switch -->
+                  <k-toggle-input
+                    :value="block.active"
+                    @input="$emit('toggle', { blockType: block.blockType, checked: $event })"
+                  />
                 </div>
               </span>
             </div>
@@ -134,8 +134,16 @@ export default {
   --icon-size: 16px;
   color: var(--color-gray-600);
 }
+/* the label column: the name, below it how often the block is used
+   (in line with the name, past the icon) */
+.pw-active-label-col {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+}
 .pw-active-count {
-  margin-inline-start: auto;
+  padding-inline-start: calc(16px + var(--spacing-2));
   font-size: var(--text-xs);
   color: var(--color-gray-500);
   font-variant-numeric: tabular-nums;
