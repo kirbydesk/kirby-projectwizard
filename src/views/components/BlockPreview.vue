@@ -563,8 +563,9 @@ export default {
     },
     // a card: background, border (switched on), the corners switched on
     cardStyle() {
-      const r = this.itemValue('item-radius') || [];
-      const corner = (key, idx) => (this.setting('layout', 'item-radius-' + key) === true ? r[idx] || 0 : 0);
+      // form round: the radii (top-left, top-right, bottom-left, bottom-right)
+      const r = this.setting('layout', 'item-shape') === 'square' ? [] : (this.itemValue('item-radius') || []);
+      const corner = (key, idx) => r[idx] || 0;
       return {
         display: 'flex',
         flexDirection: 'column',

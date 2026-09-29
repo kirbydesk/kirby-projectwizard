@@ -243,7 +243,7 @@
 	'prw.hint.featureTile' => 'Legt das Aussehen der Kachel hinter den Icons fest.',
 	'prw.hint.featureColors' => 'Legt die Farben von Icon (und Kachel) für jede Variante fest.',
 	'prw.hint.featureSpacing' => 'Legt die Abstände zwischen den Einträgen und zur Einleitung fest. <code>Eingerückt</code> zeigt die Einleitung auf großen Bildschirmen links neben den Einträgen.',
-	'prw.hint.cardletsCard' => 'Legt fest, wie die Karten aussehen. Welche Ecken abgerundet sind, wird bei den Startwerten festgelegt.',
+	'prw.hint.cardletsCard' => 'Legt Innenabstand und Form der Karten fest. Die Form gilt für alle Karten gleich.',
 	'prw.hint.cardletsBorder' => 'Legt fest, ob die Karten einen Rahmen haben und wie er aussieht.',
 	'prw.hint.cardletsLink' => 'Legt fest, wie der Link am Ende einer Karte aussieht. Ziel und Linktext werden pro Karte im Block eingegeben.',
 	'prw.hint.cardletsColors' => 'Legt die Farben der Karten für jede Variante fest.',

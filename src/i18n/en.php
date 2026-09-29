@@ -243,7 +243,7 @@
 	'prw.hint.featureTile' => 'Sets the look of the tile behind the icons.',
 	'prw.hint.featureColors' => 'Sets the colours of the icon (and the tile) for each variant.',
 	'prw.hint.featureSpacing' => 'Sets the gaps between the items and to the intro. <code>Offset</code> shows the intro next to the items on large screens.',
-	'prw.hint.cardletsCard' => 'Sets how the cards look. Which corners are rounded is set in the start values.',
+	'prw.hint.cardletsCard' => 'Sets the padding and shape of the cards. The shape is the same for all cards.',
 	'prw.hint.cardletsBorder' => 'Sets whether the cards have a border and how it looks.',
 	'prw.hint.cardletsLink' => 'Sets how the link at the end of a card looks. Its target and text are entered per card in the block.',
 	'prw.hint.cardletsColors' => 'Sets the colours of the cards for each variant.',
