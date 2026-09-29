@@ -1247,9 +1247,12 @@ export default {
         // the font size first in a size card (as the size row of headings);
         // in the text card the type values first, then font size, line
         // height and letter spacing
-        const textRank = (name) => (name.endsWith('-font-size') ? 1 : name.endsWith('-line-height') ? 2 : name.endsWith('-letter-spacing') ? 3 : name.endsWith('-spacing') ? 4 : 0);
+        // one order everywhere: size, line height, letter spacing, paragraph
+        // spacing, other gaps
+        const textRank = (name) => (name.endsWith('-font-size') ? 1 : name.endsWith('-line-height') ? 2 : name.endsWith('-letter-spacing') ? 3
+          : name.endsWith('-paragraph-spacing') ? 4 : name.endsWith('-spacing') ? 5 : 0);
         const entries = Object.entries(group.vars)
-          .sort(([a], [b]) => (['text', 'title', 'description'].includes(category)
+          .sort(([a], [b]) => (['text', 'sizes', 'title', 'description'].includes(category)
             ? textRank(a) - textRank(b)
             : Number(b.endsWith('-font-size')) - Number(a.endsWith('-font-size'))));
         for (const [varName, def] of entries) {
