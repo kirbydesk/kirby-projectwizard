@@ -208,7 +208,7 @@
 	'prw.hint.spaceBelow' => 'Abstand zum nächsten Element im Block',
 	'prw.hint.heroFullscreen' => 'Vollbild entspricht immer der kompletten Bildschirmhöhe.',
 	'prw.hint.heroHeight' => 'Die Höhe ist ein prozentualer Anteil der Bildschirmhöhe. Der px-Wert ist ein Richtwert für das gewählte Gerät.',
-	'prw.hint.heroOverlay' => 'Ob und wie stark überlagert wird, legt jeder Hero selbst fest (Tab Effekte). Die Vorschau zeigt die Überlagerung einfarbig mit 50 %.',
+	'prw.hint.heroOverlay' => 'Ob und wie stark überlagert wird, legt jeder Hero selbst fest. Die Vorschau hier zeigt eine einfarbige Überlagerung mit 50 % über die komplette Fläche.',
 	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht, eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.globalValue' => 'Globaler Wert',
 	'prw.prop.tagline-spacing' => 'Tagline',
