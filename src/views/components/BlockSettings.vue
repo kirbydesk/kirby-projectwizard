@@ -674,7 +674,8 @@ export default {
             // Optional own label key (block-specific wording, e.g. featurelist's tile shape)
             label: settingVal.label || null,
             type: 'select',
-            options: settingVal.options,
+            // variants (e.g. the cards' button style): only those switched on
+            options: settingVal.options.filter(o => !['variant', 'variant2', 'variant3'].includes(o) || !Array.isArray(this.variants) || this.variants.includes(o)),
             defaultValue: settingVal.default !== undefined ? settingVal.default : settingVal.options[0],
             // the value when nothing is chosen (optional: then it may stay empty)
             emptyValue: settingVal.empty,

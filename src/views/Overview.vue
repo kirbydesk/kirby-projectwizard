@@ -1722,6 +1722,7 @@
                   :overrides="blockOverrides[block.blockType] || {}"
                   :writer-active="writerActive[block.blockType] !== false"
                   :layout-keys="['item-button-style']"
+                  :variants="activeVariants"
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
