@@ -54,6 +54,10 @@
              the paddings -->
         <div class="pw-block-live-grid" :style="gridStyle">
           <div class="pw-block-live-item" :style="itemStyle">
+          <!-- hero guides: the edge of the paddings (the content inside is
+               smaller and placed by its position, so its own frame would not
+               show where the paddings end) -->
+          <span v-if="isHero && blockGuides" class="pw-hero-pad" :style="heroPadStyle"></span>
           <div class="pw-block-live-content" :class="{ 'is-split': featureSplit && hasGrid }" :style="contentStyle">
           <!-- tagline, heading, text; in the featurelist's split layout a
                column of their own next to the items -->
@@ -467,6 +471,12 @@ export default {
       const vh = parseFloat(this.itemValueAt('height-' + height));
       return vh ? Math.round(SCREEN_HEIGHTS[this.bp] * vh / 100) + 'px' : null;
     },
+    // the paddings' edge inside the grid item
+    heroPadStyle() {
+      const st = this.itemStyle;
+      const v = (x) => x || 0;
+      return { inset: [v(st.paddingTop), v(st.paddingRight), v(st.paddingBottom), v(st.paddingLeft)].join(' ') };
+    },
     // the content's place (as the frontend's data-h / data-v margins)
     heroContentStyle() {
       const h = this.setting('layout', 'position-horizontal') || 'left';
@@ -832,6 +842,7 @@ export default {
         style.display = 'flex';
         style.height = '100%';
         style.boxSizing = 'border-box';
+        style.position = 'relative';
       }
       if (this.hasGrid) {
         const gbp = GRID_BP[this.bp];
@@ -1166,6 +1177,18 @@ export default {
 .pw-space-band.is-editor.is-hot::before { background: rgba(255, 140, 0, 0.15); }
 .pw-block-live-preview.has-focus .pw-space-band::before {
   border-color: transparent;
+}
+/* hero guides: the paddings' edge (magenta) in place of the content's frame */
+.pw-hero-pad {
+  position: absolute;
+  outline: 1px solid rgba(255, 0, 170, 0.6);
+  pointer-events: none;
+}
+.pw-block-live-section.is-hero.has-guides .pw-block-live-content {
+  outline: 0;
+}
+.pw-block-live-preview.has-focus .pw-hero-pad {
+  display: none;
 }
 /* hero: its overlay over the background, below the content */
 .pw-hero-overlay {
