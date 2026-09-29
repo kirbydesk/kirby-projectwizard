@@ -597,7 +597,8 @@ export default {
     },
     // the link: text (link colour, underline, icon) or a button
     cardCtaStyle() {
-      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: 'auto' };
+      // at the card's bottom, or right after the text
+      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: this.setting('layout', 'item-link-position') === 'inline' ? 0 : 'auto' };
       if (this.setting('layout', 'item-link-style') !== 'button') {
         return {
           ...base,
@@ -610,7 +611,7 @@ export default {
       }
       const style = this.setting('layout', 'item-button-style') || 'default';
       const color = (name) => ((this.elementOverrides.global || {})[style] || {})[name] || this.elementDefaults.button?.colors?.[name]?.[style] || '';
-      return { ...this.buttonStyle, display: 'inline-flex', width: 'max-content', marginTop: 'auto', color: color('element-button-text'), backgroundColor: color('element-button-background'), borderColor: color('element-button-border') };
+      return { ...this.buttonStyle, display: 'inline-flex', width: 'max-content', marginTop: base.marginTop, color: color('element-button-text'), backgroundColor: color('element-button-background'), borderColor: color('element-button-border') };
     },
     // the link's icon (text style): the chosen one of its icon choice
     cardCtaIcon() {
