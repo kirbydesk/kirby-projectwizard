@@ -423,13 +423,16 @@
                   ></button>
                 </div>
                 <!-- Select with options -->
+                <!-- (a field that may stay empty – e.g. the featurelist's icon
+                     position: none – gets Kirby's reset; empty stores its value) -->
                 <k-toggles-input
                   v-else-if="field.type === 'select'"
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
                   :options="field.options.map(o => ({ value: o, text: itemOptionLabel(field, o) }))"
                   :grow="false"
-                  :required="true"
-                  @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
+                  :required="field.emptyValue === undefined"
+                  :reset="field.emptyValue !== undefined"
+                  @input="setVal('settings.fields.layout.' + field.key + '.default', ($event === null || $event === '') && field.emptyValue !== undefined ? field.emptyValue : $event)"
                 />
                 <!-- Plain boolean toggle -->
                 <k-toggle-input
@@ -664,6 +667,8 @@ export default {
             type: 'select',
             options: settingVal.options,
             defaultValue: settingVal.default !== undefined ? settingVal.default : settingVal.options[0],
+            // the value when nothing is chosen (optional: then it may stay empty)
+            emptyValue: settingVal.empty,
           });
           continue;
         }
