@@ -185,7 +185,7 @@
 
         <!-- Global views: the page's name as heading (an element: its name) -->
         <div v-if="!loading && activeTab === 'global'" class="pw-page-title-row" :class="{ 'has-intro': globalPageIntro }">
-          <!-- an element: its icon (as in the elements menu) before the name -->
+          <!-- the page's icon (an element's as in the elements menu) before the name -->
           <k-icon v-if="globalPageIcon" :type="globalPageIcon" class="pw-page-title-icon" />
           <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
         </div>
@@ -2277,10 +2277,15 @@ export default {
       }
       return '';
     },
+    // the icon before a global page's title: an element's (as in the
+    // elements menu), else the page's (as in its menu)
     globalPageIcon() {
-      if (this.globalActiveTab !== 'elements') return null;
-      const element = this.elementOptions.find(o => o.value === this.selectedElement);
-      return element ? element.icon : null;
+      if (this.globalActiveTab === 'elements') {
+        const element = this.elementOptions.find(o => o.value === this.selectedElement);
+        return element ? element.icon : null;
+      }
+      const tab = this.globalTabs.find(t => t.key === this.globalActiveTab);
+      return tab ? tab.icon : null;
     },
     globalPageTitle() {
       if (this.globalActiveTab === 'elements') {
