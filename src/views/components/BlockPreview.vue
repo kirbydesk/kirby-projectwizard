@@ -1844,9 +1844,10 @@ export default {
 }
 /* the logo's area inside the padding: left and right magenta (horizontal
    padding) from top to bottom of the tile, top and bottom green (vertical
-   padding) from side to side – cut off at the tile's edge */
+   padding) from side to side – cut off at the tile's box (a rectangle, so
+   a round tile shows them over its whole height and width too) */
 .pw-logocloud-preview.has-guides .pw-logocloud-item {
-  overflow: hidden;
+  clip-path: inset(0);
 }
 .pw-logocloud-preview.has-guides .pw-logocloud-pad::before,
 .pw-logocloud-preview.has-guides .pw-logocloud-pad::after {
