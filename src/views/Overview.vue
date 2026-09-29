@@ -2858,7 +2858,15 @@ export default {
       // (lists live in the text: hidden with it; the multicolumn's own list
       // element stays)
       const isHidden = (el) => hidden.includes(el === 'list' && blockType !== 'pwmulticolumn' ? 'editor' : el);
-      return ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].filter(el => !isHidden(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+      const els = ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].filter(el => !isHidden(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+      // a block with a gap to the intro (cards, features, logos, steps,
+      // media below it): the intro's last visible element has no space below
+      // of its own there – its row would have no effect
+      if (groups.some(g => g && g.vars && g.vars['item-text-gap'])) {
+        const last = ['editor', 'heading', 'tagline'].find(el => els.includes(el));
+        if (last) return els.filter(el => el !== last);
+      }
+      return els;
     },
     // multicolumn: the columns side by side at the device shown (then the
     // gap between them counts, else the one below each other); mobile always
