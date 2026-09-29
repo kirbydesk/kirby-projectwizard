@@ -103,7 +103,7 @@
 	'prw.tab.general' => 'Active blocks',
 	'prw.tab.project' => 'Project',
 	'prw.tab.site' => 'Site',
-	'prw.tab.settings' => 'Settings',
+	'prw.tab.settings' => 'Variants',
 	'prw.tab.config' => 'Settings',
 	'prw.tab.global' => 'Global',
 	'prw.tab.blocks' => 'Blocks',
