@@ -3090,6 +3090,41 @@ export default {
       node[path[path.length - 1]] = JSON.parse(JSON.stringify(value));
       this.patchesText = JSON.stringify(data, null, 2) + '\n';
       this.onPatchesInput();
+      this.$nextTick(() => this.jumpToPatch(path));
+    },
+    // to the entry just taken: its key selected in the field, scrolled into
+    // view (its place measured in the coloured copy, so wrapped lines count)
+    jumpToPatch(path) {
+      const text = this.patchesText;
+      let pos = 0;
+      for (const key of path) {
+        if (typeof key === 'number' || /^\d+$/.test(String(key))) continue;
+        const at = text.indexOf('"' + key + '":', pos);
+        if (at < 0) break;
+        pos = at;
+      }
+      const lastKey = String(path[path.length - 1]);
+      const input = this.$refs.patchesInput;
+      const hl = this.$refs.patchesHl;
+      if (!input || !hl) return;
+      this.fitPatchesInput();
+      input.focus({ preventScroll: true });
+      input.setSelectionRange(pos, pos + lastKey.length + 2);
+      // the place: a range at that character in the copy
+      let rest = pos;
+      const walker = document.createTreeWalker(hl, NodeFilter.SHOW_TEXT);
+      let nodeAt = null;
+      while (walker.nextNode()) {
+        const len = walker.currentNode.nodeValue.length;
+        if (rest <= len) { nodeAt = walker.currentNode; break; }
+        rest -= len;
+      }
+      if (!nodeAt) return;
+      const range = document.createRange();
+      range.setStart(nodeAt, rest);
+      range.setEnd(nodeAt, rest);
+      const rect = range.getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + rect.top - window.innerHeight / 3, behavior: 'smooth' });
     },
     async savePatches() {
       this.patchesError = this.patchesCheck(this.patchesText);
