@@ -350,7 +350,7 @@
           </template>
         </div>
         <!-- a help text below the card (e.g. the hero's content position) -->
-        <k-text v-if="sec.help" size="tiny" class="k-help pw-card-help" :html="sec.help" />
+        <k-text v-if="cardHelp(cat, sec)" size="tiny" class="k-help pw-card-help" :html="cardHelp(cat, sec)" />
         </section>
       </template>
 
@@ -799,11 +799,18 @@ export default {
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
-      const help = cat.key === 'style' && fields.length === 1 ? styleHelp(fields[0].key)
-        : (this.view === 'defaults' && cat.key === 'grid' ? this.$t('prw.hint.gridDefault') : null);
+      const help = cat.key === 'style' && fields.length === 1 ? styleHelp(fields[0].key) : null;
       return [{ key: 'main', heading: repeats ? null : heading, help, fields }];
     },
 
+    // the help text below a card; the grid's follows its switch (full width
+    // or adjusted, for the chosen screen size)
+    cardHelp(cat, sec) {
+      if (this.isGridDefaults(cat)) {
+        return this.$t(this.gridAdjusted(sec.fields, this.gridBp) ? 'prw.hint.gridCustom' : 'prw.hint.gridFull');
+      }
+      return sec.help;
+    },
     // the grid's start values (Startwerte › Raster)
     isGridDefaults(cat) {
       return this.view === 'defaults' && cat.key === 'grid';
