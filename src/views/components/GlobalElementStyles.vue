@@ -111,7 +111,8 @@
                 </template>
                 <!-- guides: the space below the element (tagline, heading, text) as
                      a band of its height between two cyan lines -->
-                <span v-if="guides && spaceBelow(groupKey)" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === groupKey + '-spacing' }" :style="{ height: spaceBelow(groupKey) }"></span>
+                <!-- (lists: once, between their two lists, in the text's size) -->
+                <span v-if="guides && spaceBelow(groupKey) && groupKey !== 'list'" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === groupKey + '-spacing' }" :style="{ height: spaceBelow(groupKey) }"></span>
                 <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
                   <!-- the source keeps its gap to the quote (cite-spacing) -->
                   <span
