@@ -498,6 +498,7 @@
 	'prw.preview.list.1' => 'Erster Punkt',
 	'prw.preview.list.2' => 'Zweiter Punkt',
 	'prw.preview.quote' => 'Ein kurzes Zitat.',
+	'prw.preview.mc.text' => 'Ein kurzer Text zum Schluss.',
 	'prw.preview.card.title' => 'Karte',
 	'prw.preview.card.text' => 'Kurze Beschreibung, was diese Karte zeigt.',
 	'prw.preview.card.textLong' => 'Eine etwas längere Beschreibung, damit die Karten unterschiedlich hoch sind und die Position des Links sichtbar wird.',

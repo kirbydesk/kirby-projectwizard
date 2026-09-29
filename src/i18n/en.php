@@ -498,6 +498,7 @@
 	'prw.preview.list.1' => 'First point',
 	'prw.preview.list.2' => 'Second point',
 	'prw.preview.quote' => 'A short quote.',
+	'prw.preview.mc.text' => 'A short text at the end.',
 	'prw.preview.card.title' => 'Card',
 	'prw.preview.card.text' => 'A short description of what this card shows.',
 	'prw.preview.card.textLong' => 'A somewhat longer description, so that the cards differ in height and the position of the link shows.',

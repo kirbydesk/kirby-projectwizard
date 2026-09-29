@@ -157,10 +157,13 @@
               <span v-if="guides" class="pw-mc-band is-heading" :class="{ 'is-hot': highlight === 'heading-spacing' }" :style="{ height: spaceAfter('heading') }"></span>
               <p :style="mcTextStyle('editor', 'editor')">{{ $t('prw.preview.card.text') }}</p>
               <span v-if="guides" class="pw-mc-band is-editor" :class="{ 'is-hot': highlight === 'editor-spacing' }" :style="{ height: spaceAfter('editor') }"></span>
-              <!-- a list (Elements › Lists), the column's last element -->
-              <ul class="pw-mc-list" :style="{ ...mcListStyle, marginBottom: 0 }">
+              <!-- a list (Elements › Lists) with its space below -->
+              <ul class="pw-mc-list" :style="mcListStyle">
                 <li v-for="n in 2" :key="'mcl-' + n">{{ $t('prw.preview.list.' + n) }}</li>
               </ul>
+              <span v-if="guides" class="pw-mc-band is-list" :class="{ 'is-hot': highlight === 'list-spacing' }" :style="{ height: mcListSpacing, fontSize: mcListStyle.fontSize }"></span>
+              <!-- (a text last, so every element above has its space below) -->
+              <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.mc.text') }}</p>
             </div>
             <span v-if="guides" class="pw-mc-gap" :class="{ 'is-row': !mcSide, 'is-hot': highlight === (mcSide ? 'column-gap' : 'row-gap') }" :style="mcSide ? null : { height: itemValue('row-gap') }"></span>
             <div class="pw-mc-column">
@@ -168,7 +171,9 @@
               <span v-if="guides" class="pw-mc-band is-quote" :class="{ 'is-hot': highlight === 'quote-spacing' }" :style="{ height: spaceAfter('quote') }"></span>
               <div class="pw-media-preview-photo pw-mc-image" :style="{ marginBottom: guides ? 0 : spaceAfter('media') }"></div>
               <span v-if="guides" class="pw-mc-band is-media" :class="{ 'is-hot': highlight === 'media-spacing' }" :style="{ height: spaceAfter('media') }"></span>
-              <div><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
+              <div :style="{ marginBottom: guides ? 0 : spaceAfter('button') }"><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
+              <span v-if="guides" class="pw-mc-band is-button" :class="{ 'is-hot': highlight === 'button-spacing' }" :style="{ height: spaceAfter('button') }"></span>
+              <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.mc.text') }}</p>
             </div>
           </div>
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
@@ -1567,6 +1572,8 @@ export default {
 .pw-mc-band.is-quote { border-color: rgba(0, 150, 136, 0.9); }
 .pw-mc-band.is-quote.is-hot { background: rgba(0, 150, 136, 0.15); }
 .pw-mc-band.is-media { border-color: rgba(230, 60, 60, 0.9); }
+.pw-mc-band.is-button { border-color: rgba(40, 90, 220, 0.9); }
+.pw-mc-band.is-button.is-hot { background: rgba(40, 90, 220, 0.15); }
 .pw-mc-band.is-media.is-hot { background: rgba(230, 60, 60, 0.18); }
 .pw-mc-list > li + li { margin-top: var(--pw-list-gap); }
 .pw-mc-list > li::marker { color: var(--pw-list-marker); font-size: var(--pw-list-marker-size); }
