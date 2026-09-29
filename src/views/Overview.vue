@@ -1969,7 +1969,12 @@ export default {
     // global tabs collected in the cog dropdown (above the block settings), AI only with contentwizard
     // heading of a global view: the tab's name, for an element its name
     globalPageIntro() {
-      if (this.globalActiveTab === 'elements' && this.selectedElement === 'item') return this.$t('prw.hint.itemElement');
+      // an element: what it is and where it is used
+      if (this.globalActiveTab === 'elements' && this.selectedElement) {
+        const key = this.selectedElement === 'item' ? 'prw.hint.itemElement' : 'prw.intro.element.' + this.selectedElement;
+        const text = this.$t(key);
+        return text && text !== key ? text : '';
+      }
       return '';
     },
     globalPageTitle() {
