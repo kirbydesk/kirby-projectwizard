@@ -284,6 +284,9 @@
               </div>
             </pw-portal>
 
+            <!-- which blocks and which variants can be used: side by side
+                 (blocks 2/3, variants 1/3), below each other when narrow -->
+            <div class="pw-blocks-active">
             <!-- which blocks can be used -->
             <pw-global-elements
               :blocks="blocks"
@@ -312,6 +315,7 @@
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.variants')" />
             </section>
+            </div>
             <!-- the global block values as cards, like the elements -->
             <!-- paddings: one row per axis; the small/large switch (in the
                  vertical row) applies to top and bottom only -->
@@ -4000,6 +4004,17 @@ export default {
 }
 /* white and edge to edge in the preview column: its paddings taken back
    (top the menu's, else spacing-6), as high as the column */
+.pw-blocks-active {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: var(--spacing-6);
+  align-items: start;
+}
+@media (min-width: 60rem) {
+  .pw-blocks-active {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
 .pw-patches-tree {
   margin: calc(-1 * var(--menu-padding, var(--spacing-3))) calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6));
   padding: var(--menu-padding, var(--spacing-3)) var(--spacing-6) var(--spacing-6);
