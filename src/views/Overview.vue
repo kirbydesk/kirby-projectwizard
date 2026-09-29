@@ -126,7 +126,7 @@
               :aria-pressed="isGlobalTab(...configMenuTabs) ? 'true' : 'false'"
               @click="$refs.configMenu.toggle()"
             >
-              <k-icon type="settings" />
+              <k-icon type="cog" />
               <span class="pw-tab-text">{{ $t('prw.tab.config') }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
             </button>
