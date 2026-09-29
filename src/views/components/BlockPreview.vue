@@ -662,8 +662,12 @@ export default {
     // texts' side
     cardOverlayStyle() {
       const color = this.itemColor('item-overlay') || '#000000';
-      const strength = this.itemValue('item-overlay-strength') || '50%';
-      return { background: 'linear-gradient(to ' + (this.cardTextTop ? 'bottom' : 'top') + ', color-mix(in srgb, ' + color + ' ' + strength + ', transparent), transparent)' };
+      const strength = parseFloat(this.itemValue('item-overlay-strength')) || 50;
+      // full strength behind the texts (the first 35 %), then easing out in
+      // steps (as in the frontend)
+      const stops = [[1, 0], [1, 35], [0.85, 45], [0.62, 55], [0.4, 65], [0.2, 75], [0.07, 87]]
+        .map(([k, at]) => 'color-mix(in srgb, ' + color + ' ' + (strength * k) + '%, transparent) ' + at + '%');
+      return { background: 'linear-gradient(to ' + (this.cardTextTop ? 'bottom' : 'top') + ', ' + stops.join(', ') + ', transparent 100%)' };
     },
     // the card's texts shown (as switched on in the block)
     cardFields() {
