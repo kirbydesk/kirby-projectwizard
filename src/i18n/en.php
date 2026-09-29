@@ -209,7 +209,7 @@
 	'prw.hint.heroFullscreen' => 'Full screen always matches the full screen height.',
 	'prw.hint.heroHeight' => 'The height is a percentage of the screen height. The px value is a guide for the chosen device.',
 	'prw.hint.heroOverlay' => 'Whether and how strongly the image is overlaid is set in each hero. The preview here shows a solid overlay at 50% across the whole area.',
-	'prw.hint.contentPosition' => 'Sets where the text block with tagline, heading, text and buttons sits inside the paddings. The size of the text block can be defined and positioned with the grid.',
+	'prw.hint.contentPosition' => 'Sets where the text block sits: horizontally within the grid area, vertically within the height, each without the paddings. The grid sets the text block's maximum width and its place.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.prop.tagline-spacing' => 'Tagline',
