@@ -558,6 +558,6 @@
 	'prw.patches.unknown' => 'Unbekannte Blöcke, sie werden ignoriert:',
 	'prw.notify.patches.success' => 'Ausnahmen gespeichert',
 	'prw.notify.patches.error' => 'Ausnahmen konnten nicht gespeichert werden',
-	'prw.patches.tree' => 'Alle Einstellungen der Blöcke, wie sie gerade gelten. Mit <code>+</code> kommt ein Eintrag samt Wert in die Ausnahmen, dort lässt er sich anpassen.',
+	'prw.patches.tree' => 'Alle Einstellungen der Blöcke, wie sie aktuell gelten. Mit <code>+</code> lässt sich für einen Eintrag eine Ausnahme definieren.',
 	'prw.patches.take' => 'Als Ausnahme übernehmen',
 ];
