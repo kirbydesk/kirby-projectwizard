@@ -764,7 +764,8 @@ export default {
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
-      const help = cat.key === 'style' && fields.length === 1 ? styleHelp(fields[0].key) : null;
+      const help = cat.key === 'style' && fields.length === 1 ? styleHelp(fields[0].key)
+        : (this.view === 'defaults' && cat.key === 'grid' ? this.$t('prw.hint.gridDefault') : null);
       return [{ key: 'main', heading: repeats ? null : heading, help, fields }];
     },
 
