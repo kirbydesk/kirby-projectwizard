@@ -4118,6 +4118,11 @@ export default {
 .pw-code-hl .is-boolean { color: #569cd6; }
 .pw-code-hl .is-null { color: #569cd6; font-style: italic; }
 .pw-code-hl .is-punct { color: #808080; }
+/* the column behind the tree white as well (no other colour at its
+   edges, e.g. while scrolling) */
+.pw-wizard .pw-preview-column:has(> .pw-portal > .pw-patches-tree:not([style*="display: none"])) {
+  background: var(--color-white);
+}
 /* white and edge to edge in the preview column: its paddings taken back
    (top the menu's, else spacing-6), as high as the column */
 .pw-blocks-active {
@@ -4268,6 +4273,9 @@ export default {
     /* switches at the top: as close to the edge as Kirby's menu items */
     padding-top: var(--menu-padding, var(--spacing-3));
     overflow-y: auto;
+    /* no rubber band (Safari): it would show the column's background above
+       and below its content */
+    overscroll-behavior: none;
     background: var(--menu-color-back);
     border-inline-start: 1px solid var(--menu-color-border);
     z-index: 2;
