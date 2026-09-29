@@ -212,7 +212,7 @@
 	'prw.hint.blockPaddings' => 'Sets which paddings a new block has. Top and bottom offer a small and a large padding. The values are set globally under <code>Blocks</code>.',
 	'prw.hint.blockRadius' => 'Sets which corners of a new block are rounded. The radius is set globally under <code>Blocks</code>.',
 	'prw.hint.contentDefaults' => 'Sets the settings the fields of a new block start with. Editors can change them in the block at any time.',
-	'prw.hint.themeDefault' => 'Sets the variant a new block starts with. The colours of the variants are set globally, <code>Custom</code> is only available in the block.',
+	'prw.hint.themeDefault' => 'Sets the variant a new block starts with. The colours of the variants are set globally, <code>Custom</code> is also available in the block.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.prop.tagline-spacing' => 'Tagline',
