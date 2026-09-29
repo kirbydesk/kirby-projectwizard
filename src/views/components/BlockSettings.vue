@@ -165,17 +165,18 @@
           :key="'card-' + cat.key + '-' + sec.key"
           class="pw-card-section"
         >
-        <div v-if="sec.heading || isGridDefaults(cat)" class="pw-card-heading-row">
+        <div v-if="sec.heading || bpKeyOf(cat, sec)" class="pw-card-heading-row">
           <h3 class="pw-card-heading">{{ sec.heading || drawerLabel(cat.key) }}</h3>
-          <!-- grid start values: the screen size shown in the card -->
-          <span v-if="isGridDefaults(cat)" class="pw-pill pw-theme-switch" role="group">
+          <!-- values per screen size (grid, columns, logos per row): the size
+               shown in the card -->
+          <span v-if="bpKeyOf(cat, sec)" class="pw-pill pw-theme-switch" role="group">
             <button
               v-for="b in ['sm', 'md', 'lg', 'xl']"
               :key="'gbp-' + b"
               type="button"
               class="pw-tool"
-              :aria-pressed="gridBp === b ? 'true' : 'false'"
-              @click="gridBp = b"
+              :aria-pressed="secBp(bpKeyOf(cat, sec)) === b ? 'true' : 'false'"
+              @click="$set(sectionBp, bpKeyOf(cat, sec), b)"
             >{{ b.toUpperCase() }}</button>
           </span>
         </div>
@@ -190,17 +191,18 @@
                 </div>
                 <div class="pw-field-row-options">
                   <k-toggles-input
-                    :value="gridAdjusted(sec.fields, gridBp) ? 'custom' : 'full'"
+                    :value="gridAdjusted(sec.fields, secBp('grid')) ? 'custom' : 'full'"
                     :options="[{ value: 'full', text: $t('prw.option.gridFull') }, { value: 'custom', text: $t('prw.option.gridCustom') }]"
                     :grow="false"
                     :required="true"
-                    @input="setGridMode(sec.fields, gridBp, $event)"
+                    @input="setGridMode(sec.fields, secBp('grid'), $event)"
                   />
                 </div>
               </span>
             </div>
           </div>
-          <template v-for="field in (isGridDefaults(cat) ? (gridAdjusted(sec.fields, gridBp) ? sec.fields.filter(f => f.key.endsWith('-' + gridBp)) : []) : sec.fields)">
+          <template v-for="field in (isGridDefaults(cat) ? (gridAdjusted(sec.fields, secBp('grid')) ? sec.fields.filter(f => f.key.endsWith('-' + secBp('grid'))) : [])
+            : (bpKeyOf(cat, sec) ? sec.fields.filter(f => f.key.endsWith('-' + secBp(bpKeyOf(cat, sec)))) : sec.fields))">
             <!-- FieldRow (e.g. theme with options + click logic) -->
             <pw-field-row
               v-if="field.type === 'fieldrow'"
@@ -223,7 +225,7 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : categoryFieldLabel(field.key) }}<span v-if="field.required" class="pw-field-required">*</span></label>
+                    <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : (bpKeyOf(cat, sec) ? sec.heading : categoryFieldLabel(field.key)) }}<span v-if="field.required" class="pw-field-required">*</span></label>
                     <!-- guides on: hovering the question mark tints the value's area in the preview -->
                     <k-icon
                       v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
@@ -510,8 +512,8 @@ export default {
       drawerTab: null,
       // grid start values switched to "adjusted" per screen size (still full width values)
       gridCustom: {},
-      // the screen size whose grid start values are shown
-      gridBp: 'lg',
+      // the screen size shown per card with values per size (grid, columns …)
+      sectionBp: {},
     };
   },
   computed: {
@@ -779,7 +781,7 @@ export default {
         const sections = [];
         if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), help: this.$t('prw.hint.blockPaddings'), fields: paddings });
         if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), help: this.$t('prw.hint.blockRadius'), fields: [radius] });
-        const headings = { 'position-': 'pw.headline.contentposition', 'columns-': 'pw.headline.columns' };
+        const headings = { 'position-': 'pw.headline.contentposition', 'columns-': 'pw.headline.columns', 'logos-': 'kirbyblock-logocloud.per-row' };
         for (const f of others) {
           const prefix = Object.keys(headings).find(p => f.key.startsWith(p));
           const key = prefix || f.key;
@@ -808,7 +810,7 @@ export default {
     // or adjusted, for the chosen screen size)
     cardHelp(cat, sec) {
       if (this.isGridDefaults(cat)) {
-        return this.$t(this.gridAdjusted(sec.fields, this.gridBp) ? 'prw.hint.gridCustom' : 'prw.hint.gridFull');
+        return this.$t(this.gridAdjusted(sec.fields, this.secBp('grid')) ? 'prw.hint.gridCustom' : 'prw.hint.gridFull');
       }
       if (this.view === 'defaults' && cat.key === 'settings') return this.$t('prw.hint.settingsDefault');
       return sec.help;
@@ -816,6 +818,16 @@ export default {
     // a grid row's label without its screen size (chosen above the card)
     gridFieldLabel(key) {
       return this.$t(key.startsWith('grid-size-') ? 'prw.label.gridWidth' : 'prw.label.gridOffset');
+    },
+    // cards with a value per screen size (sm … xl): the grid, the columns,
+    // the logos per row – one size at a time, chosen above the card
+    bpKeyOf(cat, sec) {
+      if (this.isGridDefaults(cat)) return 'grid';
+      if (this.view === 'defaults' && cat.key === 'layout' && ['columns-', 'logos-'].includes(sec.key)) return sec.key;
+      return null;
+    },
+    secBp(key) {
+      return this.sectionBp[key] || 'lg';
     },
     // the grid's start values (Startwerte › Raster)
     isGridDefaults(cat) {
