@@ -236,7 +236,7 @@
 	'prw.hint.featureText' => 'Legt fest, wie Titel und Beschreibung in den Einträgen dargestellt werden. <code>Standard</code> übernimmt die Werte der globalen Einträge, <code>Benutzerdefiniert</code> ermöglicht eigene Werte für diesen Block.',
 	'prw.hint.featureIcons' => 'Legt fest, ob und wo die Einträge ein Icon zeigen. Ist keine Position gewählt, erscheinen keine Icons und das Icon-Feld im Eintrag wird ausgeblendet.',
 	'prw.hint.featureTile' => 'Legt das Aussehen der Kachel hinter den Icons fest.',
-	'prw.hint.featureColors' => 'Legt die Farben von Icon und Kachel für jede Variante fest.',
+	'prw.hint.featureColors' => 'Legt die Farben von Icon (und Kachel) für jede Variante fest.',
 	'prw.hint.featureSpacing' => 'Legt die Abstände zwischen den Einträgen und zur Einleitung fest. <code>Eingerückt</code> zeigt die Einleitung auf großen Bildschirmen links neben den Einträgen.',
 	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht, eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.globalValue' => 'Globaler Wert',

@@ -236,7 +236,7 @@
 	'prw.hint.featureText' => 'Sets how the title and description are shown in the items. <code>Default</code> takes the values of the global items, <code>Custom</code> lets you set values for this block.',
 	'prw.hint.featureIcons' => 'Sets whether and where the items show an icon. With no position chosen, no icons appear and the icon field in the item is hidden.',
 	'prw.hint.featureTile' => 'Sets the look of the tile behind the icons.',
-	'prw.hint.featureColors' => 'Sets the colours of the icon and the tile for each variant.',
+	'prw.hint.featureColors' => 'Sets the colours of the icon (and the tile) for each variant.',
 	'prw.hint.featureSpacing' => 'Sets the gaps between the items and to the intro. <code>Offset</code> shows the intro next to the items on large screens.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
