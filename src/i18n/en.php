@@ -248,7 +248,7 @@
 	'prw.hint.itemTitleSpacing' => 'Gap between title and description',
 	'prw.hint.itemElement' => 'This element is used in blocks that are filled with individual items (e.g. FAQ, features and others).',
 	'prw.hint.cardSizes' => 'Editors choose the steps in the block. Here you set how large each step is per device.',
-	'prw.hint.cardMarked' => 'An optional text marking can be switched on per block.',
+	'prw.hint.cardMarked' => 'The text marking is optional and can be switched on per block when needed.',
 	'prw.hint.cardFlourish' => 'The flourish can be switched on in the block and appears below the heading.',
 	'prw.hint.cardColors' => 'Sets the colours for each variant.',
 	'prw.hint.cardZoom' => 'Appears on images that can be shown enlarged.',
