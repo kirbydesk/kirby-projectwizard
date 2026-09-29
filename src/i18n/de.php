@@ -246,7 +246,7 @@
 	'prw.hint.citeSpacing' => 'Abstand zwischen Zitat und Quelle',
 	'prw.hint.buttonGap' => 'Abstand zwischen zwei Buttons nebeneinander',
 	'prw.hint.itemTitleSpacing' => 'Abstand zwischen Titel und Beschreibung',
-	'prw.hint.itemElement' => 'Dieses Element mit den Feldern Titel und Beschreibung wird in Blöcken verwendet, die sich mit einzelnen Einträgen bestücken lassen (z. B. Features oder Schritte).',
+	'prw.hint.itemElement' => 'Dieses Element wird in Blöcken verwendet, die sich mit einzelnen Einträgen bestücken lassen (z. B. FAQ, Features u. a.).',
 	'prw.hint.buttonRowGap' => 'Abstand zwischen zwei Button-Reihen',
 	'prw.hint.paddingX' => 'Innenabstand links und rechts',
 	'prw.hint.paddingY' => 'Innenabstand oben und unten',

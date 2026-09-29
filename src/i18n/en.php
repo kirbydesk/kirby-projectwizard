@@ -246,7 +246,7 @@
 	'prw.hint.citeSpacing' => 'Space between quote and source',
 	'prw.hint.buttonGap' => 'Space between two buttons side by side',
 	'prw.hint.itemTitleSpacing' => 'Gap between title and description',
-	'prw.hint.itemElement' => 'This element with the fields title and description is used in blocks that are filled with individual items (e.g. features or steps).',
+	'prw.hint.itemElement' => 'This element is used in blocks that are filled with individual items (e.g. FAQ, features and others).',
 	'prw.hint.buttonRowGap' => 'Space between two rows of buttons',
 	'prw.hint.paddingX' => 'Padding left and right',
 	'prw.hint.paddingY' => 'Padding top and bottom',
