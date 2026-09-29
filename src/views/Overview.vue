@@ -3968,7 +3968,7 @@ export default {
   background: var(--color-white);
 }
 .pw-json-root {
-  margin-top: var(--spacing-3);
+  margin-top: var(--spacing-6);
   padding-left: 0;
 }
 .pw-patches-note {
