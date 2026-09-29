@@ -1065,23 +1065,94 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.steplistNumbering')" />
             </section>
 
-            <!-- logocloud: the tiles' style – form, radii (custom), background
-                 of the chosen variant -->
-            <section v-if="block.blockType === 'pwlogocloud' && blockValueDefaults[block.blockType]" class="pw-card-section">
+            <!-- steplist: colours and gaps (its text and numbering above) -->
+            <template v-if="block.blockType === 'pwsteplist' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
                 <span class="pw-pill pw-theme-switch" role="group">
                   <button
                     v-for="theme in themes"
-                    :key="'lth-' + theme"
+                    :key="'sth-' + theme"
                     type="button"
                     class="pw-tool"
                     :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
                     @click="itemColorTheme = theme"
                   >{{ $t('pw.option.' + theme) }}</button>
                 </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :labels="stepColorLabels(block.blockType)"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="itemColorsShowOnly(block.blockType)"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.steplistColors')" />
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :labels="{ 'item-gap': $t('prw.label.betweenSteps') }"
+                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.steplistSpacing')" />
+            </section>
+            </template>
+
+            <!-- logocloud: layout, form, padding, colours, gaps -->
+            <template v-if="block.blockType === 'pwlogocloud' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.layout') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-format']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :labels="itemLayoutDefault(block.blockType, 'item-format') === 'flexible' ? { 'item-size': $t('prw.label.height') } : {}"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-size']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudLayout')" />
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.shape') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-settings
@@ -1095,8 +1166,8 @@
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
                 <pw-block-values
-                  v-if="isItemRadiusVisible(block.blockType)"
                   :bp.sync="itemBp"
+                  v-if="isItemRadiusVisible(block.blockType)"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-radius']"
@@ -1104,29 +1175,98 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudShape')" />
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.padding') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
+                  :labels="{ 'item-padding': $t('prw.label.leftRight'), 'item-padding-y': $t('prw.label.topBottom') }"
+                  :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'padding-y' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-padding', 'item-padding-y']"
-                  :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'padding-y' } : null"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-background']"
-                  :labels="{ 'item-background': $t('prw.label.backgroundColor') }"
-                  :theme="currentItemColorTheme"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudPadding')" />
             </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'lth-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :labels="{ 'item-background': $t('prw.label.backgroundColor') }"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-background']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudColors')" />
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-row-gap': 'row' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-row-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-text-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudSpacing')" />
+            </section>
+            </template>
+
+
 
             <!-- featurelist: icon, tile, colours, gaps (its text: the entries' card above) -->
             <template v-if="block.blockType === 'pwfeaturelist' && blockValueDefaults[block.blockType]">
@@ -1675,258 +1815,6 @@
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsSpacing')" />
             </section>
-            </template>
-
-            <!-- Layout section. Order is fixed:
-                 padding → radius → border (toggle) → border-width (only if border on) → link-style.
-                 Each row uses its own component so we can interleave field-default toggles
-                 with css-variable inputs in the desired sequence. -->
-            <template v-if="blockValueDefaults[block.blockType] && hasItemFields(block.blockType) && !['pwfeaturelist', 'pwhero', 'pwcardlets'].includes(block.blockType)">
-              <section class="pw-card-section">
-                <div class="pw-card-heading-row">
-                  <!-- steplist: only the gap between the steps is left here -->
-                  <h3 class="pw-card-heading">{{ $t(block.blockType === 'pwsteplist' ? 'prw.headline.spacing' : 'prw.subtab.layout') }}</h3>
-                </div>
-                <div class="pw-card pw-field-table">
-                  <pw-block-values
-                    v-if="block.blockType !== 'pwlogocloud'"
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-padding']"
-                    :guides="previewGuides ? { 'item-padding': 'padding' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-settings
-                    v-if="isItemShapeVisible(block.blockType) && block.blockType !== 'pwsteplist'"
-                    view="items-layout"
-                    :block="block"
-                    :config="blockConfigs[block.blockType]"
-                    :overrides="blockOverrides[block.blockType] || {}"
-                    :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="block.blockType === 'pwlogocloud' ? ['item-format'] : ['item-format', 'item-shape']"
-                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                    @update:writer-active="$set(writerActive, block.blockType, $event)"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    v-if="isItemRadiusVisible(block.blockType) && !['pwsteplist', 'pwlogocloud'].includes(block.blockType)"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-radius']"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <!-- logocloud: its size (height) right after the format -->
-                  <pw-block-values
-                    v-if="block.blockType === 'pwlogocloud'"
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-size']"
-                    :labels="itemLayoutDefault(block.blockType, 'item-format') === 'flexible' ? { 'item-size': $t('prw.label.height') } : {}"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <!-- (logocloud: its gaps in a card of their own below) -->
-                  <pw-block-values
-                    v-if="block.blockType !== 'pwlogocloud'"
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="block.blockType === 'pwsteplist' ? ['item-gap'] : ['item-number-size', 'item-gap', 'item-row-gap', 'item-text-gap', 'item-content-gap', 'item-connector-width']"
-                    :labels="block.blockType === 'pwsteplist' ? { 'item-gap': $t('prw.label.betweenSteps') } : {}"
-                    :guides="previewGuides ? { 'item-gap': 'margin', 'item-row-gap': 'row', 'item-text-gap': 'text' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-values
-                    v-if="block.blockType !== 'pwlogocloud'"
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-size']"
-                    :labels="itemLayoutDefault(block.blockType, 'item-format') === 'flexible' ? { 'item-size': $t('prw.label.height') } : {}"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <!-- Item look (featurelist): icon position/style, title style + sizes -->
-                  <pw-block-settings
-                    view="items-layout"
-                    :block="block"
-                    :config="blockConfigs[block.blockType]"
-                    :overrides="blockOverrides[block.blockType] || {}"
-                    :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="['item-icon-position', 'item-icon-style', 'item-title-style']"
-                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                    @update:writer-active="$set(writerActive, block.blockType, $event)"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-icon-size', 'item-icon-gap']"
-                    :guides="previewGuides ? { 'item-icon-gap': 'row' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    v-if="itemLayoutDefault(block.blockType, 'item-icon-style') === 'tile'"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-icon-tile-padding', 'item-icon-tile-radius']"
-                    :guides="previewGuides ? { 'item-icon-tile-padding': 'padding' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-title-size', 'item-title-line-height', 'item-title-gap', 'item-text-size']"
-                    :guides="previewGuides ? { 'item-title-gap': 'gap-4' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-settings
-                    view="items-layout"
-                    :block="block"
-                    :config="blockConfigs[block.blockType]"
-                    :overrides="blockOverrides[block.blockType] || {}"
-                    :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="['item-border']"
-                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                    @update:writer-active="$set(writerActive, block.blockType, $event)"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    v-if="isItemBorderEnabled(block.blockType)"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-border-width']"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-settings
-                    view="items-layout"
-                    :block="block"
-                    :config="blockConfigs[block.blockType]"
-                    :overrides="blockOverrides[block.blockType] || {}"
-                    :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="['item-link-style']"
-                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                    @update:writer-active="$set(writerActive, block.blockType, $event)"
-                  />
-                  <pw-block-settings
-                    v-if="isItemLinkStyleButton(block.blockType)"
-                    view="items-layout"
-                    :block="block"
-                    :config="blockConfigs[block.blockType]"
-                    :overrides="blockOverrides[block.blockType] || {}"
-                    :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="['item-button-style']"
-                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                    @update:writer-active="$set(writerActive, block.blockType, $event)"
-                  />
-                  <pw-block-settings
-                    v-if="!isItemLinkStyleButton(block.blockType)"
-                    view="items-layout"
-                    :block="block"
-                    :config="blockConfigs[block.blockType]"
-                    :overrides="blockOverrides[block.blockType] || {}"
-                    :writer-active="writerActive[block.blockType] !== false"
-                    :layout-keys="['item-link-decoration', 'item-link-icon']"
-                    @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                    @update:writer-active="$set(writerActive, block.blockType, $event)"
-                  />
-                </div>
-              </section>
-            </template>
-
-            <!-- logocloud: the gaps (as the featurelist's): to the intro, between
-                 the logos of a row, between the rows -->
-            <template v-if="block.blockType === 'pwlogocloud' && blockValueDefaults[block.blockType]">
-              <section class="pw-card-section">
-                <div class="pw-card-heading-row">
-                  <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
-                </div>
-                <div class="pw-card pw-field-table">
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-gap']"
-                    :guides="previewGuides ? { 'item-gap': 'margin' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-row-gap']"
-                    :guides="previewGuides ? { 'item-row-gap': 'row' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="['item-text-gap']"
-                    :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                </div>
-              </section>
-            </template>
-
-            <!-- Colors section (multi-theme; logocloud: its colour is in "Style") -->
-            <template v-if="blockValueDefaults[block.blockType] && hasItemFields(block.blockType) && !['pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets'].includes(block.blockType)">
-              <section class="pw-card-section">
-                <!-- colours: choose the theme, the rows show only its value -->
-                <div class="pw-card-heading-row">
-                  <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
-                  <span class="pw-pill pw-theme-switch" role="group">
-                    <button
-                      v-for="theme in themes"
-                      :key="'th-' + theme"
-                      type="button"
-                      class="pw-tool"
-                      :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
-                      @click="itemColorTheme = theme"
-                    >{{ $t('pw.option.' + theme) }}</button>
-                  </span>
-                </div>
-                <div class="pw-card pw-field-table">
-                  <pw-block-values
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="itemColorsShowOnly(block.blockType)"
-                    :labels="block.blockType === 'pwsteplist' ? stepColorLabels(block.blockType) : {}"
-                    :theme="currentItemColorTheme"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                </div>
-              </section>
             </template>
 
             <!-- elements: the space below tagline, heading and text – the global
