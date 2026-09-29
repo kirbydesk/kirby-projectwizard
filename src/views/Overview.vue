@@ -4171,6 +4171,10 @@ export default {
   /* a ring, so a white variant shows as well */
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
 }
+/* not in the previews' toolbars (only in the cards' pills) */
+.pw-preview-theme .pw-variant-dot {
+  display: none;
+}
 /* in the variant pills: small, before the name */
 .pw-variant-dot.is-small {
   display: inline-block;
