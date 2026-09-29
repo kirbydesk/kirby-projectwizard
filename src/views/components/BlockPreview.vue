@@ -155,7 +155,9 @@
               <span v-if="guides" class="pw-mc-band is-tagline" :class="{ 'is-hot': highlight === 'tagline-spacing' }" :style="{ height: spaceAfter('tagline') }"></span>
               <div :style="mcTextStyle('heading', 'heading')">{{ $t('prw.preview.heading') }}</div>
               <span v-if="guides" class="pw-mc-band is-heading" :class="{ 'is-hot': highlight === 'heading-spacing' }" :style="{ height: spaceAfter('heading') }"></span>
-              <p :style="mcTextStyle('editor', 'editor')">{{ $t('prw.preview.card.text') }}</p>
+              <!-- (a longer text: the left column clearly higher, so the right
+                   one's position – top, middle, bottom – shows) -->
+              <p :style="mcTextStyle('editor', 'editor')">{{ $t('prw.preview.card.textLong') }}</p>
               <span v-if="guides" class="pw-mc-band is-editor" :class="{ 'is-hot': highlight === 'editor-spacing' }" :style="{ height: spaceAfter('editor') }"></span>
               <!-- a list (Elements › Lists) with its space below -->
               <ul class="pw-mc-list" :style="mcListStyle">
