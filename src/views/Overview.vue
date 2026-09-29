@@ -2715,10 +2715,12 @@ export default {
     hasOwnSpacing(blockType) {
       return this.ownSpacingElements(blockType).length > 0;
     },
-    // its elements with such a value (the heading block: only the tagline)
+    // its elements with such a value (the heading block: only the tagline),
+    // without those hidden under Visibility (they are not in the block)
     ownSpacingElements(blockType) {
       const groups = Object.values(this.blockValueDefaults[blockType] || {});
-      return ['tagline', 'heading', 'editor'].filter(el => groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+      const hidden = this.blockOverrides[blockType]?.settings?.hidden || [];
+      return ['tagline', 'heading', 'editor'].filter(el => !hidden.includes(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
     },
     // the global elements' space below (Elements page: override, else default)
     globalElementSpacing(el) {
