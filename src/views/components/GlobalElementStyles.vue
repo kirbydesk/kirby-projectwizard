@@ -75,7 +75,8 @@
                   <!-- two paragraphs: the paragraph spacing between them -->
                   <div class="pw-element-preview-text pw-element-preview-paragraphs" :class="{ 'is-hot': hoveredArea === 'item-text-paragraph-spacing' }" :style="itemTextStyle(bp, theme)">
                     <p>{{ $t('prw.sample.item.text') }}</p>
-                    <p :style="{ marginTop: itemParagraphGap() }">{{ $t('prw.sample.item.text2') }}</p>
+                    <!-- with a link: colour and underline of the block links -->
+                    <p :style="{ marginTop: itemParagraphGap() }">{{ $t('prw.sample.item.text2') }} <a class="pw-item-preview-link" :data-decoration="linkDecoration()" :style="linkStyle(theme)">{{ $t('prw.sample.item.link') }}</a> {{ $t('prw.sample.item.text2after') }}</p>
                   </div>
                 </template>
                 <template v-else-if="previewParagraphs(groupKey)">
@@ -982,6 +983,21 @@ export default {
     // item: its description, below the title (with guides: the band between)
     itemTextStyle(bp, theme) {
       return { ...this.previewStyle('item-text', bp, theme), marginTop: this.guides ? 0 : this.itemTitleGap(), '--pw-paragraph-gap': this.itemParagraphGap() };
+    },
+    // block links (Global › Blocks): underline none, always or on hover
+    linkDecoration() {
+      return (this.globalOverrides.global || {})['block-link-decoration'] || this.globalDefaults.links?.vars?.['block-link-decoration']?.value || 'none';
+    },
+    // their colour (per variant, with hover) and underline
+    linkStyle(theme) {
+      const color = (name) => ((this.globalOverrides.global || {})[theme] || {})[name] || this.globalDefaults.colors?.colors?.[name]?.[theme] || '';
+      const v = (name) => (this.globalOverrides.global || {})[name] || this.globalDefaults.links?.vars?.[name]?.value || '';
+      return {
+        '--pw-link': color('block-link'),
+        '--pw-link-hover': color('block-link-hover'),
+        textDecorationThickness: v('block-link-thickness'),
+        textUnderlineOffset: v('block-link-offset'),
+      };
     },
     // item: the space between the description's paragraphs
     itemParagraphGap() {
@@ -2490,6 +2506,20 @@ export default {
   }
 }
 
+
+/* a link in the item preview: as the block links */
+.pw-item-preview-link {
+  color: var(--pw-link);
+  text-decoration-line: none;
+  cursor: pointer;
+}
+.pw-item-preview-link:hover {
+  color: var(--pw-link-hover);
+}
+.pw-item-preview-link[data-decoration="always"],
+.pw-item-preview-link[data-decoration="hover"]:hover {
+  text-decoration-line: underline;
+}
 
 /* guides: the space below an element, between two cyan lines */
 .pw-element-space-below {
