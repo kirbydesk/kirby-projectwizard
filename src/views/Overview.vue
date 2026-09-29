@@ -809,6 +809,7 @@
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
                 :feature-layout="block.blockType === 'pwfeaturelist' && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
+                :design-view="currentBlockView === 'design'"
                 :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
                 @update:variant="itemColorTheme = $event"
@@ -1345,6 +1346,36 @@
               </div>
               <k-text v-if="currentHeroHeight(block.blockType) !== 'fullscreen'" size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.heroHeight')" />
               <k-text v-else size="tiny" class="k-help pw-card-help">{{ $t('prw.hint.heroFullscreen') }}</k-text>
+            </section>
+            <!-- hero: the overlay colour of each variant (its kind and strength
+                 are set in the block) -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'hth-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['overlay']"
+                  :theme="currentItemColorTheme"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help">{{ $t('prw.hint.heroOverlay') }}</k-text>
             </section>
             </template>
 

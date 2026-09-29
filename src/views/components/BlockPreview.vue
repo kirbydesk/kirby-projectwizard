@@ -44,6 +44,8 @@
         :style="blockStyle"
       >
       <section class="pw-block-live-section" :class="{ 'has-guides': blockGuides, 'is-hero': isHero, 'pw-media-preview-photo': heroImage }" :style="sectionStyle">
+        <!-- hero, design tab: the overlay in the variant's colour -->
+        <span v-if="isHero && designView" class="pw-hero-overlay" :style="heroOverlayStyle" aria-hidden="true"></span>
         <!-- hero with a video background: the sample image and a play mark -->
         <span v-if="isHero && heroBackground === 'video'" class="pw-hero-video-mark" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
@@ -246,6 +248,9 @@ export default {
     featureLayout: { type: String, default: '' },
     // hero: the height to show (chosen in the design tab's height card)
     heroHeight: { type: String, default: '' },
+    // the design tab (the hero: on the sample image with its overlay, to
+    // check the overlay colour with the text)
+    designView: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
@@ -438,9 +443,17 @@ export default {
       return Object.values(this.valueDefaults || {}).some(g => g && g.vars
         && ['tagline-spacing', 'heading-spacing', 'editor-spacing'].some(name => g.vars[name]));
     },
-    // the background: the start value
+    // the background: the start value (design tab: the sample image, for the
+    // overlay colour)
     heroBackground() {
+      if (this.designView) return 'image';
       return this.setting('style', 'background-type') || 'color';
+    },
+    // design tab: a solid overlay at 50 % (the start strength) in the
+    // variant's overlay colour
+    heroOverlayStyle() {
+      const color = this.itemColor('overlay') || '#000000';
+      return { background: 'color-mix(in srgb, ' + color + ' 50%, transparent)' };
     },
     // image or video: the drawn sample image (as in the media preview)
     heroImage() {
@@ -1153,6 +1166,15 @@ export default {
 .pw-space-band.is-editor.is-hot::before { background: rgba(255, 140, 0, 0.15); }
 .pw-block-live-preview.has-focus .pw-space-band::before {
   border-color: transparent;
+}
+/* hero: its overlay over the background, below the content */
+.pw-hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.pw-block-live-section.is-hero .pw-block-live-grid {
+  position: relative;
 }
 /* hero: a video background marked by a play symbol */
 .pw-block-live-section.is-hero {
