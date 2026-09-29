@@ -793,7 +793,7 @@
         >
 
           <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist, Hero, Cardlets so far) -->
-          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
                 :block-type="block.blockType"
@@ -1923,9 +1923,32 @@
             </section>
             </template>
 
+            <!-- multicolumn: the gaps between the columns (side by side, below
+                 each other) and after further elements in a column -->
+            <template v-if="block.blockType === 'pwmulticolumn' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'column-gap': 'margin', 'row-gap': 'row', 'element-gap': 'gap-4' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['column-gap', 'row-gap', 'element-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.multicolumnSpacing')" />
+            </section>
+            </template>
+
             <!-- elements: the space below tagline, heading and text – the global
                  elements' or the block's own (blocks that bring the values:
-                 every block with an intro but the quote and the multicolumn); always
+                 every block with an intro but the quote); always
                  the last card -->
             <template v-if="hasOwnSpacing(block.blockType)">
             <section class="pw-card-section">

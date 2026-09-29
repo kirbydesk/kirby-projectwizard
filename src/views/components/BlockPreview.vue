@@ -142,6 +142,26 @@
             </div>
             </template>
           </div>
+          <!-- multicolumn: two columns as its distribution at the device
+               shown (stacked on mobile) – left heading, text, button; right an
+               image and a text. Guides: the gaps as elements of their own
+               (between the columns cyan, below each other violet), the space
+               below heading (violet) and text (orange), after the image gold -->
+          <div v-if="isMulticolumn" class="pw-mc-preview" :style="mcStyle">
+            <div class="pw-mc-column">
+              <div :style="mcTextStyle('heading', 'heading')">{{ $t('prw.preview.heading') }}</div>
+              <span v-if="guides" class="pw-mc-band is-heading" :class="{ 'is-hot': highlight === 'heading-spacing' }" :style="{ height: spaceAfter('heading') }"></span>
+              <p :style="mcTextStyle('editor', 'editor')">{{ $t('prw.preview.card.text') }}</p>
+              <span v-if="guides" class="pw-mc-band is-editor" :class="{ 'is-hot': highlight === 'editor-spacing' }" :style="{ height: spaceAfter('editor') }"></span>
+              <div><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
+            </div>
+            <span v-if="guides" class="pw-mc-gap" :class="{ 'is-row': !mcSide, 'is-hot': highlight === (mcSide ? 'column-gap' : 'row-gap') }" :style="mcSide ? null : { height: itemValue('row-gap') }"></span>
+            <div class="pw-mc-column">
+              <div class="pw-media-preview-photo pw-mc-image" :style="{ marginBottom: guides ? 0 : itemValue('element-gap') }"></div>
+              <span v-if="guides" class="pw-mc-band is-element" :class="{ 'is-hot': highlight === 'element-gap' }" :style="{ height: itemValue('element-gap') }"></span>
+              <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.card.textLong') }}</p>
+            </div>
+          </div>
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the features cyan, icon and text violet, title
@@ -710,6 +730,29 @@ export default {
       const key = this.setting('layout', 'item-link-icon');
       const opt = def && Array.isArray(def.options) ? def.options.find(o => o.value === key) : null;
       return opt ? opt.svg : '';
+    },
+    isMulticolumn() {
+      return this.blockType === 'pwmulticolumn';
+    },
+    // side by side from the device whose distribution is set (mobile stacked)
+    mcDist() {
+      const key = GRID_BP[this.bp];
+      return key ? this.setting('layout', 'columns-' + key) || '' : '';
+    },
+    mcSide() {
+      return /^dist-\d-\d$/.test(this.mcDist);
+    },
+    // the columns: the distribution's shares and the gap between them (with
+    // guides a track of its own); stacked below each other with the row gap
+    mcStyle() {
+      if (!this.mcSide) {
+        return { display: 'flex', flexDirection: 'column', gap: this.guides ? 0 : this.itemValue('row-gap') };
+      }
+      const [, a, b] = this.mcDist.split('-');
+      const gap = this.itemValueAt('column-gap');
+      return this.guides
+        ? { display: 'grid', gridTemplateColumns: 'minmax(0, ' + a + 'fr) ' + gap + ' minmax(0, ' + b + 'fr)' }
+        : { display: 'grid', gridTemplateColumns: 'minmax(0, ' + a + 'fr) minmax(0, ' + b + 'fr)', columnGap: gap };
     },
     isFeaturelist() {
       return this.blockType === 'pwfeaturelist';
@@ -1334,6 +1377,18 @@ export default {
       }
       return style;
     },
+    // a text in a column: the element's type and colour, the preset size step
+    // (headline lg, text normal), its space below (with guides a band instead)
+    mcTextStyle(element, spaceOf) {
+      const style = { ...this.typography(element), color: this.elementColor(element, 'element-' + element + '-text'), margin: 0 };
+      const preset = element === 'heading' ? (this.preset('headline', 'sizes') || 'lg') : (this.preset('text', 'sizes') || 'normal');
+      if (preset !== 'normal') {
+        const step = this.sizeStep(element, preset);
+        if (step) style.fontSize = step;
+      }
+      if (spaceOf && !this.guides) style.marginBottom = this.spaceAfter(spaceOf);
+      return style;
+    },
     fieldStyle(field) {
       const style = {
         ...this.typography(field),
@@ -1440,6 +1495,46 @@ export default {
 }
 /* the block's own space below (guides): a band between two lines, below
    the tagline cyan, the heading violet, the text orange */
+/* multicolumn: the columns; guides as bands inside a column (heading
+   violet, text orange, after the image gold) and the gap between the
+   columns (cyan, side by side a track, stacked a band violet) */
+.pw-mc-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pw-mc-image {
+  aspect-ratio: 16 / 9;
+  background-size: cover;
+  background-position: center;
+}
+.pw-mc-band,
+.pw-mc-gap {
+  display: block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.pw-mc-band {
+  border-block: 1px solid transparent;
+}
+.pw-mc-band.is-heading { border-color: rgba(130, 80, 255, 0.9); }
+.pw-mc-band.is-editor { border-color: rgba(255, 140, 0, 0.9); }
+.pw-mc-band.is-element { border-color: rgba(215, 160, 0, 0.95); }
+.pw-mc-band.is-heading.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-mc-band.is-editor.is-hot { background: rgba(255, 140, 0, 0.15); }
+.pw-mc-band.is-element.is-hot { background: rgba(215, 160, 0, 0.18); }
+.pw-mc-gap {
+  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+}
+.pw-mc-gap.is-row {
+  border-inline: 0;
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
+}
+.pw-mc-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
+.pw-mc-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-block-live-preview.has-focus :is(.pw-mc-band, .pw-mc-gap) {
+  border-color: transparent;
+}
 .pw-space-band {
   position: relative;
   align-self: stretch;
