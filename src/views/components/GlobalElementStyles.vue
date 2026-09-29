@@ -1691,6 +1691,7 @@ export default {
     previewText(groupKey) {
       if (groupKey === 'media') return '__media__';
       if (groupKey === 'item') return '__item__';
+      if (groupKey === 'list') return '__list__';
       const key = 'prw.sample.' + groupKey;
       const text = this.$t(key);
       return text && text !== key ? text : null;
