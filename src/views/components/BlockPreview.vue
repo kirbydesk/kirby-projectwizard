@@ -588,20 +588,6 @@ export default {
     cardFields() {
       return ['tagline', 'heading', 'editor'].filter(el => this.hasField('item-' + el));
     },
-    // the gap below a text in the card: to the next one, or (the last) to the link
-    cardGapVar(el) {
-      const i = this.cardFields.indexOf(el);
-      if (i === this.cardFields.length - 1) return 'item-cta-gap';
-      return el === 'tagline' ? 'item-tagline-spacing' : el === 'heading' ? 'item-heading-spacing' : '';
-    },
-    cardGapAfter(el) {
-      const name = this.cardGapVar(el);
-      return name ? this.itemValue(name) : 0;
-    },
-    // its guide colour: tagline violet, heading gold, to the link teal
-    cardGapKind(el) {
-      return { 'item-tagline-spacing': 'tagline', 'item-heading-spacing': 'heading', 'item-cta-gap': 'cta' }[this.cardGapVar(el)] || '';
-    },
     // the link: text (link colour, underline, icon) or a button
     cardCtaStyle() {
       const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: 'auto' };
@@ -1210,6 +1196,20 @@ export default {
     },
     // tagline, heading and text in a card: the element's type, the card's
     // text colours, the preset size step and alignment
+    // the gap below a text in the card: to the next one, or (the last) to the link
+    cardGapVar(el) {
+      const i = this.cardFields.indexOf(el);
+      if (i === this.cardFields.length - 1) return 'item-cta-gap';
+      return el === 'tagline' ? 'item-tagline-spacing' : el === 'heading' ? 'item-heading-spacing' : '';
+    },
+    cardGapAfter(el) {
+      const name = this.cardGapVar(el);
+      return name ? this.itemValue(name) : 0;
+    },
+    // its guide colour: tagline violet, heading gold, to the link teal
+    cardGapKind(el) {
+      return { 'item-tagline-spacing': 'tagline', 'item-heading-spacing': 'heading', 'item-cta-gap': 'cta' }[this.cardGapVar(el)] || '';
+    },
     cardFieldText(el, n) {
       if (el === 'tagline') return this.$t('prw.preview.tagline');
       if (el === 'heading') return this.$t('prw.preview.card.title') + ' ' + n;
