@@ -802,11 +802,6 @@ export default {
       const step = this.sizeStep('quote', this.preset('quote', 'sizes') || 'lg');
       return { ...this.typography('quote'), ...(step ? { fontSize: step } : {}), color: this.elementColor('quote', 'element-quote-text'), textAlign: this.preset('quote', 'align') || 'left', margin: 0, marginBottom: this.guides ? 0 : this.spaceAfter('quote') };
     },
-    // a column: its vertical position next to the other (start value)
-    mcColumnStyle(side) {
-      if (!this.mcSide) return null;
-      return { alignSelf: { top: 'start', middle: 'center', bottom: 'end' }[this.setting('layout', 'multicolumn-' + side)] || 'start' };
-    },
     mcListSpacing() {
       if (this.ownSpacing) {
         const own = this.itemValue('list-spacing');
@@ -1440,6 +1435,11 @@ export default {
         style.fontSize = this.sizeStep(el, 'md');
       }
       return style;
+    },
+    // a column: its vertical position next to the other (start value)
+    mcColumnStyle(side) {
+      if (!this.mcSide) return null;
+      return { alignSelf: { top: 'start', middle: 'center', bottom: 'end' }[this.setting('layout', 'multicolumn-' + side)] || 'start' };
     },
     // a text in a column: the element's type and colour, the preset size step
     // (headline lg, text normal), its space below (with guides a band instead)
