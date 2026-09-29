@@ -80,6 +80,7 @@
                     <ul class="pw-element-preview-list" :class="{ 'is-hot-indent': hoveredArea === 'list-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, false)">
                       <li v-for="n in 3" :key="'li-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ul>
+                    <span v-if="guides" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'list-spacing' }" :style="{ height: spaceBelow('list') }"></span>
                     <ol class="pw-element-preview-list is-numbered" :class="{ 'is-hot-indent': hoveredArea === 'list-number-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, true)">
                       <li v-for="n in 3" :key="'ol-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ol>
@@ -930,7 +931,7 @@ export default {
       if (varName === 'item-title-spacing') return 'margin';
       if (varName.endsWith('cite-spacing') || varName === 'caption-spacing' || varName === 'button-gap') return 'margin';
       // the space after an element (tagline, heading, text)
-      if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'margin';
+      if (/^(tagline|heading|editor|list)-spacing$/.test(varName)) return 'margin';
       // buttons: the gap between icon and text, the third gap (orange)
       if (varName === 'button-icon-gap') return 'text';
       // lists: the indent as a padding (magenta), the gap between the points
@@ -1053,7 +1054,7 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing', 'list-indent', 'list-number-indent', 'list-item-spacing'].includes(varName)
+      return /^(tagline|heading|editor|list)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing', 'list-indent', 'list-number-indent', 'list-item-spacing'].includes(varName)
         // the flourish's gaps while the flourish is shown
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
@@ -1077,7 +1078,7 @@ export default {
       return 'prw.hint.spaceBelow';
     },
     spaceBelow(groupKey) {
-      if (!['tagline', 'heading', 'editor'].includes(groupKey)) return '';
+      if (!['tagline', 'heading', 'editor', 'list'].includes(groupKey)) return '';
       const name = groupKey + '-spacing';
       return this.getOverrideValue(name) || this.elementDefaults[groupKey]?.vars?.[name]?.value || '';
     },
@@ -1227,6 +1228,8 @@ export default {
         // item: each part's colour in its card
         if (name === 'element-item-title-text') return 'title';
         if (name === 'element-item-text-text') return 'description';
+        // lists: the colour of markers and numbers with the bullets
+        if (name === 'element-list-marker') return 'marker';
         if (name.startsWith('element-slideshow-')) return 'slideshow';
         if (name.startsWith('element-image-zoom')) return 'zoom';
         if (name.includes('-marked-')) return 'marked';
@@ -1265,7 +1268,7 @@ export default {
 
     // cards that hold colour rows (with the variant switch in their heading)
     hasColorRows(category) {
-      return ['colors', 'marked', 'flourish', 'text', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description'].includes(category);
+      return ['colors', 'marked', 'flourish', 'text', 'marker', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description'].includes(category);
     },
     groupedFields(group, only, category) {
       const allFields = [];
@@ -1709,7 +1712,8 @@ export default {
         tagline:    ['text', 'colors'],
         editor:     ['text', 'sizes', 'colors'],
         // lists: their marker, indent and gap (the type of the text)
-        list:       ['marker', 'number', 'spacing', 'colors'],
+        // (the markers' colour with the bullets)
+        list:       ['marker', 'number', 'spacing'],
         quote:      ['text', 'sizes', 'colors'],
         button:     ['text', 'padding', 'margin', 'shape', 'style', 'icon', 'colors'],
         caption:    ['text', 'colors'],
@@ -1726,7 +1730,7 @@ export default {
       // between the points
       if (varName === 'list-marker' || varName === 'list-indent') return 'marker';
       if (varName.startsWith('list-number-')) return 'number';
-      if (varName === 'list-item-spacing') return 'spacing';
+      if (varName === 'list-item-spacing' || varName === 'list-spacing') return 'spacing';
       // item: its title (with the gap below it) and its description
       if (varName.startsWith('item-title-')) return 'title';
       if (varName.startsWith('item-text-')) return 'description';
@@ -1983,7 +1987,10 @@ export default {
         : ({ disc: 'disc', dash: '"–  "', check: '"✓  "' }[v('list-marker')] || 'disc');
       const indent = v(numbered ? 'list-number-indent' : 'list-indent');
       const color = this.getColorOverrideValue(theme, 'element-list-marker') || this.elementDefaults.list?.colors?.['element-list-marker']?.[theme] || '';
-      return { marginTop: this.previewParagraphGap('editor'), paddingLeft: indent, listStyleType: marker, '--pw-list-indent': indent, '--pw-list-gap': v('list-item-spacing'), '--pw-list-marker': color };
+      // (the numbered one below the bullet list: the lists' space below; with
+      // guides a band of its own)
+      const marginTop = numbered ? (this.guides ? 0 : this.spaceBelow('list')) : this.previewParagraphGap('editor');
+      return { marginTop, paddingLeft: indent, listStyleType: marker, '--pw-list-indent': indent, '--pw-list-gap': v('list-item-spacing'), '--pw-list-marker': color };
     },
     previewParagraphGap(groupKey) {
       const override = this.getOverrideValue(groupKey + '-paragraph-spacing');
