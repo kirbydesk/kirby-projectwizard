@@ -248,7 +248,7 @@
 	'prw.hint.buttonGap' => 'Abstand zwischen zwei Buttons nebeneinander',
 	'prw.hint.itemTitleSpacing' => 'Abstand zwischen Titel und Beschreibung',
 	'prw.hint.itemElement' => 'Dieses Element wird in Blöcken verwendet, die sich mit einzelnen Einträgen bestücken lassen (z. B. FAQ, Features u. a.).',
-	'prw.intro.global.blocks' => 'Diese Werte gelten für alle Blöcke der Website. In den Blöcken wird nur gewählt, welche davon verwendet werden.',
+	'prw.intro.global.blocks' => 'Diese Werte gelten für alle Blöcke des Projekts. In den Blöcken wird nur gewählt, welche davon verwendet werden.',
 	'prw.hint.blocksPaddings' => 'Legt die Innenabstände fest, zwischen denen im Block gewählt wird.',
 	'prw.hint.blocksMargins' => 'Legt den Abstand zwischen den Blöcken fest. Ob er nach oben und unten gilt, wird im Block eingeschaltet.',
 	'prw.hint.blocksShape' => 'Legt den Eckenradius fest. Welche Ecken abgerundet sind, wird im Block gewählt.',

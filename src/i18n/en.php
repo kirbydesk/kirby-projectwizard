@@ -248,7 +248,7 @@
 	'prw.hint.buttonGap' => 'Space between two buttons side by side',
 	'prw.hint.itemTitleSpacing' => 'Gap between title and description',
 	'prw.hint.itemElement' => 'This element is used in blocks that are filled with individual items (e.g. FAQ, features and others).',
-	'prw.intro.global.blocks' => 'These values apply to all blocks of the website. The blocks only choose which of them they use.',
+	'prw.intro.global.blocks' => 'These values apply to all blocks of the project. The blocks only choose which of them they use.',
 	'prw.hint.blocksPaddings' => 'Sets the paddings the blocks choose from.',
 	'prw.hint.blocksMargins' => 'Sets the space between the blocks. Whether it applies above and below is switched on in the block.',
 	'prw.hint.blocksShape' => 'Sets the corner radius. Which corners are rounded is chosen in the block.',
