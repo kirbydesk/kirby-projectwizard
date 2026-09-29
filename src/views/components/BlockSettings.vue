@@ -809,6 +809,7 @@ export default {
       if (this.isGridDefaults(cat)) {
         return this.$t(this.gridAdjusted(sec.fields, this.gridBp) ? 'prw.hint.gridCustom' : 'prw.hint.gridFull');
       }
+      if (this.view === 'defaults' && cat.key === 'settings') return this.$t('prw.hint.settingsDefault');
       return sec.help;
     },
     // a grid row's label without its screen size (chosen above the card)
