@@ -75,7 +75,7 @@
                      and a numbered one (the type of the text; guides: the
                      indent magenta, the gaps between the points orange) -->
                 <template v-else-if="groupKey === 'list'">
-                  <div class="pw-element-preview-text" :style="previewStyle('editor', bp, theme)">
+                  <div class="pw-element-preview-text pw-element-preview-lists" :style="previewStyle('editor', bp, theme)">
                     <p style="margin: 0">{{ $t('prw.sample.list.intro') }}</p>
                     <ul class="pw-element-preview-list" :class="{ 'is-hot-indent': hoveredArea === 'list-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, false)">
                       <li v-for="n in 3" :key="'li-' + n">{{ $t('prw.sample.list.' + n) }}</li>
@@ -2655,8 +2655,10 @@ export default {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-/* text with paragraphs: all of them, so the paragraph spacing shows */
-.pw-element-preview-text.pw-element-preview-paragraphs {
+/* text with paragraphs, the lists: all of it (no clamp), so the paragraph
+   spacing and every list point show */
+.pw-element-preview-text.pw-element-preview-paragraphs,
+.pw-element-preview-text.pw-element-preview-lists {
   display: block;
   -webkit-line-clamp: none;
   overflow: visible;
