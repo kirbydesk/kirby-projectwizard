@@ -539,7 +539,7 @@
 	'prw.elementgroup.list' => 'Lists',
 	'prw.subtab.marker' => 'Bullets',
 	'prw.intro.element.list' => 'Lists appear in texts and as an element of their own in the multicolumn. They take font, size and line height from the text.',
-	'prw.hint.listMarker' => 'Sets the sign in front of the points of a bullet list, its size relative to the text, the indent and the colour.',
+	'prw.hint.listMarker' => 'Sets the sign in front of the points of a bullet list, its indent and the colour of the markers.',
 	'prw.hint.listSpacing' => 'Sets the gap between the points, the same for bullet and numbered lists, and the space after a list.',
 	'prw.sample.list.intro' => 'A paragraph of text, below it a bullet list and a numbered list.',
 	'prw.element.list-indent' => 'Indent',

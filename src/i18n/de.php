@@ -539,7 +539,7 @@
 	'prw.elementgroup.list' => 'Listen',
 	'prw.subtab.marker' => 'Aufzählung',
 	'prw.intro.element.list' => 'Listen stehen in Texten und als eigenes Element in der Multicolumn. Schrift, Größe und Zeilenhöhe übernehmen sie vom Text.',
-	'prw.hint.listMarker' => 'Legt das Zeichen vor den Punkten einer Aufzählung, seine Größe im Verhältnis zum Text, die Einrückung und die Farbe fest.',
+	'prw.hint.listMarker' => 'Legt das Zeichen vor den Punkten einer Aufzählung, ihre Einrückung und die Farbe von Aufzählungszeichen fest.',
 	'prw.hint.listSpacing' => 'Legt den Abstand zwischen den Punkten fest, für Aufzählungen und nummerierte Listen gleich, und den Abstand nach einer Liste.',
 	'prw.sample.list.intro' => 'Ein Absatz Text, darunter eine Aufzählung und eine nummerierte Liste.',
 	'prw.element.list-indent' => 'Einrückung',
