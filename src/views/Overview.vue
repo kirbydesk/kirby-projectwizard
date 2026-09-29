@@ -285,7 +285,7 @@
             </pw-portal>
 
             <!-- which blocks and which variants can be used: side by side
-                 (blocks 2/3, variants 1/3), below each other when narrow -->
+                 (half and half), below each other when narrow -->
             <div class="pw-blocks-active">
             <!-- which blocks can be used -->
             <pw-global-elements
@@ -4012,7 +4012,7 @@ export default {
 }
 @media (min-width: 60rem) {
   .pw-blocks-active {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 .pw-patches-tree {
