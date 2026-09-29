@@ -249,7 +249,7 @@
 	'prw.hint.itemElement' => 'This element is used in blocks that are filled with individual items (e.g. FAQ, features and others).',
 	'prw.hint.cardSizes' => 'Editors choose the steps in the block. Here you set how large each step is per device.',
 	'prw.hint.cardMarked' => 'The text marking is optional and can be switched on per block when needed.',
-	'prw.hint.cardFlourish' => 'The flourish can be switched on in the block and appears below the heading.',
+	'prw.hint.cardFlourish' => 'The flourish is optional and can be switched on per block when needed. It appears below the heading.',
 	'prw.hint.cardColors' => 'Sets the colours for each variant.',
 	'prw.hint.cardZoom' => 'Appears on images that can be shown enlarged.',
 	'prw.intro.element.heading' => 'Headings sit above the content in almost every block. Editors choose their size and level in the block.',

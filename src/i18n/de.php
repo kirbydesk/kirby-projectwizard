@@ -249,7 +249,7 @@
 	'prw.hint.itemElement' => 'Dieses Element wird in Blöcken verwendet, die sich mit einzelnen Einträgen bestücken lassen (z. B. FAQ, Features u. a.).',
 	'prw.hint.cardSizes' => 'Die Stufen stehen Redakteuren im Block zur Wahl. Hier wird festgelegt, wie groß jede Stufe je Gerät ist.',
 	'prw.hint.cardMarked' => 'Die Text-Markierung ist optional und kann bei Bedarf pro Block eingeschaltet werden.',
-	'prw.hint.cardFlourish' => 'Das Zierelement kann im Block eingeschaltet werden und erscheint unter der Überschrift.',
+	'prw.hint.cardFlourish' => 'Das Zierelement ist optional und kann bei Bedarf pro Block eingeschaltet werden. Es erscheint unter der Überschrift.',
 	'prw.hint.cardColors' => 'Legt die Farben für jede Variante fest.',
 	'prw.hint.cardZoom' => 'Erscheint auf Bildern, die sich vergrößert anzeigen lassen.',
 	'prw.intro.element.heading' => 'Überschriften stehen in fast allen Blöcken über dem Inhalt. Größe und Ebene wählen Redakteure im Block.',
