@@ -131,7 +131,7 @@
               </div>
               <!-- on the image: the overlay fades in from the texts' side -->
               <div v-if="cardOverlay" class="pw-cardlets-overlay" :style="cardOverlayStyle"></div>
-              <div class="pw-cardlets-content" :style="cardContentStyle">
+              <div class="pw-cardlets-content" :class="{ 'has-pad-guides': guides, 'is-hot-x': highlight === 'item-padding-x', 'is-hot-y': highlight === 'item-padding-y' }" :style="cardContentStyle">
                 <!-- tagline, heading, text; the gap below each (guides: a band) -->
                 <template v-for="el in cardFields">
                   <div :key="'cf-' + el" :style="cardFieldStyle(el)">{{ cardFieldText(el, n) }}</div>
@@ -618,7 +618,7 @@ export default {
     cardContentStyle() {
       const x = this.itemValue('item-padding-x');
       const y = this.itemValue('item-padding-y');
-      const style = { flex: 1, display: 'flex', flexDirection: 'column', padding: y + ' ' + x };
+      const style = { flex: 1, display: 'flex', flexDirection: 'column', padding: y + ' ' + x, position: 'relative', '--pw-card-px': x, '--pw-card-py': y };
       // the image standing out: the lower piece of the card (without the
       // joint's border and shadow)
       if (this.cardOverhang) {
@@ -1636,6 +1636,28 @@ export default {
   position: absolute;
   inset: 0;
   aspect-ratio: auto;
+}
+/* cardlets guides: where the paddings end – left/right magenta (through the
+   card's content from top to bottom), top/bottom green (from side to side);
+   a padding's field with the cursor: only its lines stay */
+.pw-cardlets-content.has-pad-guides::before,
+.pw-cardlets-content.has-pad-guides::after {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.pw-cardlets-content.has-pad-guides::before {
+  inset: 0 var(--pw-card-px);
+  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+}
+.pw-cardlets-content.has-pad-guides::after {
+  inset: var(--pw-card-py) 0;
+  border-block: 1px solid rgba(0, 180, 90, 0.9);
+}
+.pw-block-live-preview.has-focus .pw-cardlets-content:not(.is-hot-x)::before,
+.pw-block-live-preview.has-focus .pw-cardlets-content:not(.is-hot-y)::after {
+  border-color: transparent;
 }
 /* standing out: the image above the card's upper piece */
 .pw-cardlets-image-wrap.is-overhang {
