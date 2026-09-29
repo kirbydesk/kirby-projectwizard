@@ -247,7 +247,7 @@
 	'prw.hint.cardletsCard' => 'Sets the padding of the cards.',
 	'prw.hint.cardletsShape' => 'Sets the shape of the cards. It is the same for all cards.',
 	'prw.hint.cardletsBorder' => 'Sets an optional border and shadow of the cards.',
-	'prw.hint.cardletsLink' => 'Sets how the link at the end of a card looks and whether it sits in the card footer or below the text. Its target and text are entered per card in the block.',
+	'prw.hint.cardletsLink' => 'Sets how the link at the end of a card looks. Its target and text are entered per card in the block.',
 	'prw.hint.cardletsColors' => 'Sets the colours of the cards for each variant.',
 	'prw.hint.cardletsSpacing' => 'Sets the gaps between the cards, inside the cards and to the intro. The link always sits at the bottom of the card, the gap to the link is the minimum.',
 	'prw.hint.steplistNumbering' => 'Sets how the numbers of the steps look. The values apply per display, the pills above choose which one is shown and edited.',
