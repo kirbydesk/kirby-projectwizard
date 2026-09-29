@@ -149,7 +149,9 @@ export default {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 1px;
+  gap: 2px;
+  /* two lines: some air above and below */
+  padding-block: var(--spacing-2);
 }
 .pw-active-count {
   padding-inline-start: calc(16px + var(--spacing-2));
