@@ -24,6 +24,10 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'prw-step-small': '<path d="M5.79285 5.20718 12 11.4143 18.2071 5.20718 16.7928 3.79297 12 8.58586 7.20706 3.79297 5.79285 5.20718ZM18.2072 18.7928 12.0001 12.5857 5.793 18.7928 7.20721 20.207 12.0001 15.4141 16.793 20.207 18.2072 18.7928Z"></path>',
 		// the lists' markers (Elements › Lists › Bullets): dot, dash, check
 		'prw-marker-disc': '<circle cx="12" cy="12" r="3.5"></circle>',
+		'prw-marker-circle': '<path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM12 17.5C8.96243 17.5 6.5 15.0376 6.5 12C6.5 8.96243 8.96243 6.5 12 6.5C15.0376 6.5 17.5 8.96243 17.5 12C17.5 15.0376 15.0376 17.5 12 17.5Z"></path>',
+		'prw-marker-box': '<path d="M8.5 8.5H15.5V15.5H8.5V8.5Z"></path>',
+		'prw-marker-arrow': '<path d="M16.17 11L10.81 5.64L12.22 4.22L20 12L12.22 19.78L10.81 18.36L16.17 13H4V11H16.17Z"></path>',
+		'prw-marker-chevron': '<path d="M13.17 12L8.22 7.05L9.64 5.64L16 12L9.64 18.36L8.22 16.95L13.17 12Z"></path>',
 		'prw-marker-dash': '<path d="M6 11H18V13H6V11Z"></path>',
 		'prw-marker-check': '<path d="M10 15.17L19.19 5.98L20.61 7.39L10 18L3.64 11.64L5.05 10.22L10 15.17Z"></path>',
 		// the lists (Elements › Lists): points with lines

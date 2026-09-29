@@ -1988,7 +1988,7 @@ export default {
       const v = (name) => this.getOverrideValue(name) || this.elementDefaults.list?.vars?.[name]?.value || '';
       const marker = numbered
         ? ({ decimal: 'decimal', 'decimal-paren': 'pw-decimal-paren', 'lower-alpha': 'lower-alpha', 'lower-roman': 'lower-roman' }[v('list-number-format')] || 'decimal')
-        : ({ disc: 'disc', dash: '"–  "', check: '"✓  "' }[v('list-marker')] || 'disc');
+        : ({ disc: 'disc', circle: 'circle', box: 'square', dash: '"–  "', arrow: '"→  "', chevron: '"›  "', check: '"✓  "' }[v('list-marker')] || 'disc');
       const indent = v(numbered ? 'list-number-indent' : 'list-indent');
       const color = this.getColorOverrideValue(theme, 'element-list-marker') || this.elementDefaults.list?.colors?.['element-list-marker']?.[theme] || '';
       // (the numbered one below the bullet list: the lists' space below; with
