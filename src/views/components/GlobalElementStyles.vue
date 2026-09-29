@@ -975,6 +975,9 @@ export default {
     },
     // the help text below a card (sizes, marking, flourish, colours, zoom)
     cardHelp(st) {
+      // (the buttons: form, gaps and icon of their own)
+      const own = { 'button:shape': 'prw.hint.buttonShape', 'button:margin': 'prw.hint.buttonMargin', 'button:icon': 'prw.hint.buttonIcon' };
+      if (own[st.elementKey + ':' + st.category]) return this.$t(own[st.elementKey + ':' + st.category]);
       const keys = { sizes: 'prw.hint.cardSizes', marked: 'prw.hint.cardMarked', flourish: 'prw.hint.cardFlourish', colors: 'prw.hint.cardColors', zoom: 'prw.hint.cardZoom' };
       return keys[st.category] ? this.$t(keys[st.category]) : '';
     },
