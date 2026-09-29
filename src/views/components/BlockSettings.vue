@@ -757,12 +757,15 @@ export default {
       if (!fields.length) return [];
       // start values of the style: a card per choice (variant, the block's
       // own display …), named after it
+      // (the variant with a help text below its card)
+      const styleHelp = (key) => (this.view === 'defaults' && key === 'theme' ? this.$t('prw.hint.themeDefault') : null);
       if (this.view === 'defaults' && cat.key === 'style' && fields.length > 1) {
-        return fields.map(f => ({ key: f.key, heading: this.styleSectionHeading(f.key), fields: [f] }));
+        return fields.map(f => ({ key: f.key, heading: this.styleSectionHeading(f.key), help: styleHelp(f.key), fields: [f] }));
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
-      return [{ key: 'main', heading: repeats ? null : heading, fields }];
+      const help = cat.key === 'style' && fields.length === 1 ? styleHelp(fields[0].key) : null;
+      return [{ key: 'main', heading: repeats ? null : heading, help, fields }];
     },
 
     // heading of a style card: the variant, else the field's own label
