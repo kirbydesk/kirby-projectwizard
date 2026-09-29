@@ -1614,6 +1614,8 @@ export default {
 .pw-card-gap {
   display: block;
   flex-shrink: 0;
+  /* across the whole card (past the horizontal padding) */
+  margin-inline: calc(-1 * var(--pw-card-px, 0px));
   box-sizing: border-box;
   border-block: 1px solid rgba(130, 80, 255, 0.9);
 }
