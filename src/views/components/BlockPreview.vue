@@ -144,12 +144,15 @@
             </template>
           </div>
           <!-- multicolumn: two columns as its distribution at the device
-               shown (stacked on mobile) – left heading, text, button; right an
+               shown (stacked on mobile) – left tagline, heading, text, button; right an
                image and a text. Guides: the gaps as elements of their own
                (between the columns cyan, below each other violet), the space
-               below heading (violet) and text (orange), after the image gold -->
+               below tagline (cyan), heading (violet) and text (orange), after
+               the image gold -->
           <div v-if="isMulticolumn" class="pw-mc-preview" :style="mcStyle">
             <div class="pw-mc-column">
+              <div :style="mcTextStyle('tagline', 'tagline')">{{ $t('prw.preview.tagline') }}</div>
+              <span v-if="guides" class="pw-mc-band is-tagline" :class="{ 'is-hot': highlight === 'tagline-spacing' }" :style="{ height: spaceAfter('tagline') }"></span>
               <div :style="mcTextStyle('heading', 'heading')">{{ $t('prw.preview.heading') }}</div>
               <span v-if="guides" class="pw-mc-band is-heading" :class="{ 'is-hot': highlight === 'heading-spacing' }" :style="{ height: spaceAfter('heading') }"></span>
               <p :style="mcTextStyle('editor', 'editor')">{{ $t('prw.preview.card.text') }}</p>
@@ -1387,7 +1390,7 @@ export default {
     // (headline lg, text normal), its space below (with guides a band instead)
     mcTextStyle(element, spaceOf) {
       const style = { ...this.typography(element), color: this.elementColor(element, 'element-' + element + '-text'), margin: 0 };
-      const preset = element === 'heading' ? (this.preset('headline', 'sizes') || 'lg') : (this.preset('text', 'sizes') || 'normal');
+      const preset = element === 'heading' ? (this.preset('headline', 'sizes') || 'lg') : element === 'editor' ? (this.preset('text', 'sizes') || 'normal') : 'normal';
       if (preset !== 'normal') {
         const step = this.sizeStep(element, preset);
         if (step) style.fontSize = step;
@@ -1523,9 +1526,11 @@ export default {
 .pw-mc-band {
   border-block: 1px solid transparent;
 }
+.pw-mc-band.is-tagline { border-color: rgba(0, 170, 255, 0.8); }
 .pw-mc-band.is-heading { border-color: rgba(130, 80, 255, 0.9); }
 .pw-mc-band.is-editor { border-color: rgba(255, 140, 0, 0.9); }
 .pw-mc-band.is-element { border-color: rgba(215, 160, 0, 0.95); }
+.pw-mc-band.is-tagline.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-mc-band.is-heading.is-hot { background: rgba(130, 80, 255, 0.15); }
 .pw-mc-band.is-editor.is-hot { background: rgba(255, 140, 0, 0.15); }
 .pw-mc-band.is-element.is-hot { background: rgba(215, 160, 0, 0.18); }
