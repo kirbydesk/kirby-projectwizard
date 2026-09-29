@@ -2375,8 +2375,9 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-list > li + li::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  /* across the whole preview (past the indent), like the paragraph lines */
+  left: calc(-1 * (var(--pw-list-indent, 0px) + var(--spacing-6)));
+  right: calc(-1 * var(--spacing-6));
   top: calc(-1 * var(--pw-list-gap));
   height: var(--pw-list-gap);
   box-sizing: border-box;
