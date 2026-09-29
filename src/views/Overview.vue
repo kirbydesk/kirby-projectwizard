@@ -728,6 +728,24 @@
             />
           </div>
 
+          <!-- Exceptions: a JSON by block laid over the plugins' settings.json
+               and editor.json (for special cases) -->
+          <div v-show="globalActiveTab === 'patches'" class="pw-wizard-global-content">
+            <section class="pw-card-section">
+              <textarea
+                :key="'patches-' + discardKey"
+                v-model="patchesText"
+                class="pw-patches-input"
+                spellcheck="false"
+                :placeholder="'{\n  &quot;pwhero&quot;: { … }\n}'"
+                @input="onPatchesInput"
+              ></textarea>
+              <k-box v-if="patchesError" theme="negative" class="pw-patches-note" :text="patchesError" />
+              <k-box v-else-if="patchesUnknown.length" theme="notice" class="pw-patches-note" :text="$t('prw.patches.unknown') + ' ' + patchesUnknown.join(', ')" />
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.patches')" />
+            </section>
+          </div>
+
           <!-- AI (kirbydesk AI plugins: contentwizard settings, API keys) -->
           <div
             v-if="hasAiTab"
@@ -2134,6 +2152,11 @@ export default {
       footerDefaults: {},
       footerOverrides: {},
       originalFooterOverrides: {},
+      // exceptions (Project › Exceptions): the JSON as text, its check
+      patchesText: '',
+      originalPatchesText: '',
+      patchesError: '',
+      patchesUnknown: [],
       aiForm: null,
       aiValues: {},
       originalAiValues: {},
@@ -2221,7 +2244,7 @@ export default {
       return this.$t('prw.tab.' + this.globalActiveTab);
     },
     projectMenuTabs() {
-      return ['general', 'header', 'footer', 'blocks', 'fonts', ...(this.hasAiTab ? ['ai'] : [])];
+      return ['general', 'header', 'footer', 'blocks', 'fonts', ...(this.hasAiTab ? ['ai'] : []), 'patches'];
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
     // tabs of a block view: design (only with values), start values, restrictions
@@ -2257,6 +2280,7 @@ export default {
       ];
       // AI defaults — only when kirby-contentwizard is installed
       if (this.hasAiTab) tabs.push({ key: 'ai', icon: 'ai' });
+      tabs.push({ key: 'patches', icon: 'code' });
       tabs.push({ key: 'settings', icon: 'cog' });
       return tabs;
     },
@@ -2491,6 +2515,12 @@ export default {
         this.footerOverrides = JSON.parse(JSON.stringify(footerOv));
         this.originalFooterOverrides = JSON.parse(JSON.stringify(footerOv));
         this.$set(this.snapshots, 'footer', JSON.stringify(footerOv));
+
+        // Load the exceptions (Project › Exceptions)
+        const patches = await this.$api.get('projectwizard/patches');
+        this.patchesText = patches.text || '';
+        this.originalPatchesText = this.patchesText;
+        this.patchesUnknown = patches.unknown || [];
 
         // Load AI defaults (kirby-contentwizard); absent plugin → no tab
         try {
@@ -2917,6 +2947,42 @@ export default {
       }
     },
 
+    // --- Global: Exceptions ---
+    onPatchesInput() {
+      this.patchesError = this.patchesCheck(this.patchesText);
+      this.$set(this.dirtyTabs, 'patches', this.patchesText !== this.originalPatchesText);
+    },
+    // the JSON's error with its line ('' when valid or empty)
+    patchesCheck(text) {
+      if (!text.trim()) return '';
+      try {
+        const data = JSON.parse(text);
+        if (!data || typeof data !== 'object' || Array.isArray(data)) return this.$t('prw.patches.object');
+        return '';
+      } catch (e) {
+        const pos = Number((String(e.message).match(/position (\d+)/) || [])[1]);
+        const line = isNaN(pos) ? null : text.slice(0, pos).split('\n').length;
+        return this.$t('prw.patches.invalid') + (line ? ' ' + this.$t('prw.patches.line') + ' ' + line : '') + ': ' + e.message;
+      }
+    },
+    async savePatches() {
+      this.patchesError = this.patchesCheck(this.patchesText);
+      if (this.patchesError) {
+        this.$panel.notification.error(this.patchesError);
+        return;
+      }
+      try {
+        const res = await this.$api.post('projectwizard/patches', { text: this.patchesText });
+        this.originalPatchesText = this.patchesText;
+        this.patchesUnknown = res.unknown || [];
+        this.$set(this.dirtyTabs, 'patches', false);
+        this.$panel.notification.success(this.$t('prw.notify.patches.success'));
+      } catch (e) {
+        this.patchesError = e.message || String(e);
+        this.$panel.notification.error(this.$t('prw.notify.patches.error'));
+      }
+    },
+
     async saveAi() {
       try {
         if (this.aiForm && JSON.stringify(this.aiValues) !== this.snapshots['ai']) {
@@ -3291,6 +3357,8 @@ export default {
           await this.saveFooter();
         } else if (tab === 'ai') {
           await this.saveAi();
+        } else if (tab === 'patches') {
+          await this.savePatches();
         }
       } else {
         await this.saveBlock(this.activeTab);
@@ -3348,6 +3416,10 @@ export default {
         } else if (tab === 'footer') {
           this.footerOverrides = JSON.parse(JSON.stringify(this.originalFooterOverrides));
           this.$set(this.dirtyTabs, 'footer', false);
+        } else if (tab === 'patches') {
+          this.patchesText = this.originalPatchesText;
+          this.patchesError = '';
+          this.$set(this.dirtyTabs, 'patches', false);
         } else if (tab === 'ai') {
           this.aiValues = JSON.parse(JSON.stringify(this.originalAiValues));
           this.aiSecretInputs = {};
@@ -3828,6 +3900,27 @@ export default {
   /* a line under the heading, as under Kirby's view headers */
   padding-bottom: var(--spacing-3);
   border-bottom: 1px solid var(--color-border);
+}
+.pw-patches-input {
+  display: block;
+  width: 100%;
+  min-height: 60vh;
+  padding: var(--spacing-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  tab-size: 2;
+  color: var(--color-text);
+  background: var(--input-color-back, var(--color-white));
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  resize: vertical;
+}
+.pw-patches-input:focus {
+  outline: var(--outline);
+}
+.pw-patches-note {
+  margin-top: var(--spacing-2);
 }
 .pw-page-title-icon {
   --icon-size: 24px;

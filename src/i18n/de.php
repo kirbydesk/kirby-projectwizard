@@ -550,4 +550,12 @@
 	'prw.element.list-number-indent' => 'Einrückung',
 	'prw.headline.positioning' => 'Positionierung',
 	'prw.hint.multicolumnPosition' => 'Legt fest, wie die linke und die rechte Spalte vertikal zueinander stehen, wenn sie nebeneinander angezeigt werden. Auf Mobilgeräten greift die Positionierung nicht.',
+	'prw.tab.patches' => 'Ausnahmen',
+	'prw.hint.patches' => 'Ausnahmen überschreiben die Einstellungen der Blöcke für Sonderfälle. Das JSON folgt dem Aufbau der <code>settings.json</code> eines Blocks, unter <code>editor</code> dem der <code>editor.json</code>. Listen wie <code>options</code> werden ersetzt, nicht ergänzt.',
+	'prw.patches.invalid' => 'Ungültiges JSON',
+	'prw.patches.line' => 'in Zeile',
+	'prw.patches.object' => 'Das JSON muss ein Objekt mit den Blöcken als Schlüssel sein.',
+	'prw.patches.unknown' => 'Unbekannte Blöcke, sie werden ignoriert:',
+	'prw.notify.patches.success' => 'Ausnahmen gespeichert',
+	'prw.notify.patches.error' => 'Ausnahmen konnten nicht gespeichert werden',
 ];

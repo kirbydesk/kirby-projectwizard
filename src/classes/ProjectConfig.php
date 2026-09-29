@@ -105,8 +105,9 @@ class ProjectConfig
 			'plugin'   => $plugin,
 			'name'     => $name,
 			'icon'     => $icon,
-			'settings' => pwConfig::readJson($configDir . '/settings.json'),
-			'editor'   => pwConfig::readJson($configDir . '/editor.json'),
+			// (with the project's exceptions, Project › Exceptions)
+			'settings' => pwConfig::blockJson($configDir, 'settings'),
+			'editor'   => pwConfig::blockJson($configDir, 'editor'),
 		];
 	}
 
@@ -125,6 +126,44 @@ class ProjectConfig
 			return $m[1];
 		}
 		return '';
+	}
+
+	/**
+	 * Exceptions (Project › Exceptions): the raw text of patches.json (as
+	 * written, so its formatting stays) and the block types it names that
+	 * are not registered.
+	 */
+	public static function loadPatches(): array
+	{
+		$file = pwConfig::projectDir() . '/patches.json';
+		$text = is_file($file) ? file_get_contents($file) : '';
+		return ['text' => $text, 'unknown' => self::unknownPatchBlocks($text)];
+	}
+
+	/**
+	 * Save the exceptions: only valid JSON (an object), else an error with
+	 * the parser's message; empty text removes the file.
+	 */
+	public static function savePatches(string $text): array
+	{
+		$file = pwConfig::projectDir() . '/patches.json';
+		if (trim($text) === '') {
+			if (is_file($file)) unlink($file);
+			return ['text' => '', 'unknown' => []];
+		}
+		$decoded = json_decode($text, true);
+		if (!is_array($decoded) || array_is_list($decoded) && $decoded !== []) {
+			throw new \Kirby\Exception\InvalidArgumentException(json_last_error() ? json_last_error_msg() : 'JSON object expected');
+		}
+		\Kirby\Filesystem\F::write($file, $text);
+		return ['text' => $text, 'unknown' => self::unknownPatchBlocks($text)];
+	}
+
+	private static function unknownPatchBlocks(string $text): array
+	{
+		$decoded = json_decode($text, true);
+		if (!is_array($decoded)) return [];
+		return array_values(array_diff(array_keys($decoded), array_keys(pwConfig::registered())));
 	}
 
 	/**

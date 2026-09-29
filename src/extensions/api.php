@@ -170,6 +170,24 @@ return [
 				return ProjectConfig::mergedConfig();
 			}
 		],
+		// Exceptions (Project › Exceptions): the raw JSON and unknown blocks
+		[
+			'pattern' => 'projectwizard/patches',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadPatches();
+			}
+		],
+		[
+			'pattern' => 'projectwizard/patches',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				$result = ProjectConfig::savePatches((string) ($data['text'] ?? ''));
+				SetupWizard::triggerProjectbuilder();
+				return $result;
+			}
+		],
 		// Get color defaults + overrides
 		[
 			'pattern' => 'projectwizard/global',
