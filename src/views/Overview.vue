@@ -2184,7 +2184,7 @@ export default {
         .map(([key]) => {
           const tKey = 'prw.elementgroup.' + key;
           const text = this.$t(tKey);
-          const icons = { heading: 'title', tagline: 'tag', editor: 'text', quote: 'quote', button: 'url', breadcrumb: 'angle-right', media: 'images', item: 'list-bullet', list: 'list-numbers' };
+          const icons = { heading: 'title', tagline: 'tag', editor: 'text', quote: 'quote', button: 'url', breadcrumb: 'angle-right', media: 'images', item: 'prw-entries', list: 'list-numbers' };
           return { value: key, text: text && text !== tKey ? text : key, icon: icons[key] || 'layers' };
         });
     },
