@@ -100,7 +100,7 @@
 	'prw.headline.margins' => 'Außenabstände',
 	'prw.headline.links' => 'Links',
 	'prw.headline.paddings' => 'Innenabstände',
-	'prw.tab.general' => 'Projekt',
+	'prw.tab.general' => 'Aktive Blöcke',
 	'prw.tab.project' => 'Projekt',
 	'prw.tab.site' => 'Site',
 	'prw.tab.settings' => 'Einstellungen',

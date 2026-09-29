@@ -100,7 +100,7 @@
 	'prw.headline.margins' => 'Margins',
 	'prw.headline.links' => 'Links',
 	'prw.headline.paddings' => 'Padding',
-	'prw.tab.general' => 'Project',
+	'prw.tab.general' => 'Active blocks',
 	'prw.tab.project' => 'Project',
 	'prw.tab.site' => 'Site',
 	'prw.tab.settings' => 'Settings',
