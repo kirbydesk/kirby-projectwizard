@@ -274,6 +274,8 @@ export default {
     featureLayout: { type: String, default: '' },
     // hero: the height to show (chosen in the design tab's height card)
     heroHeight: { type: String, default: '' },
+    // cardlets: the display chosen in the design tab (else the start value)
+    cardDisplay: { type: String, default: '' },
     // the design tab (the hero: on the sample image with its overlay, to
     // check the overlay colour with the text)
     designView: { type: Boolean, default: false },
@@ -602,7 +604,7 @@ export default {
 
     // the display on the image (start value), the texts at the top
     cardOverlay() {
-      return this.setting('style', 'card-display') === 'overlay';
+      return (this.cardDisplay || this.setting('style', 'card-display')) === 'overlay';
     },
     cardTextTop() {
       return this.setting('style', 'card-text-position') === 'top';

@@ -817,6 +817,7 @@
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
                 :feature-layout="block.blockType === 'pwfeaturelist' && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
+                :card-display="block.blockType === 'pwcardlets' && currentBlockView === 'design' ? currentCardDisplay(block.blockType) : ''"
                 :design-view="currentBlockView === 'design'"
                 :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
@@ -1592,6 +1593,18 @@
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.padding') }}</h3>
+                <!-- the display the preview shows (a view, not saved; at first
+                     the start value): on the image adds the overlay colour -->
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="d in ['stacked', 'overlay']"
+                    :key="'cd-' + d"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentCardDisplay(block.blockType) === d ? 'true' : 'false'"
+                    @click="$set(cardPreviewDisplay, block.blockType, d)"
+                  >{{ $t('kirbyblock-cardlets.card-display.' + d) }}</button>
+                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -1771,7 +1784,7 @@
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="isItemLinkStyleButton(block.blockType) ? ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-overlay', 'item-background'] : ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active', 'item-overlay', 'item-background']"
+                  :show-only="isItemLinkStyleButton(block.blockType) ? ['item-tagline-text', 'item-heading-text', 'item-editor-text', ...(currentCardDisplay(block.blockType) === 'overlay' ? ['item-overlay'] : []), 'item-background'] : ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active', ...(currentCardDisplay(block.blockType) === 'overlay' ? ['item-overlay'] : []), 'item-background']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -2024,6 +2037,9 @@ export default {
       // hero: the height its preview shows (small … fullscreen), a view
       heroPreviewHeight: {},
       startHeroHeights: {},
+      // cardlets: the display shown in the design tab, the start value last seen
+      cardPreviewDisplay: {},
+      startCardDisplays: {},
       // the drawer tab shown in each block's start values
       startDrawerTab: {},
       startSectionLayouts: {},
@@ -2685,6 +2701,12 @@ export default {
       const h = ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.height?.default;
       return ['small', 'medium', 'large', 'fullscreen'].includes(h) ? h : 'small';
     },
+    // cardlets: the display shown (chosen in the padding card, else the start value)
+    currentCardDisplay(blockType) {
+      if (this.cardPreviewDisplay[blockType]) return this.cardPreviewDisplay[blockType];
+      const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['card-display']?.default;
+      return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['card-display']?.default || 'stacked';
+    },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['item-style']?.default;
@@ -3108,6 +3130,12 @@ export default {
         this.$delete(this.heroPreviewHeight, blockType);
       }
       this.$set(this.startHeroHeights, blockType, heroHeight);
+      // cardlets: the start value of the display changed – show it
+      const cardDisplay = overrides?.settings?.fields?.style?.['card-display']?.default;
+      if (blockType in this.startCardDisplays && this.startCardDisplays[blockType] !== cardDisplay) {
+        this.$delete(this.cardPreviewDisplay, blockType);
+      }
+      this.$set(this.startCardDisplays, blockType, cardDisplay);
       // own space below switched on: start from the elements' current values
       const spacing = overrides?.settings?.fields?.layout?.['item-spacing']?.default;
       if (spacing === 'own' && this.blockValueDefaults[blockType]) this.seedOwnSpacing(blockType);
