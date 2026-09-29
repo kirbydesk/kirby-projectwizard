@@ -98,7 +98,7 @@
 	'prw.view.presets' => 'Sichtbarkeit',
 	'prw.view.design.intro' => 'Diese Werte gelten für alle Blöcke dieser Art, auch für bereits angelegte Blöcke.',
 	'prw.view.defaults.intro' => 'Startwerte gelten für neu angelegte Blöcke. Im Block selbst lassen sich die Werte weiterhin ändern.',
-	'prw.view.presets.intro' => 'Legt fest, welche Felder zum Bearbeiten angezeigt werden. Ausgeblendete Felder behalten ihren Startwert.',
+	'prw.view.presets.intro' => 'Legt fest, welche Felder zum Bearbeiten angezeigt werden. Ausgeblendete Felder behalten ihren Startwert. Die Abschnitte entsprechen den Tabs im Block. Sind alle Felder eines Tabs ausgeblendet, fällt der Tab weg.',
 	'prw.tab.items' => 'Einträge',
 	'prw.tab.layout' => 'Layout',
 
