@@ -206,6 +206,8 @@ export default {
 
 /* the plus at the row's end, visible while the row is hovered */
 .pw-json-add {
+  /* (never squeezed by a long value: the value shrinks instead) */
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
