@@ -165,7 +165,7 @@
                   class="pw-tool"
                   :aria-pressed="stepOf(stInfo(st).elementKey) === step ? 'true' : 'false'"
                   @click="$set(previewSteps, stInfo(st).elementKey, step)"
-                >{{ $t('pw.option.' + step) }}</button>
+                >{{ stepLabel(stInfo(st).elementKey, step) }}</button>
               </span>
             </div>
             <div class="pw-card pw-field-table">
@@ -667,7 +667,7 @@
                 <div class="k-input" data-type="text">
                   <span class="k-input-element pw-field-row-inner">
                     <div class="pw-field-row-label-col">
-                      <label class="pw-field-row-label pw-sizes-label">{{ $t('pw.option.' + sizeName.split('-').pop()) }}</label>
+                      <label class="pw-field-row-label pw-sizes-label">{{ stepLabel(stInfo(st).elementKey, sizeName.split('-').pop()) }}</label>
                     </div>
                     <div class="pw-field-row-options pw-group-type-responsive">
                       <span v-for="bp in [previewBp]" :key="bp" class="pw-element-field">
@@ -1331,6 +1331,11 @@ export default {
       return groups;
     },
 
+    // a size step's name: the steps of a scale starting at the base size
+    // (the texts') named apart from the headings' (the same step is smaller)
+    stepLabel(elementKey, step) {
+      return this.$t((this.hasBaseFontSize(elementKey) ? 'pw.option.text-' : 'pw.option.') + step);
+    },
     // option label from pagewizard's pw.option.* (e.g. uppercase → "Uppercase"), else the value
     optionText(value) {
       const key = 'pw.option.' + value;
