@@ -530,4 +530,15 @@
 	'prw.preview.nav.contact' => 'Kontakt',
 	'prw.preview.nav.submenu' => 'Untermenü {letter}',
 
+	'prw.subtab.list' => 'Listen',
+	'prw.hint.cardList' => 'Legt fest, wie Listen in Texten aussehen. Die Liste der Multicolumn übernimmt dieselben Werte, nummerierte Listen behalten ihre Zahlen.',
+	'prw.hint.listIndent' => 'Wie weit die Listenpunkte eingerückt sind',
+	'prw.hint.listItemSpacing' => 'Der Abstand zwischen den einzelnen Listenpunkten',
+	'prw.element.editor-list-indent' => 'Einrückung',
+	'prw.element.editor-list-item-spacing' => 'Zwischen den Punkten',
+	'prw.element.editor-list-marker' => 'Aufzählungszeichen',
+	'prw.color.element-editor-marker' => 'Aufzählungszeichen',
+	'prw.sample.list.1' => 'Erster Listenpunkt',
+	'prw.sample.list.2' => 'Zweiter Listenpunkt',
+	'prw.sample.list.3' => 'Dritter Listenpunkt',
 ];

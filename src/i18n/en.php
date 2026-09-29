@@ -530,4 +530,15 @@
 	'prw.preview.nav.contact' => 'Contact',
 	'prw.preview.nav.submenu' => 'Submenu {letter}',
 
+	'prw.subtab.list' => 'Lists',
+	'prw.hint.cardList' => 'Sets how lists in texts look. The list of the multicolumn takes the same values, numbered lists keep their numbers.',
+	'prw.hint.listIndent' => 'How far the list points are indented',
+	'prw.hint.listItemSpacing' => 'The gap between the single list points',
+	'prw.element.editor-list-indent' => 'Indent',
+	'prw.element.editor-list-item-spacing' => 'Between the points',
+	'prw.element.editor-list-marker' => 'Marker',
+	'prw.color.element-editor-marker' => 'Marker',
+	'prw.sample.list.1' => 'First list point',
+	'prw.sample.list.2' => 'Second list point',
+	'prw.sample.list.3' => 'Third list point',
 ];
