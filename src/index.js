@@ -28,6 +28,7 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'prw-marker-box': '<path d="M8.5 8.5H15.5V15.5H8.5V8.5Z"></path>',
 		'prw-marker-arrow': '<path d="M16.17 11L10.81 5.64L12.22 4.22L20 12L12.22 19.78L10.81 18.36L16.17 13H4V11H16.17Z"></path>',
 		'prw-marker-chevron': '<path d="M13.17 12L8.22 7.05L9.64 5.64L16 12L9.64 18.36L8.22 16.95L13.17 12Z"></path>',
+		'prw-marker-star': '<path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"></path>',
 		'prw-marker-dash': '<path d="M6 11H18V13H6V11Z"></path>',
 		'prw-marker-check': '<path d="M10 15.17L19.19 5.98L20.61 7.39L10 18L3.64 11.64L5.05 10.22L10 15.17Z"></path>',
 		// the lists (Elements › Lists): points with lines
