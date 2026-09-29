@@ -497,6 +497,7 @@
 	'prw.preview.feature.text' => 'Kurze Beschreibung, was dieser Vorteil bringt.',
 	'prw.preview.card.title' => 'Karte',
 	'prw.preview.card.text' => 'Kurze Beschreibung, was diese Karte zeigt.',
+	'prw.preview.card.textLong' => 'Eine etwas längere Beschreibung, damit die Karten unterschiedlich hoch sind und die Position des Links sichtbar wird.',
 	'prw.preview.card.cta' => 'Mehr erfahren',
 	'prw.preview.guides' => 'Hilfslinien',
 	'prw.sample.heading' => 'Franz jagt im __marked__komplett verwahrlosten__/marked__ Taxi quer durch Bayern',

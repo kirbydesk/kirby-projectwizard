@@ -497,6 +497,7 @@
 	'prw.preview.feature.text' => 'A short description of what this feature offers.',
 	'prw.preview.card.title' => 'Card',
 	'prw.preview.card.text' => 'A short description of what this card shows.',
+	'prw.preview.card.textLong' => 'A somewhat longer description, so that the cards differ in height and the position of the link shows.',
 	'prw.preview.card.cta' => 'Read more',
 	'prw.preview.guides' => 'Guides',
 	'prw.sample.heading' => 'The quick __marked__brown fox__/marked__ jumps over the lazy dog and keeps on running',

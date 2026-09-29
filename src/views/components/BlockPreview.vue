@@ -1222,7 +1222,9 @@ export default {
     cardFieldText(el, n) {
       if (el === 'tagline') return this.$t('prw.preview.tagline');
       if (el === 'heading') return this.$t('prw.preview.card.title') + ' ' + n;
-      return this.$t('prw.preview.card.text');
+      // the first card with a longer text: side by side the cards differ in
+      // height, so the link's position (bottom / after the text) shows
+      return this.$t(n === 1 ? 'prw.preview.card.textLong' : 'prw.preview.card.text');
     },
     cardFieldStyle(el) {
       const style = {
