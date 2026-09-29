@@ -441,6 +441,20 @@
                   :text="[$t('pw.option.disabled'), $t('pw.option.enabled')]"
                   @input="setVal('settings.fields.layout.' + field.key + '.default', $event)"
                 />
+                <!-- a value per device (e.g. the cards' ratio): the parent
+                     passes the key of the device shown, the switch picks it -->
+                <span v-if="rowBp" class="pw-pill pw-bp-switch" role="group">
+                  <button
+                    v-for="b in ['default', 'lg', 'xl']"
+                    :key="'rbp-' + b"
+                    type="button"
+                    class="pw-tool"
+                    :title="$t({ default: 'prw.label.mobile', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[b])"
+                    :aria-label="$t({ default: 'prw.label.mobile', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[b])"
+                    :aria-pressed="rowBp === b ? 'true' : 'false'"
+                    @click="$emit('update:row-bp', b)"
+                  ><k-icon :type="{ default: 'mobile', lg: 'tablet', xl: 'display' }[b]" /></button>
+                </span>
               </div>
             </span>
           </div>
@@ -507,6 +521,11 @@ export default {
     layoutKeys: {
       type: Array,
       default: null,
+    },
+    // items-layout: the device of rows with a value per device (switch shown)
+    rowBp: {
+      type: String,
+      default: '',
     },
   },
   data() {
@@ -819,7 +838,7 @@ export default {
         // (only the variant: its own text, with further rows: the values)
         const help = !fields.some(f => f.key === 'theme') ? null
           : (fields.length > 1 ? this.$t('prw.hint.styleDefault') : styleHelp('theme'));
-        return [{ key: 'style', heading: this.drawerLabel('style'), help, fields: fields.filter(f => this.whenMet(f, cat.key)) }];
+        return [{ key: 'style', heading: this.drawerLabel('style'), help, fields }];
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
@@ -1238,9 +1257,6 @@ export default {
                 // the block's own wording (its label key + the value), else the general one
                 label: val.label || null,
                 options: opts.map(v => ({ value: v, text: this.itemOptionLabel({ label: val.label }, v) })),
-                // shown only while another start value has a certain value
-                // (e.g. the cards' ratio only for the display on the image)
-                when: val.when || null,
               });
               continue;
             }
@@ -1435,16 +1451,6 @@ export default {
 
     markDirty() {
       this.$emit('update:overrides', this.overrides);
-    },
-
-    // a start value shown only while other start values of its category
-    // have certain values (its when)
-    whenMet(field, catKey) {
-      if (!field.when) return true;
-      return Object.entries(field.when).every(([k, v]) => {
-        const path = 'settings.fields.' + catKey + '.' + k + '.default';
-        return this.getVal(path, this.getDefault(path)) === v;
-      });
     },
 
     // --- Label helpers ---

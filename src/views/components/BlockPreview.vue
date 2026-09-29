@@ -582,7 +582,7 @@ export default {
         overflow: 'hidden',
         // on the image: the card in its ratio, the image fills it
         position: this.cardOverlay ? 'relative' : null,
-        aspectRatio: this.cardOverlay ? (this.setting('style', 'card-ratio') || '4/5').replace('/', ' / ') : null,
+        aspectRatio: this.cardOverlay ? (this.setting('layout', { default: 'item-ratio', lg: 'item-ratio-lg', xl: 'item-ratio-xl' }[this.bp] || 'item-ratio') || '4/5').replace('/', ' / ') : null,
         backgroundColor: this.itemColor('item-background'),
         border: this.setting('layout', 'item-border') === true ? this.itemValue('item-border-width') + ' solid ' + this.itemColor('item-border-color') : 0,
         // the shadow step (as the buttons')
@@ -656,14 +656,14 @@ export default {
       };
     },
     cardTextTop() {
-      return this.setting('style', 'card-text-position') === 'top';
+      return this.setting('layout', 'item-text-position') === 'top';
     },
-    // the overlay in the variant's colour with the start strength, from the
+    // the overlay in the variant's colour with its strength, from the
     // texts' side
     cardOverlayStyle() {
       const color = this.itemColor('item-overlay') || '#000000';
-      const strength = Number(this.setting('style', 'card-overlay') || 50);
-      return { background: 'linear-gradient(to ' + (this.cardTextTop ? 'bottom' : 'top') + ', color-mix(in srgb, ' + color + ' ' + strength + '%, transparent), transparent)' };
+      const strength = this.itemValue('item-overlay-strength') || '50%';
+      return { background: 'linear-gradient(to ' + (this.cardTextTop ? 'bottom' : 'top') + ', color-mix(in srgb, ' + color + ' ' + strength + ', transparent), transparent)' };
     },
     // the card's texts shown (as switched on in the block)
     cardFields() {

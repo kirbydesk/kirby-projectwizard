@@ -1590,11 +1590,11 @@
 
             <!-- cardlets: the card, its link, colours, gaps -->
             <template v-if="block.blockType === 'pwcardlets' && blockValueDefaults[block.blockType]">
+            <!-- the cards' display: the one the preview shows (a view, not
+                 saved; at first the start value) with its values -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.padding') }}</h3>
-                <!-- the display the preview shows (a view, not saved; at first
-                     the start value): on the image adds the overlay colour -->
+                <h3 class="pw-card-heading">{{ $t('kirbyblock-cardlets.card-display') }}</h3>
                 <span class="pw-pill pw-theme-switch" role="group">
                   <button
                     v-for="d in ['stacked', 'overlay', 'overhang']"
@@ -1605,6 +1605,48 @@
                     @click="$set(cardPreviewDisplay, block.blockType, d)"
                   >{{ $t('kirbyblock-cardlets.card-display.' + d) }}</button>
                 </span>
+              </div>
+              <!-- on the image: the texts' position, the ratio per device, the overlay's strength -->
+              <div v-if="currentCardDisplay(block.blockType) === 'overlay'" class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-text-position', { default: 'item-ratio', lg: 'item-ratio-lg', xl: 'item-ratio-xl' }[itemBp] || 'item-ratio']"
+                  :row-bp="itemBp"
+                  @update:row-bp="itemBp = $event"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-overlay-strength']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <!-- standing out: how far, per device (px or % of the image's height) -->
+              <div v-else-if="currentCardDisplay(block.blockType) === 'overhang'" class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-overhang': 'overhang' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-overhang']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t({ stacked: 'prw.hint.cardletsDisplayStacked', overlay: 'prw.hint.cardletsDisplayOverlay', overhang: 'prw.hint.cardletsOverhang' }[currentCardDisplay(block.blockType)])" />
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.padding') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -1649,25 +1691,6 @@
                 />
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsShape')" />
-            </section>
-            <!-- the image standing out of the card: how far (only in that display) -->
-            <section v-if="currentCardDisplay(block.blockType) === 'overhang'" class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.overhang') }}</h3>
-              </div>
-              <div class="pw-card pw-field-table">
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-overhang': 'overhang' } : null"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-overhang']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-              </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsOverhang')" />
             </section>
             <!-- the card's style: its border (on / off, width, colour of the chosen variant) and shadow -->
             <section class="pw-card-section">
