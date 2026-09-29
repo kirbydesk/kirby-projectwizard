@@ -2195,22 +2195,29 @@ export default {
 .pw-element-preview.has-guides.has-focus .is-hot-row .pw-element-preview-buttons-row::before {
   border-color: rgba(130, 80, 255, 0.9);
 }
-/* the paddings: the content's edge (left/right or top/bottom) stays */
-.pw-element-preview.has-guides.has-focus .is-hot-padding-h .pw-button-content::before {
-  border-inline-color: rgba(255, 0, 170, 0.6);
-}
-.pw-element-preview.has-guides.has-focus .is-hot-padding-v .pw-button-content::before {
-  border-block-color: rgba(0, 180, 90, 0.9);
-}
+/* the paddings: tinted, with the edges where they end as lines through the
+   whole button (left/right magenta, top/bottom green) */
 .pw-element-preview.has-focus .is-hot-padding-h .pw-element-preview-button {
-  background-image: linear-gradient(to right,
-    rgba(255, 0, 170, 0.3) var(--pw-btn-pl), transparent var(--pw-btn-pl),
-    transparent calc(100% - var(--pw-btn-pr)), rgba(255, 0, 170, 0.3) calc(100% - var(--pw-btn-pr)));
+  background-image:
+    linear-gradient(rgba(255, 0, 170, 0.6), rgba(255, 0, 170, 0.6)),
+    linear-gradient(rgba(255, 0, 170, 0.6), rgba(255, 0, 170, 0.6)),
+    linear-gradient(to right,
+      rgba(255, 0, 170, 0.3) var(--pw-btn-pl), transparent var(--pw-btn-pl),
+      transparent calc(100% - var(--pw-btn-pr)), rgba(255, 0, 170, 0.3) calc(100% - var(--pw-btn-pr)));
+  background-repeat: no-repeat;
+  background-size: 1px 100%, 1px 100%, 100% 100%;
+  background-position: left var(--pw-btn-pl) top 0, right var(--pw-btn-pr) top 0, 0 0;
 }
 .pw-element-preview.has-focus .is-hot-padding-v .pw-element-preview-button {
-  background-image: linear-gradient(to bottom,
-    rgba(0, 180, 90, 0.3) var(--pw-btn-pt), transparent var(--pw-btn-pt),
-    transparent calc(100% - var(--pw-btn-pb)), rgba(0, 180, 90, 0.3) calc(100% - var(--pw-btn-pb)));
+  background-image:
+    linear-gradient(rgba(0, 180, 90, 0.9), rgba(0, 180, 90, 0.9)),
+    linear-gradient(rgba(0, 180, 90, 0.9), rgba(0, 180, 90, 0.9)),
+    linear-gradient(to bottom,
+      rgba(0, 180, 90, 0.3) var(--pw-btn-pt), transparent var(--pw-btn-pt),
+      transparent calc(100% - var(--pw-btn-pb)), rgba(0, 180, 90, 0.3) calc(100% - var(--pw-btn-pb)));
+  background-repeat: no-repeat;
+  background-size: 100% 1px, 100% 1px, 100% 100%;
+  background-position: left 0 top var(--pw-btn-pt), left 0 bottom var(--pw-btn-pb), 0 0;
 }
 /* side grid (paddings): the side icon instead of the corner glyph */
 .pw-field-table .pw-side-grid > *::after {
@@ -2691,6 +2698,10 @@ export default {
   box-sizing: border-box;
   border-block: 1px solid rgba(130, 80, 255, 0.9);
   background: rgba(130, 80, 255, 0.15);
+}
+/* (the band's top edge replaces the line at the end of the paragraph above) */
+.pw-element-preview.has-focus .pw-element-preview-paragraphs.is-hot p:not(:last-child)::after {
+  border-color: transparent;
 }
 .pw-element-space-below.is-hot {
   background: rgba(0, 170, 255, 0.15);
