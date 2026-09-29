@@ -165,6 +165,8 @@
 
         <!-- Global views: the page's name as heading (an element: its name) -->
         <div v-if="!loading && activeTab === 'global'" class="pw-page-title-row" :class="{ 'has-intro': globalPageIntro }">
+          <!-- an element: its icon (as in the elements menu) before the name -->
+          <k-icon v-if="globalPageIcon" :type="globalPageIcon" class="pw-page-title-icon" />
           <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
         </div>
         <!-- a page's intro below its heading, as on the block pages (the items:
@@ -2239,6 +2241,11 @@ export default {
       }
       return '';
     },
+    globalPageIcon() {
+      if (this.globalActiveTab !== 'elements') return null;
+      const element = this.elementOptions.find(o => o.value === this.selectedElement);
+      return element ? element.icon : null;
+    },
     globalPageTitle() {
       if (this.globalActiveTab === 'elements') {
         const element = this.elementOptions.find(o => o.value === this.selectedElement);
@@ -3828,6 +3835,9 @@ export default {
   /* a line under the heading, as under Kirby's view headers */
   padding-bottom: var(--spacing-3);
   border-bottom: 1px solid var(--color-border);
+}
+.pw-page-title-icon {
+  --icon-size: 24px;
 }
 .pw-page-title {
   font-size: var(--text-h1, var(--text-2xl));
