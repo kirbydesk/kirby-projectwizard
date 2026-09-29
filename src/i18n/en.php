@@ -68,6 +68,7 @@
 	'prw.headline.variant' => 'Theme',
 	'prw.headline.numbering' => 'Numbering',
 	'prw.label.betweenSteps' => 'Between the steps',
+	'prw.label.betweenItems' => 'Between the items',
 	'prw.label.backgroundColor' => 'Background color',
 	'prw.label.gridLayout' => 'Grid layout',
 	'prw.option.gridFull' => 'Full width',
