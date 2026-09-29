@@ -83,6 +83,8 @@
                     <ol class="pw-element-preview-list is-numbered" :class="{ 'is-hot-indent': hoveredArea === 'list-number-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, true)">
                       <li v-for="n in 3" :key="'ol-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ol>
+                    <!-- (and below the last list: the space applies after every list) -->
+                    <span v-if="guides" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'list-spacing' }" :style="{ height: spaceBelow('list') }"></span>
                   </div>
                 </template>
                 <template v-else-if="groupKey === 'item'">
@@ -111,7 +113,7 @@
                 </template>
                 <!-- guides: the space below the element (tagline, heading, text) as
                      a band of its height between two cyan lines -->
-                <!-- (lists: once, between their two lists, in the text's size) -->
+                <!-- (lists: inside their preview, in the text's size) -->
                 <span v-if="guides && spaceBelow(groupKey) && groupKey !== 'list'" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === groupKey + '-spacing' }" :style="{ height: spaceBelow(groupKey) }"></span>
                 <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
                   <!-- the source keeps its gap to the quote (cite-spacing) -->
