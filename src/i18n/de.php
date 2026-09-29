@@ -182,6 +182,7 @@
 	'prw.prop.global-' => 'Radien',
 	'prw.prop.block-background' => 'Hintergrundfarbe',
 	'prw.prop.block-link-decoration' => 'Unterstreichung',
+	'prw.prop.block-link-weight' => 'Schriftstärke',
 	'prw.prop.block-link-thickness' => 'Linienstärke',
 	'prw.prop.block-link-offset' => 'Abstand zur Linie',
 	'prw.prop.block-link' => 'Linkfarbe',

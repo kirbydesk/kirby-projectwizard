@@ -66,7 +66,7 @@
           <div v-if="hasField('heading') && spaceBand('heading')" class="pw-space-band" :class="['is-' + spaceBand('heading').prev, { 'is-hot': highlight === spaceBand('heading').prev + '-spacing' }]" :style="{ height: spaceBand('heading').height }"></div>
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
           <div v-if="hasField('editor') && spaceBand('editor')" class="pw-space-band" :class="['is-' + spaceBand('editor').prev, { 'is-hot': highlight === spaceBand('editor').prev + '-spacing' }]" :style="{ height: spaceBand('editor').height }"></div>
-          <p v-if="hasField('editor')" class="pw-block-live-text" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} {{ $t('prw.preview.text.link') }}{{ $t('prw.preview.text.after') }}</p>
+          <p v-if="hasField('editor')" class="pw-block-live-text" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} <a class="pw-block-live-link" :data-decoration="linkValue('block-link-decoration') || 'none'" :style="linkStyle">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
           </div>
           <!-- guides: the offset (split layout) as a track of its own, a line on
                either side -->
@@ -433,6 +433,16 @@ export default {
     },
     isQuote() {
       return this.blockType === 'pwquote';
+    },
+    // the link in the sample text: as the block links (Global › Blocks)
+    linkStyle() {
+      return {
+        '--pw-link': this.globalColor('block-link'),
+        '--pw-link-hover': this.globalColor('block-link-hover'),
+        fontWeight: this.linkValue('block-link-weight') === 'bold' ? 700 : null,
+        textDecorationThickness: this.linkValue('block-link-thickness'),
+        textUnderlineOffset: this.linkValue('block-link-offset'),
+      };
     },
     isHero() {
       return this.blockType === 'pwhero';
@@ -962,6 +972,12 @@ export default {
       if (Array.isArray(hidden) && hidden.includes(field)) return false;
       return content[field] !== undefined && content[field] !== false;
     },
+    // a value of the block links (override, else the plugin's)
+    linkValue(name) {
+      const ov = (this.globalOverrides.global || {})[name];
+      if (ov !== undefined && ov !== '') return ov;
+      return this.globalDefaults.links?.vars?.[name]?.value || '';
+    },
     globalValue(name) {
       const ov = (this.globalOverrides.global || {})[name];
       if (ov !== undefined && ov !== '') return ov;
@@ -1199,6 +1215,19 @@ export default {
 .pw-space-band.is-editor.is-hot::before { background: rgba(255, 140, 0, 0.15); }
 .pw-block-live-preview.has-focus .pw-space-band::before {
   border-color: transparent;
+}
+/* the sample text's link: as the block links */
+.pw-block-live-link {
+  color: var(--pw-link);
+  text-decoration-line: none;
+  cursor: pointer;
+}
+.pw-block-live-link:hover {
+  color: var(--pw-link-hover);
+}
+.pw-block-live-link[data-decoration="always"],
+.pw-block-live-link[data-decoration="hover"]:hover {
+  text-decoration-line: underline;
 }
 /* hero guides: the paddings' edge (magenta) in place of the content's frame */
 .pw-hero-pad {

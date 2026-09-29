@@ -182,6 +182,7 @@
 	'prw.prop.global-' => 'Radii',
 	'prw.prop.block-background' => 'Background Color',
 	'prw.prop.block-link-decoration' => 'Underline',
+	'prw.prop.block-link-weight' => 'Font weight',
 	'prw.prop.block-link-thickness' => 'Line Thickness',
 	'prw.prop.block-link-offset' => 'Line Offset',
 	'prw.prop.block-link' => 'Link Color',

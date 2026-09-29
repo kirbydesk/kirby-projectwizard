@@ -512,7 +512,7 @@
                   :body-default-font="bodyDefaultFont"
                   @update:overrides="onGlobalOverridesUpdate"
                   :hide-section-headers="true"
-                  :show-only="['block-link-decoration', 'block-link-thickness', 'block-link-offset']"
+                  :show-only="['block-link-decoration', 'block-link-weight', 'block-link-thickness', 'block-link-offset']"
                 />
                 <pw-global-navigation
                   :nav-defaults="globalDefaults"
@@ -2815,6 +2815,7 @@ export default {
       return {
         color: colorOv || colorDef,
         textDecorationLine: decoration === 'always' ? 'underline' : 'none',
+        fontWeight: this.globalLayoutValue('block-link-weight') === 'bold' ? 700 : null,
         textDecorationThickness: this.globalLayoutValue('block-link-thickness'),
         textUnderlineOffset: this.globalLayoutValue('block-link-offset'),
         cursor: 'pointer',

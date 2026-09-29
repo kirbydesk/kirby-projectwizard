@@ -995,6 +995,7 @@ export default {
       return {
         '--pw-link': color('block-link'),
         '--pw-link-hover': color('block-link-hover'),
+        fontWeight: v('block-link-weight') === 'bold' ? 700 : null,
         textDecorationThickness: v('block-link-thickness'),
         textUnderlineOffset: v('block-link-offset'),
       };
