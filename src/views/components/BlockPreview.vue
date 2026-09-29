@@ -134,7 +134,7 @@
                 <div v-if="featureTitleInline" :style="featureTextStyle"><strong :style="featureTitleInlineStyle">{{ $t('prw.preview.feature.title') }} {{ n }}.</strong> {{ $t('prw.preview.feature.text') }}</div>
                 <template v-else>
                   <div :style="featureTitleStyle">{{ $t('prw.preview.feature.title') }} {{ n }}</div>
-                  <span v-if="guides" class="pw-featurelist-title-gap" :class="{ 'is-hot': highlight === 'item-title-gap' }" :style="{ height: itemValue('item-title-gap') }"></span>
+                  <span v-if="guides" class="pw-featurelist-title-gap" :class="{ 'is-hot': highlight === 'item-title-spacing' }" :style="{ height: entryValue('item-title-spacing') }"></span>
                   <div :style="featureTextBelowStyle">{{ $t('prw.preview.feature.text') }}</div>
                 </template>
               </div>
@@ -266,7 +266,7 @@ export default {
     highlightsArea() {
       const h = this.highlight || '';
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
-        'item-icon-gap', 'item-title-gap', 'item-icon-tile-padding', 'item-offset-gap',
+        'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap',
         'tagline-spacing', 'heading-spacing', 'editor-spacing',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
@@ -617,15 +617,10 @@ export default {
     featureTitleInline() {
       return this.setting('layout', 'item-title-style') === 'inline';
     },
-    // title: the heading's type at the item's size; text: the editor's
+    // title and description: Elements › Items (the block's own values when
+    // switched on)
     featureTitleStyle() {
-      return {
-        ...this.typography('heading'),
-        fontSize: this.itemValueAt('item-title-size'),
-        lineHeight: this.itemValueAt('item-title-line-height'),
-        color: this.elementColor('heading', 'element-heading-text'),
-        textAlign: this.preset('blocks', 'align') || 'left',
-      };
+      return { ...this.entryTypography('title'), textAlign: this.preset('blocks', 'align') || 'left' };
     },
     featureTitleInlineStyle() {
       const heading = this.typography('heading');
@@ -634,15 +629,10 @@ export default {
     // the text below the title: the title gap above it
     featureTextBelowStyle() {
       // (with guides the gap is an element of its own)
-      return { ...this.featureTextStyle, marginTop: this.guides ? 0 : this.itemValue('item-title-gap') };
+      return { ...this.featureTextStyle, marginTop: this.guides ? 0 : this.entryValue('item-title-spacing') };
     },
     featureTextStyle() {
-      return {
-        ...this.typography('editor'),
-        fontSize: this.itemValueAt('item-text-size'),
-        color: this.elementColor('editor', 'element-editor-text'),
-        textAlign: this.preset('blocks', 'align') || 'left',
-      };
+      return { ...this.entryTypography('text'), textAlign: this.preset('blocks', 'align') || 'left' };
     },
     // the sample quote, with the element's quote marks (or none)
     quoteText() {
@@ -1029,6 +1019,38 @@ export default {
       const own = GAPS[prev + '>' + field];
       if (own && after) return 'max(' + own + ', ' + after + ')';
       return own || after || 0;
+    },
+    // a value of the entries: the block's own (switched on: item-entry own),
+    // else the global items' (Elements › Items), at the shown device
+    entryValue(name) {
+      if (this.setting('layout', 'item-entry') === 'own') {
+        const ov = (this.valueOverrides || {})[name];
+        if (ov && typeof ov === 'object') { if (ov[this.bp]) return ov[this.bp]; } else if (ov) return ov;
+        for (const group of Object.values(this.valueDefaults || {})) {
+          const def = group && group.vars && group.vars[name];
+          if (def) return def[this.bp] || def.default || def.value;
+        }
+      }
+      return this.elementValue('item', name.replace(/^item-/, ''));
+    },
+    // title or description of an entry: the type of Elements › Items, its
+    // colour from the variant
+    entryTypography(part) {
+      const g = (prop) => this.elementValue('item', part + '-' + prop);
+      let family = g('font-family');
+      if (!family || family === 'default') family = this.bodyDefaultFont;
+      const all = { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
+      const font = Object.values(all).find(f => f.family === family);
+      return {
+        fontFamily: "'" + family + "', " + ((font && font.category) || 'sans-serif'),
+        fontWeight: g('font-weight'),
+        fontStyle: g('font-style'),
+        fontSize: this.entryValue('item-' + part + '-font-size'),
+        lineHeight: part === 'title' ? this.entryValue('item-title-line-height') : g('line-height'),
+        letterSpacing: g('letter-spacing'),
+        textTransform: g('text-transform'),
+        color: this.elementColor('item', 'element-item-' + part + '-text'),
+      };
     },
     // the space below an element: the block's own (switched on in its design
     // tab) or the element's

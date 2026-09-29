@@ -122,6 +122,7 @@
                       </span>
                       <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(responsiveAt(varName, bp) || def[bp], def.unit, varName, bp) }}</span>
                     </span>
+                    <span v-if="hints && hints[varName]" class="pw-field-hint" :title="hintTitle">{{ hints[varName] }}</span>
                     <!-- switch the breakpoint (shared by all rows) -->
                     <span v-if="bp" class="pw-pill pw-bp-switch" role="group">
                       <button

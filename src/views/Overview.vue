@@ -1044,8 +1044,6 @@
                 <h3 class="pw-card-heading">{{ $t('prw.subtab.text') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
-                <!-- the title above the text or run-in at its start (then in the
-                     text's size: its own size and line height hidden) -->
                 <pw-block-settings
                   view="items-layout"
                   :block="block"
@@ -1056,28 +1054,61 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="itemLayoutDefault(block.blockType, 'item-title-style') === 'inline' ? ['item-text-size'] : ['item-title-size', 'item-title-line-height', 'item-text-size']"
-                  :labels="itemLayoutDefault(block.blockType, 'item-title-style') === 'inline' ? { 'item-text-size': $t('prw.prop.font-size') } : {}"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
+                <!-- the entries' values: the global items' (Elements › Items) or
+                     the block's own -->
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-entry']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
-                <!-- paragraph: the gap between title and text -->
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  v-if="itemLayoutDefault(block.blockType, 'item-title-style') !== 'inline'"
-                  :guides="previewGuides ? { 'item-title-gap': 'gap-4' } : null"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-title-gap']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
+                <!-- standard: the global values, grey (not editable here) -->
+                <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
+                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <label class="pw-field-row-label">{{ entryLabel(block.blockType, name) }}</label>
+                          <span
+                            v-if="previewGuides && name === 'item-title-spacing'"
+                            class="pw-area-hint"
+                            :title="$t('prw.hint.itemTitleSpacing')"
+                            @mouseenter="hoveredVar = name"
+                            @mouseleave="hoveredVar = null"
+                          ><k-icon type="question" /></span>
+                        </div>
+                        <div class="pw-field-row-options">
+                          <span class="pw-element-field">
+                            <span class="pw-readonly-value">{{ String(globalItemValue(name)).replace(/(rem|em)$/, '') }}<span class="pw-element-unit">{{ (String(globalItemValue(name)).match(/(rem|em)$/) || [''])[0] }}</span></span>
+                            <span v-if="/rem$/.test(globalItemValue(name))" class="pw-px-calculator">{{ remToPx(globalItemValue(name)) }}</span>
+                          </span>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <!-- custom: the block's own values, the global ones grey at the end -->
+                <template v-else>
+                  <pw-block-values
+                    v-for="name in entryRows(block.blockType)"
+                    :key="'oe-' + name"
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="[name]"
+                    :labels="{ [name]: entryLabel(block.blockType, name) }"
+                    :guides="previewGuides && name === 'item-title-spacing' ? { 'item-title-spacing': 'gap-4' } : null"
+                    :hints="{ [name]: globalItemValue(name) }"
+                    :hint-title="$t('prw.hint.globalValue')"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
+                  />
+                </template>
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureText')" />
             </section>
@@ -2420,6 +2451,44 @@ export default {
       const name = el + '-spacing';
       return (this.elementOverrides.global || {})[name] || this.elementDefaults[el]?.vars?.[name]?.value || '';
     },
+    // featurelist entries: the rows of their values (title in the text:
+    // only the description's size, which then is the size of both)
+    entryRows(blockType) {
+      const inline = this.itemLayoutDefault(blockType, 'item-title-style') === 'inline';
+      return inline ? ['item-text-font-size'] : ['item-title-font-size', 'item-title-line-height', 'item-text-font-size', 'item-title-spacing'];
+    },
+    entryLabel(blockType, name) {
+      if (name === 'item-text-font-size' && this.itemLayoutDefault(blockType, 'item-title-style') === 'inline') return this.$t('prw.prop.font-size');
+      return this.$t('prw.prop.' + name);
+    },
+    // a value of the global items (Elements › Items) at the shown device
+    globalItemValue(name) {
+      const def = this.elementDefaults.item?.vars?.[name];
+      if (!def) return '';
+      const ov = this.elementOverrides.global || {};
+      if (def.default !== undefined) return (ov[this.itemBp] || {})[name] || def[this.itemBp] || def.default;
+      return ov[name] || def.value;
+    },
+    // own values of the entries switched on: values not set yet take the
+    // global items' (responsive ones per device)
+    seedOwnEntry(blockType) {
+      const ov = JSON.parse(JSON.stringify(this.blockValueOverrides[blockType] || {}));
+      const ownVars = {};
+      for (const g of Object.values(this.blockValueDefaults[blockType] || {})) Object.assign(ownVars, (g && g.vars) || {});
+      const eo = this.elementOverrides.global || {};
+      let changed = false;
+      for (const name of ['item-title-font-size', 'item-title-line-height', 'item-text-font-size', 'item-title-spacing']) {
+        const def = this.elementDefaults.item?.vars?.[name];
+        if (!ownVars[name] || !def || ov[name] !== undefined) continue;
+        if (def.default !== undefined) {
+          ov[name] = Object.fromEntries(['default', 'lg', 'xl'].map(bp => [bp, (eo[bp] || {})[name] || def[bp] || def.default]));
+        } else {
+          ov[name] = eo[name] || def.value;
+        }
+        changed = true;
+      }
+      if (changed) this.onBlockValueOverridesUpdate(blockType, ov);
+    },
     // own space below (tagline, heading, text): values not set yet take the
     // elements' current (global) ones, so the block starts where it was
     seedOwnSpacing(blockType) {
@@ -2867,6 +2936,8 @@ export default {
       // own space below switched on: start from the elements' current values
       const spacing = overrides?.settings?.fields?.layout?.['item-spacing']?.default;
       if (spacing === 'own' && this.blockValueDefaults[blockType]) this.seedOwnSpacing(blockType);
+      const entry = overrides?.settings?.fields?.layout?.['item-entry']?.default;
+      if (entry === 'own' && this.blockValueDefaults[blockType]) this.seedOwnEntry(blockType);
       const current = JSON.stringify(overrides);
       const snapshot = this.snapshots[blockType] || '{}';
       this.$set(this.dirtyTabs, blockType, current !== snapshot);
