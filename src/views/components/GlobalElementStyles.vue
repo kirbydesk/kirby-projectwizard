@@ -705,6 +705,8 @@
           </template>
           </template>
             </div>
+            <!-- a help text below the card where there is something not seen here -->
+            <k-text v-if="cardHelp(st)" size="tiny" class="k-help pw-card-help" :html="cardHelp(st)" />
           </section>
           </template>
         </div>
@@ -963,6 +965,11 @@ export default {
         const wrapped = !!(first && second && second.offsetTop > first.offsetTop + 1);
         if (wrapped !== this.buttonsWrapped) this.buttonsWrapped = wrapped;
       });
+    },
+    // the help text below a card (sizes, marking, flourish, colours, zoom)
+    cardHelp(st) {
+      const keys = { sizes: 'prw.hint.cardSizes', marked: 'prw.hint.cardMarked', flourish: 'prw.hint.cardFlourish', colors: 'prw.hint.cardColors', zoom: 'prw.hint.cardZoom' };
+      return keys[st.category] ? this.$t(keys[st.category]) : '';
     },
     // item: the gap between title and description
     itemTitleGap() {
