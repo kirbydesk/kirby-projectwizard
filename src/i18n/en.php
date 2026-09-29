@@ -246,7 +246,7 @@
 	'prw.hint.featureSpacing' => 'Sets the gaps between the items and to the intro. <code>Offset</code> shows the intro next to the items on large screens.',
 	'prw.hint.cardletsCard' => 'Sets the padding of the cards.',
 	'prw.hint.cardletsShape' => 'Sets the shape of the cards. It is the same for all cards.',
-	'prw.hint.cardletsBorder' => 'Sets the border and shadow of the cards.',
+	'prw.hint.cardletsBorder' => 'Sets an optional border and shadow of the cards.',
 	'prw.hint.cardletsLink' => 'Sets how the link at the end of a card looks. Its target and text are entered per card in the block.',
 	'prw.hint.cardletsColors' => 'Sets the colours of the cards for each variant.',
 	'prw.hint.cardletsSpacing' => 'Sets the gaps between the cards, inside the cards and to the intro. The link always sits at the bottom of the card, the gap to the link is the minimum.',
