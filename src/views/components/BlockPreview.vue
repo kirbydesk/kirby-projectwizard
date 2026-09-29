@@ -126,7 +126,7 @@
               <div class="pw-cardlets-image-wrap" :class="{ 'is-overhang': cardOverhang }">
                 <span v-if="cardOverhang" class="pw-cardlets-overhang" :style="cardOverhangStyle"></span>
                 <span v-if="cardOverhang && guides" class="pw-card-overhang" :class="{ 'is-hot': highlight === 'item-overhang' }" :style="{ height: itemValueAt('item-overhang') }"></span>
-                <div class="pw-media-preview-photo pw-cardlets-image" :class="{ 'is-overlay': cardOverlay, 'is-cutout': cardOverhang }"></div>
+                <div class="pw-media-preview-photo pw-cardlets-image" :class="{ 'is-overlay': cardOverlay, 'is-cutout': cardOverhang }" :style="cardImageStyle"></div>
               </div>
               <!-- on the image: the overlay fades in from the texts' side -->
               <div v-if="cardOverlay" class="pw-cardlets-overlay" :style="cardOverlayStyle"></div>
@@ -627,6 +627,13 @@ export default {
     // the display on the image (start value), the texts at the top
     cardOverlay() {
       return (this.cardDisplay || this.setting('style', 'card-display')) === 'overlay';
+    },
+    // image above: the images' ratio at the device shown (Original: the
+    // sample's own 16:9)
+    cardImageStyle() {
+      if (this.cardOverlay || this.cardOverhang) return null;
+      const ratio = this.setting('layout', { default: 'item-image-ratio', lg: 'item-image-ratio-lg', xl: 'item-image-ratio-xl' }[this.bp] || 'item-image-ratio');
+      return ratio && ratio !== 'auto' ? { aspectRatio: ratio.replace('/', ' / ') } : null;
     },
     cardOverhang() {
       return (this.cardDisplay || this.setting('style', 'card-display')) === 'overhang';

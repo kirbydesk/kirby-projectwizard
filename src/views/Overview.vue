@@ -1606,8 +1606,23 @@
                   >{{ $t('kirbyblock-cardlets.card-display.' + d) }}</button>
                 </span>
               </div>
+              <!-- image above: the images' ratio per device (Original: the file's own) -->
+              <div v-if="currentCardDisplay(block.blockType) === 'stacked'" class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="[{ default: 'item-image-ratio', lg: 'item-image-ratio-lg', xl: 'item-image-ratio-xl' }[itemBp] || 'item-image-ratio']"
+                  :row-bp="itemBp"
+                  @update:row-bp="itemBp = $event"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
               <!-- on the image: the texts' position, the ratio per device, the overlay's strength -->
-              <div v-if="currentCardDisplay(block.blockType) === 'overlay'" class="pw-card pw-field-table">
+              <div v-else-if="currentCardDisplay(block.blockType) === 'overlay'" class="pw-card pw-field-table">
                 <pw-block-settings
                   view="items-layout"
                   :block="block"

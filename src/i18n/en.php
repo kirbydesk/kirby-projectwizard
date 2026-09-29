@@ -246,7 +246,7 @@
 	'prw.hint.featureSpacing' => 'Sets the gaps between the items and to the intro. <code>Offset</code> shows the intro next to the items on large screens.',
 	'prw.hint.cardletsCard' => 'Sets the padding of the cards.',
 	'prw.hint.cardletsShape' => 'Sets the shape of the cards. It is the same for all cards.',
-	'prw.hint.cardletsDisplayStacked' => 'The display is chosen per block. Here it is shown in the preview, and the values of <code>On the image</code> and <code>Image stands out</code> are set.',
+	'prw.hint.cardletsDisplayStacked' => 'Sets the aspect ratio of the images. <code>Original</code> keeps the setting of each image file, otherwise the image is cropped and its focus point picks the section. The display itself is chosen per block.',
 	'prw.hint.cardletsDisplayOverlay' => 'Sets where the texts sit on the image, which aspect ratio the cards have and how strongly the image behind the texts is overlaid. The colour of the overlay is set with the colours.',
 	'prw.hint.cardletsOverhang' => 'Sets how far the image stands out of the card at the top, as a fixed value or as a percentage of the image height. The effect only works with cut-out images on a transparent background.',
 	'prw.hint.cardletsBorder' => 'Sets an optional border and shadow of the cards.',

@@ -246,7 +246,7 @@
 	'prw.hint.featureSpacing' => 'Legt die Abstände zwischen den Einträgen und zur Einleitung fest. <code>Eingerückt</code> zeigt die Einleitung auf großen Bildschirmen links neben den Einträgen.',
 	'prw.hint.cardletsCard' => 'Legt den Innenabstand der Karten fest.',
 	'prw.hint.cardletsShape' => 'Legt die Form der Karten fest. Sie gilt für alle Karten gleich.',
-	'prw.hint.cardletsDisplayStacked' => 'Die Darstellung wird pro Block gewählt. Hier wird sie in der Vorschau gezeigt, außerdem werden die Werte von <code>Auf dem Bild</code> und <code>Bild ragt heraus</code> festgelegt.',
+	'prw.hint.cardletsDisplayStacked' => 'Legt das Seitenverhältnis der Bilder fest. <code>Original</code> übernimmt die Einstellung der jeweiligen Bilddatei, sonst wird zugeschnitten und der Fokuspunkt bestimmt den Ausschnitt. Die Darstellung selbst wird pro Block gewählt.',
 	'prw.hint.cardletsDisplayOverlay' => 'Legt fest, wo die Texte auf dem Bild stehen, welches Seitenverhältnis die Karten haben und wie stark das Bild hinter den Texten überlagert wird. Die Farbe der Überlagerung steht bei den Farben.',
 	'prw.hint.cardletsOverhang' => 'Legt fest, wie weit das Bild oben aus der Karte ragt, als fester Wert oder in Prozent der Bildhöhe. Der Effekt wirkt nur mit freigestellten Bildern mit transparentem Hintergrund.',
 	'prw.hint.cardletsBorder' => 'Legt einen optionalen Rahmen und Schatten der Karten fest.',
