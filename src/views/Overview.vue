@@ -376,6 +376,7 @@
                   </div>
                 </div>
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.blocksPaddings')" />
             </section>
             <!-- outer spacing of the blocks: top / bottom in one row -->
             <section class="pw-card-section">
@@ -414,6 +415,7 @@
                   </div>
                 </div>
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.blocksMargins')" />
             </section>
             <!-- form of the blocks: the corners (square or custom radii) -->
             <section class="pw-card-section">
@@ -453,6 +455,7 @@
                   :show-only="['global-']"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.blocksShape')" />
             </section>
             <section class="pw-card-section">
               <!-- colours: choose the theme, the rows show only its value -->
@@ -485,6 +488,7 @@
                   :hide-color-names="['block-link']"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.blocksColors')" />
             </section>
             <!-- links in texts: underline, its thickness and offset -->
             <section class="pw-card-section">
@@ -529,6 +533,7 @@
                   :color-names="['block-link']"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.blocksLinks')" />
             </section>
           </div>
 
@@ -1969,6 +1974,7 @@ export default {
     // global tabs collected in the cog dropdown (above the block settings), AI only with contentwizard
     // heading of a global view: the tab's name, for an element its name
     globalPageIntro() {
+      if (this.globalActiveTab === 'blocks') return this.$t('prw.intro.global.blocks');
       // an element: what it is and where it is used
       if (this.globalActiveTab === 'elements' && this.selectedElement) {
         const key = this.selectedElement === 'item' ? 'prw.hint.itemElement' : 'prw.intro.element.' + this.selectedElement;
