@@ -225,7 +225,7 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : (bpKeyOf(cat, sec) ? sec.heading : categoryFieldLabel(field.key)) }}<span v-if="field.required" class="pw-field-required">*</span></label>
+                    <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : (bpKeyOf(cat, sec) ? bpRowLabel(bpKeyOf(cat, sec), sec) : categoryFieldLabel(field.key)) }}<span v-if="field.required" class="pw-field-required">*</span></label>
                     <!-- guides on: hovering the question mark tints the value's area in the preview -->
                     <k-icon
                       v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
@@ -781,7 +781,7 @@ export default {
         const sections = [];
         if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), help: this.$t('prw.hint.blockPaddings'), fields: paddings });
         if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), help: this.$t('prw.hint.blockRadius'), fields: [radius] });
-        const headings = { 'position-': 'pw.headline.contentposition', 'columns-': 'pw.headline.columns', 'logos-': 'kirbyblock-logocloud.per-row' };
+        const headings = { 'position-': 'pw.headline.contentposition', 'columns-': 'pw.headline.columns', 'logos-': 'prw.headline.logos' };
         for (const f of others) {
           const prefix = Object.keys(headings).find(p => f.key.startsWith(p));
           const key = prefix || f.key;
@@ -813,6 +813,7 @@ export default {
         return this.$t(this.gridAdjusted(sec.fields, this.secBp('grid')) ? 'prw.hint.gridCustom' : 'prw.hint.gridFull');
       }
       if (this.view === 'defaults' && cat.key === 'settings') return this.$t('prw.hint.settingsDefault');
+      if (this.bpKeyOf(cat, sec) === 'logos-') return this.$t('prw.hint.logosPerRow');
       return sec.help;
     },
     // a grid row's label without its screen size (chosen above the card)
@@ -828,6 +829,11 @@ export default {
     },
     secBp(key) {
       return this.sectionBp[key] || 'lg';
+    },
+    // the row's label in such a card (the logos: "Logos per row" under "Logos")
+    bpRowLabel(key, sec) {
+      if (key === 'logos-') return this.$t('kirbyblock-logocloud.per-row');
+      return sec.heading;
     },
     // the grid's start values (Startwerte › Raster)
     isGridDefaults(cat) {
