@@ -211,7 +211,7 @@
 	'prw.hint.heroOverlay' => 'Whether and how strongly the image is overlaid is set in each hero. The preview here shows a solid overlay at 50% across the whole area.',
 	'prw.hint.contentPosition' => 'Sets where the text block sits: horizontally within the grid area, vertically within the height, each without the paddings. The grid sets the maximum width of the text block and its place.',
 	'prw.hint.blockPaddings' => 'Sets which paddings a new block has. Top and bottom offer a small and a large padding. The values are set globally under <code>Blocks</code>.',
-	'prw.hint.blockRadius' => 'Which corners of a new block are rounded. The radius itself is set globally under <code>Blocks</code>.',
+	'prw.hint.blockRadius' => 'Sets which corners of a new block are rounded. The radius is set globally under <code>Blocks</code>.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.prop.tagline-spacing' => 'Tagline',
