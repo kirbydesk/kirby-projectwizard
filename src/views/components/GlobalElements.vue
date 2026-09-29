@@ -81,14 +81,10 @@ export default {
     groups() {
       return [
         {
+          // (only the pagewizard's blocks; project-related ones are not offered)
           key: 'pagewizard',
-          label: this.$t('prw.headline.pagewizard') || 'Pagewizard',
+          label: this.$t('prw.headline.pagewizard'),
           blocks: this.blocks.filter(b => (b.blockType || '').startsWith('pw')),
-        },
-        {
-          key: 'projectRelated',
-          label: this.$t('prw.headline.projectRelated') || 'Project Related',
-          blocks: this.blocks.filter(b => !(b.blockType || '').startsWith('pw')),
         },
       ];
     },

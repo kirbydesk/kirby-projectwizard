@@ -140,7 +140,6 @@
 
 	/* -------------- Headlines --------------*/
 	'prw.headline.pagewizard' => 'Aktive Blöcke',
-	'prw.headline.projectRelated' => 'Projektbezogen',
 
 	/* -------------- Props: Navigation groups --------------*/
 	'prw.prop.body' => 'Seite',

@@ -140,7 +140,6 @@
 
 	/* -------------- Headlines --------------*/
 	'prw.headline.pagewizard' => 'Active blocks',
-	'prw.headline.projectRelated' => 'Project Related',
 
 	/* -------------- Props: Navigation groups --------------*/
 	'prw.prop.body' => 'Body',
