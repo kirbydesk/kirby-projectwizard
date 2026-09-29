@@ -1079,6 +1079,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureText')" />
             </section>
             <!-- featurelist icon: its position, alignment, size, gap and whether
                  it sits on a tile -->
@@ -1151,6 +1152,7 @@
                 />
                 </template>
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureIcons')" />
             </section>
             <!-- its tile: form, radii, padding -->
             <section v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none' && itemLayoutDefault(block.blockType, 'item-icon-style') === 'tile'" class="pw-card-section">
@@ -1189,6 +1191,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureTile')" />
             </section>
             <!-- the colours of the chosen variant: the icon, its tile -->
             <section v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none'" class="pw-card-section">
@@ -1228,6 +1231,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureColors')" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1296,6 +1300,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureSpacing')" />
             </section>
             </template>
 
