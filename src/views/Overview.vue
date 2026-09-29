@@ -2382,7 +2382,7 @@ export default {
     },
     globalTabs() {
       const tabs = [
-        { key: 'site', icon: 'sitemap' },
+        { key: 'site', icon: 'template' },
         { key: 'blocks', icon: 'box' },
         { key: 'elements', icon: 'layers' },
         { key: 'fonts', icon: 'title' },
