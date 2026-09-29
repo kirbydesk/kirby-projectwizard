@@ -115,8 +115,12 @@
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
           <!-- cardlets: two cards (image, tagline, heading, text, link) as in its snippet -->
-          <div v-if="isCardlets" class="pw-cardlets-items" :style="cardItemsStyle">
-            <div v-for="n in 2" :key="'card-' + n" class="pw-cardlets-item" :style="cardStyle">
+          <!-- guides: the gap to the intro, between the cards (as the featurelist's) -->
+          <div v-if="isCardlets && guides && cardTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: cardTextGap }"></div>
+          <div v-if="isCardlets" class="pw-cardlets-items pw-featurelist-items" :class="{ 'is-row': cardColumns > 1 }" :style="cardItemsStyle">
+            <template v-for="n in 2">
+            <span v-if="guides && n > 1" :key="'card-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="cardColumns > 1 ? { width: itemValueAt('item-gap') } : { height: itemValueAt('item-gap') }"></span>
+            <div :key="'card-' + n" class="pw-cardlets-item" :style="cardStyle">
               <div class="pw-media-preview-photo pw-cardlets-image"></div>
               <div class="pw-cardlets-content" :style="cardContentStyle">
                 <div v-if="hasField('item-tagline')" :style="cardFieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</div>
@@ -126,6 +130,7 @@
                 <span class="pw-cardlets-cta" :style="cardCtaStyle">{{ $t('prw.preview.card.cta') }}<svg v-if="cardCtaIcon" viewBox="0 0 24 24" aria-hidden="true" v-html="cardCtaIcon"></svg></span>
               </div>
             </div>
+            </template>
           </div>
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
@@ -518,6 +523,7 @@ export default {
     // meets the gap to the intro there: hovering either tints that gap)
     introGapElement() {
       const target = this.isLogocloud ? 'logos' : 'items';
+      // (cardlets and featurelist: 'items')
       const idx = this.fields.indexOf(target);
       return idx > 0 ? this.fields[idx - 1] : '';
     },
@@ -526,11 +532,29 @@ export default {
     },
     // the cards: columns at the shown device (at most two samples), the gap
     // between them as in its CSS
+    cardColumns() {
+      if (!this.hasGrid) return 1;
+      return Math.min(Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1, 2);
+    },
+    // the gap to the intro above (the text's space below meets it: the larger wins)
+    cardTextGap() {
+      const idx = this.fields.indexOf('items');
+      if (idx <= 0) return 0;
+      const gap = this.itemValue('item-text-gap');
+      const prev = this.fields[idx - 1];
+      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
+      return after ? 'max(' + gap + ', ' + after + ')' : gap;
+    },
     cardItemsStyle() {
-      const marginTop = this.gapBefore('items');
-      const gap = { default: '1.5rem', lg: '2.5rem', xl: '2.5rem' }[this.bp];
+      const marginTop = this.guides ? 0 : this.cardTextGap;
+      const gap = this.itemValueAt('item-gap');
+      const cols = this.cardColumns;
+      // guides: the gap is an element of its own (a track between the columns)
+      if (this.guides) {
+        if (cols > 1) return { marginTop, display: 'grid', gridTemplateColumns: Array.from({ length: cols }, () => 'minmax(0, 1fr)').join(' ' + gap + ' ') };
+        return { marginTop, display: 'flex', flexDirection: 'column' };
+      }
       if (!this.hasGrid) return { marginTop, display: 'flex', flexDirection: 'column', gap };
-      const cols = Math.min(Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1, 2);
       return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap };
     },
     // a card: background, border (switched on), the corners switched on
