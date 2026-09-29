@@ -289,6 +289,7 @@ export default {
         'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap',
         'tagline-spacing', 'heading-spacing', 'editor-spacing',
         'item-tagline-spacing', 'item-heading-spacing', 'item-cta-gap',
+        'item-padding-x',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -575,15 +576,18 @@ export default {
     },
     // its content inside the card's padding, the link at the bottom
     cardContentStyle() {
-      const p = this.itemValue('item-padding') || [];
-      const style = { flex: 1, display: 'flex', flexDirection: 'column', padding: Array.isArray(p) ? p.join(' ') : p };
-      // its padding hovered: tinted on all four sides
-      if (this.guides && this.highlight === 'item-padding' && Array.isArray(p)) {
-        const t = ' rgba(255, 0, 170, 0.18)';
-        style.boxShadow = ['inset 0 ' + p[0] + ' 0 0' + t, 'inset calc(-1 * ' + p[1] + ') 0 0 0' + t, 'inset 0 calc(-1 * ' + p[2] + ') 0 0' + t, 'inset ' + p[3] + ' 0 0 0' + t].join(', ');
+      const x = this.itemValue('item-padding-x');
+      const y = this.itemValue('item-padding-y');
+      const style = { flex: 1, display: 'flex', flexDirection: 'column', padding: y + ' ' + x };
+      // a padding hovered: tinted on its two sides (horizontal magenta, vertical green)
+      if (this.guides && this.highlight === 'item-padding-x') {
+        style.boxShadow = 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)';
+      } else if (this.guides && this.highlight === 'item-padding-y') {
+        style.boxShadow = 'inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)';
       }
       return style;
     },
+
     // the card's texts shown (as switched on in the block)
     cardFields() {
       return ['tagline', 'heading', 'editor'].filter(el => this.hasField('item-' + el));

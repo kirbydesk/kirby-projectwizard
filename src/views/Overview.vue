@@ -1456,10 +1456,10 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-padding': 'padding' } : null"
+                  :guides="previewGuides ? { 'item-padding-x': 'padding', 'item-padding-y': 'padding-y' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-padding']"
+                  :show-only="['item-padding-x', 'item-padding-y']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
