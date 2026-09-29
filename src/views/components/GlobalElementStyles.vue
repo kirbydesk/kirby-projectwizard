@@ -274,18 +274,13 @@
                 :key="'ax-' + gIdx + '-' + fIdx + '-' + axis.key"
                 class="pw-field-row"
                 :data-guide="guides ? (axis.key === 'v' ? 'padding-y' : 'padding') : null"
+                @focusin="guides && (hoveredArea = field.varName + '-' + axis.key)"
+                @focusout="hoveredArea = null"
               >
                 <div class="k-input" data-type="text">
                   <span class="k-input-element pw-field-row-inner">
                     <div class="pw-field-row-label-col">
                       <label class="pw-field-row-label">{{ $t(axis.label) }}</label>
-                      <span
-                        v-if="guides"
-                        class="pw-area-hint"
-                        :title="$t(areaHint(field.varName + '-' + axis.key))"
-                        @mouseenter="hoveredArea = field.varName + '-' + axis.key"
-                        @mouseleave="hoveredArea = null"
-                      ><k-icon type="question" /></span>
                     </div>
                     <div class="pw-field-row-options pw-corner-grid pw-side-grid pw-axis-grid">
                       <span v-for="idx in axis.idx" :key="idx" class="pw-element-field">
@@ -322,19 +317,13 @@
                 'pw-dual-first': field.isFollowedByState,
                 'pw-dual-next': field.isState,
               }"
+              @focusin="guides && hasArea(field.varName) && (hoveredArea = field.varName)"
+              @focusout="hoveredArea = null"
             >
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label" v-html="field.label"></label>
-                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
-                    <span
-                      v-if="guides && hasArea(field.varName)"
-                      class="pw-area-hint"
-                      :title="$t(areaHint(field.varName))"
-                      @mouseenter="hoveredArea = field.varName"
-                      @mouseleave="hoveredArea = null"
-                    ><k-icon type="question" /></span>
                   </div>
                   <div class="pw-field-row-options" :class="[fieldGroup.header ? 'pw-group-type-' + fieldGroup.fieldType : '', { 'pw-corner-grid': isCorners(field.def) || isSides(field.def), 'pw-side-grid': isSides(field.def) }]">
                     <!-- Font family selector -->
@@ -1054,31 +1043,13 @@ export default {
       return this.getOverrideValue(name) || this.elementDefaults.button?.vars?.[name]?.value || '';
     },
     // gap between quote and source, as in the frontend
-    // a value with an area in the preview (tinted while its question mark is hovered)
+    // a value with an area in the preview (tinted while the cursor is in its field)
     hasArea(varName) {
       return /^(tagline|heading|editor|list)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing', 'list-indent', 'list-number-indent', 'list-item-spacing'].includes(varName)
         // the flourish's gaps while the flourish is shown
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
     // the space below an element (tagline, heading, text): override, else the plugin's
-    // tooltip of a value's question mark
-    areaHint(varName) {
-      if (varName.endsWith('-paragraph-spacing')) return 'prw.hint.paragraphSpacing';
-      if (varName === 'cite-spacing') return 'prw.hint.citeSpacing';
-      if (varName === 'caption-spacing') return 'prw.hint.captionSpacing';
-      if (varName === 'button-gap') return 'prw.hint.buttonGap';
-      if (varName === 'item-title-spacing') return 'prw.hint.itemTitleSpacing';
-      if (varName === 'button-row-gap') return 'prw.hint.buttonRowGap';
-      if (varName === 'button-icon-gap') return 'prw.hint.iconGap';
-      if (varName === 'list-indent') return 'prw.hint.listIndent';
-      if (varName === 'list-number-indent') return 'prw.hint.listNumberIndent';
-      if (varName === 'list-item-spacing') return 'prw.hint.listItemSpacing';
-      if (varName.endsWith('-flourish-margin-top')) return 'prw.hint.flourishTop';
-      if (varName.endsWith('-flourish-margin-bottom')) return 'prw.hint.flourishBottom';
-      if (varName.endsWith('-padding-h')) return 'prw.hint.paddingX';
-      if (varName.endsWith('-padding-v')) return 'prw.hint.paddingY';
-      return 'prw.hint.spaceBelow';
-    },
     spaceBelow(groupKey) {
       if (!['tagline', 'heading', 'editor', 'list'].includes(groupKey)) return '';
       const name = groupKey + '-spacing';

@@ -82,23 +82,19 @@
               <span class="pw-group-column-cell"><span class="pw-group-column-label">{{ $t('prw.label.desktop') }}</span></span>
             </div>
           </div>
+          <!-- guides on: the cursor in the row's field tints the value's area
+               in the preview -->
           <div
             :key="varName"
             class="pw-field-row"
             :data-guide="guides ? guides[varName] || null : null"
+            @focusin="guides && guides[varName] && $emit('hover-var', varName)"
+            @focusout="guides && guides[varName] && $emit('hover-var', null)"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
                   <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
-                  <!-- guides on: hovering the question mark tints the value's area in the preview -->
-                  <k-icon
-                    v-if="guides && guides[varName]"
-                    type="question"
-                    class="pw-area-hint"
-                    @mouseenter.native="$emit('hover-var', varName)"
-                    @mouseleave.native="$emit('hover-var', null)"
-                  />
                 </div>
                 <div class="pw-field-row-options" :class="{ 'pw-group-type-responsive': isResponsive(def) && !bp, 'pw-corner-grid': isCorners(def) }">
 

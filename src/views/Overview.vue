@@ -923,18 +923,12 @@
                 />
                 <!-- standard: the global values, grey (not editable here) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
-                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
+                  <!-- (read-only, no field: the row hovered tints its area) -->
+                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null" @mouseenter="previewGuides && name === 'item-title-spacing' && (hoveredVar = name)" @mouseleave="hoveredVar = null">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
                           <label class="pw-field-row-label">{{ entryLabel(block.blockType, name) }}</label>
-                          <span
-                            v-if="previewGuides && name === 'item-title-spacing'"
-                            class="pw-area-hint"
-                            :title="$t('prw.hint.itemTitleSpacing')"
-                            @mouseenter="hoveredVar = name"
-                            @mouseleave="hoveredVar = null"
-                          ><k-icon type="question" /></span>
                         </div>
                         <div class="pw-field-row-options">
                           <span class="pw-element-field">
@@ -1979,19 +1973,13 @@
                     :key="'gs-' + el"
                     class="pw-field-row"
                     :data-guide="previewGuides ? { tagline: 'margin', heading: 'row', editor: 'text' }[el] : null"
+                    @mouseenter="previewGuides && (hoveredVar = el + '-spacing')"
+                    @mouseleave="hoveredVar = null"
                   >
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
                           <label class="pw-field-row-label">{{ $t('prw.prop.' + el + '-spacing') }}</label>
-                          <!-- guides on: hovering the question mark tints the space in the preview -->
-                          <span
-                            v-if="previewGuides"
-                            class="pw-area-hint"
-                            :title="$t('prw.hint.spaceBelow')"
-                            @mouseenter="hoveredVar = el + '-spacing'"
-                            @mouseleave="hoveredVar = null"
-                          ><k-icon type="question" /></span>
                         </div>
                         <!-- as the editable rows: the px cell first, then the value -->
                         <div class="pw-field-row-options">

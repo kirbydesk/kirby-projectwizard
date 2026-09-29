@@ -221,19 +221,11 @@
               @update:default="selectOption('settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.pluginDefault)"
             />
             <!-- Toggles field (e.g. padding-top with small/large) -->
-            <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
+            <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row" @focusin="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) && $emit('hover-var', field.key)" @focusout="$emit('hover-var', null)" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : (bpKeyOf(cat, sec) ? bpRowLabel(bpKeyOf(cat, sec), sec) : (field.label ? $t(field.label) : categoryFieldLabel(field.key))) }}<span v-if="field.required" class="pw-field-required">*</span></label>
-                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
-                    <k-icon
-                      v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
-                      type="question"
-                      class="pw-area-hint"
-                      @mouseenter.native="$emit('hover-var', field.key)"
-                      @mouseleave.native="$emit('hover-var', null)"
-                    />
                   </div>
                   <div class="pw-field-row-options">
                     <k-toggles-input
@@ -254,19 +246,11 @@
               </div>
             </div>
             <!-- Toggle group (e.g. radius with 4 sub-toggles) -->
-            <div v-else-if="field.type === 'toggle-group'" :key="field.key" class="pw-field-row">
+            <div v-else-if="field.type === 'toggle-group'" :key="field.key" class="pw-field-row" @focusin="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) && $emit('hover-var', field.key)" @focusout="$emit('hover-var', null)">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
-                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
-                    <k-icon
-                      v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
-                      type="question"
-                      class="pw-area-hint"
-                      @mouseenter.native="$emit('hover-var', field.key)"
-                      @mouseleave.native="$emit('hover-var', null)"
-                    />
                   </div>
                   <div class="pw-field-row-options pw-toggle-group" :class="{ 'pw-corner-grid': isCornerGroup(field) }">
                     <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell">
@@ -286,19 +270,11 @@
               </div>
             </div>
             <!-- Single field -->
-            <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
+            <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row" @focusin="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) && $emit('hover-var', field.key)" @focusout="$emit('hover-var', null)" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
-                    <!-- guides on: hovering the question mark tints the value's area in the preview -->
-                    <k-icon
-                      v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
-                      type="question"
-                      class="pw-area-hint"
-                      @mouseenter.native="$emit('hover-var', field.key)"
-                      @mouseleave.native="$emit('hover-var', null)"
-                    />
                   </div>
                   <div class="pw-field-row-options">
                     <!-- Boolean: toggle -->
@@ -1770,26 +1746,6 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
-}
-/* the question mark right behind the label: hovered, the value's area is
-   tinted in the preview */
-.pw-area-hint {
-  --icon-size: 16px;
-  /* right behind the label: closer than the label column's gap */
-  margin-inline-start: -6px;
-  color: var(--color-text-dimmed);
-  opacity: 0.5;
-}
-/* (the icon inside a span that carries the tooltip) */
-.pw-area-hint {
-  display: inline-flex;
-}
-.pw-area-hint > .k-icon {
-  --icon-size: 16px;
-}
-.pw-area-hint:hover {
-  color: var(--color-text);
-  opacity: 1;
 }
 /* restrictions: the eye at the right end of the label cell */
 .pw-field-state-eye {
