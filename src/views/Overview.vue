@@ -1474,6 +1474,25 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsCard')" />
+            </section>
+            <!-- the card's border: on / off, its width and colour (of the chosen variant) -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.border') }}</h3>
+                <span v-if="isItemBorderEnabled(block.blockType)" class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'cbt-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
                 <pw-block-settings
                   view="items-layout"
                   :block="block"
@@ -1494,8 +1513,20 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+                <pw-block-values
+                  v-if="isItemBorderEnabled(block.blockType)"
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-border-color']"
+                  :labels="{ 'item-border-color': $t('prw.label.color') }"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
               </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsCard')" />
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsBorder')" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1557,7 +1588,7 @@
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="isItemBorderEnabled(block.blockType) ? ['item-background', 'item-border-color', 'item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active'] : ['item-background', 'item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active']"
+                  :show-only="['item-background', 'item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
