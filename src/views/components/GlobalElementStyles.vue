@@ -1374,6 +1374,10 @@ export default {
         if (varName.endsWith('-content-align')) {
           return options.map(o => ({ value: o, icon: 'text-' + o, text: this.optionText(o) }));
         }
+        // the lists' marker: the sign itself, the name as tooltip
+        if (varName === 'list-marker') {
+          return options.map(o => ({ value: o, icon: 'prw-marker-' + o, text: this.optionText(o) }));
+        }
         // text transform: glyph icons, the name as tooltip ("none": as typed)
         if (varName.endsWith('text-transform')) {
           const icons = { none: 'prw-case-none', uppercase: 'prw-case-upper', lowercase: 'prw-case-lower', capitalize: 'prw-case-capitalize' };

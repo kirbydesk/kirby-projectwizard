@@ -22,6 +22,10 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'prw-case-capitalize': '<text x="12" y="17.5" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15.5" font-weight="600">Aa</text>',
 		'prw-step-large': '<path d="M18.2072 9.0428 12.0001 2.83569 5.793 9.0428 7.20721 10.457 12.0001 5.66412 16.793 10.457 18.2072 9.0428ZM5.79285 14.9572 12 21.1643 18.2071 14.9572 16.7928 13.543 12 18.3359 7.20706 13.543 5.79285 14.9572Z"></path>',
 		'prw-step-small': '<path d="M5.79285 5.20718 12 11.4143 18.2071 5.20718 16.7928 3.79297 12 8.58586 7.20706 3.79297 5.79285 5.20718ZM18.2072 18.7928 12.0001 12.5857 5.793 18.7928 7.20721 20.207 12.0001 15.4141 16.793 20.207 18.2072 18.7928Z"></path>',
+		// the lists' markers (Elements › Lists › Bullets): dot, dash, check
+		'prw-marker-disc': '<circle cx="12" cy="12" r="3.5"></circle>',
+		'prw-marker-dash': '<path d="M6 11H18V13H6V11Z"></path>',
+		'prw-marker-check': '<path d="M10 15.17L19.19 5.98L20.61 7.39L10 18L3.64 11.64L5.05 10.22L10 15.17Z"></path>',
 		// the lists (Elements › Lists): points with lines
 		'prw-list': '<path d="M8 4H21V6H8V4ZM3 3.5H6V6.5H3V3.5ZM3 10.5H6V13.5H3V10.5ZM3 17.5H6V20.5H3V17.5ZM8 11H21V13H8V11ZM8 18H21V20H8V18Z"></path>',
 		// the entries (Elements › Entries): shapes with lines
