@@ -735,7 +735,7 @@
                  to open and close; the plus takes an entry into the JSON -->
             <pw-portal to=".pw-wizard .pw-preview-column">
               <div v-show="activeTab === 'global' && globalActiveTab === 'patches'" class="pw-patches-tree">
-                <k-text size="tiny" class="k-help" :html="$t('prw.patches.tree', { plus: '<span class=&quot;pw-json-add pw-json-add-inline&quot; aria-hidden=&quot;true&quot;><svg class=&quot;k-icon&quot; viewBox=&quot;0 0 24 24&quot;><use href=&quot;#icon-add&quot;></use></svg></span>' })" />
+                <k-text class="k-help pw-patches-intro" :html="$t('prw.patches.tree', { plus: '<span class=&quot;pw-json-add pw-json-add-inline&quot; aria-hidden=&quot;true&quot;><svg class=&quot;k-icon&quot; viewBox=&quot;0 0 24 24&quot;><use href=&quot;#icon-add&quot;></use></svg></span>' })" />
                 <ul class="pw-json-children pw-json-root">
                   <pw-json-node
                     v-for="block in blocks"
@@ -3974,6 +3974,11 @@ export default {
   margin: var(--spacing-6) 0 0;
   padding-left: 0;
   border-left: 0;
+}
+/* the tree's intro: in the panel's regular text size */
+.pw-patches-intro {
+  font-size: var(--text-sm);
+  line-height: 1.5;
 }
 /* the plus in the tree's intro: as the one at a row's end */
 .pw-json-add.pw-json-add-inline {
