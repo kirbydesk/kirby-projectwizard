@@ -210,35 +210,6 @@
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
 
           <!-- Blocks -->
-          <!-- Settings -->
-          <div v-show="globalActiveTab === 'settings'" class="pw-wizard-global-content">
-            <!-- theme variants that can be chosen in the blocks ("default" always on) -->
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row"><h3 class="pw-card-heading">{{ $t('prw.label.variants') }}</h3></div>
-              <div class="pw-card pw-field-table">
-                <div v-for="variant in ['variant', 'variant2', 'variant3']" :key="variant" class="pw-field-row">
-                  <div class="k-input" data-type="text">
-                    <span class="k-input-element pw-field-row-inner">
-                      <div class="pw-field-row-label-col">
-                        <label class="pw-field-row-label">{{ $t('pw.option.' + variant) }}</label>
-                      </div>
-                      <div class="pw-field-row-options">
-                        <k-toggles-input
-                          :value="activeVariants.includes(variant) ? 'true' : 'false'"
-                          :options="[{ value: 'true', text: $t('pw.option.enabled') }, { value: 'false', text: $t('pw.option.disabled') }]"
-                          :grow="false"
-                          :required="true"
-                          @input="toggleVariant(variant, $event === 'true')"
-                        />
-                      </div>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </div>
-
           <!-- Settings → Project: which blocks can be used -->
           <div v-show="globalActiveTab === 'general'" class="pw-wizard-global-content">
             <!-- which blocks can be used -->
@@ -321,6 +292,31 @@
               </div>
             </pw-portal>
 
+            <!-- theme variants that can be chosen in the blocks ("default" always on) -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row"><h3 class="pw-card-heading">{{ $t('prw.label.variants') }}</h3></div>
+              <div class="pw-card pw-field-table">
+                <div v-for="variant in ['variant', 'variant2', 'variant3']" :key="variant" class="pw-field-row">
+                  <div class="k-input" data-type="text">
+                    <span class="k-input-element pw-field-row-inner">
+                      <div class="pw-field-row-label-col">
+                        <label class="pw-field-row-label">{{ $t('pw.option.' + variant) }}</label>
+                      </div>
+                      <div class="pw-field-row-options">
+                        <k-toggles-input
+                          :value="activeVariants.includes(variant) ? 'true' : 'false'"
+                          :options="[{ value: 'true', text: $t('pw.option.enabled') }, { value: 'false', text: $t('pw.option.disabled') }]"
+                          :grow="false"
+                          :required="true"
+                          @input="toggleVariant(variant, $event === 'true')"
+                        />
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.variants')" />
+            </section>
             <!-- the global block values as cards, like the elements -->
             <!-- paddings: one row per axis; the small/large switch (in the
                  vertical row) applies to top and bottom only -->
@@ -2293,7 +2289,7 @@ export default {
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return ['general', 'settings', ...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'patches'];
+      return ['general', ...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'patches'];
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
@@ -2344,7 +2340,6 @@ export default {
       if (this.hasTranslateTab) tabs.push({ key: 'translate', icon: 'translate' });
       if (this.hasGeneratorTab) tabs.push({ key: 'generator', icon: 'ai' });
       tabs.push({ key: 'patches', icon: 'code' });
-      tabs.push({ key: 'settings', icon: 'cog' });
       return tabs;
     },
     bodyDefaultFont() {
@@ -2450,10 +2445,11 @@ export default {
     isDirty() {
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
-        if (tab === 'settings') return !!this.dirtyTabs['global'];
-        // the project page also holds the block activation
+        // the active blocks page holds the block activation
         if (tab === 'general') return !!this.dirtyTabs['global-settings'] || !!this.dirtyTabs['global'];
-        if (['site', 'blocks', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
+        // (the blocks page also holds the variants)
+        if (tab === 'blocks') return !!this.dirtyTabs['global-settings'] || !!this.dirtyTabs['global'];
+        if (['site', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
         // (both AI pages save the AI settings and keys together)
         if (tab === 'translate' || tab === 'generator') return !!this.dirtyTabs['ai'];
         return !!this.dirtyTabs[tab];
@@ -3428,12 +3424,13 @@ export default {
       const cssBefore = await this.frontendCssVersion();
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
-        if (tab === 'settings') {
-          await this.saveGlobal();
-        } else if (tab === 'general') {
+        if (tab === 'general') {
           if (this.dirtyTabs['global-settings']) await this.saveGlobalSettings();
           if (this.dirtyTabs['global']) await this.saveGlobal();
-        } else if (['site', 'blocks', 'fonts'].includes(tab)) {
+        } else if (tab === 'blocks') {
+          if (this.dirtyTabs['global-settings']) await this.saveGlobalSettings();
+          if (this.dirtyTabs['global']) await this.saveGlobal();
+        } else if (['site', 'fonts'].includes(tab)) {
           await this.saveGlobalSettings();
         } else if (tab === 'elements') {
           await this.saveElements();
@@ -3481,7 +3478,7 @@ export default {
     discardChanges() {
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
-        if (tab === 'settings' || tab === 'general') {
+        if (tab === 'blocks' || tab === 'general') {
           this.activeBlocks = [...this.originalActiveBlocks];
           this.activeVariants = [...this.originalActiveVariants];
           for (const block of this.blocks) {
