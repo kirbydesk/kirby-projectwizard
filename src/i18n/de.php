@@ -73,7 +73,7 @@
 	'prw.option.gridFull' => 'Volle Breite',
 	'prw.option.gridCustom' => 'Angepasst',
 	'prw.label.gridWidth' => 'Breite',
-	'prw.label.gridOffset' => 'Versatz',
+	'prw.label.gridOffset' => 'Versatz von links',
 	'prw.label.offset' => 'Vertikaler Versatz',
 	'prw.label.gapVertical' => 'Vertikaler Abstand',
 	'prw.label.gapHorizontal' => 'Horizontaler Abstand',

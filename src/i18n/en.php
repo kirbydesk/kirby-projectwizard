@@ -73,7 +73,7 @@
 	'prw.option.gridFull' => 'Full width',
 	'prw.option.gridCustom' => 'Adjusted',
 	'prw.label.gridWidth' => 'Width',
-	'prw.label.gridOffset' => 'Offset',
+	'prw.label.gridOffset' => 'Offset from left',
 	'prw.label.offset' => 'Vertical offset',
 	'prw.label.gapVertical' => 'Vertical gap',
 	'prw.label.gapHorizontal' => 'Horizontal gap',
