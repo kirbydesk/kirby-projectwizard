@@ -221,7 +221,7 @@
               @update:default="selectOption('settings.fields.' + cat.key + '.' + field.key + '.default', $event, field.pluginDefault)"
             />
             <!-- Toggles field (e.g. padding-top with small/large) -->
-            <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row" @focusin="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) && $emit('hover-var', field.key)" @focusout="$emit('hover-var', null)" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
+            <div v-if="field.type === 'toggles'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
@@ -246,7 +246,7 @@
               </div>
             </div>
             <!-- Toggle group (e.g. radius with 4 sub-toggles) -->
-            <div v-else-if="field.type === 'toggle-group'" :key="field.key" class="pw-field-row" @focusin="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) && $emit('hover-var', field.key)" @focusout="$emit('hover-var', null)">
+            <div v-else-if="field.type === 'toggle-group'" :key="field.key" class="pw-field-row">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
@@ -270,7 +270,7 @@
               </div>
             </div>
             <!-- Single field -->
-            <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row" @focusin="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)) && $emit('hover-var', field.key)" @focusout="$emit('hover-var', null)" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
+            <div v-else-if="field.type === 'single'" :key="field.key" class="pw-field-row" :data-guide="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))">
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
