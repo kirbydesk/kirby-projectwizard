@@ -81,7 +81,7 @@
 	'prw.label.size' => 'Größe',
 	'prw.headline.spacing' => 'Abstände',
 	'prw.headline.spaceBelow' => 'Elemente',
-	'prw.headline.fields' => 'Felder',
+	'prw.headline.fields' => 'Elemente',
 	'prw.headline.blockLayout' => 'Block-Einstellungen',
 	'prw.headline.defaultFont' => 'Standardschrift',
 	'prw.headline.margins' => 'Außenabstände',
