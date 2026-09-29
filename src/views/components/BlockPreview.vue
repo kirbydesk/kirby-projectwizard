@@ -165,7 +165,7 @@
               <!-- (a text last, so every element above has its space below) -->
               <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.mc.text') }}</p>
             </div>
-            <span v-if="guides" class="pw-mc-gap" :class="{ 'is-row': !mcSide, 'is-hot': highlight === (mcSide ? 'column-gap' : 'row-gap') }" :style="mcSide ? null : { height: itemValue('row-gap') }"></span>
+            <span v-if="guides" class="pw-mc-gap" :class="{ 'is-row': !mcSide, 'is-hot': highlight === (mcSide ? 'column-gap' : 'row-gap') }" :style="mcSide ? null : { height: itemValueAt('row-gap') }"></span>
             <div class="pw-mc-column">
               <blockquote class="pw-mc-quote" :style="mcQuoteStyle">{{ $t('prw.preview.quote') }}</blockquote>
               <span v-if="guides" class="pw-mc-band is-quote" :class="{ 'is-hot': highlight === 'quote-spacing' }" :style="{ height: spaceAfter('quote') }"></span>
@@ -764,7 +764,7 @@ export default {
     // guides a track of its own); stacked below each other with the row gap
     mcStyle() {
       if (!this.mcSide) {
-        return { display: 'flex', flexDirection: 'column', gap: this.guides ? 0 : this.itemValue('row-gap') };
+        return { display: 'flex', flexDirection: 'column', gap: this.guides ? 0 : this.itemValueAt('row-gap') };
       }
       const [, a, b] = this.mcDist.split('-');
       const gap = this.itemValueAt('column-gap');
