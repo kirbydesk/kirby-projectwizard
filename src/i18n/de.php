@@ -72,6 +72,8 @@
 	'prw.label.gridLayout' => 'Rasterlayout',
 	'prw.option.gridFull' => 'Volle Breite',
 	'prw.option.gridCustom' => 'Angepasst',
+	'prw.label.gridWidth' => 'Breite',
+	'prw.label.gridOffset' => 'Versatz',
 	'prw.label.offset' => 'Vertikaler Versatz',
 	'prw.label.gapVertical' => 'Vertikaler Abstand',
 	'prw.label.gapHorizontal' => 'Horizontaler Abstand',

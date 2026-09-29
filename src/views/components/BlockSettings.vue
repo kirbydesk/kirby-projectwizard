@@ -223,7 +223,7 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}<span v-if="field.required" class="pw-field-required">*</span></label>
+                    <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : categoryFieldLabel(field.key) }}<span v-if="field.required" class="pw-field-required">*</span></label>
                     <!-- guides on: hovering the question mark tints the value's area in the preview -->
                     <k-icon
                       v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
@@ -810,6 +810,10 @@ export default {
         return this.$t(this.gridAdjusted(sec.fields, this.gridBp) ? 'prw.hint.gridCustom' : 'prw.hint.gridFull');
       }
       return sec.help;
+    },
+    // a grid row's label without its screen size (chosen above the card)
+    gridFieldLabel(key) {
+      return this.$t(key.startsWith('grid-size-') ? 'prw.label.gridWidth' : 'prw.label.gridOffset');
     },
     // the grid's start values (Startwerte › Raster)
     isGridDefaults(cat) {
