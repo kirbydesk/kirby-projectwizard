@@ -62,7 +62,6 @@
 	'prw.subtab.add-font' => 'Schrift hinzufügen',
 
 	/* -------------- Tabs --------------*/
-	'prw.field.locked' => 'Dieses Feld kann nicht ausgeblendet werden.',
 	'prw.field.visible' => 'Sichtbar',
 	'prw.field.hidden' => 'Ausgeblendet',
 	'prw.field.radius' => 'Radien',

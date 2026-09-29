@@ -143,9 +143,7 @@
                     <k-icon v-if="isHidden(row.keys)" type="hidden" class="pw-field-state-eye" />
                   </div>
                   <div class="pw-field-row-options">
-                    <span v-if="row.locked" class="pw-field-locked">{{ $t('prw.field.locked') }}</span>
                     <k-toggle-input
-                      v-else
                       :value="!isHidden(row.keys)"
                       :text="$t(isHidden(row.keys) ? 'prw.field.hidden' : 'prw.field.visible')"
                       @input="toggleHidden(row.keys)"
@@ -797,14 +795,13 @@ export default {
       const all = this.getDefault('settings.fields.' + tab) || {};
       if (tab === 'content') {
         // (lists of allowed blocks, e.g. multicolumn's column blocks, are no field)
-        // (a locked field without settings of its own too: it shows, not hideable)
         const isField = (v) => v === 'enabled' || v === true
-          || (this.isObject(v) && v.locked === true)
           || (this.isObject(v) && Object.values(v).some(p => this.isObject(p) && ('options' in p || 'default' in p)));
         const keys = Object.keys(all).filter(k => isField(all[k]));
         // a field the block needs (locked, e.g. the text of the text block)
-        // cannot be hidden
-        const row = (k) => ({ id: k, keys: [k], label: this.fieldLabel(k), locked: this.isObject(all[k]) && all[k].locked === true });
+        // cannot be hidden: no row (its further settings keep theirs)
+        const locked = (k) => this.isObject(all[k]) && all[k].locked === true;
+        const row = (k) => ({ id: k, keys: [k], label: this.fieldLabel(k) });
         const groups = [];
         // below a field its further settings (the media's size, corner style:
         // media-size → the drawer's mediaSize …); locked ones (the media
@@ -817,8 +814,8 @@ export default {
             return { id: f.key + '-' + p.key, keys: [f.key + '-' + p.key], label: pLabel && pLabel !== pKey ? pLabel : p.key };
           });
         }
-        const own = keys.filter(k => !k.startsWith('item-')).flatMap(k => [row(k), ...(extras[k] || [])]);
-        const items = keys.filter(k => k.startsWith('item-')).map(row);
+        const own = keys.filter(k => !k.startsWith('item-')).flatMap(k => [...(locked(k) ? [] : [row(k)]), ...(extras[k] || [])]);
+        const items = keys.filter(k => k.startsWith('item-') && !locked(k)).map(row);
         if (own.length) groups.push({ key: 'block', heading: null, rows: own });
         if (items.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: items });
         return groups;
@@ -1645,13 +1642,6 @@ export default {
 
 .pw-field-row-options .k-choice-input.k-toggle-input {
   padding-left: var(--spacing-2);
-}
-/* restrictions: a field that cannot be hidden, a note instead of the switch */
-.pw-field-locked {
-  padding-inline: var(--spacing-3);
-  font-size: var(--text-sm);
-  font-style: italic;
-  color: var(--color-text-dimmed);
 }
 /* the question mark right behind the label: hovered, the value's area is
    tinted in the preview */
