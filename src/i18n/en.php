@@ -72,6 +72,7 @@
 	'prw.label.gridLayout' => 'Grid layout',
 	'prw.option.gridFull' => 'Full width',
 	'prw.option.gridCustom' => 'Adjusted',
+	'prw.label.screenSize' => 'Screen size',
 	'prw.label.offset' => 'Vertical offset',
 	'prw.label.gapVertical' => 'Vertical gap',
 	'prw.label.gapHorizontal' => 'Horizontal gap',

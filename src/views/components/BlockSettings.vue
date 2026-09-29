@@ -189,7 +189,26 @@
               </span>
             </div>
           </div>
-          <template v-for="field in (isGridDefaults(cat) && !gridAdjusted(sec.fields) ? [] : sec.fields)">
+          <!-- adjusted: one screen size at a time, its width and offset below -->
+          <div v-if="isGridDefaults(cat) && gridAdjusted(sec.fields)" class="pw-field-row">
+            <div class="k-input" data-type="text">
+              <span class="k-input-element pw-field-row-inner">
+                <div class="pw-field-row-label-col">
+                  <label class="pw-field-row-label">{{ $t('prw.label.screenSize') }}</label>
+                </div>
+                <div class="pw-field-row-options">
+                  <k-toggles-input
+                    :value="gridBp"
+                    :options="['sm', 'md', 'lg', 'xl'].map(b => ({ value: b, text: b.toUpperCase() }))"
+                    :grow="false"
+                    :required="true"
+                    @input="gridBp = $event"
+                  />
+                </div>
+              </span>
+            </div>
+          </div>
+          <template v-for="field in (isGridDefaults(cat) ? (gridAdjusted(sec.fields) ? sec.fields.filter(f => f.key.endsWith('-' + gridBp)) : []) : sec.fields)">
             <!-- FieldRow (e.g. theme with options + click logic) -->
             <pw-field-row
               v-if="field.type === 'fieldrow'"
@@ -499,6 +518,8 @@ export default {
       drawerTab: null,
       // grid start values switched to "adjusted" (still full width values)
       gridCustom: false,
+      // the screen size whose grid start values are shown
+      gridBp: 'lg',
     };
   },
   computed: {
