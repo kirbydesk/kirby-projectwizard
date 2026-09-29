@@ -794,13 +794,13 @@ export default {
       // own display …), named after it
       // (the variant with a help text below its card)
       const styleHelp = (key) => (this.view === 'defaults' && key === 'theme' ? this.$t('prw.hint.themeDefault') : null);
-      if (this.view === 'defaults' && cat.key === 'style' && fields.length > 1) {
+      // (also a single one, e.g. only the variant: its card keeps its heading)
+      if (this.view === 'defaults' && cat.key === 'style') {
         return fields.map(f => ({ key: f.key, heading: this.styleSectionHeading(f.key), help: styleHelp(f.key), fields: [f] }));
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
-      const help = cat.key === 'style' && fields.length === 1 ? styleHelp(fields[0].key) : null;
-      return [{ key: 'main', heading: repeats ? null : heading, help, fields }];
+      return [{ key: 'main', heading: repeats ? null : heading, fields }];
     },
 
     // the help text below a card; the grid's follows its switch (full width
