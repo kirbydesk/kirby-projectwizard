@@ -208,7 +208,8 @@
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the steps cyan, between number and text violet -->
-          <div v-if="isSteplist && spaceBand('items')" class="pw-space-band" :class="['is-' + spaceBand('items').prev, { 'is-hot': highlight === spaceBand('items').prev + '-spacing' }]" :style="{ height: spaceBand('items').height }"></div>
+          <!-- guides: the gap to the intro (as the cardlets') -->
+          <div v-if="isSteplist && guides && stepTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: stepTextGap }"></div>
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides, 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
             <template v-for="n in stepCount">
             <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="stepStepGapStyle"></span>
@@ -994,10 +995,19 @@ export default {
       if (!this.hasGrid || this.currentStepStyle === 'connected') return 1;
       return Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
     },
+    // the gap to the intro above (the text's space below meets it: the larger wins)
+    stepTextGap() {
+      const idx = this.fields.indexOf('items');
+      if (idx <= 0) return 0;
+      const gap = this.itemValue('item-text-gap');
+      const prev = this.fields[idx - 1];
+      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
+      return after ? 'max(' + gap + ', ' + after + ')' : gap;
+    },
     stepItemsStyle() {
       const gap = this.itemValue('item-gap');
       // (with a band of its own above: none)
-      const style = { marginTop: this.spaceBand('items') ? 0 : this.gapBefore('items') };
+      const style = { marginTop: this.guides ? 0 : this.stepTextGap };
       const cols = this.stepColumns;
       if (this.guides) {
         // guides: the gaps are elements of their own – side by side a track

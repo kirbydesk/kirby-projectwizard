@@ -1176,10 +1176,10 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :labels="{ 'item-gap': $t('prw.label.betweenSteps') }"
-                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                  :guides="previewGuides ? { 'item-gap': 'margin', 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-gap']"
+                  :show-only="['item-gap', 'item-text-gap']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
