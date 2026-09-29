@@ -558,4 +558,6 @@
 	'prw.patches.unknown' => 'Unknown blocks, they are ignored:',
 	'prw.notify.patches.success' => 'Exceptions saved',
 	'prw.notify.patches.error' => 'Exceptions could not be saved',
+	'prw.patches.tree' => 'All settings of the blocks as they currently apply. With <code>+</code> an entry with its value goes into the exceptions, where it can be adjusted.',
+	'prw.patches.take' => 'Take as exception',
 ];

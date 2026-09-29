@@ -12,6 +12,7 @@ import SetupWizard from './views/SetupWizard.vue';
 import Portal from './views/components/Portal.vue';
 import BlockPreview from './views/components/BlockPreview.vue';
 import DeviceSelect from './views/components/DeviceSelect.vue';
+import JsonNode from './views/components/JsonNode.vue';
 
 panel.plugin('kirbydesk/kirby-projectwizard', {
 	icons: {
@@ -54,5 +55,6 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-portal': Portal,
 		'pw-block-preview': BlockPreview,
 		'pw-device-select': DeviceSelect,
+		'pw-json-node': JsonNode,
 	},
 });

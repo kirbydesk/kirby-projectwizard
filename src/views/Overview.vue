@@ -731,6 +731,24 @@
           <!-- Exceptions: a JSON by block laid over the plugins' settings.json
                and editor.json (for special cases) -->
           <div v-show="globalActiveTab === 'patches'" class="pw-wizard-global-content">
+            <!-- right: every block's settings (with the exceptions) as a tree
+                 to open and close; the plus takes an entry into the JSON -->
+            <pw-portal to=".pw-wizard .pw-preview-column">
+              <div v-show="activeTab === 'global' && globalActiveTab === 'patches'" class="pw-patches-tree">
+                <k-text size="tiny" class="k-help" :html="$t('prw.patches.tree')" />
+                <ul class="pw-json-children pw-json-root">
+                  <pw-json-node
+                    v-for="block in blocks"
+                    :key="'pt-' + block.blockType"
+                    :node-key="block.blockType"
+                    :label="(block.name || block.blockType) + ' · ' + block.blockType"
+                    :value="{ ...(block.settings || {}), editor: block.editor || {} }"
+                    :path="[block.blockType]"
+                    @take="takePatch"
+                  />
+                </ul>
+              </div>
+            </pw-portal>
             <section class="pw-card-section">
               <textarea
                 :key="'patches-' + discardKey"
@@ -2965,6 +2983,27 @@ export default {
         return this.$t('prw.patches.invalid') + (line ? ' ' + this.$t('prw.patches.line') + ' ' + line : '') + ': ' + e.message;
       }
     },
+    // an entry of the tree into the JSON: its path with its current value
+    // (nested objects; what the JSON holds there already is replaced)
+    takePatch({ path, value }) {
+      let data = {};
+      if (this.patchesText.trim()) {
+        try {
+          data = JSON.parse(this.patchesText);
+        } catch (e) {
+          this.$panel.notification.error(this.patchesCheck(this.patchesText));
+          return;
+        }
+      }
+      let node = data;
+      path.slice(0, -1).forEach(key => {
+        if (!node[key] || typeof node[key] !== 'object' || Array.isArray(node[key])) node[key] = {};
+        node = node[key];
+      });
+      node[path[path.length - 1]] = JSON.parse(JSON.stringify(value));
+      this.patchesText = JSON.stringify(data, null, 2) + '\n';
+      this.onPatchesInput();
+    },
     async savePatches() {
       this.patchesError = this.patchesCheck(this.patchesText);
       if (this.patchesError) {
@@ -3918,6 +3957,13 @@ export default {
 }
 .pw-patches-input:focus {
   outline: var(--outline);
+}
+.pw-patches-tree {
+  padding-bottom: var(--spacing-6);
+}
+.pw-json-root {
+  margin-top: var(--spacing-3);
+  padding-left: 0;
 }
 .pw-patches-note {
   margin-top: var(--spacing-2);
