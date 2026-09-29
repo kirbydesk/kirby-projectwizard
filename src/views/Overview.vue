@@ -923,7 +923,7 @@
                 />
                 <!-- standard: the global values, grey (not editable here) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
-                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
+                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row is-readonly" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
@@ -1970,7 +1970,7 @@
                   <div
                     v-for="el in ownSpacingElements(block.blockType)"
                     :key="'gs-' + el"
-                    class="pw-field-row"
+                    class="pw-field-row is-readonly"
                     :data-guide="previewGuides ? { tagline: 'margin', heading: 'row', editor: 'text' }[el] : null"
                   >
                     <div class="k-input" data-type="text">
@@ -3802,6 +3802,11 @@ export default {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   color: var(--color-text-dimmed);
+}
+/* rows with the global values (Standard): label and values fainter, so
+   nothing looks clickable */
+.pw-field-row.is-readonly :is(.pw-field-row-label, .pw-field-row-options) {
+  opacity: 0.5;
 }
 .pw-field-table .pw-readonly-value .pw-element-unit {
   position: static;
