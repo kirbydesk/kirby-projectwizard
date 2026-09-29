@@ -53,7 +53,9 @@
                     <span :style="{ backgroundColor: mediaColor(theme, 'element-slideshow-bullet') }"></span>
                   </div>
                   <template v-if="previewChildText(groupKey)">
-                    <span class="pw-element-preview-text" :style="previewStyle(previewChildKey(groupKey), bp, theme)">{{ previewChildText(groupKey) }}</span>
+                    <!-- the caption's gap to the media (guides: a band between two lines) -->
+                    <span v-if="guides" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'caption-spacing' }" :style="{ height: captionGap() }"></span>
+                    <span class="pw-element-preview-text" :style="captionStyle(bp, theme)">{{ previewChildText(groupKey) }}</span>
                   </template>
                 </template>
                 <template v-else-if="previewThemed(groupKey)">
@@ -912,7 +914,7 @@ export default {
       // buttons: the gap between rows is the second gap (violet)
       if (varName === 'button-row-gap') return 'row';
       if (varName === 'item-title-spacing') return 'margin';
-      if (varName.endsWith('cite-spacing') || varName === 'button-gap') return 'margin';
+      if (varName.endsWith('cite-spacing') || varName === 'caption-spacing' || varName === 'button-gap') return 'margin';
       // the space after an element (tagline, heading, text)
       if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'margin';
       // buttons: the gap between icon and text, the third gap (orange)
@@ -976,6 +978,13 @@ export default {
       const keys = { sizes: 'prw.hint.cardSizes', marked: 'prw.hint.cardMarked', flourish: 'prw.hint.cardFlourish', colors: 'prw.hint.cardColors', zoom: 'prw.hint.cardZoom' };
       return keys[st.category] ? this.$t(keys[st.category]) : '';
     },
+    // media: the caption's gap to the image or video
+    captionGap() {
+      return this.getOverrideValue('caption-spacing') || this.elementDefaults.caption?.vars?.['caption-spacing']?.value || '';
+    },
+    captionStyle(bp, theme) {
+      return { ...this.previewStyle('caption', bp, theme), marginTop: this.guides ? 0 : this.captionGap() };
+    },
     // item: the gap between title and description
     itemTitleGap() {
       return this.getOverrideValue('item-title-spacing') || this.elementDefaults.item?.vars?.['item-title-spacing']?.value || '';
@@ -1021,7 +1030,7 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing'].includes(varName)
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing'].includes(varName)
         // the flourish's gaps while the flourish is shown
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
@@ -1030,6 +1039,7 @@ export default {
     areaHint(varName) {
       if (varName.endsWith('-paragraph-spacing')) return 'prw.hint.paragraphSpacing';
       if (varName === 'cite-spacing') return 'prw.hint.citeSpacing';
+      if (varName === 'caption-spacing') return 'prw.hint.captionSpacing';
       if (varName === 'button-gap') return 'prw.hint.buttonGap';
       if (varName === 'item-title-spacing') return 'prw.hint.itemTitleSpacing';
       if (varName === 'button-row-gap') return 'prw.hint.buttonRowGap';
@@ -1682,7 +1692,7 @@ export default {
       if (varName.startsWith('item-title-')) return 'title';
       if (varName.startsWith('item-text-')) return 'description';
       // source: its gap to the quote sits in the source card
-      if (varName === 'cite-spacing') return 'text';
+      if (varName === 'cite-spacing' || varName === 'caption-spacing') return 'text';
       // the space below an element: with its text settings
       if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'text';
       // buttons: paddings, outer spacing (gap between buttons), form and icon
