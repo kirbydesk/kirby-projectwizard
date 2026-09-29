@@ -2362,14 +2362,24 @@ export default {
   color: var(--pw-list-marker);
   font-size: var(--pw-list-marker-size);
 }
-/* guides: the indent (magenta, as a padding) and the gaps between the points
-   (orange lines); hovered, only the area tinted */
+/* guides: the indent's edge (where the text starts) as a line – bullets
+   magenta, numbers green (the second padding); the gaps between the points
+   as orange bands across the preview. Hovered, only the value's area
+   tinted, all other lines hidden */
 .pw-element-preview.has-guides .pw-element-preview-list {
-  background: linear-gradient(to right, rgba(255, 0, 170, 0.08), rgba(255, 0, 170, 0.08)) no-repeat left / var(--pw-list-indent, 0) 100%;
-  box-shadow: inset 1px 0 0 rgba(255, 0, 170, 0.6);
+  background: linear-gradient(rgba(255, 0, 170, 0.6), rgba(255, 0, 170, 0.6)) no-repeat var(--pw-list-indent, 0px) 0 / 1px 100%;
 }
-.pw-element-preview-list.is-hot-indent {
-  box-shadow: none;
+.pw-element-preview.has-guides .pw-element-preview-list.is-numbered {
+  background-image: linear-gradient(rgba(0, 180, 90, 0.9), rgba(0, 180, 90, 0.9));
+}
+.pw-element-preview.has-focus .pw-element-preview-list {
+  background: none;
+}
+.pw-element-preview.has-guides .pw-element-preview-list.is-hot-indent {
+  background: linear-gradient(rgba(255, 0, 170, 0.18), rgba(255, 0, 170, 0.18)) no-repeat 0 0 / var(--pw-list-indent, 0px) 100%;
+}
+.pw-element-preview.has-guides .pw-element-preview-list.is-numbered.is-hot-indent {
+  background-image: linear-gradient(rgba(0, 180, 90, 0.18), rgba(0, 180, 90, 0.18));
 }
 .pw-element-preview.has-guides .pw-element-preview-list > li {
   position: relative;
@@ -2386,21 +2396,11 @@ export default {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
   pointer-events: none;
 }
-.pw-element-preview-list.is-hot-gap > li + li::before {
+.pw-element-preview.has-focus .pw-element-preview-list > li + li::before {
   border-color: transparent;
+}
+.pw-element-preview-list.is-hot-gap > li + li::before {
   background: rgba(255, 140, 0, 0.15);
-}
-.pw-element-preview-list.is-hot-indent {
-  background: linear-gradient(to right, rgba(255, 0, 170, 0.18), rgba(255, 0, 170, 0.18)) no-repeat left / var(--pw-list-indent, 0) 100%;
-}
-/* the numbers' indent: the second padding (green) */
-.pw-element-preview.has-guides .pw-element-preview-list.is-numbered {
-  background-image: linear-gradient(to right, rgba(0, 180, 90, 0.08), rgba(0, 180, 90, 0.08));
-  box-shadow: inset 1px 0 0 rgba(0, 180, 90, 0.9);
-}
-.pw-element-preview-list.is-numbered.is-hot-indent {
-  background-image: linear-gradient(to right, rgba(0, 180, 90, 0.18), rgba(0, 180, 90, 0.18));
-  box-shadow: none;
 }
 /* "1)" as in the frontend (elements.css) */
 @counter-style pw-decimal-paren {
