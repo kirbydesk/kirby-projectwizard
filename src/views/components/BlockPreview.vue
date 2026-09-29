@@ -121,7 +121,13 @@
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'card-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="cardColumns > 1 ? { width: itemValueAt('item-gap') } : { height: itemValueAt('item-gap') }"></span>
             <div :key="'card-' + n" class="pw-cardlets-item" :style="cardStyle">
-              <div class="pw-media-preview-photo pw-cardlets-image" :class="{ 'is-overlay': cardOverlay }"></div>
+              <!-- the image; standing out: the card's upper piece behind it
+                   from the overhang down (guides: the overhang as a band) -->
+              <div class="pw-cardlets-image-wrap" :class="{ 'is-overhang': cardOverhang }">
+                <span v-if="cardOverhang" class="pw-cardlets-overhang" :style="cardOverhangStyle"></span>
+                <span v-if="cardOverhang && guides" class="pw-card-overhang" :class="{ 'is-hot': highlight === 'item-overhang' }" :style="{ height: itemValueAt('item-overhang') }"></span>
+                <div class="pw-media-preview-photo pw-cardlets-image" :class="{ 'is-overlay': cardOverlay }"></div>
+              </div>
               <!-- on the image: the overlay fades in from the texts' side -->
               <div v-if="cardOverlay" class="pw-cardlets-overlay" :style="cardOverlayStyle"></div>
               <div class="pw-cardlets-content" :style="cardContentStyle">
@@ -576,6 +582,9 @@ export default {
         overflow: 'hidden',
         // on the image: the card in its ratio, the image fills it
         position: this.cardOverlay ? 'relative' : null,
+        // the image standing out: the card drawn in two pieces (see
+        // cardOverhangStyle and the content), the card itself bare
+        ...(this.cardOverhang ? { overflow: 'visible', background: 'none', border: 0, boxShadow: 'none', borderRadius: 0 } : {}),
         aspectRatio: this.cardOverlay ? (this.setting('style', 'card-ratio') || '4/5').replace('/', ' / ') : null,
         backgroundColor: this.itemColor('item-background'),
         border: this.setting('layout', 'item-border') === true ? this.itemValue('item-border-width') + ' solid ' + this.itemColor('item-border-color') : 0,
@@ -589,6 +598,19 @@ export default {
       const x = this.itemValue('item-padding-x');
       const y = this.itemValue('item-padding-y');
       const style = { flex: 1, display: 'flex', flexDirection: 'column', padding: y + ' ' + x };
+      // the image standing out: the lower piece of the card (without the
+      // joint's border and shadow)
+      if (this.cardOverhang) {
+        const piece = this.cardPiece;
+        Object.assign(style, {
+          backgroundColor: piece.backgroundColor,
+          border: piece.border,
+          borderTopWidth: 0,
+          borderRadius: '0 0 ' + piece.radius[2] + ' ' + piece.radius[3],
+          boxShadow: [piece.shadow, style.boxShadow].filter(Boolean).join(', ') || null,
+          clipPath: 'inset(0 -3rem -3rem -3rem)',
+        });
+      }
       // on the image: above the image, the texts at the top or bottom
       if (this.cardOverlay) {
         Object.assign(style, { position: 'relative', justifyContent: this.cardTextTop ? 'flex-start' : 'flex-end' });
@@ -605,6 +627,33 @@ export default {
     // the display on the image (start value), the texts at the top
     cardOverlay() {
       return (this.cardDisplay || this.setting('style', 'card-display')) === 'overlay';
+    },
+    cardOverhang() {
+      return (this.cardDisplay || this.setting('style', 'card-display')) === 'overhang';
+    },
+    // the card's look shared by its two pieces: background, border, corners
+    // (top-left, top-right, bottom-right, bottom-left), shadow
+    cardPiece() {
+      const r = this.setting('layout', 'item-shape') === 'square' ? [] : (this.itemValue('item-radius') || []);
+      return {
+        backgroundColor: this.itemColor('item-background'),
+        border: this.setting('layout', 'item-border') === true ? this.itemValue('item-border-width') + ' solid ' + this.itemColor('item-border-color') : 0,
+        radius: [r[0] || 0, r[1] || 0, r[3] || 0, r[2] || 0],
+        shadow: { sm: '0 1px 2px rgba(0, 0, 0, 0.12)', md: '0 4px 10px rgba(0, 0, 0, 0.15)', lg: '0 10px 24px rgba(0, 0, 0, 0.18)' }[this.setting('layout', 'item-shadow')] || null,
+      };
+    },
+    // the upper piece: behind the image, from the overhang down
+    cardOverhangStyle() {
+      const piece = this.cardPiece;
+      return {
+        top: this.itemValueAt('item-overhang'),
+        backgroundColor: piece.backgroundColor,
+        border: piece.border,
+        borderBottomWidth: 0,
+        borderRadius: piece.radius[0] + ' ' + piece.radius[1] + ' 0 0',
+        boxShadow: piece.shadow,
+        clipPath: 'inset(-3rem -3rem 0 -3rem)',
+      };
     },
     cardTextTop() {
       return this.setting('style', 'card-text-position') === 'top';
@@ -1475,6 +1524,32 @@ export default {
   position: absolute;
   inset: 0;
   aspect-ratio: auto;
+}
+/* standing out: the image above the card's upper piece */
+.pw-cardlets-image-wrap.is-overhang {
+  position: relative;
+  isolation: isolate;
+}
+.pw-cardlets-overhang {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: -1;
+}
+/* guides: the overhang as a band from the image's top to the card's (red,
+   a kind of its own) */
+.pw-card-overhang {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  border-block: 1px solid rgba(230, 60, 60, 0.9);
+  pointer-events: none;
+}
+.pw-card-overhang.is-hot { background: rgba(230, 60, 60, 0.18); }
+.pw-block-live-preview.has-focus .pw-card-overhang {
+  border-color: transparent;
 }
 .pw-cardlets-cta svg {
   width: 1em;

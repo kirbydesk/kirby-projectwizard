@@ -1907,6 +1907,11 @@ export default {
   --pw-guide-color: rgba(0, 150, 136, 0.9);
 }
 
+/* a shift of its own kind (cardlets: the image standing out of the card) */
+.pw-field-row[data-guide="overhang"] {
+  --pw-guide-color: rgba(230, 60, 60, 0.9);
+}
+
 /* the global value a switch applies, grey at the right end of the row */
 .pw-field-hint {
   margin-inline-start: auto;

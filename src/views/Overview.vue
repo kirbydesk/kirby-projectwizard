@@ -1597,7 +1597,7 @@
                      the start value): on the image adds the overlay colour -->
                 <span class="pw-pill pw-theme-switch" role="group">
                   <button
-                    v-for="d in ['stacked', 'overlay']"
+                    v-for="d in ['stacked', 'overlay', 'overhang']"
                     :key="'cd-' + d"
                     type="button"
                     class="pw-tool"
@@ -1649,6 +1649,25 @@
                 />
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsShape')" />
+            </section>
+            <!-- the image standing out of the card: how far (only in that display) -->
+            <section v-if="currentCardDisplay(block.blockType) === 'overhang'" class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.overhang') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-overhang': 'overhang' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-overhang']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsOverhang')" />
             </section>
             <!-- the card's style: its border (on / off, width, colour of the chosen variant) and shadow -->
             <section class="pw-card-section">

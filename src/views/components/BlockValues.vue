@@ -127,15 +127,41 @@
                           inputmode="decimal"
                           :step="def.step"
                           :min="def.min"
-                          :max="def.max"
+                          :max="unitAt(varName, bp, def) === '%' ? 100 : def.max"
                           class="pw-element-input pw-element-input-number"
-                          :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !responsiveAt(varName, bp) }"
-                          :value="stripUnit(responsiveAt(varName, bp) || def[bp], def.unit)"
-                          @change="setResponsive(varName, bp, $event.target.value, def)"
+                          :class="{ 'pw-px-calculator-input': showCalculator(unitAt(varName, bp, def)), 'is-default': !responsiveAt(varName, bp) }"
+                          :value="stripUnit(responsiveAt(varName, bp) || def[bp], unitAt(varName, bp, def))"
+                          @change="setResponsive(varName, bp, $event.target.value, def, unitAt(varName, bp, def))"
                         />
-                        <span class="pw-element-unit">{{ def.unit }}</span>
+                        <!-- values with a choice of unit (e.g. the cards' image
+                             overhang: px or %): the unit as a dropdown -->
+                        <span v-if="def.units" class="pw-element-unit pw-element-unit-choice">
+                          <button
+                            type="button"
+                            class="pw-unit-button"
+                            aria-haspopup="menu"
+                            :aria-label="$t('prw.label.unit')"
+                            @click="unitMenu(varName).toggle()"
+                          >{{ unitAt(varName, bp, def) }}<k-icon type="angle-down" /></button>
+                          <k-dropdown-content :ref="'unit-' + varName" align-x="start" class="pw-unit-menu">
+                            <nav class="k-navigate">
+                              <button
+                                v-for="u in def.units"
+                                :key="'u-' + u"
+                                type="button"
+                                class="k-dropdown-item k-button pw-menu-item"
+                                data-has-text="true"
+                                :aria-current="unitAt(varName, bp, def) === u ? 'true' : undefined"
+                                @click="unitMenu(varName).close(); setUnit(varName, bp, def, u)"
+                              >
+                                <span class="k-button-text">{{ u }}</span>
+                              </button>
+                            </nav>
+                          </k-dropdown-content>
+                        </span>
+                        <span v-else class="pw-element-unit">{{ def.unit }}</span>
                       </span>
-                      <span v-if="showCalculator(def.unit)" class="pw-px-calculator">{{ toPx(responsiveAt(varName, bp) || def[bp], def.unit, varName, bp) }}</span>
+                      <span v-if="showCalculator(unitAt(varName, bp, def))" class="pw-px-calculator">{{ toPx(responsiveAt(varName, bp) || def[bp], def.unit, varName, bp) }}</span>
                     </span>
                     <span v-if="hints && hints[varName]" class="pw-field-hint" :title="hintTitle">{{ hints[varName] }}</span>
                     <!-- switch the breakpoint (shared by all rows) -->
@@ -407,7 +433,7 @@ export default {
       return null;
     },
     showCalculator(unit) {
-      return unit !== 'px';
+      return unit !== 'px' && unit !== '%';
     },
     getOverride(varName) {
       return this.overrides[varName];
@@ -487,7 +513,24 @@ export default {
       const v = this.overrides[varName];
       return (v && typeof v === 'object' && !Array.isArray(v)) ? v[bp] : undefined;
     },
-    setResponsive(varName, bp, value, def) {
+    // unit of a responsive value at a device: % when set so, else the field's
+    unitAt(varName, bp, def) {
+      const val = this.responsiveAt(varName, bp) || def[bp] || '';
+      return def.units && String(val).endsWith('%') ? '%' : def.unit;
+    },
+    // the unit dropdown of a row (refs inside v-for come as arrays)
+    unitMenu(varName) {
+      const ref = this.$refs['unit-' + varName];
+      return Array.isArray(ref) ? ref[0] : ref;
+    },
+    // switching the unit: % starts at the field's percent start, the
+    // field's unit at its default
+    setUnit(varName, bp, def, unit) {
+      if (unit === this.unitAt(varName, bp, def)) return;
+      const value = unit === '%' ? String(def.percent ?? 50) : this.stripUnit(def[bp], def.unit);
+      this.setResponsive(varName, bp, value, def, unit);
+    },
+    setResponsive(varName, bp, value, def, unit) {
       const next = JSON.parse(JSON.stringify(this.overrides || {}));
       const current = (next[varName] && typeof next[varName] === 'object' && !Array.isArray(next[varName])) ? next[varName] : {};
       if (value === '') {
@@ -495,7 +538,7 @@ export default {
       } else {
         const num = this.parseNum(value);
         if (num === null) return;
-        const composed = num + (def.unit || '');
+        const composed = num + (unit || def.unit || '');
         if (composed === def[bp]) delete current[bp];
         else current[bp] = composed;
       }
