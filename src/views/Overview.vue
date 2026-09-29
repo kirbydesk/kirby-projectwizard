@@ -1464,7 +1464,15 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
-                <!-- the cards' form: square or round (then the radii below) -->
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsCard')" />
+            </section>
+            <!-- the cards' form: square or round with the radii -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.shape') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
                 <pw-block-settings
                   view="items-layout"
                   :block="block"
@@ -1486,7 +1494,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsCard')" />
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsShape')" />
             </section>
             <!-- the card's border: on / off, its width and colour (of the chosen variant) -->
             <section class="pw-card-section">
