@@ -102,6 +102,7 @@
 	'prw.headline.paddings' => 'Innenabstände',
 	'prw.tab.general' => 'Projekt',
 	'prw.tab.project' => 'Projekt',
+	'prw.tab.site' => 'Site',
 	'prw.tab.settings' => 'Einstellungen',
 	'prw.tab.config' => 'Einstellungen',
 	'prw.tab.global' => 'Global',

@@ -4,7 +4,7 @@
     <pw-portal to=".pw-wizard .k-topbar">
       <div class="pw-topbar">
         <!-- Main navigation: the same on the global view and on every block view -->
-        <!-- Project: header, footer, blocks, fonts -->
+        <!-- Project: site, header, footer, blocks, fonts -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <div class="pw-tab-menu">
             <button
@@ -239,13 +239,17 @@
 
           </div>
 
-          <!-- Project → General: the page background -->
+          <!-- Settings → Project: which blocks can be used -->
           <div v-show="globalActiveTab === 'general'" class="pw-wizard-global-content">
             <!-- which blocks can be used -->
             <pw-global-elements
               :blocks="blocks"
               @toggle="toggleBlock($event.blockType, $event.checked)"
             />
+          </div>
+
+          <!-- Project → Site: the page background -->
+          <div v-show="globalActiveTab === 'site'" class="pw-wizard-global-content">
             <!-- page colours as a card, like the elements -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -2283,7 +2287,7 @@ export default {
       return this.$t('prw.tab.' + this.globalActiveTab);
     },
     projectMenuTabs() {
-      return ['header', 'footer', 'blocks', 'fonts'];
+      return ['site', 'header', 'footer', 'blocks', 'fonts'];
     },
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
@@ -2316,6 +2320,7 @@ export default {
     globalTabs() {
       const tabs = [
         { key: 'general', icon: 'globe' },
+        { key: 'site', icon: 'sitemap' },
         { key: 'blocks', icon: 'box' },
         { key: 'elements', icon: 'layers' },
         { key: 'fonts', icon: 'title' },
@@ -2434,7 +2439,7 @@ export default {
         if (tab === 'settings') return !!this.dirtyTabs['global'];
         // the project page also holds the block activation
         if (tab === 'general') return !!this.dirtyTabs['global-settings'] || !!this.dirtyTabs['global'];
-        if (['blocks', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
+        if (['site', 'blocks', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
         return !!this.dirtyTabs[tab];
       }
       return !!this.dirtyTabs[this.activeTab];
@@ -3412,7 +3417,7 @@ export default {
         } else if (tab === 'general') {
           if (this.dirtyTabs['global-settings']) await this.saveGlobalSettings();
           if (this.dirtyTabs['global']) await this.saveGlobal();
-        } else if (['blocks', 'fonts'].includes(tab)) {
+        } else if (['site', 'blocks', 'fonts'].includes(tab)) {
           await this.saveGlobalSettings();
         } else if (tab === 'elements') {
           await this.saveElements();
@@ -3468,7 +3473,7 @@ export default {
           }
           this.$set(this.dirtyTabs, 'global', false);
         }
-        if (['general', 'blocks', 'fonts'].includes(tab)) {
+        if (['general', 'site', 'blocks', 'fonts'].includes(tab)) {
           this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
           this.$set(this.dirtyTabs, 'global-settings', false);
         } else if (tab === 'elements') {
