@@ -1590,75 +1590,6 @@
 
             <!-- cardlets: the card, its link, colours, gaps -->
             <template v-if="block.blockType === 'pwcardlets' && blockValueDefaults[block.blockType]">
-            <!-- the cards' display: the one the preview shows (a view, not
-                 saved; at first the start value) with its values -->
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('kirbyblock-cardlets.card-display') }}</h3>
-                <span class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="d in ['stacked', 'overlay', 'overhang']"
-                    :key="'cd-' + d"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentCardDisplay(block.blockType) === d ? 'true' : 'false'"
-                    @click="$set(cardPreviewDisplay, block.blockType, d)"
-                  >{{ $t('kirbyblock-cardlets.card-display.' + d) }}</button>
-                </span>
-              </div>
-              <!-- image above: the images' ratio per device (Original: the file's own) -->
-              <div v-if="currentCardDisplay(block.blockType) === 'stacked'" class="pw-card pw-field-table">
-                <pw-block-settings
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="[{ default: 'item-image-ratio', lg: 'item-image-ratio-lg', xl: 'item-image-ratio-xl' }[itemBp] || 'item-image-ratio']"
-                  :row-bp="itemBp"
-                  @update:row-bp="itemBp = $event"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
-                />
-              </div>
-              <!-- on the image: the texts' position, the ratio per device, the overlay's strength -->
-              <div v-else-if="currentCardDisplay(block.blockType) === 'overlay'" class="pw-card pw-field-table">
-                <pw-block-settings
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-text-position', { default: 'item-ratio', lg: 'item-ratio-lg', xl: 'item-ratio-xl' }[itemBp] || 'item-ratio']"
-                  :row-bp="itemBp"
-                  @update:row-bp="itemBp = $event"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
-                />
-                <pw-block-values
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-overlay-strength']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-              </div>
-              <!-- standing out: how far, per device (px or % of the image's height) -->
-              <div v-else-if="currentCardDisplay(block.blockType) === 'overhang'" class="pw-card pw-field-table">
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-overhang': 'overhang' } : null"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-overhang']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-              </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t({ stacked: 'prw.hint.cardletsDisplayStacked', overlay: 'prw.hint.cardletsDisplayOverlay', overhang: 'prw.hint.cardletsOverhang' }[currentCardDisplay(block.blockType)])" />
-            </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.padding') }}</h3>
@@ -1768,6 +1699,88 @@
                 />
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsBorder')" />
+            </section>
+            <!-- the cards' display: the one the preview shows (a view, not
+                 saved; at first the start value) with its values -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('kirbyblock-cardlets.card-display') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="d in ['stacked', 'overlay', 'overhang']"
+                    :key="'cd-' + d"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentCardDisplay(block.blockType) === d ? 'true' : 'false'"
+                    @click="$set(cardPreviewDisplay, block.blockType, d)"
+                  >{{ $t('kirbyblock-cardlets.card-display.' + d) }}</button>
+                </span>
+              </div>
+              <!-- image above: the images' ratio per device (Original: the file's own) -->
+              <div v-if="currentCardDisplay(block.blockType) === 'stacked'" class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="[{ default: 'item-image-ratio', lg: 'item-image-ratio-lg', xl: 'item-image-ratio-xl' }[itemBp] || 'item-image-ratio']"
+                  :row-bp="itemBp"
+                  @update:row-bp="itemBp = $event"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
+              <!-- on the image: the texts' position, the ratio per device, the overlay's strength -->
+              <div v-else-if="currentCardDisplay(block.blockType) === 'overlay'" class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-text-position', { default: 'item-ratio', lg: 'item-ratio-lg', xl: 'item-ratio-xl' }[itemBp] || 'item-ratio']"
+                  :row-bp="itemBp"
+                  @update:row-bp="itemBp = $event"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-overlay-strength']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <!-- standing out: the images' ratio (not cropped) and how far, per
+                   device (px or % of the image's height) -->
+              <div v-else-if="currentCardDisplay(block.blockType) === 'overhang'" class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="[{ default: 'item-cutout-ratio', lg: 'item-cutout-ratio-lg', xl: 'item-cutout-ratio-xl' }[itemBp] || 'item-cutout-ratio']"
+                  :row-bp="itemBp"
+                  @update:row-bp="itemBp = $event"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-overhang': 'overhang' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-overhang']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t({ stacked: 'prw.hint.cardletsDisplayStacked', overlay: 'prw.hint.cardletsDisplayOverlay', overhang: 'prw.hint.cardletsOverhang' }[currentCardDisplay(block.blockType)])" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">

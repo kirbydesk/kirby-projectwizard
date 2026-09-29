@@ -628,12 +628,17 @@ export default {
     cardOverlay() {
       return (this.cardDisplay || this.setting('style', 'card-display')) === 'overlay';
     },
-    // image above: the images' ratio at the device shown (Original: the
-    // sample's own 16:9)
+    // image above / standing out: the images' ratio at the device shown
+    // (Original: the sample's own 16:9); standing out the whole cut-out
+    // image at the bottom of its box
     cardImageStyle() {
-      if (this.cardOverlay || this.cardOverhang) return null;
-      const ratio = this.setting('layout', { default: 'item-image-ratio', lg: 'item-image-ratio-lg', xl: 'item-image-ratio-xl' }[this.bp] || 'item-image-ratio');
-      return ratio && ratio !== 'auto' ? { aspectRatio: ratio.replace('/', ' / ') } : null;
+      if (this.cardOverlay) return null;
+      const key = this.cardOverhang ? 'item-cutout-ratio' : 'item-image-ratio';
+      const ratio = this.setting('layout', { default: key, lg: key + '-lg', xl: key + '-xl' }[this.bp] || key);
+      if (!ratio || ratio === 'auto') return null;
+      const style = { aspectRatio: ratio.replace('/', ' / ') };
+      if (this.cardOverhang) Object.assign(style, { backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center bottom' });
+      return style;
     },
     cardOverhang() {
       return (this.cardDisplay || this.setting('style', 'card-display')) === 'overhang';
