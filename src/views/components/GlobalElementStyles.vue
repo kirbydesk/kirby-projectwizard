@@ -2139,13 +2139,21 @@ export default {
   display: inline-flex;
   align-items: center;
 }
-.pw-element-preview.has-guides .pw-button-content::before {
+.pw-element-preview.has-guides .pw-button-content::before,
+.pw-element-preview.has-guides .pw-button-content::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-inline: 1px solid rgba(255, 0, 170, 0.6);
-  border-block: 1px solid rgba(0, 180, 90, 0.9);
   pointer-events: none;
+}
+/* through the whole button (cut off at its edges, see the content's
+   clip-path): left/right from top to bottom, top/bottom from side to side */
+.pw-element-preview.has-guides .pw-button-content::before {
+  inset: -100vh 0;
+  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+}
+.pw-element-preview.has-guides .pw-button-content::after {
+  inset: 0 -100vw;
+  border-block: 1px solid rgba(0, 180, 90, 0.9);
 }
 /* guides: the gap between icon and text, orange lines at both its edges */
 .pw-element-preview.has-guides .pw-element-preview-button .pw-preview-link-icon {
@@ -2179,7 +2187,8 @@ export default {
 .pw-element-preview.has-guides.has-focus .pw-element-preview-buttons-row::after,
 .pw-element-preview.has-guides.has-focus .pw-element-preview-button-second::before,
 .pw-element-preview.has-guides.has-focus .pw-element-preview-button-second::after,
-.pw-element-preview.has-guides.has-focus .pw-button-content::before {
+.pw-element-preview.has-guides.has-focus .pw-button-content::before,
+.pw-element-preview.has-guides.has-focus .pw-button-content::after {
   border-color: transparent;
 }
 /* ... and its area tinted: the gap between buttons (cyan), between rows
@@ -2200,29 +2209,23 @@ export default {
 .pw-element-preview.has-guides.has-focus .is-hot-row .pw-element-preview-buttons-row::before {
   border-color: rgba(130, 80, 255, 0.9);
 }
-/* the paddings: tinted, with the edges where they end as lines through the
-   whole button (left/right magenta, top/bottom green) */
+/* the paddings: tinted, with the edges where they end (lines through the
+   whole button: left/right magenta, top/bottom green) */
+.pw-element-preview.has-guides.has-focus .is-hot-padding-h .pw-button-content::before {
+  border-color: rgba(255, 0, 170, 0.6);
+}
+.pw-element-preview.has-guides.has-focus .is-hot-padding-v .pw-button-content::after {
+  border-color: rgba(0, 180, 90, 0.9);
+}
 .pw-element-preview.has-focus .is-hot-padding-h .pw-element-preview-button {
-  background-image:
-    linear-gradient(rgba(255, 0, 170, 0.6), rgba(255, 0, 170, 0.6)),
-    linear-gradient(rgba(255, 0, 170, 0.6), rgba(255, 0, 170, 0.6)),
-    linear-gradient(to right,
-      rgba(255, 0, 170, 0.3) var(--pw-btn-pl), transparent var(--pw-btn-pl),
-      transparent calc(100% - var(--pw-btn-pr)), rgba(255, 0, 170, 0.3) calc(100% - var(--pw-btn-pr)));
-  background-repeat: no-repeat;
-  background-size: 1px 100%, 1px 100%, 100% 100%;
-  background-position: left var(--pw-btn-pl) top 0, right var(--pw-btn-pr) top 0, 0 0;
+  background-image: linear-gradient(to right,
+    rgba(255, 0, 170, 0.3) var(--pw-btn-pl), transparent var(--pw-btn-pl),
+    transparent calc(100% - var(--pw-btn-pr)), rgba(255, 0, 170, 0.3) calc(100% - var(--pw-btn-pr)));
 }
 .pw-element-preview.has-focus .is-hot-padding-v .pw-element-preview-button {
-  background-image:
-    linear-gradient(rgba(0, 180, 90, 0.9), rgba(0, 180, 90, 0.9)),
-    linear-gradient(rgba(0, 180, 90, 0.9), rgba(0, 180, 90, 0.9)),
-    linear-gradient(to bottom,
-      rgba(0, 180, 90, 0.3) var(--pw-btn-pt), transparent var(--pw-btn-pt),
-      transparent calc(100% - var(--pw-btn-pb)), rgba(0, 180, 90, 0.3) calc(100% - var(--pw-btn-pb)));
-  background-repeat: no-repeat;
-  background-size: 100% 1px, 100% 1px, 100% 100%;
-  background-position: left 0 top var(--pw-btn-pt), left 0 bottom var(--pw-btn-pb), 0 0;
+  background-image: linear-gradient(to bottom,
+    rgba(0, 180, 90, 0.3) var(--pw-btn-pt), transparent var(--pw-btn-pt),
+    transparent calc(100% - var(--pw-btn-pb)), rgba(0, 180, 90, 0.3) calc(100% - var(--pw-btn-pb)));
 }
 /* side grid (paddings): the side icon instead of the corner glyph */
 .pw-field-table .pw-side-grid > *::after {
