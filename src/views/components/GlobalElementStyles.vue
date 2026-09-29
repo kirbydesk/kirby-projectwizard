@@ -80,7 +80,7 @@
                     <ul class="pw-element-preview-list" :class="{ 'is-hot-indent': hoveredArea === 'list-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, false)">
                       <li v-for="n in 3" :key="'li-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ul>
-                    <ol class="pw-element-preview-list" :class="{ 'is-hot-indent': hoveredArea === 'list-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, true)">
+                    <ol class="pw-element-preview-list is-numbered" :class="{ 'is-hot-indent': hoveredArea === 'list-number-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, true)">
                       <li v-for="n in 3" :key="'ol-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ol>
                   </div>
@@ -935,7 +935,9 @@ export default {
       if (varName === 'button-icon-gap') return 'text';
       // lists: the indent as a padding (magenta), the gap between the points
       // the third gap (orange)
+      // (the numbers' indent the second padding: green)
       if (varName === 'list-indent') return 'padding';
+      if (varName === 'list-number-indent') return 'padding-y';
       if (varName === 'list-item-spacing') return 'text';
       if (!this.previewFlourish) return null;
       // the heading's gaps: space below cyan, flourish above violet, below orange
@@ -994,7 +996,7 @@ export default {
     // the help text below a card (sizes, marking, flourish, colours, zoom)
     cardHelp(st) {
       // (the buttons: form, gaps and icon of their own)
-      const own = { 'list:marker': 'prw.hint.listMarker', 'list:spacing': 'prw.hint.listSpacing', 'button:shape': 'prw.hint.buttonShape', 'button:margin': 'prw.hint.buttonMargin', 'button:icon': 'prw.hint.buttonIcon' };
+      const own = { 'list:marker': 'prw.hint.listMarker', 'list:number': 'prw.hint.listNumber', 'list:spacing': 'prw.hint.listSpacing', 'button:shape': 'prw.hint.buttonShape', 'button:margin': 'prw.hint.buttonMargin', 'button:icon': 'prw.hint.buttonIcon' };
       if (own[st.elementKey + ':' + st.category]) return this.$t(own[st.elementKey + ':' + st.category]);
       const keys = { sizes: 'prw.hint.cardSizes', marked: 'prw.hint.cardMarked', flourish: 'prw.hint.cardFlourish', colors: 'prw.hint.cardColors', zoom: 'prw.hint.cardZoom' };
       return keys[st.category] ? this.$t(keys[st.category]) : '';
@@ -1051,7 +1053,7 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing', 'list-indent', 'list-item-spacing'].includes(varName)
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing', 'list-indent', 'list-number-indent', 'list-item-spacing'].includes(varName)
         // the flourish's gaps while the flourish is shown
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
@@ -1066,6 +1068,7 @@ export default {
       if (varName === 'button-row-gap') return 'prw.hint.buttonRowGap';
       if (varName === 'button-icon-gap') return 'prw.hint.iconGap';
       if (varName === 'list-indent') return 'prw.hint.listIndent';
+      if (varName === 'list-number-indent') return 'prw.hint.listNumberIndent';
       if (varName === 'list-item-spacing') return 'prw.hint.listItemSpacing';
       if (varName.endsWith('-flourish-margin-top')) return 'prw.hint.flourishTop';
       if (varName.endsWith('-flourish-margin-bottom')) return 'prw.hint.flourishBottom';
@@ -1706,7 +1709,7 @@ export default {
         tagline:    ['text', 'colors'],
         editor:     ['text', 'sizes', 'colors'],
         // lists: their marker, indent and gap (the type of the text)
-        list:       ['marker', 'spacing', 'colors'],
+        list:       ['marker', 'number', 'spacing', 'colors'],
         quote:      ['text', 'sizes', 'colors'],
         button:     ['text', 'padding', 'margin', 'shape', 'style', 'icon', 'colors'],
         caption:    ['text', 'colors'],
@@ -1719,9 +1722,11 @@ export default {
       return tabs[groupKey] || ['text', 'sizes', 'colors'];
     },
     varCategory(varName) {
-      // lists: the marker, then indent and gap between the points
-      if (varName === 'list-marker') return 'marker';
-      if (varName === 'list-indent' || varName === 'list-item-spacing') return 'spacing';
+      // lists: bullets (marker, indent), numbers (format, indent), the gap
+      // between the points
+      if (varName === 'list-marker' || varName === 'list-indent') return 'marker';
+      if (varName.startsWith('list-number-')) return 'number';
+      if (varName === 'list-item-spacing') return 'spacing';
       // item: its title (with the gap below it) and its description
       if (varName.startsWith('item-title-')) return 'title';
       if (varName.startsWith('item-text-')) return 'description';
@@ -1761,7 +1766,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marker: this.$t('prw.subtab.marker'), spacing: this.$t('prw.headline.spacing'), title: this.$t('prw.subtab.title'), description: this.$t('prw.subtab.description'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marker: this.$t('prw.subtab.marker'), number: this.$t('prw.subtab.number'), spacing: this.$t('prw.headline.spacing'), title: this.$t('prw.subtab.title'), description: this.$t('prw.subtab.description'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
@@ -1973,9 +1978,12 @@ export default {
     // spacing above it (as in a text)
     previewListStyle(theme, numbered) {
       const v = (name) => this.getOverrideValue(name) || this.elementDefaults.list?.vars?.[name]?.value || '';
-      const marker = numbered ? 'decimal' : ({ disc: 'disc', dash: '"–  "', check: '"✓  "' }[v('list-marker')] || 'disc');
+      const marker = numbered
+        ? ({ decimal: 'decimal', 'decimal-paren': 'pw-decimal-paren', 'lower-alpha': 'lower-alpha', 'lower-roman': 'lower-roman' }[v('list-number-format')] || 'decimal')
+        : ({ disc: 'disc', dash: '"–  "', check: '"✓  "' }[v('list-marker')] || 'disc');
+      const indent = v(numbered ? 'list-number-indent' : 'list-indent');
       const color = this.getColorOverrideValue(theme, 'element-list-marker') || this.elementDefaults.list?.colors?.['element-list-marker']?.[theme] || '';
-      return { marginTop: this.previewParagraphGap('editor'), paddingLeft: v('list-indent'), listStyleType: marker, '--pw-list-indent': v('list-indent'), '--pw-list-gap': v('list-item-spacing'), '--pw-list-marker': color };
+      return { marginTop: this.previewParagraphGap('editor'), paddingLeft: indent, listStyleType: marker, '--pw-list-indent': indent, '--pw-list-gap': v('list-item-spacing'), '--pw-list-marker': color };
     },
     previewParagraphGap(groupKey) {
       const override = this.getOverrideValue(groupKey + '-paragraph-spacing');
@@ -2367,6 +2375,20 @@ export default {
 }
 .pw-element-preview-list.is-hot-indent {
   background: linear-gradient(to right, rgba(255, 0, 170, 0.18), rgba(255, 0, 170, 0.18)) no-repeat left / var(--pw-list-indent, 0) 100%;
+}
+/* the numbers' indent: the second padding (green) */
+.pw-element-preview.has-guides .pw-element-preview-list.is-numbered {
+  background-image: linear-gradient(to right, rgba(0, 180, 90, 0.08), rgba(0, 180, 90, 0.08));
+  box-shadow: inset 1px 0 0 rgba(0, 180, 90, 0.9);
+}
+.pw-element-preview-list.is-numbered.is-hot-indent {
+  background-image: linear-gradient(to right, rgba(0, 180, 90, 0.18), rgba(0, 180, 90, 0.18));
+  box-shadow: none;
+}
+/* "1)" as in the frontend (elements.css) */
+@counter-style pw-decimal-paren {
+  system: extends decimal;
+  suffix: ") ";
 }
 .pw-element-preview.has-guides .pw-element-preview-paragraphs p {
   position: relative;
