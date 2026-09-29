@@ -661,6 +661,7 @@ export default {
         if (this.isObject(settingVal) && settingVal.type === 'icon-select' && Array.isArray(settingVal.options)) {
           fields.push({
             key, displayKey,
+            label: settingVal.label || null,
             type: 'icon-select',
             options: settingVal.options,
             defaultValue: settingVal.default !== undefined ? settingVal.default : (settingVal.options[0] && settingVal.options[0].value),
