@@ -3958,11 +3958,13 @@ export default {
 .pw-patches-input:focus {
   outline: var(--outline);
 }
-/* white and edge to edge in the preview column (as the element previews) */
+/* white and edge to edge in the preview column: its paddings taken back
+   (top the menu's, else spacing-6), as high as the column */
 .pw-patches-tree {
-  margin: calc(-1 * var(--spacing-6));
-  padding: var(--spacing-6);
-  min-height: calc(100dvh - 2 * var(--menu-padding) - 25px);
+  margin: calc(-1 * var(--menu-padding, var(--spacing-3))) calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6));
+  padding: var(--menu-padding, var(--spacing-3)) var(--spacing-6) var(--spacing-6);
+  min-height: 100dvh;
+  box-sizing: border-box;
   background: var(--color-white);
 }
 .pw-json-root {
