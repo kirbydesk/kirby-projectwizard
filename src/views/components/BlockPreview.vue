@@ -1223,6 +1223,9 @@ export default {
     // a content field of the block, unless hidden from the editors (then
     // nobody fills it in)
     hasField(field) {
+      // (the multicolumn has no intro: its tagline, headline … are the
+      // columns' elements, shown in its own preview)
+      if (this.isMulticolumn) return false;
       const content = this.nested(this.config.defaults || {}, 'settings.fields.content') || {};
       const hidden = this.nested(this.overrides || {}, 'settings.hidden');
       if (Array.isArray(hidden) && hidden.includes(field)) return false;
