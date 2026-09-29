@@ -4161,10 +4161,11 @@ export default {
   /* a ring, so a white variant shows as well */
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
 }
-/* in the variant pills: small, before the name; a white ring, so a dark
-   variant shows on the dark (selected) pill too */
+/* in the variant pills: small, before the name; a white ring and a grey
+   one around it – on the dark (selected) pill the white shows, on the light
+   ones the grey, so the dot keeps its size either way */
 .pw-variant-dot.is-small {
-  box-shadow: 0 0 0 1px #ffffff;
+  box-shadow: 0 0 0 1px #ffffff, 0 0 0 2px rgba(0, 0, 0, 0.25);
   display: inline-block;
   width: 8px;
   height: 8px;
