@@ -770,14 +770,20 @@
               </div>
             </pw-portal>
             <section class="pw-card-section">
-              <textarea
-                :key="'patches-' + discardKey"
-                v-model="patchesText"
-                class="pw-patches-input"
-                spellcheck="false"
-                :placeholder="'{\n  &quot;pwhero&quot;: { … }\n}'"
-                @input="onPatchesInput"
-              ></textarea>
+              <!-- a code editor: the JSON coloured below, the field above it
+                   transparent but for the cursor (both scroll together) -->
+              <div class="pw-code">
+                <pre ref="patchesHl" class="pw-code-hl" aria-hidden="true" v-html="patchesHighlighted"></pre>
+                <textarea
+                  :key="'patches-' + discardKey"
+                  v-model="patchesText"
+                  class="pw-patches-input"
+                  spellcheck="false"
+                  :placeholder="'{\n  &quot;pwhero&quot;: { … }\n}'"
+                  @input="onPatchesInput"
+                  @scroll="$refs.patchesHl.scrollTop = $event.target.scrollTop; $refs.patchesHl.scrollLeft = $event.target.scrollLeft"
+                ></textarea>
+              </div>
               <k-box v-if="patchesError" theme="negative" class="pw-patches-note" :text="patchesError" />
               <k-box v-else-if="patchesUnknown.length" theme="notice" class="pw-patches-note" :text="$t('prw.patches.unknown') + ' ' + patchesUnknown.join(', ')" />
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.patches')" />
@@ -2292,6 +2298,9 @@ export default {
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
+    patchesHighlighted() {
+      return this.patchesHighlightedFor(this.patchesText);
+    },
     hasTranslateTab() {
       return (this.aiSecrets || []).some(s => s.plugin === 'kirbydesk.translatewizard');
     },
@@ -3028,6 +3037,25 @@ export default {
         const line = isNaN(pos) ? null : text.slice(0, pos).split('\n').length;
         return this.$t('prw.patches.invalid') + (line ? ' ' + this.$t('prw.patches.line') + ' ' + line : '') + ': ' + e.message;
       }
+    },
+    // the JSON coloured as in a code editor: keys, strings, numbers,
+    // true/false/null, punctuation (escaped; a trailing line break so the
+    // last line keeps its height)
+    patchesHighlightedFor(text) {
+      const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const re = /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}\[\],:])/g;
+      let out = '';
+      let last = 0;
+      let m;
+      while ((m = re.exec(text))) {
+        out += esc(text.slice(last, m.index));
+        if (m[1]) out += m[2] ? '<span class="is-key">' + esc(m[1]) + '</span><span class="is-punct">' + esc(m[2]) + '</span>' : '<span class="is-string">' + esc(m[1]) + '</span>';
+        else if (m[3]) out += '<span class="is-' + (m[3] === 'null' ? 'null' : 'boolean') + '">' + m[3] + '</span>';
+        else if (m[4]) out += '<span class="is-number">' + m[4] + '</span>';
+        else out += '<span class="is-punct">' + esc(m[5]) + '</span>';
+        last = re.lastIndex;
+      }
+      return out + esc(text.slice(last)) + '\n';
     },
     // an entry of the tree into the JSON: its path with its current value
     // (nested objects; what the JSON holds there already is replaced)
@@ -3984,24 +4012,61 @@ export default {
   padding-bottom: var(--spacing-3);
   border-bottom: 1px solid var(--color-border);
 }
+/* the code editor: dark, the coloured JSON below the transparent field
+   (same font, size, padding and wrapping, so both lie exactly on top) */
+.pw-code {
+  position: relative;
+  background: #1e1e1e;
+  border-radius: var(--rounded);
+}
+.pw-code-hl,
 .pw-patches-input {
-  display: block;
-  width: 100%;
-  min-height: 60vh;
+  margin: 0;
   padding: var(--spacing-3);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   line-height: 1.5;
   tab-size: 2;
-  color: var(--color-text);
-  background: var(--input-color-back, var(--color-white));
-  border: 1px solid var(--color-border);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+.pw-code-hl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #d4d4d4;
+  pointer-events: none;
+}
+.pw-patches-input {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 60vh;
+  color: transparent;
+  caret-color: #ffffff;
+  background: transparent;
+  border: 0;
   border-radius: var(--rounded);
   resize: vertical;
+}
+.pw-patches-input::placeholder {
+  color: #6a6a6a;
+}
+.pw-patches-input::selection {
+  color: transparent;
+  background: rgba(38, 79, 120, 0.9);
 }
 .pw-patches-input:focus {
   outline: var(--outline);
 }
+/* the colours of a dark code editor */
+.pw-code-hl .is-key { color: #9cdcfe; }
+.pw-code-hl .is-string { color: #ce9178; }
+.pw-code-hl .is-number { color: #b5cea8; }
+.pw-code-hl .is-boolean { color: #569cd6; }
+.pw-code-hl .is-null { color: #569cd6; font-style: italic; }
+.pw-code-hl .is-punct { color: #808080; }
 /* white and edge to edge in the preview column: its paddings taken back
    (top the menu's, else spacing-6), as high as the column */
 .pw-blocks-active {
