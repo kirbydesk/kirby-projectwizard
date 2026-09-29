@@ -122,7 +122,7 @@ export default {
 }
 .pw-json-count {
   font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
+  color: var(--color-blue-600);
 }
 /* the plus at the row's end, visible while the row is hovered */
 .pw-json-add {
