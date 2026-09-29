@@ -549,5 +549,5 @@
 	'prw.element.list-number-format' => 'Format',
 	'prw.element.list-number-indent' => 'Einrückung',
 	'prw.headline.positioning' => 'Positionierung',
-	'prw.hint.multicolumnPosition' => 'Legt fest, wie die linke und die rechte Spalte vertikal zueinander stehen, wenn sie nebeneinander angezeigt werden. Auf Mobilgeräten stehen die Spalten untereinander, dort greift die Positionierung nicht.',
+	'prw.hint.multicolumnPosition' => 'Legt fest, wie die linke und die rechte Spalte vertikal zueinander stehen, wenn sie nebeneinander angezeigt werden. Auf Mobilgeräten greift die Positionierung nicht.',
 ];
