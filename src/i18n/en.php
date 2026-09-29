@@ -548,4 +548,6 @@
 	'prw.hint.listNumber' => 'Sets format, indent and colour of the numbers.',
 	'prw.element.list-number-format' => 'Format',
 	'prw.element.list-number-indent' => 'Indent',
+	'prw.headline.positioning' => 'Positioning',
+	'prw.hint.multicolumnPosition' => 'Sets how the left and the right column stand vertically to each other when they are shown side by side.',
 ];

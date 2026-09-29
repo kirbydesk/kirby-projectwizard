@@ -548,4 +548,6 @@
 	'prw.hint.listNumber' => 'Legt Format, Einrückung und Farbe der Nummern fest.',
 	'prw.element.list-number-format' => 'Format',
 	'prw.element.list-number-indent' => 'Einrückung',
+	'prw.headline.positioning' => 'Positionierung',
+	'prw.hint.multicolumnPosition' => 'Legt fest, wie die linke und die rechte Spalte vertikal zueinander stehen, wenn sie nebeneinander angezeigt werden.',
 ];

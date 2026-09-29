@@ -793,13 +793,14 @@ export default {
         const sections = [];
         if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), help: this.$t('prw.hint.blockPaddings'), fields: paddings });
         if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), help: this.$t('prw.hint.blockRadius'), fields: [radius] });
-        const headings = { 'position-': 'prw.headline.contentPosition', 'columns-': 'pw.headline.columns', 'logos-': 'prw.headline.logos' };
+        const headings = { 'position-': 'prw.headline.contentPosition', 'columns-': 'pw.headline.columns', 'logos-': 'prw.headline.logos', 'multicolumn-': 'prw.headline.positioning' };
+        const helps = { 'position-': 'prw.hint.contentPosition', 'multicolumn-': 'prw.hint.multicolumnPosition' };
         for (const f of others) {
           const prefix = Object.keys(headings).find(p => f.key.startsWith(p));
           const key = prefix || f.key;
           const section = sections.find(sec => sec.key === key);
           if (section) section.fields.push(f);
-          else sections.push({ key, heading: prefix ? this.$t(headings[prefix]) : null, help: prefix === 'position-' ? this.$t('prw.hint.contentPosition') : null, fields: [f] });
+          else sections.push({ key, heading: prefix ? this.$t(headings[prefix]) : null, help: helps[prefix] ? this.$t(helps[prefix]) : null, fields: [f] });
         }
         return sections;
       }
