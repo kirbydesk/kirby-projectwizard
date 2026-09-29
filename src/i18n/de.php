@@ -30,7 +30,7 @@
 	'prw.label.leftRight' => 'Horizontal',
 	'prw.label.unit' => 'Einheit',
 	'prw.option.asTyped' => 'Wie eingegeben',
-	'prw.label.variants' => 'Varianten',
+	'prw.label.variants' => 'Aktive Varianten',
 	'prw.label.mobile' => 'Mobil',
 	'prw.label.tablet' => 'Tablet',
 	'prw.label.desktop' => 'Desktop',
