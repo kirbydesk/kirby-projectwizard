@@ -134,10 +134,11 @@ export default {
   --icon-size: 16px;
   color: var(--color-gray-600);
 }
-/* the switch needs little room: the label column takes the rest (also
-   in the variants' card) */
+/* the switch needs little room: a fixed column (the same in every row,
+   whether it says on or off), the label column takes the rest (also in
+   the variants' card) */
 .pw-field-table .pw-active-row .pw-field-row-inner {
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 8rem;
 }
 .pw-active-row .pw-field-row-options {
   padding-inline: var(--spacing-3);
