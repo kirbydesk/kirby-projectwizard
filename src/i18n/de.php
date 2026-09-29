@@ -532,9 +532,9 @@
 
 	'prw.hint.listIndent' => 'Wie weit die Listenpunkte eingerückt sind',
 	'prw.hint.listItemSpacing' => 'Der Abstand zwischen den einzelnen Listenpunkten',
-	'prw.sample.list.1' => 'Erster Listenpunkt',
-	'prw.sample.list.2' => 'Zweiter Listenpunkt',
-	'prw.sample.list.3' => 'Dritter Listenpunkt',
+	'prw.sample.list.1' => 'Kurzer Punkt',
+	'prw.sample.list.2' => 'Ein Punkt mit etwas mehr Text',
+	'prw.sample.list.3' => 'Ein langer Listenpunkt, der über mehrere Zeilen läuft, damit man sieht, wie die folgenden Zeilen an der Einrückung ausgerichtet sind',
 	'prw.elementgroup.list' => 'Listen',
 	'prw.subtab.marker' => 'Aufzählung',
 	'prw.intro.element.list' => 'Listen stehen in Texten und als eigenes Element in der Multicolumn. Schrift, Größe und Zeilenhöhe übernehmen sie vom Text.',

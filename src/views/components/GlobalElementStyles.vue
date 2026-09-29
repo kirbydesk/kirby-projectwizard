@@ -81,7 +81,7 @@
                       <li v-for="n in 3" :key="'li-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ul>
                     <ol class="pw-element-preview-list" :class="{ 'is-hot-indent': hoveredArea === 'list-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, true)">
-                      <li v-for="n in 2" :key="'ol-' + n">{{ $t('prw.sample.list.' + n) }}</li>
+                      <li v-for="n in 3" :key="'ol-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ol>
                   </div>
                 </template>

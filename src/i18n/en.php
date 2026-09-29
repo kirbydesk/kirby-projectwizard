@@ -532,9 +532,9 @@
 
 	'prw.hint.listIndent' => 'How far the list points are indented',
 	'prw.hint.listItemSpacing' => 'The gap between the single list points',
-	'prw.sample.list.1' => 'First list point',
-	'prw.sample.list.2' => 'Second list point',
-	'prw.sample.list.3' => 'Third list point',
+	'prw.sample.list.1' => 'Short point',
+	'prw.sample.list.2' => 'A point with a little more text',
+	'prw.sample.list.3' => 'A long list point that runs over several lines, so you can see how the following lines align with the indent',
 	'prw.elementgroup.list' => 'Lists',
 	'prw.subtab.marker' => 'Bullets',
 	'prw.intro.element.list' => 'Lists appear in texts and as an element of their own in the multicolumn. They take font, size and line height from the text.',
