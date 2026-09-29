@@ -4273,9 +4273,6 @@ export default {
     /* switches at the top: as close to the edge as Kirby's menu items */
     padding-top: var(--menu-padding, var(--spacing-3));
     overflow-y: auto;
-    /* no rubber band (Safari): it would show the column's background above
-       and below its content */
-    overscroll-behavior: none;
     background: var(--menu-color-back);
     border-inline-start: 1px solid var(--menu-color-border);
     z-index: 2;
