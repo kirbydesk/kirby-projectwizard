@@ -4176,7 +4176,8 @@ export default {
   display: inline-block;
   width: 8px;
   height: 8px;
-  margin-inline-end: 5px;
+  /* 4px to the name: the pill's own gap (spacing-2) taken back */
+  margin-inline-end: calc(4px - var(--spacing-2));
   vertical-align: 0.05em;
 }
 .pw-blocks-active {
