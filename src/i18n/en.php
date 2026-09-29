@@ -83,6 +83,8 @@
 	'prw.headline.spaceBelow' => 'Elements',
 	'prw.headline.fields' => 'Elements',
 	'prw.headline.logos' => 'Logos',
+	'prw.headline.icon' => 'Icon',
+	'prw.headline.tile' => 'Tile',
 	'prw.headline.contentPosition' => 'Position of the text block',
 	'prw.headline.blockLayout' => 'Block settings',
 	'prw.headline.defaultFont' => 'Default font',

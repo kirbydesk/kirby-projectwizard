@@ -83,6 +83,8 @@
 	'prw.headline.spaceBelow' => 'Elemente',
 	'prw.headline.fields' => 'Elemente',
 	'prw.headline.logos' => 'Logos',
+	'prw.headline.icon' => 'Icon',
+	'prw.headline.tile' => 'Kachel',
 	'prw.headline.contentPosition' => 'Position des Textblocks',
 	'prw.headline.blockLayout' => 'Block-Einstellungen',
 	'prw.headline.defaultFont' => 'Standardschrift',

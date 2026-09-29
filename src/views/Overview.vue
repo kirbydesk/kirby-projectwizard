@@ -1037,7 +1037,7 @@
               </div>
             </section>
 
-            <!-- featurelist: text, style (the icon: position, size, colour, tile), gaps -->
+            <!-- featurelist: text, icon, tile, colours, gaps -->
             <template v-if="block.blockType === 'pwfeaturelist' && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1080,19 +1080,11 @@
                 />
               </div>
             </section>
+            <!-- featurelist icon: its position, alignment, size, gap and whether
+                 it sits on a tile -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
-                <span class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="theme in themes"
-                    :key="'fth-' + theme"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
-                    @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
-                </span>
+                <h3 class="pw-card-heading">{{ $t('prw.headline.icon') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-settings
@@ -1105,10 +1097,7 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
-                <!-- with an icon: its size, colour, tile -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none'">
-                <!-- beside the content: its vertical alignment (top / centre),
-                     at the top a fine vertical offset (as the steplist's number) -->
                 <pw-block-settings
                   v-if="itemLayoutDefault(block.blockType, 'item-icon-position') === 'left'"
                   view="items-layout"
@@ -1150,16 +1139,6 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :theme="currentItemColorTheme"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-icon-fill']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
                 <pw-block-settings
                   view="items-layout"
                   :block="block"
@@ -1170,8 +1149,15 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
-                <!-- on a tile: its form, radii, padding and background -->
-                <template v-if="itemLayoutDefault(block.blockType, 'item-icon-style') === 'tile'">
+                </template>
+              </div>
+            </section>
+            <!-- its tile: form, radii, padding -->
+            <section v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none' && itemLayoutDefault(block.blockType, 'item-icon-style') === 'tile'" class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.tile') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
                 <pw-block-settings
                   view="items-layout"
                   :block="block"
@@ -1202,7 +1188,36 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
+              </div>
+            </section>
+            <!-- the colours of the chosen variant: the icon, its tile -->
+            <section v-if="itemLayoutDefault(block.blockType, 'item-icon-position') !== 'none'" class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'fth-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
                 <pw-block-values
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-icon-fill']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-icon-style') === 'tile'"
                   :bp.sync="itemBp"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
@@ -1212,8 +1227,6 @@
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
                 />
-                </template>
-                </template>
               </div>
             </section>
             <section class="pw-card-section">
