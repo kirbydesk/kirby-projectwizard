@@ -72,7 +72,11 @@
                 <template v-else-if="groupKey === 'item'">
                   <span class="pw-element-preview-text" :style="previewStyle('item-title', bp, theme)">{{ $t('prw.sample.item.title') }}</span>
                   <span v-if="guides" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'item-title-spacing' }" :style="{ height: itemTitleGap() }"></span>
-                  <span class="pw-element-preview-text" :style="itemTextStyle(bp, theme)">{{ $t('prw.sample.item.text') }}</span>
+                  <!-- two paragraphs: the paragraph spacing between them -->
+                  <div class="pw-element-preview-text pw-element-preview-paragraphs" :class="{ 'is-hot': hoveredArea === 'item-text-paragraph-spacing' }" :style="itemTextStyle(bp, theme)">
+                    <p>{{ $t('prw.sample.item.text') }}</p>
+                    <p :style="{ marginTop: itemParagraphGap() }">{{ $t('prw.sample.item.text2') }}</p>
+                  </div>
                 </template>
                 <template v-else-if="previewParagraphs(groupKey)">
                   <div class="pw-element-preview-text pw-element-preview-paragraphs" :class="{ 'is-hot': hoveredArea === groupKey + '-paragraph-spacing' }" :style="{ ...previewStyle(groupKey, bp, theme), '--pw-paragraph-gap': previewParagraphGap(groupKey) }">
@@ -977,7 +981,11 @@ export default {
     },
     // item: its description, below the title (with guides: the band between)
     itemTextStyle(bp, theme) {
-      return { ...this.previewStyle('item-text', bp, theme), marginTop: this.guides ? 0 : this.itemTitleGap() };
+      return { ...this.previewStyle('item-text', bp, theme), marginTop: this.guides ? 0 : this.itemTitleGap(), '--pw-paragraph-gap': this.itemParagraphGap() };
+    },
+    // item: the space between the description's paragraphs
+    itemParagraphGap() {
+      return this.getOverrideValue('item-text-paragraph-spacing') || this.elementDefaults.item?.vars?.['item-text-paragraph-spacing']?.value || '';
     },
     // buttons preview: the area of the hovered question mark
     buttonHotClass() {
@@ -996,7 +1004,7 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing'].includes(varName)
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing'].includes(varName)
         // the flourish's gaps while the flourish is shown
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
