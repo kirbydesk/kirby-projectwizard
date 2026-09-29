@@ -267,6 +267,7 @@
 	'prw.prop.tagline-spacing' => 'Tagline',
 	'prw.prop.heading-spacing' => 'Überschrift',
 	'prw.prop.editor-spacing' => 'Text',
+	'prw.prop.list-spacing' => 'Liste',
 	'prw.hint.itemElement' => 'Dieses Element wird in Blöcken verwendet, die sich mit einzelnen Einträgen bestücken lassen (z. B. FAQ, Features u. a.).',
 	'prw.intro.global.blocks' => 'Hier werden die Werte für alle Blöcke des Projekts festgelegt. Im Block selbst wird nur noch zwischen ihnen gewählt.',
 	'prw.hint.blocksPaddings' => 'Legt die Innenabstände der Blöcke fest.',

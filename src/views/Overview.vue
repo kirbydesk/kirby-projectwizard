@@ -1971,7 +1971,7 @@
                     v-for="el in ownSpacingElements(block.blockType)"
                     :key="'gs-' + el"
                     class="pw-field-row is-readonly"
-                    :data-guide="previewGuides ? { tagline: 'margin', heading: 'row', editor: 'text' }[el] : null"
+                    :data-guide="previewGuides ? { tagline: 'margin', heading: 'row', editor: 'text', list: 'gap-4' }[el] : null"
                   >
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
@@ -1981,7 +1981,7 @@
                         <!-- as the editable rows: the px cell first, then the value -->
                         <div class="pw-field-row-options">
                           <span class="pw-element-field">
-                            <span class="pw-readonly-value">{{ globalElementSpacing(el).replace(/rem$/, '') }}<span class="pw-element-unit">rem</span></span>
+                            <span class="pw-readonly-value">{{ globalElementSpacing(el).replace(/r?em$/, '') }}<span class="pw-element-unit">{{ (globalElementSpacing(el).match(/r?em$/) || ['rem'])[0] }}</span></span>
                             <span class="pw-px-calculator">{{ remToPx(globalElementSpacing(el)) }}</span>
                           </span>
                         </div>
@@ -2023,6 +2023,20 @@
                   :show-only="['editor-spacing']"
                   :guides="previewGuides ? { 'editor-spacing': 'text' } : null"
                   :hints="{ 'editor-spacing': globalElementSpacing('editor') }"
+                  :hint-title="$t('prw.hint.globalValue')"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own' && ownSpacingElements(block.blockType).includes('list')"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['list-spacing']"
+                  :labels="{ 'list-spacing': $t('prw.prop.list-spacing') }"
+                  :guides="previewGuides ? { 'list-spacing': 'gap-4' } : null"
+                  :hints="{ 'list-spacing': globalElementSpacing('list') }"
                   :hint-title="$t('prw.hint.globalValue')"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
@@ -2720,7 +2734,10 @@ export default {
     ownSpacingElements(blockType) {
       const groups = Object.values(this.blockValueDefaults[blockType] || {});
       const hidden = this.blockOverrides[blockType]?.settings?.hidden || [];
-      return ['tagline', 'heading', 'editor'].filter(el => !hidden.includes(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+      // (lists live in the text: hidden with it; the multicolumn's own list
+      // element stays)
+      const isHidden = (el) => hidden.includes(el === 'list' && blockType !== 'pwmulticolumn' ? 'editor' : el);
+      return ['tagline', 'heading', 'editor', 'list'].filter(el => !isHidden(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
     },
     // the global elements' space below (Elements page: override, else default)
     globalElementSpacing(el) {
@@ -2774,7 +2791,7 @@ export default {
     seedOwnSpacing(blockType) {
       const ov = JSON.parse(JSON.stringify(this.blockValueOverrides[blockType] || {}));
       let changed = false;
-      for (const el of ['tagline', 'heading', 'editor']) {
+      for (const el of ['tagline', 'heading', 'editor', 'list']) {
         const name = el + '-spacing';
         const own = Object.values(this.blockValueDefaults[blockType] || {}).some(g => g && g.vars && g.vars[name]);
         if (!own || ov[name] !== undefined) continue;

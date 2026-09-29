@@ -267,6 +267,7 @@
 	'prw.prop.tagline-spacing' => 'Tagline',
 	'prw.prop.heading-spacing' => 'Heading',
 	'prw.prop.editor-spacing' => 'Text',
+	'prw.prop.list-spacing' => 'List',
 	'prw.hint.itemElement' => 'This element is used in blocks that are filled with individual items (e.g. FAQ, features and others).',
 	'prw.intro.global.blocks' => 'Here you set the values for all blocks of the project. In the block itself you only choose between them.',
 	'prw.hint.blocksPaddings' => 'Sets the paddings of the blocks.',
