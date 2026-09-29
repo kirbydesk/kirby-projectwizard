@@ -923,8 +923,7 @@
                 />
                 <!-- standard: the global values, grey (not editable here) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
-                  <!-- (read-only, no field: the row hovered tints its area) -->
-                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null" @mouseenter="previewGuides && name === 'item-title-spacing' && (hoveredVar = name)" @mouseleave="hoveredVar = null">
+                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
@@ -1973,8 +1972,6 @@
                     :key="'gs-' + el"
                     class="pw-field-row"
                     :data-guide="previewGuides ? { tagline: 'margin', heading: 'row', editor: 'text' }[el] : null"
-                    @mouseenter="previewGuides && (hoveredVar = el + '-spacing')"
-                    @mouseleave="hoveredVar = null"
                   >
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
