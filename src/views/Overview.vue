@@ -210,14 +210,6 @@
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
 
           <!-- Blocks -->
-          <!-- Settings → Project: which blocks can be used -->
-          <div v-show="globalActiveTab === 'general'" class="pw-wizard-global-content">
-            <!-- which blocks can be used -->
-            <pw-global-elements
-              :blocks="blocks"
-              @toggle="toggleBlock($event.blockType, $event.checked)"
-            />
-          </div>
 
           <!-- Project → Site: the page background -->
           <div v-show="globalActiveTab === 'site'" class="pw-wizard-global-content">
@@ -292,6 +284,11 @@
               </div>
             </pw-portal>
 
+            <!-- which blocks can be used -->
+            <pw-global-elements
+              :blocks="blocks"
+              @toggle="toggleBlock($event.blockType, $event.checked)"
+            />
             <!-- theme variants that can be chosen in the blocks ("default" always on) -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row"><h3 class="pw-card-heading">{{ $t('prw.label.variants') }}</h3></div>
@@ -2137,7 +2134,7 @@ export default {
       activeVariants: ['variant', 'variant2'],
       originalActiveVariants: ['variant', 'variant2'],
       activeTab: 'global',
-      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'general'; } catch (e) { return 'general'; } })(),
+      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'site'; } catch (e) { return 'site'; } })(),
       blockConfigs: {},
       blockOverrides: {},
       originalOverrides: {},
@@ -2289,7 +2286,7 @@ export default {
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return ['general', ...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'patches'];
+      return [...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'patches'];
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
@@ -2328,7 +2325,6 @@ export default {
     },
     globalTabs() {
       const tabs = [
-        { key: 'general', icon: 'globe' },
         { key: 'site', icon: 'sitemap' },
         { key: 'blocks', icon: 'box' },
         { key: 'elements', icon: 'layers' },
@@ -2445,9 +2441,7 @@ export default {
     isDirty() {
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
-        // the active blocks page holds the block activation
-        if (tab === 'general') return !!this.dirtyTabs['global-settings'] || !!this.dirtyTabs['global'];
-        // (the blocks page also holds the variants)
+        // (the blocks page also holds the block activation and the variants)
         if (tab === 'blocks') return !!this.dirtyTabs['global-settings'] || !!this.dirtyTabs['global'];
         if (['site', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
         // (both AI pages save the AI settings and keys together)
@@ -3424,10 +3418,7 @@ export default {
       const cssBefore = await this.frontendCssVersion();
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
-        if (tab === 'general') {
-          if (this.dirtyTabs['global-settings']) await this.saveGlobalSettings();
-          if (this.dirtyTabs['global']) await this.saveGlobal();
-        } else if (tab === 'blocks') {
+        if (tab === 'blocks') {
           if (this.dirtyTabs['global-settings']) await this.saveGlobalSettings();
           if (this.dirtyTabs['global']) await this.saveGlobal();
         } else if (['site', 'fonts'].includes(tab)) {
@@ -3478,7 +3469,7 @@ export default {
     discardChanges() {
       if (this.activeTab === 'global') {
         const tab = this.globalActiveTab;
-        if (tab === 'blocks' || tab === 'general') {
+        if (tab === 'blocks') {
           this.activeBlocks = [...this.originalActiveBlocks];
           this.activeVariants = [...this.originalActiveVariants];
           for (const block of this.blocks) {
@@ -3486,7 +3477,7 @@ export default {
           }
           this.$set(this.dirtyTabs, 'global', false);
         }
-        if (['general', 'site', 'blocks', 'fonts'].includes(tab)) {
+        if (['site', 'blocks', 'fonts'].includes(tab)) {
           this.globalOverrides = JSON.parse(JSON.stringify(this.originalGlobalOverrides));
           this.$set(this.dirtyTabs, 'global-settings', false);
         } else if (tab === 'elements') {
