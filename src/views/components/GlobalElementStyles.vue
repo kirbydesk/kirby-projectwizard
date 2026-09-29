@@ -1228,8 +1228,10 @@ export default {
         // item: each part's colour in its card
         if (name === 'element-item-title-text') return 'title';
         if (name === 'element-item-text-text') return 'description';
-        // lists: the colour of markers and numbers with the bullets
+        // lists: the markers' colour with the bullets, the numbers' with the
+        // numbering
         if (name === 'element-list-marker') return 'marker';
+        if (name === 'element-list-number') return 'number';
         if (name.startsWith('element-slideshow-')) return 'slideshow';
         if (name.startsWith('element-image-zoom')) return 'zoom';
         if (name.includes('-marked-')) return 'marked';
@@ -1268,7 +1270,7 @@ export default {
 
     // cards that hold colour rows (with the variant switch in their heading)
     hasColorRows(category) {
-      return ['colors', 'marked', 'flourish', 'text', 'marker', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description'].includes(category);
+      return ['colors', 'marked', 'flourish', 'text', 'marker', 'number', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description'].includes(category);
     },
     groupedFields(group, only, category) {
       const allFields = [];
@@ -1990,7 +1992,8 @@ export default {
         ? ({ decimal: 'decimal', 'decimal-paren': 'pw-decimal-paren', 'lower-alpha': 'lower-alpha', 'lower-roman': 'lower-roman' }[v('list-number-format')] || 'decimal')
         : ({ disc: 'disc', circle: 'circle', box: 'square', dash: '"–  "', arrow: '"→  "', chevron: '"›  "', check: '"✓  "', star: '"★  "' }[v('list-marker')] || 'disc');
       const indent = v(numbered ? 'list-number-indent' : 'list-indent');
-      const color = this.getColorOverrideValue(theme, 'element-list-marker') || this.elementDefaults.list?.colors?.['element-list-marker']?.[theme] || '';
+      const colorName = numbered ? 'element-list-number' : 'element-list-marker';
+      const color = this.getColorOverrideValue(theme, colorName) || this.elementDefaults.list?.colors?.[colorName]?.[theme] || '';
       // (the numbered one below the bullet list: the lists' space below; with
       // guides a band of its own)
       const marginTop = numbered ? (this.guides ? 0 : this.spaceBelow('list')) : this.previewParagraphGap('editor');
