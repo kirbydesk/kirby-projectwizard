@@ -67,6 +67,13 @@
                     </span>
                   </span>
                 </template>
+                <!-- item: a sample entry, its title and description with the gap
+                     between them (guides: a band between two lines) -->
+                <template v-else-if="groupKey === 'item'">
+                  <span class="pw-element-preview-text" :style="previewStyle('item-title', bp, theme)">{{ $t('prw.sample.item.title') }}</span>
+                  <span v-if="guides" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'item-title-spacing' }" :style="{ height: itemTitleGap() }"></span>
+                  <span class="pw-element-preview-text" :style="itemTextStyle(bp, theme)">{{ $t('prw.sample.item.text') }}</span>
+                </template>
                 <template v-else-if="previewParagraphs(groupKey)">
                   <div class="pw-element-preview-text pw-element-preview-paragraphs" :class="{ 'is-hot': hoveredArea === groupKey + '-paragraph-spacing' }" :style="{ ...previewStyle(groupKey, bp, theme), '--pw-paragraph-gap': previewParagraphGap(groupKey) }">
                     <p v-for="(para, pIdx) in previewParagraphs(groupKey)" :key="pIdx" :style="pIdx > 0 ? { marginTop: previewParagraphGap(groupKey) } : {}">{{ para }}</p>
@@ -897,6 +904,7 @@ export default {
       if (varName.endsWith('-paragraph-spacing')) return 'row';
       // buttons: the gap between rows is the second gap (violet)
       if (varName === 'button-row-gap') return 'row';
+      if (varName === 'item-title-spacing') return 'margin';
       if (varName.endsWith('cite-spacing') || varName === 'button-gap') return 'margin';
       // the space after an element (tagline, heading, text)
       if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'margin';
@@ -956,6 +964,14 @@ export default {
         if (wrapped !== this.buttonsWrapped) this.buttonsWrapped = wrapped;
       });
     },
+    // item: the gap between title and description
+    itemTitleGap() {
+      return this.getOverrideValue('item-title-spacing') || this.elementDefaults.item?.vars?.['item-title-spacing']?.value || '';
+    },
+    // item: its description, below the title (with guides: the band between)
+    itemTextStyle(bp, theme) {
+      return { ...this.previewStyle('item-text', bp, theme), marginTop: this.guides ? 0 : this.itemTitleGap() };
+    },
     // buttons preview: the area of the hovered question mark
     buttonHotClass() {
       return {
@@ -973,7 +989,7 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while its question mark is hovered)
     hasArea(varName) {
-      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap'].includes(varName)
+      return /^(tagline|heading|editor)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing'].includes(varName)
         // the flourish's gaps while the flourish is shown
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
@@ -983,6 +999,7 @@ export default {
       if (varName.endsWith('-paragraph-spacing')) return 'prw.hint.paragraphSpacing';
       if (varName === 'cite-spacing') return 'prw.hint.citeSpacing';
       if (varName === 'button-gap') return 'prw.hint.buttonGap';
+      if (varName === 'item-title-spacing') return 'prw.hint.itemTitleSpacing';
       if (varName === 'button-row-gap') return 'prw.hint.buttonRowGap';
       if (varName === 'button-icon-gap') return 'prw.hint.iconGap';
       if (varName.endsWith('-flourish-margin-top')) return 'prw.hint.flourishTop';
@@ -1092,6 +1109,12 @@ export default {
       const tKey = 'prw.element.' + varName;
       const t = this.$t(tKey);
       if (t && t !== tKey) return t;
+      // a part of the item (item-title-font-size → font size)
+      const part = varName.match(/^item-(?:title|text)-(.+)$/);
+      if (part) {
+        const pT = this.$t('prw.prop.' + part[1]);
+        if (pT && pT !== 'prw.prop.' + part[1]) return pT;
+      }
       const firstDash = varName.indexOf('-');
       if (firstDash > 0) {
         const propKey = 'prw.prop.' + varName.substring(firstDash + 1);
@@ -1133,6 +1156,9 @@ export default {
         // media: background with the style, the slideshow dots and the zoom
         // button in cards of their own
         if (name === 'element-media-background') return 'style';
+        // item: each part's colour in its card
+        if (name === 'element-item-title-text') return 'title';
+        if (name === 'element-item-text-text') return 'description';
         if (name.startsWith('element-slideshow-')) return 'slideshow';
         if (name.startsWith('element-image-zoom')) return 'zoom';
         if (name.includes('-marked-')) return 'marked';
@@ -1171,7 +1197,7 @@ export default {
 
     // cards that hold colour rows (with the variant switch in their heading)
     hasColorRows(category) {
-      return ['colors', 'marked', 'flourish', 'text', 'icon', 'shape', 'style', 'slideshow', 'zoom'].includes(category);
+      return ['colors', 'marked', 'flourish', 'text', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description'].includes(category);
     },
     groupedFields(group, only, category) {
       const allFields = [];
@@ -1206,9 +1232,9 @@ export default {
         // the font size first in a size card (as the size row of headings);
         // in the text card the type values first, then font size, line
         // height and letter spacing
-        const textRank = (name) => (name.endsWith('-font-size') ? 1 : name.endsWith('-line-height') ? 2 : name.endsWith('-letter-spacing') ? 3 : 0);
+        const textRank = (name) => (name.endsWith('-font-size') ? 1 : name.endsWith('-line-height') ? 2 : name.endsWith('-letter-spacing') ? 3 : name.endsWith('-spacing') ? 4 : 0);
         const entries = Object.entries(group.vars)
-          .sort(([a], [b]) => (category === 'text'
+          .sort(([a], [b]) => (['text', 'title', 'description'].includes(category)
             ? textRank(a) - textRank(b)
             : Number(b.endsWith('-font-size')) - Number(a.endsWith('-font-size'))));
         for (const [varName, def] of entries) {
@@ -1591,6 +1617,7 @@ export default {
     // __marked__ part is the text marking)
     previewText(groupKey) {
       if (groupKey === 'media') return '__media__';
+      if (groupKey === 'item') return '__item__';
       const key = 'prw.sample.' + groupKey;
       const text = this.$t(key);
       return text && text !== key ? text : null;
@@ -1610,10 +1637,15 @@ export default {
         breadcrumb: ['text', 'colors'],
         media:      ['shape', 'style', 'slideshow', 'zoom'],
         cite:       ['text', 'colors'],
+        // entries of a list: their title and description, each with its colour
+        item:       ['title', 'description'],
       };
       return tabs[groupKey] || ['text', 'sizes', 'colors'];
     },
     varCategory(varName) {
+      // item: its title (with the gap below it) and its description
+      if (varName.startsWith('item-title-')) return 'title';
+      if (varName.startsWith('item-text-')) return 'description';
       // source: its gap to the quote sits in the source card
       if (varName === 'cite-spacing') return 'text';
       // the space below an element: with its text settings
@@ -1650,7 +1682,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), title: this.$t('prw.subtab.title'), description: this.$t('prw.subtab.description'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
@@ -1868,11 +1900,13 @@ export default {
     },
     previewStyle(groupKey, bp, theme, marked = false) {
       const prefix = groupKey;
+      // a part of an element (item-title, item-text): the element's values
+      const elKey = this.elementDefaults[groupKey] ? groupKey : groupKey.split('-')[0];
       const get = (prop) => {
         return this.getOverrideValue(prefix + '-' + prop);
       };
       const defVal = (prop, breakpoint) => {
-        const group = this.elementDefaults[groupKey];
+        const group = this.elementDefaults[elKey];
         if (!group || !group.vars) return '';
         const d = group.vars[prefix + '-' + prop];
         if (!d) return '';
@@ -1899,7 +1933,7 @@ export default {
       const t = theme || 'default';
       const colorVar = 'element-' + prefix + '-text';
       const colorOverride = ((this.elementOverrides.global || {})[t] || {})[colorVar];
-      const colorDefault = this.elementDefaults[groupKey]?.colors?.[colorVar]?.[t] || '';
+      const colorDefault = this.elementDefaults[elKey]?.colors?.[colorVar]?.[t] || '';
 
       return {
         fontFamily: "'" + fontFamily + "', " + fontCategory,
