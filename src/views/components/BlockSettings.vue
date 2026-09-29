@@ -797,7 +797,9 @@ export default {
       const all = this.getDefault('settings.fields.' + tab) || {};
       if (tab === 'content') {
         // (lists of allowed blocks, e.g. multicolumn's column blocks, are no field)
+        // (a locked field without settings of its own too: it shows, not hideable)
         const isField = (v) => v === 'enabled' || v === true
+          || (this.isObject(v) && v.locked === true)
           || (this.isObject(v) && Object.values(v).some(p => this.isObject(p) && ('options' in p || 'default' in p)));
         const keys = Object.keys(all).filter(k => isField(all[k]));
         // a field the block needs (locked, e.g. the text of the text block)
