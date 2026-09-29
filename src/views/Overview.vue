@@ -14,7 +14,7 @@
               :aria-pressed="isGlobalTab(...projectMenuTabs) ? 'true' : 'false'"
               @click="$refs.settingsMenu.toggle()"
             >
-              <k-icon type="globe" />
+              <k-icon type="sitemap" />
               <span class="pw-tab-text">{{ $t('prw.tab.project') }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
             </button>
