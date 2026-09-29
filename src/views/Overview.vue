@@ -3803,9 +3803,9 @@ export default {
   font-size: var(--text-sm);
   color: var(--color-text-dimmed);
 }
-/* rows with the global values (Standard): the values fainter, so they do
-   not look clickable */
-.pw-field-row.is-readonly .pw-field-row-options {
+/* rows with the global values (Standard): the value fainter (not its px),
+   so it does not look clickable */
+.pw-field-row.is-readonly .pw-readonly-value {
   opacity: 0.5;
 }
 .pw-field-table .pw-readonly-value .pw-element-unit {
