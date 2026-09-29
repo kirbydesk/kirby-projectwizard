@@ -130,6 +130,40 @@
             </div>
         </div>
 
+        <!-- Settings: AI and the exceptions -->
+        <div v-if="!loading" class="pw-pill pw-tabs" role="group">
+          <div class="pw-tab-menu">
+            <button
+              type="button"
+              class="pw-tool pw-tab"
+              aria-haspopup="menu"
+              :aria-pressed="isGlobalTab(...configMenuTabs) ? 'true' : 'false'"
+              @click="$refs.configMenu.toggle()"
+            >
+              <k-icon type="settings" />
+              <span class="pw-tab-text">{{ $t('prw.tab.config') }}</span>
+              <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+            </button>
+            <k-dropdown-content ref="configMenu" align-x="start">
+              <nav class="k-navigate">
+                <button
+                  v-for="tab in configMenuTabs.map(key => globalTabs.find(t => t.key === key)).filter(Boolean)"
+                  :key="tab.key"
+                  type="button"
+                  class="k-dropdown-item k-button pw-menu-item"
+                  data-has-text="true"
+                  data-has-icon="true"
+                  :aria-current="isGlobalTab(tab.key) ? 'true' : undefined"
+                  @click="$refs.configMenu.close(); openGlobal(tab.key)"
+                >
+                  <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
+                  <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+                </button>
+              </nav>
+            </k-dropdown-content>
+          </div>
+        </div>
+
         <div v-if="isDirty" class="k-form-controls pw-topbar-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
@@ -2263,7 +2297,11 @@ export default {
       return this.$t('prw.tab.' + this.globalActiveTab);
     },
     projectMenuTabs() {
-      return ['general', 'header', 'footer', 'blocks', 'fonts', ...(this.hasAiTab ? ['ai'] : []), 'patches'];
+      return ['general', 'header', 'footer', 'blocks', 'fonts'];
+    },
+    // the settings menu: AI (with kirby-contentwizard) and the exceptions
+    configMenuTabs() {
+      return [...(this.hasAiTab ? ['ai'] : []), 'patches'];
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
     // tabs of a block view: design (only with values), start values, restrictions

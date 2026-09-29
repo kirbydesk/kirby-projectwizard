@@ -103,6 +103,7 @@
 	'prw.tab.general' => 'Projekt',
 	'prw.tab.project' => 'Projekt',
 	'prw.tab.settings' => 'Einstellungen',
+	'prw.tab.config' => 'Einstellungen',
 	'prw.tab.global' => 'Global',
 	'prw.tab.blocks' => 'Blöcke',
 	'prw.tab.fonts' => 'Schriftarten',
