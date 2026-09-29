@@ -80,14 +80,15 @@
           </figure>
           <!-- media: a sample image (as in the element's preview) with the
                element's corner radii -->
-          <div v-if="isMedia && hasField('media') && spaceBand('media')" class="pw-space-band" :class="['is-' + spaceBand('media').prev, { 'is-hot': highlight === spaceBand('media').prev + '-spacing' }]" :style="{ height: spaceBand('media').height }"></div>
+          <!-- guides: the gap to the intro (as the cardlets') -->
+          <div v-if="isMedia && hasField('media') && guides && mediaTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: mediaTextGap }"></div>
           <div v-if="isMedia && hasField('media')" class="pw-media-preview-img pw-media-preview-photo" :style="mediaStyle"></div>
           <!-- logocloud: four sample logos, two by two (so the gap shows
                between the columns and between the rows), shrinking in a
                narrow preview -->
           <!-- guides: the gap to the text as an element of its own, a cyan line
                above (end of the text) and below (start of the logos) -->
-          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: logosTextGap }"></div>
+          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: logosTextGap }"></div>
           <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible, 'is-hot-gap': highlight === 'item-gap', 'is-hot-row-gap': highlight === 'item-row-gap' }" :style="logosStyle">
             <div
               v-for="(logo, index) in dummyLogos"
@@ -117,7 +118,7 @@
           </div>
           <!-- cardlets: two cards (image, tagline, heading, text, link) as in its snippet -->
           <!-- guides: the gap to the intro, between the cards (as the featurelist's) -->
-          <div v-if="isCardlets && guides && cardTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: cardTextGap }"></div>
+          <div v-if="isCardlets && guides && cardTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: cardTextGap }"></div>
           <div v-if="isCardlets" class="pw-cardlets-items pw-featurelist-items" :class="{ 'is-row': cardColumns > 1 }" :style="cardItemsStyle">
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'card-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="cardColumns > 1 ? { width: itemValueAt('item-gap') } : { height: itemValueAt('item-gap') }"></span>
@@ -183,7 +184,7 @@
                side – between the features cyan, icon and text violet, title
                and text gold; the tile's padding magenta -->
           <!-- guides: the gap to the text as an element of its own -->
-          <div v-if="isFeaturelist && guides && featureTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: featureTextGap }"></div>
+          <div v-if="isFeaturelist && guides && featureTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: featureTextGap }"></div>
           <div v-if="isFeaturelist" class="pw-featurelist-items" :class="{ 'has-guides': guides, 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'feature-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="featureGapStyle"></span>
@@ -209,7 +210,7 @@
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the steps cyan, between number and text violet -->
           <!-- guides: the gap to the intro (as the cardlets') -->
-          <div v-if="isSteplist && guides && stepTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' || (highlight && highlight === introGapElement + '-spacing') }" :style="{ height: stepTextGap }"></div>
+          <div v-if="isSteplist && guides && stepTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: stepTextGap }"></div>
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides, 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
             <template v-for="n in stepCount">
             <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="stepStepGapStyle"></span>
@@ -383,7 +384,7 @@ export default {
       const align = this.preset('media', 'align') || 'left';
       return {
         // (with a band of its own above: none)
-        marginTop: this.spaceBand('media') ? 0 : this.gapBefore('media'),
+        marginTop: this.guides ? 0 : this.mediaTextGap,
         maxWidth: widths[this.preset('media', 'size')] || '33%',
         marginLeft: align === 'left' ? 0 : 'auto',
         marginRight: align === 'right' ? 0 : 'auto',
@@ -391,6 +392,11 @@ export default {
           ? [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' ')
           : 0,
       };
+    },
+    // media: the gap to the intro above (when there is one)
+    mediaTextGap() {
+      const idx = this.fields.indexOf('media');
+      return idx > 0 ? this.itemValue('item-text-gap') : 0;
     },
     isLogocloud() {
       return this.blockType === 'pwlogocloud';
@@ -573,14 +579,6 @@ export default {
         marginBottom: v === 'bottom' ? 0 : 'auto',
       };
     },
-    // the element right before the block's items / logos (its space below
-    // meets the gap to the intro there: hovering either tints that gap)
-    introGapElement() {
-      const target = this.isLogocloud ? 'logos' : 'items';
-      // (cardlets and featurelist: 'items')
-      const idx = this.fields.indexOf(target);
-      return idx > 0 ? this.fields[idx - 1] : '';
-    },
     isCardlets() {
       return this.blockType === 'pwcardlets';
     },
@@ -590,14 +588,12 @@ export default {
       if (!this.hasGrid) return 1;
       return Math.min(Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1, 2);
     },
-    // the gap to the intro above (the text's space below meets it: the larger wins)
+    // the gap to the intro above (alone: the intro's last element has no space below there)
     cardTextGap() {
       const idx = this.fields.indexOf('items');
       if (idx <= 0) return 0;
-      const gap = this.itemValue('item-text-gap');
-      const prev = this.fields[idx - 1];
-      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
-      return after ? 'max(' + gap + ', ' + after + ')' : gap;
+      // (alone: the intro's last element has no space below before the items)
+      return this.itemValue('item-text-gap');
     },
     cardItemsStyle() {
       const marginTop = this.guides ? 0 : this.cardTextGap;
@@ -868,12 +864,8 @@ export default {
       if (this.featureSplit && this.hasGrid) return 0;
       const idx = this.fields.indexOf('items');
       if (idx <= 0) return 0;
-      const gap = this.itemValue('item-text-gap');
-      // split: below the intro wrapper (no margins meet there)
-      if (this.featureSplit) return gap;
-      const prev = this.fields[idx - 1];
-      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.elementValue(prev, 'spacing') : '';
-      return after ? 'max(' + gap + ', ' + after + ')' : gap;
+      // (alone: the intro's last element has no space below before the items)
+      return this.itemValue('item-text-gap');
     },
     // the gap between two features: as high (one below the other) or as
     // wide (side by side) as the gap
@@ -995,14 +987,12 @@ export default {
       if (!this.hasGrid || this.currentStepStyle === 'connected') return 1;
       return Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1;
     },
-    // the gap to the intro above (the text's space below meets it: the larger wins)
+    // the gap to the intro above (alone: the intro's last element has no space below there)
     stepTextGap() {
       const idx = this.fields.indexOf('items');
       if (idx <= 0) return 0;
-      const gap = this.itemValue('item-text-gap');
-      const prev = this.fields[idx - 1];
-      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
-      return after ? 'max(' + gap + ', ' + after + ')' : gap;
+      // (alone: the intro's last element has no space below before the items)
+      return this.itemValue('item-text-gap');
     },
     stepItemsStyle() {
       const gap = this.itemValue('item-gap');

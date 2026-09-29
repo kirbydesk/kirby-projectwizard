@@ -246,6 +246,7 @@
 	'prw.hint.featureTile' => 'Legt das Aussehen der Kachel hinter den Icons fest.',
 	'prw.hint.featureColors' => 'Legt die Farben von Icon (und Kachel) für jede Variante fest.',
 	'prw.hint.featureSpacing' => 'Legt die Abstände zwischen den Einträgen und zur Einleitung fest. <code>Eingerückt</code> zeigt die Einleitung auf großen Bildschirmen links neben den Einträgen.',
+	'prw.hint.mediaSpacing' => 'Legt den Abstand zwischen der Einleitung und dem Bild, der Slideshow oder dem Video fest.',
 	'prw.hint.multicolumnSpacing' => 'Legt den Abstand zwischen den Spalten fest, nebeneinander oder untereinander, je nachdem, wie die Spalten auf dem gewählten Gerät stehen. Die Abstände der Elemente in den Spalten stehen unter Elemente.',
 	'prw.hint.cardletsCard' => 'Legt den Innenabstand der Karten fest.',
 	'prw.hint.cardletsShape' => 'Legt die Form der Karten fest. Sie gilt für alle Karten gleich.',

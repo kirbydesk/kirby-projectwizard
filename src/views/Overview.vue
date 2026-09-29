@@ -1996,6 +1996,28 @@
             </section>
             </template>
 
+            <!-- media: the gap to the intro above the image, slideshow or video -->
+            <template v-if="block.blockType === 'pwmedia' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-text-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.mediaSpacing')" />
+            </section>
+            </template>
+
             <!-- multicolumn: the gaps between the columns (side by side, below
                  each other); the elements' space below in the card Elements -->
             <template v-if="block.blockType === 'pwmulticolumn' && blockValueDefaults[block.blockType]">

@@ -246,6 +246,7 @@
 	'prw.hint.featureTile' => 'Sets the look of the tile behind the icons.',
 	'prw.hint.featureColors' => 'Sets the colours of the icon (and the tile) for each variant.',
 	'prw.hint.featureSpacing' => 'Sets the gaps between the items and to the intro. <code>Offset</code> shows the intro next to the items on large screens.',
+	'prw.hint.mediaSpacing' => 'Sets the gap between the intro and the image, slideshow or video.',
 	'prw.hint.multicolumnSpacing' => 'Sets the gap between the columns, side by side or below each other, depending on how the columns stand on the device chosen. The space of the elements in the columns is set under Elements.',
 	'prw.hint.cardletsCard' => 'Sets the padding of the cards.',
 	'prw.hint.cardletsShape' => 'Sets the shape of the cards. It is the same for all cards.',
