@@ -424,14 +424,14 @@
                 </div>
                 <!-- Select with options -->
                 <!-- (a field that may stay empty – e.g. the featurelist's icon
-                     position: none – gets Kirby's reset; empty stores its value) -->
+                     position: none – is not required, so a second click on the
+                     chosen pill deselects it; empty stores its value) -->
                 <k-toggles-input
                   v-else-if="field.type === 'select'"
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
                   :options="field.options.map(o => ({ value: o, text: itemOptionLabel(field, o) }))"
                   :grow="false"
                   :required="field.emptyValue === undefined"
-                  :reset="field.emptyValue !== undefined"
                   @input="setVal('settings.fields.layout.' + field.key + '.default', ($event === null || $event === '') && field.emptyValue !== undefined ? field.emptyValue : $event)"
                 />
                 <!-- Plain boolean toggle -->
