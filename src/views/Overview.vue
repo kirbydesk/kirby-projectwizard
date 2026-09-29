@@ -250,8 +250,7 @@
                       class="pw-tool"
                       :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
                       @click="blocksColorTheme = t"
-                    >
-<span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(t) }"></span>{{ $t('pw.option.' + t) }}</button>
+                    >{{ $t('pw.option.' + t) }}</button>
                   </div>
                   <!-- guides on/off (shared by all previews) -->
                   <div class="pw-pill pw-guides-switch" role="group">

@@ -32,8 +32,7 @@
           class="pw-tool"
           :aria-pressed="currentTheme === t ? 'true' : 'false'"
           @click="$emit('update:variant', t)"
-        >
-<span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(t) }"></span>{{ $t('pw.option.' + t) }}</button>
+        >{{ $t('pw.option.' + t) }}</button>
       </div>
     </div>
 
@@ -1192,11 +1191,6 @@ export default {
     },
   },
   methods: {
-    // a variant's block background (the dot in the variant pills)
-    variantBackground(theme) {
-      return ((this.globalOverrides.global || {})[theme] || {})['block-background'] ||
-        this.globalDefaults.colors?.colors?.['block-background']?.[theme] || '#ffffff';
-    },
     // a logo's tile; with guides one of the four corners of the 3×3 tracks
     logoTileStyle(index) {
       const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
