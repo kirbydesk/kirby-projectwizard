@@ -2367,19 +2367,23 @@ export default {
    as orange bands across the preview. Hovered, only the value's area
    tinted, all other lines hidden */
 .pw-element-preview.has-guides .pw-element-preview-list {
-  background: linear-gradient(rgba(255, 0, 170, 0.6), rgba(255, 0, 170, 0.6)) no-repeat var(--pw-list-indent, 0px) 0 / 1px 100%;
+  --pw-indent-line: rgba(255, 0, 170, 0.6);
+  background:
+    linear-gradient(var(--pw-indent-line), var(--pw-indent-line)) no-repeat 0 0 / 1px 100%,
+    linear-gradient(var(--pw-indent-line), var(--pw-indent-line)) no-repeat var(--pw-list-indent, 0px) 0 / 1px 100%;
 }
 .pw-element-preview.has-guides .pw-element-preview-list.is-numbered {
-  background-image: linear-gradient(rgba(0, 180, 90, 0.9), rgba(0, 180, 90, 0.9));
+  --pw-indent-line: rgba(0, 180, 90, 0.9);
 }
-.pw-element-preview.has-focus .pw-element-preview-list {
+/* another value hovered: no lines */
+.pw-element-preview.has-focus .pw-element-preview-list:not(.is-hot-indent) {
   background: none;
 }
 .pw-element-preview.has-guides .pw-element-preview-list.is-hot-indent {
   background: linear-gradient(rgba(255, 0, 170, 0.18), rgba(255, 0, 170, 0.18)) no-repeat 0 0 / var(--pw-list-indent, 0px) 100%;
 }
 .pw-element-preview.has-guides .pw-element-preview-list.is-numbered.is-hot-indent {
-  background-image: linear-gradient(rgba(0, 180, 90, 0.18), rgba(0, 180, 90, 0.18));
+  background: linear-gradient(rgba(0, 180, 90, 0.18), rgba(0, 180, 90, 0.18)) no-repeat 0 0 / var(--pw-list-indent, 0px) 100%;
 }
 .pw-element-preview.has-guides .pw-element-preview-list > li {
   position: relative;
