@@ -97,7 +97,7 @@
 	'prw.view.presets' => 'Visibility',
 	'prw.view.design.intro' => 'These values apply to all blocks of this kind, including existing ones.',
 	'prw.view.defaults.intro' => 'Start values apply to newly created blocks. The values can still be changed in the block itself.',
-	'prw.view.presets.intro' => 'Defines which fields are shown for editing. Hidden fields keep their start value. The sections match the tabs in the block. When all fields of a tab are hidden, the tab is hidden too.',
+	'prw.view.presets.intro' => 'Defines which fields are shown for editing. Hidden fields keep their set value, new blocks get the start value. The sections match the tabs in the block. When all fields of a tab are hidden, the tab is hidden too.',
 	'prw.tab.items' => 'Items',
 	'prw.tab.layout' => 'Layout',
 
