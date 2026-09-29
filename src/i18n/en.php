@@ -219,7 +219,7 @@
 	'prw.hint.themeDefault' => 'Sets the variant a new block starts with. The colours of the variants are set globally, <code>Custom</code> is also available in the block.',
 	'prw.hint.gridFull' => 'A new block takes up the full width on this screen size.',
 	'prw.hint.gridCustom' => 'Sets how many of the 12 grid columns a new block takes up on this screen size and in which column it starts.',
-	'prw.hint.settingsDefault' => 'Sets whether a new block runs in the content width or across the full screen width and whether it has outer spacing above and below. The values of the outer spacing are set globally under <code>Blocks</code>.',
+	'prw.hint.settingsDefault' => 'Sets whether a new block runs in the content width or across the full screen width and whether its outer spacing above and below is switched on. The values of the outer spacing are set globally under <code>Blocks</code>.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.prop.tagline-spacing' => 'Tagline',
