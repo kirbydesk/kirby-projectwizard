@@ -247,7 +247,7 @@
 	'prw.hint.cardletsCard' => 'Legt den Innenabstand der Karten fest.',
 	'prw.hint.cardletsShape' => 'Legt die Form der Karten fest. Sie gilt für alle Karten gleich.',
 	'prw.hint.cardletsBorder' => 'Legt einen optionalen Rahmen und Schatten der Karten fest.',
-	'prw.hint.cardletsLink' => 'Legt fest, wie der Link am Ende einer Karte aussieht und ob er unten in der Karte oder direkt nach dem Text steht. Ziel und Linktext werden pro Karte im Block eingegeben.',
+	'prw.hint.cardletsLink' => 'Legt fest, wie der Link am Ende einer Karte aussieht und ob er am Kartenfuß oder unter dem Text steht. Ziel und Linktext werden pro Karte im Block eingegeben.',
 	'prw.hint.cardletsColors' => 'Legt die Farben der Karten für jede Variante fest.',
 	'prw.hint.cardletsSpacing' => 'Legt die Abstände zwischen den Karten, innerhalb der Karten und zur Einleitung fest. Der Link steht immer unten in der Karte, der Abstand zum Link ist der Mindestabstand.',
 	'prw.hint.steplistNumbering' => 'Legt fest, wie die Nummern der Schritte aussehen. Die Werte gelten je Darstellung, oben wird gewählt, welche angezeigt und bearbeitet wird.',
