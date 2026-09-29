@@ -4,14 +4,14 @@
     <pw-portal to=".pw-wizard .k-topbar">
       <div class="pw-topbar">
         <!-- Main navigation: the same on the global view and on every block view -->
-        <!-- Project: project, header, footer, fonts and AI, then the settings -->
+        <!-- Project: project, header, footer, blocks, fonts -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <div class="pw-tab-menu">
             <button
               type="button"
               class="pw-tool pw-tab"
               aria-haspopup="menu"
-              :aria-pressed="isGlobalTab(...projectMenuTabs, 'settings') ? 'true' : 'false'"
+              :aria-pressed="isGlobalTab(...projectMenuTabs) ? 'true' : 'false'"
               @click="$refs.settingsMenu.toggle()"
             >
               <k-icon type="globe" />
@@ -36,18 +36,6 @@
                   <!-- "Project" first, like "Elements" and "Blocks" in their menus -->
                   <hr v-if="idx === 0" :key="'hr-' + tab.key" />
                 </template>
-                <hr />
-                <button
-                  type="button"
-                  class="k-dropdown-item k-button pw-menu-item"
-                  data-has-text="true"
-                  data-has-icon="true"
-                  :aria-current="isGlobalTab('settings') ? 'true' : undefined"
-                  @click="$refs.settingsMenu.close(); openGlobal('settings')"
-                >
-                  <span class="k-button-icon"><k-icon type="cog" /></span>
-                  <span class="k-button-text">{{ $t('prw.tab.settings') }}</span>
-                </button>
               </nav>
             </k-dropdown-content>
           </div>
@@ -130,7 +118,7 @@
             </div>
         </div>
 
-        <!-- Settings: AI and the exceptions -->
+        <!-- Settings: the settings, AI and the exceptions -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <div class="pw-tab-menu">
             <button
@@ -2299,9 +2287,10 @@ export default {
     projectMenuTabs() {
       return ['general', 'header', 'footer', 'blocks', 'fonts'];
     },
-    // the settings menu: AI (with kirby-contentwizard) and the exceptions
+    // the settings menu: the settings (variants), AI (with
+    // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return [...(this.hasAiTab ? ['ai'] : []), 'patches'];
+      return ['settings', ...(this.hasAiTab ? ['ai'] : []), 'patches'];
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
     // tabs of a block view: design (only with values), start values, restrictions
