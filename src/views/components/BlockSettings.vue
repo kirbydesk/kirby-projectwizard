@@ -318,6 +318,8 @@
             </div>
           </template>
         </div>
+        <!-- a help text below the card (e.g. the hero's content position) -->
+        <k-text v-if="sec.help" size="tiny" class="k-help pw-card-help" :html="sec.help" />
         </section>
       </template>
 
@@ -748,7 +750,7 @@ export default {
           const key = prefix || f.key;
           const section = sections.find(sec => sec.key === key);
           if (section) section.fields.push(f);
-          else sections.push({ key, heading: prefix ? this.$t(headings[prefix]) : null, fields: [f] });
+          else sections.push({ key, heading: prefix ? this.$t(headings[prefix]) : null, help: prefix === 'position-' ? this.$t('prw.hint.contentPosition') : null, fields: [f] });
         }
         return sections;
       }
