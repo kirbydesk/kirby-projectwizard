@@ -4,7 +4,7 @@
     <pw-portal to=".pw-wizard .k-topbar">
       <div class="pw-topbar">
         <!-- Main navigation: the same on the global view and on every block view -->
-        <!-- Project: project, header, footer, blocks, fonts -->
+        <!-- Project: header, footer, blocks, fonts -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <div class="pw-tab-menu">
             <button
@@ -33,8 +33,6 @@
                     <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
                     <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
                   </button>
-                  <!-- "Project" first, like "Elements" and "Blocks" in their menus -->
-                  <hr v-if="idx === 0" :key="'hr-' + tab.key" />
                 </template>
               </nav>
             </k-dropdown-content>
@@ -118,7 +116,7 @@
             </div>
         </div>
 
-        <!-- Settings: the settings, AI and the exceptions -->
+        <!-- Settings: the project, the settings, AI and the exceptions -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <div class="pw-tab-menu">
             <button
@@ -2285,12 +2283,12 @@ export default {
       return this.$t('prw.tab.' + this.globalActiveTab);
     },
     projectMenuTabs() {
-      return ['general', 'header', 'footer', 'blocks', 'fonts'];
+      return ['header', 'footer', 'blocks', 'fonts'];
     },
-    // the settings menu: the settings (variants), AI (with
+    // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return ['settings', ...(this.hasAiTab ? ['ai'] : []), 'patches'];
+      return ['general', 'settings', ...(this.hasAiTab ? ['ai'] : []), 'patches'];
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
     // tabs of a block view: design (only with values), start values, restrictions
