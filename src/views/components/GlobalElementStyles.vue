@@ -451,7 +451,7 @@
                           />
                           <span class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit, field.varName) }}</span>
+                        <span v-if="!['px', '%'].includes(field.def.unit)" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit, field.varName) }}</span>
                       </span>
                     </template>
                   </div>
@@ -652,7 +652,7 @@
                           />
                           <span v-if="field.def.unit" class="pw-element-unit">{{ field.def.unit }}</span>
                         </span>
-                        <span v-if="field.def.unit !== 'px'" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit, field.varName) }}</span>
+                        <span v-if="!['px', '%'].includes(field.def.unit)" class="pw-px-calculator">{{ toPx(getOverrideValue(field.varName) || field.def.value, field.def.unit, field.varName) }}</span>
                       </span>
                       <span v-if="field.def.help" class="pw-element-help">{{ helpText(field.def.help) }}</span>
                     </template>
@@ -1732,7 +1732,7 @@ export default {
     varCategory(varName) {
       // lists: bullets (marker, indent), numbers (format, indent), the gap
       // between the points
-      if (varName === 'list-marker' || varName === 'list-indent') return 'marker';
+      if (varName === 'list-marker' || varName === 'list-marker-size' || varName === 'list-indent') return 'marker';
       if (varName.startsWith('list-number-')) return 'number';
       if (varName === 'list-item-spacing' || varName === 'list-spacing') return 'spacing';
       // item: its title (with the gap below it) and its description
@@ -1994,7 +1994,7 @@ export default {
       // (the numbered one below the bullet list: the lists' space below; with
       // guides a band of its own)
       const marginTop = numbered ? (this.guides ? 0 : this.spaceBelow('list')) : this.previewParagraphGap('editor');
-      return { marginTop, paddingLeft: indent, listStyleType: marker, '--pw-list-indent': indent, '--pw-list-gap': v('list-item-spacing'), '--pw-list-marker': color };
+      return { marginTop, paddingLeft: indent, listStyleType: marker, '--pw-list-marker-size': numbered ? '100%' : (v('list-marker-size') || '100%'), '--pw-list-indent': indent, '--pw-list-gap': v('list-item-spacing'), '--pw-list-marker': color };
     },
     previewParagraphGap(groupKey) {
       const override = this.getOverrideValue(groupKey + '-paragraph-spacing');
@@ -2356,6 +2356,7 @@ export default {
 }
 .pw-element-preview-list > li::marker {
   color: var(--pw-list-marker);
+  font-size: var(--pw-list-marker-size);
 }
 /* guides: the indent (magenta, as a padding) and the gaps between the points
    (orange lines); hovered, only the area tinted */
