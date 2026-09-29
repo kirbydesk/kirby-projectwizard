@@ -146,13 +146,14 @@ export default {
   align-items: center;
   gap: 2px;
   padding: 0;
-  color: inherit;
+  color: var(--color-blue-600);
   font: inherit;
   background: none;
   cursor: pointer;
 }
 .pw-active-usage-button:hover {
-  color: var(--color-text);
+  color: var(--color-blue-700, #1d4ed8);
+  text-decoration: underline;
 }
 .pw-active-usage-button .k-icon {
   --icon-size: 12px;
