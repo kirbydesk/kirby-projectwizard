@@ -165,12 +165,23 @@
           :key="'card-' + cat.key + '-' + sec.key"
           class="pw-card-section"
         >
-        <div v-if="sec.heading" class="pw-card-heading-row">
-          <h3 class="pw-card-heading">{{ sec.heading }}</h3>
+        <div v-if="sec.heading || isGridDefaults(cat)" class="pw-card-heading-row">
+          <h3 class="pw-card-heading">{{ sec.heading || drawerLabel(cat.key) }}</h3>
+          <!-- grid start values: the screen size shown in the card -->
+          <span v-if="isGridDefaults(cat)" class="pw-pill pw-theme-switch" role="group">
+            <button
+              v-for="b in ['sm', 'md', 'lg', 'xl']"
+              :key="'gbp-' + b"
+              type="button"
+              class="pw-tool"
+              :aria-pressed="gridBp === b ? 'true' : 'false'"
+              @click="gridBp = b"
+            >{{ b.toUpperCase() }}</button>
+          </span>
         </div>
         <div class="pw-card pw-field-table">
-          <!-- grid start values: full width or adjusted (then the columns and
-               offsets per screen size); not stored itself, it follows the values -->
+          <!-- grid start values of the chosen screen size: full width or adjusted
+               (then its width and offset); not stored itself, it follows the values -->
           <div v-if="isGridDefaults(cat)" class="pw-field-row">
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
@@ -179,36 +190,17 @@
                 </div>
                 <div class="pw-field-row-options">
                   <k-toggles-input
-                    :value="gridAdjusted(sec.fields) ? 'custom' : 'full'"
+                    :value="gridAdjusted(sec.fields, gridBp) ? 'custom' : 'full'"
                     :options="[{ value: 'full', text: $t('prw.option.gridFull') }, { value: 'custom', text: $t('prw.option.gridCustom') }]"
                     :grow="false"
                     :required="true"
-                    @input="setGridMode(sec.fields, $event)"
+                    @input="setGridMode(sec.fields, gridBp, $event)"
                   />
                 </div>
               </span>
             </div>
           </div>
-          <!-- adjusted: one screen size at a time, its width and offset below -->
-          <div v-if="isGridDefaults(cat) && gridAdjusted(sec.fields)" class="pw-field-row">
-            <div class="k-input" data-type="text">
-              <span class="k-input-element pw-field-row-inner">
-                <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">{{ $t('prw.label.screenSize') }}</label>
-                </div>
-                <div class="pw-field-row-options">
-                  <k-toggles-input
-                    :value="gridBp"
-                    :options="['sm', 'md', 'lg', 'xl'].map(b => ({ value: b, text: b.toUpperCase() }))"
-                    :grow="false"
-                    :required="true"
-                    @input="gridBp = $event"
-                  />
-                </div>
-              </span>
-            </div>
-          </div>
-          <template v-for="field in (isGridDefaults(cat) ? (gridAdjusted(sec.fields) ? sec.fields.filter(f => f.key.endsWith('-' + gridBp)) : []) : sec.fields)">
+          <template v-for="field in (isGridDefaults(cat) ? (gridAdjusted(sec.fields, gridBp) ? sec.fields.filter(f => f.key.endsWith('-' + gridBp)) : []) : sec.fields)">
             <!-- FieldRow (e.g. theme with options + click logic) -->
             <pw-field-row
               v-if="field.type === 'fieldrow'"
@@ -516,8 +508,8 @@ export default {
     return {
       // chosen tab of the drawer header (null: the first with rows)
       drawerTab: null,
-      // grid start values switched to "adjusted" (still full width values)
-      gridCustom: false,
+      // grid start values switched to "adjusted" per screen size (still full width values)
+      gridCustom: {},
       // the screen size whose grid start values are shown
       gridBp: 'lg',
     };
@@ -816,19 +808,20 @@ export default {
     isGridDefaults(cat) {
       return this.view === 'defaults' && cat.key === 'grid';
     },
-    // adjusted: switched so, or a size / offset other than full width
-    gridAdjusted(fields) {
-      if (this.gridCustom) return true;
-      return fields.some(f => {
+    // a screen size adjusted: switched so, or its width / offset other than
+    // full width
+    gridAdjusted(fields, bp) {
+      if (this.gridCustom[bp]) return true;
+      return fields.filter(f => f.key.endsWith('-' + bp)).some(f => {
         const val = Number(this.getVal('settings.fields.grid.' + f.key + '.default', f.defaultValue));
         return f.key.startsWith('grid-size-') ? val !== 12 : val !== 0;
       });
     },
-    // full width: every size 12, every offset 0
-    setGridMode(fields, mode) {
-      this.gridCustom = mode === 'custom';
+    // full width: its width 12, its offset 0
+    setGridMode(fields, bp, mode) {
+      this.$set(this.gridCustom, bp, mode === 'custom');
       if (mode !== 'full') return;
-      for (const f of fields) {
+      for (const f of fields.filter(fl => fl.key.endsWith('-' + bp))) {
         this.selectOption('settings.fields.grid.' + f.key + '.default', f.key.startsWith('grid-size-') ? 12 : 0, f.defaultValue);
       }
     },
