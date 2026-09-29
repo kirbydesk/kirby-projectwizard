@@ -144,11 +144,11 @@
             </template>
           </div>
           <!-- multicolumn: two columns as its distribution at the device
-               shown (stacked on mobile) – left tagline, heading, text, button; right an
-               image and a text. Guides: the gaps as elements of their own
-               (between the columns cyan, below each other violet), the space
-               below tagline (cyan), heading (violet) and text (orange), after
-               the image gold -->
+               shown (stacked on mobile), its elements in the order of the
+               design card – left tagline, heading, text, list; right quote,
+               image, button. Guides: the gaps between the columns (cyan, below
+               each other violet) and each element's space below as a band in
+               its colour (the design card's) -->
           <div v-if="isMulticolumn" class="pw-mc-preview" :style="mcStyle">
             <div class="pw-mc-column">
               <div :style="mcTextStyle('tagline', 'tagline')">{{ $t('prw.preview.tagline') }}</div>
@@ -157,18 +157,18 @@
               <span v-if="guides" class="pw-mc-band is-heading" :class="{ 'is-hot': highlight === 'heading-spacing' }" :style="{ height: spaceAfter('heading') }"></span>
               <p :style="mcTextStyle('editor', 'editor')">{{ $t('prw.preview.card.text') }}</p>
               <span v-if="guides" class="pw-mc-band is-editor" :class="{ 'is-hot': highlight === 'editor-spacing' }" :style="{ height: spaceAfter('editor') }"></span>
-              <div><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
+              <!-- a list (Elements › Lists), the column's last element -->
+              <ul class="pw-mc-list" :style="{ ...mcListStyle, marginBottom: 0 }">
+                <li v-for="n in 2" :key="'mcl-' + n">{{ $t('prw.preview.list.' + n) }}</li>
+              </ul>
             </div>
             <span v-if="guides" class="pw-mc-gap" :class="{ 'is-row': !mcSide, 'is-hot': highlight === (mcSide ? 'column-gap' : 'row-gap') }" :style="mcSide ? null : { height: itemValue('row-gap') }"></span>
             <div class="pw-mc-column">
-              <div class="pw-media-preview-photo pw-mc-image" :style="{ marginBottom: guides ? 0 : itemValue('element-gap') }"></div>
-              <span v-if="guides" class="pw-mc-band is-element" :class="{ 'is-hot': highlight === 'element-gap' }" :style="{ height: itemValue('element-gap') }"></span>
-              <!-- a list (Elements › Lists) with its space below -->
-              <ul class="pw-mc-list" :style="mcListStyle">
-                <li v-for="n in 3" :key="'mcl-' + n">{{ $t('prw.sample.list.' + n) }}</li>
-              </ul>
-              <span v-if="guides" class="pw-mc-band is-list" :class="{ 'is-hot': highlight === 'list-spacing' }" :style="{ height: mcListSpacing, fontSize: mcListStyle.fontSize }"></span>
-              <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.card.text') }}</p>
+              <blockquote class="pw-mc-quote" :style="mcQuoteStyle">{{ $t('prw.preview.quote') }}</blockquote>
+              <span v-if="guides" class="pw-mc-band is-quote" :class="{ 'is-hot': highlight === 'quote-spacing' }" :style="{ height: spaceAfter('quote') }"></span>
+              <div class="pw-media-preview-photo pw-mc-image" :style="{ marginBottom: guides ? 0 : spaceAfter('media') }"></div>
+              <span v-if="guides" class="pw-mc-band is-media" :class="{ 'is-hot': highlight === 'media-spacing' }" :style="{ height: spaceAfter('media') }"></span>
+              <div><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
             </div>
           </div>
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
@@ -330,7 +330,7 @@ export default {
         'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap',
         'tagline-spacing', 'heading-spacing', 'editor-spacing',
         'item-tagline-spacing', 'item-heading-spacing', 'item-cta-gap',
-        'item-padding-x', 'item-overhang', 'column-gap', 'row-gap', 'element-gap', 'list-spacing',
+        'item-padding-x', 'item-overhang', 'column-gap', 'row-gap', 'list-spacing', 'quote-spacing', 'media-spacing', 'button-spacing',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -782,6 +782,10 @@ export default {
         '--pw-list-marker': this.elementColor('list', 'element-list-marker'),
         '--pw-list-marker-size': this.elementValue('list', 'marker-size') || '100%',
       };
+    },
+    // the quote in a column: the quote's type and colour, its space below
+    mcQuoteStyle() {
+      return { ...this.typography('quote'), color: this.elementColor('quote', 'element-quote-text'), margin: 0, marginBottom: this.guides ? 0 : this.spaceAfter('quote') };
     },
     mcListSpacing() {
       if (this.ownSpacing) {
@@ -1560,15 +1564,17 @@ export default {
 .pw-mc-band.is-tagline { border-color: rgba(0, 170, 255, 0.8); }
 .pw-mc-band.is-list { border-color: rgba(215, 160, 0, 0.95); }
 .pw-mc-band.is-list.is-hot { background: rgba(215, 160, 0, 0.18); }
+.pw-mc-band.is-quote { border-color: rgba(0, 150, 136, 0.9); }
+.pw-mc-band.is-quote.is-hot { background: rgba(0, 150, 136, 0.15); }
+.pw-mc-band.is-media { border-color: rgba(230, 60, 60, 0.9); }
+.pw-mc-band.is-media.is-hot { background: rgba(230, 60, 60, 0.18); }
 .pw-mc-list > li + li { margin-top: var(--pw-list-gap); }
 .pw-mc-list > li::marker { color: var(--pw-list-marker); font-size: var(--pw-list-marker-size); }
 .pw-mc-band.is-heading { border-color: rgba(130, 80, 255, 0.9); }
 .pw-mc-band.is-editor { border-color: rgba(255, 140, 0, 0.9); }
-.pw-mc-band.is-element { border-color: rgba(215, 160, 0, 0.95); }
 .pw-mc-band.is-tagline.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-mc-band.is-heading.is-hot { background: rgba(130, 80, 255, 0.15); }
 .pw-mc-band.is-editor.is-hot { background: rgba(255, 140, 0, 0.15); }
-.pw-mc-band.is-element.is-hot { background: rgba(215, 160, 0, 0.18); }
 .pw-mc-gap {
   border-inline: 1px solid rgba(0, 170, 255, 0.8);
 }

@@ -1871,6 +1871,10 @@ export default {
   --pw-guide-color: rgba(0, 150, 136, 0.9);
 }
 
+/* a sixth gap (the multicolumn's elements: below a button) */
+.pw-field-row[data-guide="gap-6"] {
+  --pw-guide-color: rgba(40, 90, 220, 0.9);
+}
 /* a shift of its own kind (cardlets: the image standing out of the card) */
 .pw-field-row[data-guide="overhang"] {
   --pw-guide-color: rgba(230, 60, 60, 0.9);

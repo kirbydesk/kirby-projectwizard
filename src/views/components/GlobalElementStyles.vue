@@ -114,7 +114,7 @@
                 <!-- guides: the space below the element (tagline, heading, text) as
                      a band of its height between two cyan lines -->
                 <!-- (lists: inside their preview, in the text's size) -->
-                <span v-if="guides && spaceBelow(groupKey) && groupKey !== 'list'" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === groupKey + '-spacing' }" :style="{ height: spaceBelow(groupKey) }"></span>
+                <span v-if="guides && spaceBelow(groupKey) && groupKey !== 'list' && groupKey !== 'quote'" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === groupKey + '-spacing' }" :style="{ height: spaceBelow(groupKey) }"></span>
                 <template v-if="previewChildText(groupKey) && groupKey !== 'media'">
                   <!-- the source keeps its gap to the quote (cite-spacing) -->
                   <span
@@ -123,6 +123,8 @@
                     :style="{ ...previewStyle(previewChildKey(groupKey), bp, theme), ...citeGapStyle(previewChildKey(groupKey)) }"
                   >{{ previewChildText(groupKey) }}</span>
                 </template>
+                <!-- (the quote: below its source, the space follows the whole quote) -->
+                <span v-if="guides && groupKey === 'quote' && spaceBelow('quote')" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'quote-spacing' }" :style="{ height: spaceBelow('quote') }"></span>
               </div>
             </template>
           </div>
@@ -922,7 +924,9 @@ export default {
       if (varName === 'item-title-spacing') return 'margin';
       if (varName.endsWith('cite-spacing') || varName === 'caption-spacing' || varName === 'button-gap') return 'margin';
       // the space after an element (tagline, heading, text)
-      if (/^(tagline|heading|editor|list)-spacing$/.test(varName)) return 'margin';
+      if (/^(tagline|heading|editor|list|quote|media)-spacing$/.test(varName)) return 'margin';
+      // buttons: the space below, the third gap with theirs (orange)
+      if (varName === 'button-spacing') return 'text';
       // buttons: the gap between icon and text, the third gap (orange)
       if (varName === 'button-icon-gap') return 'text';
       // lists: the indent as a padding (magenta), the gap between the points
@@ -1045,13 +1049,13 @@ export default {
     // gap between quote and source, as in the frontend
     // a value with an area in the preview (tinted while the cursor is in its field)
     hasArea(varName) {
-      return /^(tagline|heading|editor|list)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing', 'list-indent', 'list-number-indent', 'list-item-spacing'].includes(varName)
+      return /^(tagline|heading|editor|list|quote|media|button)-spacing$/.test(varName) || ['editor-paragraph-spacing', 'cite-spacing', 'button-gap', 'button-row-gap', 'button-icon-gap', 'item-title-spacing', 'item-text-paragraph-spacing', 'caption-spacing', 'list-indent', 'list-number-indent', 'list-item-spacing'].includes(varName)
         // the flourish's gaps while the flourish is shown
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
     // the space below an element (tagline, heading, text): override, else the plugin's
     spaceBelow(groupKey) {
-      if (!['tagline', 'heading', 'editor', 'list'].includes(groupKey)) return '';
+      if (!['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].includes(groupKey)) return '';
       const name = groupKey + '-spacing';
       return this.getOverrideValue(name) || this.elementDefaults[groupKey]?.vars?.[name]?.value || '';
     },
@@ -1697,7 +1701,7 @@ export default {
         button:     ['text', 'padding', 'margin', 'shape', 'style', 'icon', 'colors'],
         caption:    ['text', 'colors'],
         breadcrumb: ['text', 'colors'],
-        media:      ['shape', 'style', 'slideshow', 'zoom'],
+        media:      ['shape', 'style', 'slideshow', 'zoom', 'spacing'],
         cite:       ['text', 'colors'],
         // entries of a list: their title and description, each with its colour
         item:       ['title', 'description'],
@@ -1715,8 +1719,11 @@ export default {
       if (varName.startsWith('item-text-')) return 'description';
       // source: its gap to the quote sits in the source card
       if (varName === 'cite-spacing' || varName === 'caption-spacing') return 'text';
-      // the space below an element: with its text settings
-      if (/^(tagline|heading|editor)-spacing$/.test(varName)) return 'text';
+      // the space below an element: with its text settings (buttons: with
+      // their gaps, media: a card of its own)
+      if (varName === 'button-spacing') return 'margin';
+      if (varName === 'media-spacing') return 'spacing';
+      if (/^(tagline|heading|editor|quote)-spacing$/.test(varName)) return 'text';
       // buttons: paddings, outer spacing (gap between buttons), form and icon
       if (varName === 'button-padding') return 'padding';
       if (varName === 'button-gap' || varName === 'button-row-gap') return 'margin';

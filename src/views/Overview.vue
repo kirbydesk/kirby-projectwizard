@@ -1921,7 +1921,7 @@
             </template>
 
             <!-- multicolumn: the gaps between the columns (side by side, below
-                 each other) and after further elements in a column -->
+                 each other); the elements' space below in the card Elements -->
             <template v-if="block.blockType === 'pwmulticolumn' && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1930,10 +1930,10 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'column-gap': 'margin', 'row-gap': 'row', 'element-gap': 'gap-4' } : null"
+                  :guides="previewGuides ? { 'column-gap': 'margin', 'row-gap': 'row' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['column-gap', 'row-gap', 'element-gap']"
+                  :show-only="['column-gap', 'row-gap']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -1953,8 +1953,9 @@
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spaceBelow') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
-                <!-- the space below tagline, heading and text: the elements'
-                     (global) or the block's own values -->
+                <!-- the space below the block's elements (tagline, heading,
+                     text, list, quote, media, button): the elements' (global)
+                     or the block's own values -->
                 <pw-block-settings
                   view="items-layout"
                   :block="block"
@@ -1971,7 +1972,7 @@
                     v-for="el in ownSpacingElements(block.blockType)"
                     :key="'gs-' + el"
                     class="pw-field-row is-readonly"
-                    :data-guide="previewGuides ? { tagline: 'margin', heading: 'row', editor: 'text', list: 'gap-4' }[el] : null"
+                    :data-guide="previewGuides ? spaceGuide(el) : null"
                   >
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
@@ -1989,59 +1990,24 @@
                     </div>
                   </div>
                 </template>
-                <pw-block-values
-                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own' && ownSpacingElements(block.blockType).includes('tagline')"
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['tagline-spacing']"
-                  :guides="previewGuides ? { 'tagline-spacing': 'margin' } : null"
-                  :hints="{ 'tagline-spacing': globalElementSpacing('tagline') }"
-                  :hint-title="$t('prw.hint.globalValue')"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-                <pw-block-values
-                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own' && ownSpacingElements(block.blockType).includes('heading')"
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['heading-spacing']"
-                  :guides="previewGuides ? { 'heading-spacing': 'row' } : null"
-                  :hints="{ 'heading-spacing': globalElementSpacing('heading') }"
-                  :hint-title="$t('prw.hint.globalValue')"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-                <pw-block-values
-                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own' && ownSpacingElements(block.blockType).includes('editor')"
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['editor-spacing']"
-                  :guides="previewGuides ? { 'editor-spacing': 'text' } : null"
-                  :hints="{ 'editor-spacing': globalElementSpacing('editor') }"
-                  :hint-title="$t('prw.hint.globalValue')"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-                <pw-block-values
-                  v-if="itemLayoutDefault(block.blockType, 'item-spacing') === 'own' && ownSpacingElements(block.blockType).includes('list')"
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['list-spacing']"
-                  :labels="{ 'list-spacing': $t('prw.prop.list-spacing') }"
-                  :guides="previewGuides ? { 'list-spacing': 'gap-4' } : null"
-                  :hints="{ 'list-spacing': globalElementSpacing('list') }"
-                  :hint-title="$t('prw.hint.globalValue')"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
+                <!-- custom: the block's own values, the global ones grey at the end -->
+                <template v-else>
+                  <pw-block-values
+                    v-for="el in ownSpacingElements(block.blockType)"
+                    :key="'os-' + el"
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="[el + '-spacing']"
+                    :labels="{ [el + '-spacing']: $t('prw.prop.' + el + '-spacing') }"
+                    :guides="previewGuides ? { [el + '-spacing']: spaceGuide(el) } : null"
+                    :hints="{ [el + '-spacing']: globalElementSpacing(el) }"
+                    :hint-title="$t('prw.hint.globalValue')"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
+                  />
+                </template>
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing')" />
             </section>
@@ -2737,7 +2703,11 @@ export default {
       // (lists live in the text: hidden with it; the multicolumn's own list
       // element stays)
       const isHidden = (el) => hidden.includes(el === 'list' && blockType !== 'pwmulticolumn' ? 'editor' : el);
-      return ['tagline', 'heading', 'editor', 'list'].filter(el => !isHidden(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+      return ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].filter(el => !isHidden(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+    },
+    // the guide colour of an element's space below (as its band in the preview)
+    spaceGuide(el) {
+      return { tagline: 'margin', heading: 'row', editor: 'text', list: 'gap-4', quote: 'gap-5', media: 'overhang', button: 'gap-6' }[el];
     },
     // the global elements' space below (Elements page: override, else default)
     globalElementSpacing(el) {
@@ -2791,7 +2761,7 @@ export default {
     seedOwnSpacing(blockType) {
       const ov = JSON.parse(JSON.stringify(this.blockValueOverrides[blockType] || {}));
       let changed = false;
-      for (const el of ['tagline', 'heading', 'editor', 'list']) {
+      for (const el of ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button']) {
         const name = el + '-spacing';
         const own = Object.values(this.blockValueDefaults[blockType] || {}).some(g => g && g.vars && g.vars[name]);
         if (!own || ov[name] !== undefined) continue;
