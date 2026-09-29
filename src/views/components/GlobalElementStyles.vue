@@ -16,7 +16,8 @@
               class="pw-tool"
               :aria-pressed="colorTheme === theme ? 'true' : 'false'"
               @click="colorTheme = theme"
-            >{{ $t('pw.option.' + theme) }}</button>
+            >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
           </div>
           <!-- guides on/off (shared by all previews) -->
           <div class="pw-pill pw-guides-switch" role="group">
@@ -168,7 +169,8 @@
                   class="pw-tool"
                   :aria-pressed="colorTheme === theme ? 'true' : 'false'"
                   @click="colorTheme = theme"
-                >{{ $t('pw.option.' + theme) }}</button>
+                >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
               </span>
               <!-- size steps: the step edited in the font size row and shown in
                    the preview ("normal" = the base size, if the element has one) -->

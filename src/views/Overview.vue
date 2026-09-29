@@ -1,5 +1,5 @@
 <template>
-  <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'" :data-full="fullWidthPage ? 'true' : null" :style="{ '--pw-body-background': bodyBackgroundColor }">
+  <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'" :data-full="fullWidthPage ? 'true' : null" :style="{ '--pw-body-background': bodyBackgroundColor, ...variantBackgroundVars }">
     <!-- Header in Kirby's topbar (like kirby-explorer): tabs as a pill, save buttons -->
     <pw-portal to=".pw-wizard .k-topbar">
       <div class="pw-topbar">
@@ -250,7 +250,8 @@
                       class="pw-tool"
                       :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
                       @click="blocksColorTheme = t"
-                    >{{ $t('pw.option.' + t) }}</button>
+                    >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + t + ')' }"></span>{{ $t('pw.option.' + t) }}</button>
                   </div>
                   <!-- guides on/off (shared by all previews) -->
                   <div class="pw-pill pw-guides-switch" role="group">
@@ -496,7 +497,8 @@
                     class="pw-tool"
                     :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
                     @click="blocksColorTheme = t"
-                  >{{ $t('pw.option.' + t) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + t + ')' }"></span>{{ $t('pw.option.' + t) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -530,7 +532,8 @@
                     class="pw-tool"
                     :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
                     @click="blocksColorTheme = t"
-                  >{{ $t('pw.option.' + t) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + t + ')' }"></span>{{ $t('pw.option.' + t) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -1147,7 +1150,8 @@
                     class="pw-tool"
                     :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
                     @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -1274,7 +1278,8 @@
                     class="pw-tool"
                     :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
                     @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -1460,7 +1465,8 @@
                     class="pw-tool"
                     :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
                     @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -1634,7 +1640,8 @@
                     class="pw-tool"
                     :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
                     @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -1715,7 +1722,8 @@
                     class="pw-tool"
                     :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
                     @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -1910,7 +1918,8 @@
                     class="pw-tool"
                     :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
                     @click="itemColorTheme = theme"
-                  >{{ $t('pw.option.' + theme) }}</button>
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + theme + ')' }"></span>{{ $t('pw.option.' + theme) }}</button>
                 </span>
               </div>
               <div class="pw-card pw-field-table">
@@ -2310,6 +2319,15 @@ export default {
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
+    // each variant's block background as a variable (the dots in the
+    // variant pills everywhere, also in the components)
+    variantBackgroundVars() {
+      const vars = {};
+      for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
+        vars['--pw-variant-bg-' + theme] = this.variantBackground(theme);
+      }
+      return vars;
+    },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
       return this.activeTab === 'global' && ['translate', 'generator'].includes(this.globalActiveTab);
@@ -4152,6 +4170,14 @@ export default {
   border-radius: 50%;
   /* a ring, so a white variant shows as well */
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+/* in the variant pills: small, before the name */
+.pw-variant-dot.is-small {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: 5px;
+  vertical-align: 0.05em;
 }
 .pw-blocks-active {
   display: grid;

@@ -32,7 +32,8 @@
           class="pw-tool"
           :aria-pressed="currentTheme === t ? 'true' : 'false'"
           @click="$emit('update:variant', t)"
-        >{{ $t('pw.option.' + t) }}</button>
+        >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: 'var(--pw-variant-bg-' + t + ')' }"></span>{{ $t('pw.option.' + t) }}</button>
       </div>
     </div>
 
