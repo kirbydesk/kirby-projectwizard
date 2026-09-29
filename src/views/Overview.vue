@@ -3968,9 +3968,12 @@ export default {
   box-sizing: border-box;
   background: var(--color-white);
 }
-.pw-json-root {
-  margin-top: var(--spacing-6);
+/* the top level: below the intro, without indent and guide line (more
+   specific than the children's rule, which sets their margin) */
+.pw-json-children.pw-json-root {
+  margin: var(--spacing-6) 0 0;
   padding-left: 0;
+  border-left: 0;
 }
 .pw-patches-note {
   margin-top: var(--spacing-2);
