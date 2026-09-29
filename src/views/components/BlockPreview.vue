@@ -602,7 +602,8 @@ export default {
         return {
           ...base,
           ...this.typography('editor'),
-          fontWeight: 500,
+          // medium, or bold as the block links
+          fontWeight: this.linkValue('block-link-weight') === 'bold' ? 700 : 500,
           color: this.itemColor('item-link'),
           textDecoration: this.setting('layout', 'item-link-decoration') === 'underline' ? 'underline' : 'none',
         };
