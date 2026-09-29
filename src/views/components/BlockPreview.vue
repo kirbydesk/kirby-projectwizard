@@ -114,6 +114,19 @@
           <div v-if="hasField('buttons')" :style="buttonsStyle">
             <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
           </div>
+          <!-- cardlets: two cards (image, tagline, heading, text, link) as in its snippet -->
+          <div v-if="isCardlets" class="pw-cardlets-items" :style="cardItemsStyle">
+            <div v-for="n in 2" :key="'card-' + n" class="pw-cardlets-item" :style="cardStyle">
+              <div class="pw-media-preview-photo pw-cardlets-image"></div>
+              <div class="pw-cardlets-content" :style="cardContentStyle">
+                <div v-if="hasField('item-tagline')" :style="cardFieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</div>
+                <div v-if="hasField('item-heading')" :style="cardFieldStyle('heading')">{{ $t('prw.preview.card.title') }} {{ n }}</div>
+                <div v-if="hasField('item-editor')" :style="cardFieldStyle('editor')">{{ $t('prw.preview.card.text') }}</div>
+                <!-- the link at the card's bottom: text (with icon) or button -->
+                <span class="pw-cardlets-cta" :style="cardCtaStyle">{{ $t('prw.preview.card.cta') }}<svg v-if="cardCtaIcon" viewBox="0 0 24 24" aria-hidden="true" v-html="cardCtaIcon"></svg></span>
+              </div>
+            </div>
+          </div>
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the features cyan, icon and text violet, title
@@ -289,6 +302,7 @@ export default {
       if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
       if (this.isLogocloud) return [...fields, 'logos'];
       if (this.isFeaturelist) return [...fields, 'items'];
+      if (this.isCardlets) return [...fields, 'items'];
       return fields;
     },
     isMedia() {
@@ -506,6 +520,61 @@ export default {
       const target = this.isLogocloud ? 'logos' : 'items';
       const idx = this.fields.indexOf(target);
       return idx > 0 ? this.fields[idx - 1] : '';
+    },
+    isCardlets() {
+      return this.blockType === 'pwcardlets';
+    },
+    // the cards: columns at the shown device (at most two samples), the gap
+    // between them as in its CSS
+    cardItemsStyle() {
+      const marginTop = this.gapBefore('items');
+      const gap = { default: '1.5rem', lg: '2.5rem', xl: '2.5rem' }[this.bp];
+      if (!this.hasGrid) return { marginTop, display: 'flex', flexDirection: 'column', gap };
+      const cols = Math.min(Number(this.setting('layout', 'columns-' + GRID_BP[this.bp])) || 1, 2);
+      return { marginTop, display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', gap };
+    },
+    // a card: background, border (switched on), the corners switched on
+    cardStyle() {
+      const r = this.itemValue('item-radius') || [];
+      const corner = (key, idx) => (this.setting('layout', 'item-radius-' + key) === true ? r[idx] || 0 : 0);
+      return {
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        backgroundColor: this.itemColor('item-background'),
+        border: this.setting('layout', 'item-border') === true ? this.itemValue('item-border-width') + ' solid ' + this.itemColor('item-border-color') : 0,
+        borderRadius: [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' '),
+      };
+    },
+    // its content inside the card's padding, the link at the bottom
+    cardContentStyle() {
+      const p = this.itemValue('item-padding') || [];
+      return { flex: 1, display: 'flex', flexDirection: 'column', padding: Array.isArray(p) ? p.join(' ') : p };
+    },
+    // the link: text (link colour, underline, icon) or a button
+    cardCtaStyle() {
+      const p = this.itemValue('item-padding') || [];
+      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: 'auto', paddingTop: p[2] || 0, backgroundClip: 'content-box' };
+      if (this.setting('layout', 'item-link-style') !== 'button') {
+        return {
+          ...base,
+          ...this.typography('editor'),
+          fontWeight: 500,
+          color: this.itemColor('item-link'),
+          textDecoration: this.setting('layout', 'item-link-decoration') === 'underline' ? 'underline' : 'none',
+        };
+      }
+      const style = this.setting('layout', 'item-button-style') || 'default';
+      const color = (name) => ((this.elementOverrides.global || {})[style] || {})[name] || this.elementDefaults.button?.colors?.[name]?.[style] || '';
+      return { ...this.buttonStyle, display: 'inline-flex', width: 'max-content', marginTop: 'auto', color: color('element-button-text'), backgroundColor: color('element-button-background'), borderColor: color('element-button-border') };
+    },
+    // the link's icon (text style): the chosen one of its icon choice
+    cardCtaIcon() {
+      if (this.setting('layout', 'item-link-style') === 'button') return '';
+      const def = this.nested(this.config.defaults || {}, 'settings.fields.layout.item-link-icon');
+      const key = this.setting('layout', 'item-link-icon');
+      const opt = def && Array.isArray(def.options) ? def.options.find(o => o.value === key) : null;
+      return opt ? opt.svg : '';
     },
     isFeaturelist() {
       return this.blockType === 'pwfeaturelist';
@@ -1089,6 +1158,24 @@ export default {
       const height = this.gapBefore(field);
       return height ? { height, prev } : null;
     },
+    // tagline, heading and text in a card: the element's type, the card's
+    // text colours, the preset size step and alignment
+    cardFieldStyle(el) {
+      const style = {
+        ...this.typography(el),
+        color: this.itemColor('item-' + el + '-text'),
+        textAlign: this.preset('item-' + el, 'align') || 'left',
+        margin: 0,
+      };
+      const size = this.preset('item-' + el, 'sizes');
+      if (size && size !== 'normal') {
+        const step = this.sizeStep(el, size);
+        if (step) style.fontSize = step;
+      } else if (!style.fontSize) {
+        style.fontSize = this.sizeStep(el, 'md');
+      }
+      return style;
+    },
     fieldStyle(field) {
       const style = {
         ...this.typography(field),
@@ -1266,6 +1353,22 @@ export default {
   border-radius: 50%;
   color: #fff;
   background: rgba(0, 0, 0, 0.45);
+}
+/* cardlets: the image flush at the top of the card, the link's icon */
+.pw-cardlets-image {
+  aspect-ratio: 16 / 9;
+  background-size: cover;
+  background-position: center;
+}
+.pw-cardlets-cta svg {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 /* featurelist: a feature and its content may shrink to their column,
    long words break (the narrow sidebar) */
