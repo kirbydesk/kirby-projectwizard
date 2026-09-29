@@ -1029,8 +1029,9 @@ export default {
         .filter(f => f.lead.length || f.extras.length);
     },
     contentToolbarRow(field) {
-      // (the multicolumn's list: its style – bullets, numbers, none – first)
-      const order = ['flourish', 'multiline', 'textbackground', 'style', 'align', 'sizes', 'level', 'mode'];
+      // (the multicolumn's list: its style – bullets, numbers, none – after
+      // alignment and size)
+      const order = ['flourish', 'multiline', 'textbackground', 'align', 'sizes', 'style', 'level', 'mode'];
       const items = field.properties
         .filter(p => order.includes(p.key))
         .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key))
