@@ -71,12 +71,11 @@
                 </template>
                 <!-- item: a sample entry, its title and description with the gap
                      between them (guides: a band between two lines) -->
-                <!-- lists: a paragraph of text, a list with the marker below it
-                     and a numbered one (the type of the text; guides: the
-                     indent magenta, the gaps between the points orange) -->
+                <!-- lists: a bullet list and a numbered one (the type of the
+                     text; guides: the indent magenta or green, the gaps between
+                     the points orange, the space below cyan) -->
                 <template v-else-if="groupKey === 'list'">
                   <div class="pw-element-preview-text pw-element-preview-lists" :style="previewStyle('editor', bp, theme)">
-                    <p style="margin: 0">{{ $t('prw.sample.list.intro') }}</p>
                     <ul class="pw-element-preview-list" :class="{ 'is-hot-indent': hoveredArea === 'list-indent', 'is-hot-gap': hoveredArea === 'list-item-spacing' }" :style="previewListStyle(theme, false)">
                       <li v-for="n in 3" :key="'li-' + n">{{ $t('prw.sample.list.' + n) }}</li>
                     </ul>
@@ -1983,9 +1982,8 @@ export default {
       const b = parseInt(hex.slice(5, 7), 16);
       return (r * 299 + g * 587 + b * 114) / 1000 > 160;
     },
-    // a list: its values (override, else the element's), the marker's colour
-    // of the variant shown; numbered with numbers; the text's paragraph
-    // spacing above it (as in a text)
+    // a list: its values (override, else the element's), the marker's or
+    // numbers' colour of the variant shown
     previewListStyle(theme, numbered) {
       const v = (name) => this.getOverrideValue(name) || this.elementDefaults.list?.vars?.[name]?.value || '';
       const marker = numbered
@@ -1996,7 +1994,7 @@ export default {
       const color = this.getColorOverrideValue(theme, colorName) || this.elementDefaults.list?.colors?.[colorName]?.[theme] || '';
       // (the numbered one below the bullet list: the lists' space below; with
       // guides a band of its own)
-      const marginTop = numbered ? (this.guides ? 0 : this.spaceBelow('list')) : this.previewParagraphGap('editor');
+      const marginTop = numbered && !this.guides ? this.spaceBelow('list') : 0;
       return { marginTop, paddingLeft: indent, listStyleType: marker, '--pw-list-marker-size': numbered ? '100%' : (v('list-marker-size') || '100%'), '--pw-list-indent': indent, '--pw-list-gap': v('list-item-spacing'), '--pw-list-marker': color };
     },
     previewParagraphGap(groupKey) {
