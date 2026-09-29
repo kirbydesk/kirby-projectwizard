@@ -1637,7 +1637,7 @@
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsShape')" />
             </section>
-            <!-- the card's style: its border on / off, width and colour (of the chosen variant) -->
+            <!-- the card's style: its border (on / off, width, colour of the chosen variant) and shadow -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
@@ -1684,6 +1684,17 @@
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
+                />
+                <!-- the cards' shadow: none, small, medium, large -->
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-shadow']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsBorder')" />

@@ -246,7 +246,7 @@
 	'prw.hint.featureSpacing' => 'Legt die Abstände zwischen den Einträgen und zur Einleitung fest. <code>Eingerückt</code> zeigt die Einleitung auf großen Bildschirmen links neben den Einträgen.',
 	'prw.hint.cardletsCard' => 'Legt den Innenabstand der Karten fest.',
 	'prw.hint.cardletsShape' => 'Legt die Form der Karten fest. Sie gilt für alle Karten gleich.',
-	'prw.hint.cardletsBorder' => 'Legt fest, ob die Karten einen Rahmen haben und wie er aussieht.',
+	'prw.hint.cardletsBorder' => 'Legt Rahmen und Schatten der Karten fest.',
 	'prw.hint.cardletsLink' => 'Legt fest, wie der Link am Ende einer Karte aussieht. Ziel und Linktext werden pro Karte im Block eingegeben.',
 	'prw.hint.cardletsColors' => 'Legt die Farben der Karten für jede Variante fest.',
 	'prw.hint.cardletsSpacing' => 'Legt die Abstände zwischen den Karten, innerhalb der Karten und zur Einleitung fest. Der Link steht immer unten in der Karte, der Abstand zum Link ist der Mindestabstand.',

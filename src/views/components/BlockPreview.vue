@@ -572,6 +572,8 @@ export default {
         overflow: 'hidden',
         backgroundColor: this.itemColor('item-background'),
         border: this.setting('layout', 'item-border') === true ? this.itemValue('item-border-width') + ' solid ' + this.itemColor('item-border-color') : 0,
+        // the shadow step (as the buttons')
+        boxShadow: { sm: '0 1px 2px rgba(0, 0, 0, 0.12)', md: '0 4px 10px rgba(0, 0, 0, 0.15)', lg: '0 10px 24px rgba(0, 0, 0, 0.18)' }[this.setting('layout', 'item-shadow')] || null,
         borderRadius: [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' '),
       };
     },
