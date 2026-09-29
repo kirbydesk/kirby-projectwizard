@@ -686,7 +686,8 @@ export default {
         if (this.isObject(settingVal) && 'default' in settingVal) {
           defaultValue = settingVal.default;
         }
-        fields.push({ key, displayKey, type: 'toggle', defaultValue });
+        // (a switch may bring its own label key as well, e.g. the cards' border)
+        fields.push({ key, displayKey, type: 'toggle', defaultValue, label: (this.isObject(settingVal) && settingVal.label) || null });
       }
       return fields;
     },
