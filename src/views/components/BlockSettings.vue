@@ -742,8 +742,8 @@ export default {
         const paddings = fields.filter(f => f.key.startsWith('padding'));
         const others = fields.filter(f => f !== radius && !paddings.includes(f));
         const sections = [];
-        if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), fields: paddings });
-        if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), fields: [radius] });
+        if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), help: this.$t('prw.hint.blockPaddings'), fields: paddings });
+        if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), help: this.$t('prw.hint.blockRadius'), fields: [radius] });
         const headings = { 'position-': 'pw.headline.contentposition', 'columns-': 'pw.headline.columns' };
         for (const f of others) {
           const prefix = Object.keys(headings).find(p => f.key.startsWith(p));
