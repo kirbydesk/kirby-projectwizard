@@ -638,9 +638,10 @@ export default {
       }
       // a padding hovered: tinted on its two sides (horizontal magenta, vertical green)
       if (this.guides && this.highlight === 'item-padding-x') {
-        style.boxShadow = 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)';
+        // (with the outer edges as lines, the inner ones are the guides')
+        style.boxShadow = 'inset 1px 0 0 0 rgba(255, 0, 170, 0.6), inset -1px 0 0 0 rgba(255, 0, 170, 0.6), inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)';
       } else if (this.guides && this.highlight === 'item-padding-y') {
-        style.boxShadow = 'inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)';
+        style.boxShadow = 'inset 0 1px 0 0 rgba(0, 180, 90, 0.9), inset 0 -1px 0 0 rgba(0, 180, 90, 0.9), inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)';
       }
       return style;
     },
