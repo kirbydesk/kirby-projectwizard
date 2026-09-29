@@ -2292,6 +2292,8 @@ export default {
         const element = this.elementOptions.find(o => o.value === this.selectedElement);
         if (element) return element.text;
       }
+      // (the configuration: a longer title than in the menu)
+      if (this.globalActiveTab === 'patches') return this.$t('prw.page.patches');
       return this.$t('prw.tab.' + this.globalActiveTab);
     },
     projectMenuTabs() {

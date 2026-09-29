@@ -555,6 +555,7 @@
 	'prw.headline.positioning' => 'Positionierung',
 	'prw.hint.multicolumnPosition' => 'Legt fest, wie die linke und die rechte Spalte vertikal zueinander stehen, wenn sie nebeneinander angezeigt werden. Auf Mobilgeräten greift die Positionierung nicht.',
 	'prw.tab.patches' => 'Konfiguration',
+	'prw.page.patches' => 'Manuelle Konfiguration',
 	'prw.hint.patches' => 'Die Konfiguration überschreibt die Einstellungen der Blöcke für Sonderfälle. Das JSON folgt dem Aufbau der <code>settings.json</code> eines Blocks, unter <code>editor</code> dem der <code>editor.json</code>. Listen wie <code>options</code> werden ersetzt, nicht ergänzt.',
 	'prw.patches.invalid' => 'Ungültiges JSON',
 	'prw.patches.line' => 'in Zeile',

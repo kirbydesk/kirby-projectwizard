@@ -555,6 +555,7 @@
 	'prw.headline.positioning' => 'Positioning',
 	'prw.hint.multicolumnPosition' => 'Sets how the left and the right column stand vertically to each other when they are shown side by side. On mobile devices the positioning does not apply.',
 	'prw.tab.patches' => 'Configuration',
+	'prw.page.patches' => 'Manual configuration',
 	'prw.hint.patches' => 'The configuration overrides the settings of the blocks for special cases. The JSON follows the structure of a block <code>settings.json</code>, under <code>editor</code> the one of its <code>editor.json</code>. Lists such as <code>options</code> are replaced, not extended.',
 	'prw.patches.invalid' => 'Invalid JSON',
 	'prw.patches.line' => 'in line',
