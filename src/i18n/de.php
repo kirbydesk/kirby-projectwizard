@@ -220,6 +220,7 @@
 	'prw.hint.blockRadius' => 'Legt fest, welche Ecken eines neuen Blocks abgerundet sind. Der Radius wird global unter <code>Blöcke</code> festgelegt.',
 	'prw.hint.contentDefaults' => 'Legt fest, mit welchen Einstellungen die Felder eines neuen Blocks starten. Redakteure können sie im Block jederzeit ändern.',
 	'prw.hint.themeDefault' => 'Legt fest, mit welcher Variante ein neuer Block startet. Die Farben der Varianten werden global festgelegt, <code>Benutzerdefiniert</code> steht zusätzlich im Block zur Wahl.',
+	'prw.hint.styleDefault' => 'Legt fest, mit welchen Werten ein neuer Block startet. Die Farben der Varianten werden global festgelegt, <code>Benutzerdefiniert</code> steht zusätzlich im Block zur Wahl.',
 	'prw.hint.gridFull' => 'Ein neuer Block nimmt auf dieser Bildschirmgröße die volle Breite ein.',
 	'prw.hint.gridCustom' => 'Legt fest, wie viele der 12 Rasterspalten ein neuer Block auf dieser Bildschirmgröße einnimmt und in welcher Spalte er beginnt.',
 	'prw.hint.settingsDefault' => 'Legt fest, ob ein neuer Block in der Inhaltsbreite oder über die volle Bildschirmbreite läuft und ob er Außenabstände nach oben und unten aktiviert hat. Die Werte der Außenabstände werden global unter <code>Blöcke</code> festgelegt.',

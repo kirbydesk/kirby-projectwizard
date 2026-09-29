@@ -799,7 +799,10 @@ export default {
       // one card "Style" with all its rows (the variant, the hero's
       // background and height …), the variant's help text below
       if (this.view === 'defaults' && cat.key === 'style') {
-        return [{ key: 'style', heading: this.drawerLabel('style'), help: fields.some(f => f.key === 'theme') ? styleHelp('theme') : null, fields }];
+        // (only the variant: its own text, with further rows: the values)
+        const help = !fields.some(f => f.key === 'theme') ? null
+          : (fields.length > 1 ? this.$t('prw.hint.styleDefault') : styleHelp('theme'));
+        return [{ key: 'style', heading: this.drawerLabel('style'), help, fields }];
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);

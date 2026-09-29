@@ -220,6 +220,7 @@
 	'prw.hint.blockRadius' => 'Sets which corners of a new block are rounded. The radius is set globally under <code>Blocks</code>.',
 	'prw.hint.contentDefaults' => 'Sets the settings the fields of a new block start with. Editors can change them in the block at any time.',
 	'prw.hint.themeDefault' => 'Sets the variant a new block starts with. The colours of the variants are set globally, <code>Custom</code> is also available in the block.',
+	'prw.hint.styleDefault' => 'Sets the values a new block starts with. The colours of the variants are set globally, <code>Custom</code> is also available in the block.',
 	'prw.hint.gridFull' => 'A new block takes up the full width on this screen size.',
 	'prw.hint.gridCustom' => 'Sets how many of the 12 grid columns a new block takes up on this screen size and in which column it starts.',
 	'prw.hint.settingsDefault' => 'Sets whether a new block runs in the content width or across the full screen width and whether its outer spacing above and below is switched on. The values of the outer spacing are set globally under <code>Blocks</code>.',
