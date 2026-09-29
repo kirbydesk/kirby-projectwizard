@@ -565,4 +565,6 @@
 	'prw.patches.tree' => 'All settings of the blocks as they currently apply. With {plus} an exception can be defined for an entry.',
 	'prw.patches.take' => 'Take as exception',
 	'prw.hint.variants' => 'Sets which colour variants the blocks offer in addition to <code>Default</code>.',
+	'prw.label.usedTimes' => 'used {count}×',
+	'prw.label.unused' => 'not used',
 ];

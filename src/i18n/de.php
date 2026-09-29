@@ -565,4 +565,6 @@
 	'prw.patches.tree' => 'Alle Einstellungen der Blöcke, wie sie aktuell gelten. Mit {plus} lässt sich für einen Eintrag eine Ausnahme definieren.',
 	'prw.patches.take' => 'Als Ausnahme übernehmen',
 	'prw.hint.variants' => 'Legt fest, welche Farbvarianten die Blöcke zusätzlich zu <code>Standard</code> anbieten.',
+	'prw.label.usedTimes' => '{count}× verwendet',
+	'prw.label.unused' => 'nicht verwendet',
 ];

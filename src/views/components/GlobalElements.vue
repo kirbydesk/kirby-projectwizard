@@ -32,7 +32,7 @@
                     :value="block.active"
                     @input="$emit('toggle', { blockType: block.blockType, checked: $event })"
                   />
-                  <span class="pw-active-count">{{ usage[block.blockType] ? usage[block.blockType] + ' ×' : '–' }}</span>
+                  <span class="pw-active-count">{{ usage[block.blockType] ? $t('prw.label.usedTimes', { count: usage[block.blockType] }) : $t('prw.label.unused') }}</span>
                 </div>
               </span>
             </div>
