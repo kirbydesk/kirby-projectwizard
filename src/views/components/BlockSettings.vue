@@ -966,10 +966,12 @@ export default {
       for (const k of keys) {
         const group = together.find(g => k.startsWith(g.prefix));
         if (!group) {
-          // the name of an option row (Darstellung der Schritte …), else the field's
+          // the name of an option row (Darstellung der Schritte …), the
+          // block's own label (the cards' display), else the field's
           const pKey = 'prw.property.' + k;
           const pLabel = this.$t(pKey);
-          rows.push({ id: k, keys: [k], label: pLabel && pLabel !== pKey ? pLabel : this.categoryFieldLabel(k) });
+          const own = this.isObject(all[k]) && all[k].label ? this.$t(all[k].label) : null;
+          rows.push({ id: k, keys: [k], label: pLabel && pLabel !== pKey ? pLabel : (own || this.categoryFieldLabel(k)) });
         } else if (!rows.some(r => r.id === group.prefix)) {
           rows.push({ id: group.prefix, keys: keys.filter(x => x.startsWith(group.prefix)), label: group.label });
         }
