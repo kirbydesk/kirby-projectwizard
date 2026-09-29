@@ -760,13 +760,17 @@ export default {
     mcSide() {
       return /^dist-\d-\d$/.test(this.mcDist);
     },
-    // the columns: the distribution's shares and the gap between them (with
-    // guides a track of its own); stacked below each other with the row gap
+    // the columns: side by side (a distribution set for the device) in equal
+    // halves with the gap between them (with guides a track of its own);
+    // stacked below each other with the row gap
     mcStyle() {
       if (!this.mcSide) {
         return { display: 'flex', flexDirection: 'column', gap: this.guides ? 0 : this.itemValueAt('row-gap') };
       }
-      const [, a, b] = this.mcDist.split('-');
+      // (always two equal columns: the distribution's shares do not fit the
+      // narrow preview)
+      const a = 1;
+      const b = 1;
       const gap = this.itemValueAt('column-gap');
       return this.guides
         ? { display: 'grid', gridTemplateColumns: 'minmax(0, ' + a + 'fr) ' + gap + ' minmax(0, ' + b + 'fr)' }
