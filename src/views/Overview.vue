@@ -1933,7 +1933,7 @@
                   :guides="previewGuides ? { 'column-gap': 'margin', 'row-gap': 'row' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['column-gap', 'row-gap']"
+                  :show-only="[mcColumnsSide(block.blockType) ? 'column-gap' : 'row-gap']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -2704,6 +2704,17 @@ export default {
       // element stays)
       const isHidden = (el) => hidden.includes(el === 'list' && blockType !== 'pwmulticolumn' ? 'editor' : el);
       return ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].filter(el => !isHidden(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+    },
+    // multicolumn: the columns side by side at the device shown (then the
+    // gap between them counts, else the one below each other); mobile always
+    // stacked, as in the preview
+    mcColumnsSide(blockType) {
+      const key = { lg: 'columns-lg', xl: 'columns-xl' }[this.itemBp];
+      if (!key) return false;
+      const path = ['settings', 'fields', 'layout', key, 'default'];
+      const get = (o) => path.reduce((a, k) => (a && a[k] !== undefined ? a[k] : undefined), o);
+      const dist = get(this.blockOverrides[blockType]) ?? get(this.blockConfigs[blockType]?.defaults);
+      return /^dist-\d-\d$/.test(dist || '');
     },
     // the guide colour of an element's space below (as its band in the preview)
     spaceGuide(el) {
