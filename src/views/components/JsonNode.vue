@@ -13,7 +13,13 @@
       ><k-icon :type="open ? 'angle-down' : 'angle-right'" /></button>
       <span v-else class="pw-json-toggle-space"></span>
       <span class="pw-json-key" :class="{ 'is-branch': isBranch }" @click="isBranch && (open = !open)">{{ label || nodeKey }}</span>
-      <span v-if="!isBranch" class="pw-json-value">{{ shown }}</span>
+      <!-- the value in a debugger's colours: strings, numbers, true/false,
+           null; a list of plain values item by item -->
+      <span v-if="!isBranch" class="pw-json-value"><span
+        v-for="(token, i) in tokens"
+        :key="i"
+        :class="token.type ? 'is-' + token.type : null"
+      >{{ token.text }}</span></span>
       <span v-else-if="!open" class="pw-json-count">{{ count }}</span>
       <button
         v-if="depth > 0"
@@ -59,8 +65,25 @@ export default {
       if (Array.isArray(this.value)) return this.value.some(v => v && typeof v === 'object');
       return Object.keys(this.value).length > 0;
     },
-    shown() {
-      return JSON.stringify(this.value);
+    tokens() {
+      const token = (v) => {
+        if (v === null) return { type: 'null', text: 'null' };
+        if (typeof v === 'string') return { type: 'string', text: JSON.stringify(v) };
+        if (typeof v === 'number') return { type: 'number', text: String(v) };
+        if (typeof v === 'boolean') return { type: 'boolean', text: String(v) };
+        return { type: null, text: JSON.stringify(v) };
+      };
+      if (!Array.isArray(this.value)) {
+        // (an empty object)
+        return this.value && typeof this.value === 'object' ? [{ type: null, text: '{}' }] : [token(this.value)];
+      }
+      const out = [{ type: null, text: '[' }];
+      this.value.forEach((v, i) => {
+        if (i) out.push({ type: null, text: ', ' });
+        out.push(token(v));
+      });
+      out.push({ type: null, text: ']' });
+      return out;
     },
     count() {
       return Array.isArray(this.value) ? this.value.length : Object.keys(this.value).length;
@@ -120,6 +143,11 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* as in the browser's debugger */
+.pw-json-value .is-string { color: #c41a16; }
+.pw-json-value .is-number { color: #1c00cf; }
+.pw-json-value .is-boolean { color: #0d22aa; }
+.pw-json-value .is-null { color: #808080; }
 .pw-json-count {
   font-size: var(--text-xs);
   color: var(--color-blue-600);
