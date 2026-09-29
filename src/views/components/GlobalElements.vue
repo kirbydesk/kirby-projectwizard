@@ -144,12 +144,17 @@ export default {
 }
 .pw-active-count {
   padding-inline-start: calc(16px + var(--spacing-2));
+  /* one line, left aligned (not a button's centred text) */
+  white-space: nowrap;
+  text-align: start;
   font-size: var(--text-xs);
   color: var(--color-gray-500);
   font-variant-numeric: tabular-nums;
 }
 /* the usage: a button opening the list of pages */
 .pw-active-usage-button {
+  white-space: nowrap;
+  text-align: start;
   display: inline-flex;
   align-items: center;
   gap: 2px;
