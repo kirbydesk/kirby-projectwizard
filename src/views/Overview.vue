@@ -4105,7 +4105,8 @@ export default {
 }
 .pw-patches-input::selection {
   color: transparent;
-  background: rgba(38, 79, 120, 0.9);
+  /* clearly visible on the dark ground (the text below shines through) */
+  background: rgba(255, 214, 0, 0.45);
 }
 .pw-patches-input:focus {
   outline: var(--outline);
