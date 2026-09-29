@@ -178,6 +178,8 @@
              chosen tab does -->
         <template v-if="!loading && activeTab !== 'global'">
           <div class="pw-page-title-row pw-page-title-row-tabs">
+            <!-- the block's icon (as in the blocks menu) before its name -->
+            <k-icon :type="(activeBlockEntries.find(e => e.blockType === activeTab) || {}).icon || 'box'" class="pw-page-title-icon" />
             <h1 class="pw-page-title">{{ blockLabel(activeTab) }}</h1>
             <k-tabs class="pw-block-view-tabs" :tab="currentBlockView" :tabs="blockViewTabs" />
           </div>
