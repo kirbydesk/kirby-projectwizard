@@ -452,9 +452,10 @@ export default {
       const x = this.itemValue('item-padding');
       const y = this.itemValue('item-padding-y') || x;
       return {
+        // (with the outer edges as lines, the inner ones are the guides')
         boxShadow: this.highlight === 'item-padding'
-          ? 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)'
-          : 'inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)',
+          ? 'inset 1px 0 0 0 rgba(255, 0, 170, 0.6), inset -1px 0 0 0 rgba(255, 0, 170, 0.6), inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)'
+          : 'inset 0 1px 0 0 rgba(0, 180, 90, 0.9), inset 0 -1px 0 0 rgba(0, 180, 90, 0.9), inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)',
       };
     },
     // logocloud format: square tiles or one height ("flexible")
@@ -1842,13 +1843,30 @@ export default {
   pointer-events: none;
 }
 /* the logo's area inside the padding: left and right magenta (horizontal
-   padding), top and bottom green (vertical padding) */
-.pw-logocloud-preview.has-guides .pw-logocloud-pad {
-  box-shadow:
-    -1px 0 0 rgba(255, 0, 170, 0.6),
-    1px 0 0 rgba(255, 0, 170, 0.6),
-    0 -1px 0 rgba(0, 180, 90, 0.9),
-    0 1px 0 rgba(0, 180, 90, 0.9);
+   padding) from top to bottom of the tile, top and bottom green (vertical
+   padding) from side to side – cut off at the tile's edge */
+.pw-logocloud-preview.has-guides .pw-logocloud-item {
+  overflow: hidden;
+}
+.pw-logocloud-preview.has-guides .pw-logocloud-pad::before,
+.pw-logocloud-preview.has-guides .pw-logocloud-pad::after {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.pw-logocloud-preview.has-guides .pw-logocloud-pad::before {
+  inset: -100vh 0;
+  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+}
+.pw-logocloud-preview.has-guides .pw-logocloud-pad::after {
+  inset: 0 -100vw;
+  border-block: 1px solid rgba(0, 180, 90, 0.9);
+}
+/* a padding's field with the cursor: only its own lines */
+.pw-block-live-preview.has-focus[data-focus="item-padding"] .pw-logocloud-pad::after,
+.pw-block-live-preview.has-focus[data-focus="item-padding-y"] .pw-logocloud-pad::before {
+  display: none;
 }
 /* logocloud: a sample logo in its tile (as "contain" in the frontend) */
 .pw-logocloud-item {
