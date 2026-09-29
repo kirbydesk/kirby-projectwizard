@@ -2716,13 +2716,12 @@ export default {
       return !!this.blockValueDefaults[blockType];
     },
     hasItemDefaultFields(blockType) {
-      // The Defaults sub-section inside Items only makes sense when the plugin
-      // exposes per-corner item-radius toggles or item-link-style. Empty for
-      // simple item-blocks (steplist, featurelist).
+      // the items' card in the start values: only for per-corner item-radius
+      // toggles (the link style is a design value, not a start value)
       const cfg = this.blockConfigs[blockType];
       const layout = cfg && cfg.defaults && cfg.defaults.settings && cfg.defaults.settings.fields && cfg.defaults.settings.fields.layout || {};
       for (const key of Object.keys(layout)) {
-        if (key.startsWith('item-radius-') || key === 'item-link-style') return true;
+        if (key.startsWith('item-radius-')) return true;
       }
       return false;
     },
