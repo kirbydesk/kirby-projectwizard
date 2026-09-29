@@ -3458,6 +3458,14 @@ export default {
 .pw-card > :last-child {
   border-end-end-radius: var(--rounded);
 }
+/* several rows in one element of the card (e.g. two values of a block):
+   only its first row takes the top corner, only its last the bottom one */
+.pw-card .pw-field-row + .pw-field-row .pw-field-row-label-col {
+  border-start-start-radius: 0;
+}
+.pw-card .pw-field-row:has(+ .pw-field-row) .pw-field-row-label-col {
+  border-end-start-radius: 0;
+}
 /* reset: icon only, absolutely placed just outside the row on the right
    (takes no width from the card) */
 .pw-field-table .pw-field-reset {
