@@ -223,6 +223,7 @@
 	'prw.hint.gridCustom' => 'Sets how many of the 12 grid columns a new block takes up on this screen size and in which column it starts.',
 	'prw.hint.settingsDefault' => 'Sets whether a new block runs in the content width or across the full screen width and whether its outer spacing above and below is switched on. The values of the outer spacing are set globally under <code>Blocks</code>.',
 	'prw.hint.logosPerRow' => 'Sets how many logos a new block shows at most in one row on this screen size.',
+	'prw.hint.columnsDefault' => 'Sets in how many columns a new block shows its items on this screen size.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.prop.tagline-spacing' => 'Tagline',

@@ -223,6 +223,7 @@
 	'prw.hint.gridCustom' => 'Legt fest, wie viele der 12 Rasterspalten ein neuer Block auf dieser Bildschirmgröße einnimmt und in welcher Spalte er beginnt.',
 	'prw.hint.settingsDefault' => 'Legt fest, ob ein neuer Block in der Inhaltsbreite oder über die volle Bildschirmbreite läuft und ob er Außenabstände nach oben und unten aktiviert hat. Die Werte der Außenabstände werden global unter <code>Blöcke</code> festgelegt.',
 	'prw.hint.logosPerRow' => 'Legt fest, wie viele Logos ein neuer Block auf dieser Bildschirmgröße höchstens in einer Reihe zeigt.',
+	'prw.hint.columnsDefault' => 'Legt fest, in wie vielen Spalten ein neuer Block seine Einträge auf dieser Bildschirmgröße zeigt.',
 	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht, eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.globalValue' => 'Globaler Wert',
 	'prw.prop.tagline-spacing' => 'Tagline',

@@ -814,6 +814,7 @@ export default {
       }
       if (this.view === 'defaults' && cat.key === 'settings') return this.$t('prw.hint.settingsDefault');
       if (this.bpKeyOf(cat, sec) === 'logos-') return this.$t('prw.hint.logosPerRow');
+      if (this.bpKeyOf(cat, sec) === 'columns-') return this.$t('prw.hint.columnsDefault');
       return sec.help;
     },
     // a grid row's label without its screen size (chosen above the card)
