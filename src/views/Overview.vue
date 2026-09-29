@@ -1637,10 +1637,10 @@
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsShape')" />
             </section>
-            <!-- the card's border: on / off, its width and colour (of the chosen variant) -->
+            <!-- the card's style: its border on / off, width and colour (of the chosen variant) -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.border') }}</h3>
+                <h3 class="pw-card-heading">{{ $t('pw.headline.style') }}</h3>
                 <span v-if="isItemBorderEnabled(block.blockType)" class="pw-pill pw-theme-switch" role="group">
                   <button
                     v-for="theme in themes"
