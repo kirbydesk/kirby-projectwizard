@@ -1014,7 +1014,7 @@ export default {
     // content fields with settings beyond the drawer's dropdowns (the media's
     // type, size, corner style), each with its corner switches if it has them
     contentExtraFields() {
-      const dropdowns = ['flourish', 'multiline', 'textbackground', 'align', 'sizes', 'level', 'mode'];
+      const dropdowns = ['flourish', 'multiline', 'textbackground', 'style', 'align', 'sizes', 'level', 'mode'];
       const raw = this.getDefault('settings.fields.content') || {};
       return this.getContentFields()
         .map(f => ({
@@ -1029,7 +1029,8 @@ export default {
         .filter(f => f.lead.length || f.extras.length);
     },
     contentToolbarRow(field) {
-      const order = ['flourish', 'multiline', 'textbackground', 'align', 'sizes', 'level', 'mode'];
+      // (the multicolumn's list: its style – bullets, numbers, none – first)
+      const order = ['flourish', 'multiline', 'textbackground', 'style', 'align', 'sizes', 'level', 'mode'];
       const items = field.properties
         .filter(p => order.includes(p.key))
         .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key))
