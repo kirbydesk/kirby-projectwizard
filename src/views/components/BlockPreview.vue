@@ -582,15 +582,15 @@ export default {
         overflow: 'hidden',
         // on the image: the card in its ratio, the image fills it
         position: this.cardOverlay ? 'relative' : null,
-        // the image standing out: the card drawn in two pieces (see
-        // cardOverhangStyle and the content), the card itself bare
-        ...(this.cardOverhang ? { overflow: 'visible', background: 'none', border: 0, boxShadow: 'none', borderRadius: 0 } : {}),
         aspectRatio: this.cardOverlay ? (this.setting('style', 'card-ratio') || '4/5').replace('/', ' / ') : null,
         backgroundColor: this.itemColor('item-background'),
         border: this.setting('layout', 'item-border') === true ? this.itemValue('item-border-width') + ' solid ' + this.itemColor('item-border-color') : 0,
         // the shadow step (as the buttons')
         boxShadow: { sm: '0 1px 2px rgba(0, 0, 0, 0.12)', md: '0 4px 10px rgba(0, 0, 0, 0.15)', lg: '0 10px 24px rgba(0, 0, 0, 0.18)' }[this.setting('layout', 'item-shadow')] || null,
         borderRadius: [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' '),
+        // the image standing out: the card drawn in two pieces (see
+        // cardOverhangStyle and the content), the card itself bare
+        ...(this.cardOverhang ? { overflow: 'visible', backgroundColor: 'transparent', border: 0, boxShadow: 'none', borderRadius: 0 } : {}),
       };
     },
     // its content inside the card's padding, the link at the bottom
