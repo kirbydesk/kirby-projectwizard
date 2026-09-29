@@ -32,7 +32,28 @@
                     :value="block.active"
                     @input="$emit('toggle', { blockType: block.blockType, checked: $event })"
                   />
-                  <span class="pw-active-count">{{ usage[block.blockType] ? $t('prw.label.usedTimes', { count: usage[block.blockType] }) : $t('prw.label.unused') }}</span>
+                  <!-- used: a click lists the pages (loaded then), each opens in the panel -->
+                  <span v-if="usage[block.blockType]" class="pw-active-count pw-active-usage">
+                    <button type="button" class="pw-active-usage-button" @click="openUsage(block.blockType)">
+                      {{ $t('prw.label.usedTimes', { count: usage[block.blockType] }) }}<k-icon type="angle-down" />
+                    </button>
+                    <k-dropdown-content :ref="'usage-' + block.blockType" align-x="end">
+                      <nav class="k-navigate">
+                        <p v-if="!usagePages[block.blockType]" class="pw-active-usage-loading">…</p>
+                        <button
+                          v-for="page in usagePages[block.blockType] || []"
+                          :key="page.link"
+                          type="button"
+                          class="k-dropdown-item k-button pw-menu-item"
+                          data-has-text="true"
+                          @click="$go(page.link)"
+                        >
+                          <span class="k-button-text">{{ page.title }} <span class="pw-menu-count">{{ page.count }}×</span></span>
+                        </button>
+                      </nav>
+                    </k-dropdown-content>
+                  </span>
+                  <span v-else class="pw-active-count">{{ $t('prw.label.unused') }}</span>
                 </div>
               </span>
             </div>
@@ -72,7 +93,23 @@ export default {
       ];
     },
   },
+  data() {
+    return {
+      // the pages using a block (blockType → list), loaded on the first click
+      usagePages: {},
+    };
+  },
   methods: {
+    async openUsage(blockType) {
+      const ref = this.$refs['usage-' + blockType];
+      (Array.isArray(ref) ? ref[0] : ref).toggle();
+      if (this.usagePages[blockType]) return;
+      try {
+        this.$set(this.usagePages, blockType, await this.$api.get('projectwizard/blocks/usage/' + blockType));
+      } catch (e) {
+        this.$set(this.usagePages, blockType, []);
+      }
+    },
     blockLabel(blockType) {
       const block = this.blocks.find(b => b.blockType === blockType);
       if (block && block.name) return block.name;
@@ -102,6 +139,28 @@ export default {
   font-size: var(--text-xs);
   color: var(--color-gray-500);
   font-variant-numeric: tabular-nums;
+}
+/* the usage: a button opening the list of pages */
+.pw-active-usage-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  background: none;
+  cursor: pointer;
+}
+.pw-active-usage-button:hover {
+  color: var(--color-text);
+}
+.pw-active-usage-button .k-icon {
+  --icon-size: 12px;
+  opacity: 0.7;
+}
+.pw-active-usage-loading {
+  padding: var(--spacing-2) var(--spacing-3);
+  color: var(--color-gray-500);
 }
 /* switched off: faded, the switch stays clear */
 .pw-active-row.is-inactive :is(.pw-active-label, .pw-active-count) {

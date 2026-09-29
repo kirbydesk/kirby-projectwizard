@@ -84,6 +84,54 @@ return [
 				return $counts;
 			}
 		],
+		// The pages that use a block: path of titles, how often, panel link
+		[
+			'pattern' => 'projectwizard/blocks/usage/(:any)',
+			'action'  => function (string $blockType) {
+				$kirby = kirby();
+				$lang  = $kirby->multilang() ? $kirby->defaultLanguage()->code() : null;
+				$pages = [];
+
+				$countIn = function (array $blocks) use ($blockType): int {
+					$n = 0;
+					foreach ($blocks as $block) {
+						if (is_array($block) && ($block['type'] ?? null) === $blockType) $n++;
+					}
+					return $n;
+				};
+
+				foreach ([$kirby->site(), ...$kirby->site()->index(true)] as $model) {
+					$count = 0;
+					foreach ($model->content($lang)->toArray() as $value) {
+						if (!is_string($value) || !str_contains($value, '"type"')) continue;
+						$data = json_decode($value, true);
+						if (!is_array($data)) continue;
+						foreach ($data as $entry) {
+							// layout field: rows → columns → blocks
+							if (is_array($entry) && isset($entry['columns'])) {
+								foreach ($entry['columns'] as $column) $count += $countIn($column['blocks'] ?? []);
+							}
+						}
+						$count += $countIn($data);
+					}
+					if ($count === 0) continue;
+
+					// the page's path of titles (parents first), the site its title
+					$titles = [];
+					if ($model instanceof \Kirby\Cms\Page) {
+						foreach ($model->parents()->flip() as $parent) $titles[] = $parent->title()->value();
+					}
+					$titles[] = $model->title()->value();
+					$pages[] = [
+						'title' => implode(' › ', $titles),
+						'count' => $count,
+						'link'  => $model->panel()->url(true),
+					];
+				}
+
+				return $pages;
+			}
+		],
 		// List all detected blocks with their defaults and current overrides
 		[
 			'pattern' => 'projectwizard/blocks',
