@@ -841,11 +841,14 @@
               :writer-active="writerActive[block.blockType] !== false"
               @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
               @update:writer-active="$set(writerActive, block.blockType, $event)"
+              @drawer-tab="$set(startDrawerTab, block.blockType, $event)"
             />
-            <!-- the items' start values (corner toggles, link style) -->
-            <template v-if="hasItemFields(block.blockType) && hasItemDefaultFields(block.blockType)">
-              <h2 class="pw-group-title">{{ $t('prw.tab.items') }}</h2>
+            <!-- the items' corners (cardlets): a card in the layout tab -->
+            <template v-if="hasItemFields(block.blockType) && hasItemDefaultFields(block.blockType) && startDrawerTab[block.blockType] === 'layout'">
               <section class="pw-card-section">
+                <div class="pw-card-heading-row">
+                  <h3 class="pw-card-heading">{{ $t('prw.tab.items') }}</h3>
+                </div>
                 <div class="pw-card pw-field-table">
                   <pw-block-settings
                     view="items-defaults"
@@ -858,6 +861,7 @@
                     @update:writer-active="$set(writerActive, block.blockType, $event)"
                   />
                 </div>
+                <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.itemCorners')" />
               </section>
             </template>
 
@@ -2058,6 +2062,8 @@ export default {
       // hero: the height its preview shows (small … fullscreen), a view
       heroPreviewHeight: {},
       startHeroHeights: {},
+      // the drawer tab shown in each block's start values
+      startDrawerTab: {},
       startSectionLayouts: {},
       // the value whose row the pointer is over: its area tinted in the preview
       hoveredVar: null,

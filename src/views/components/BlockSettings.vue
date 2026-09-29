@@ -519,6 +519,15 @@ export default {
       sectionBp: {},
     };
   },
+  watch: {
+    // the start values' drawer tab shown (the overview adds the items' cards there)
+    currentDrawerTab: {
+      immediate: true,
+      handler(tab) {
+        if (this.view === 'defaults') this.$emit('drawer-tab', tab);
+      },
+    },
+  },
   computed: {
     // the block's drawer tabs, as in the block's drawer (content always);
     // tabs without rows in this view are disabled

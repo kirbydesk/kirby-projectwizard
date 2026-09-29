@@ -245,6 +245,7 @@
 	'prw.hint.cardletsLink' => 'Sets how the link at the end of a card looks. Its target and text are entered per card in the block.',
 	'prw.hint.cardletsColors' => 'Sets the colours of the cards for each variant.',
 	'prw.hint.cardletsSpacing' => 'Sets the gaps between the cards, inside the cards and to the intro. The link always sits at the bottom of the card, the gap to the link is the minimum.',
+	'prw.hint.itemCorners' => 'Sets which corners of a new item are rounded. The radius is set in the design.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.prop.tagline-spacing' => 'Tagline',

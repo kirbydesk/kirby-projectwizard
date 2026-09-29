@@ -245,6 +245,7 @@
 	'prw.hint.cardletsLink' => 'Legt fest, wie der Link am Ende einer Karte aussieht. Ziel und Linktext werden pro Karte im Block eingegeben.',
 	'prw.hint.cardletsColors' => 'Legt die Farben der Karten für jede Variante fest.',
 	'prw.hint.cardletsSpacing' => 'Legt die Abstände zwischen den Karten, innerhalb der Karten und zur Einleitung fest. Der Link steht immer unten in der Karte, der Abstand zum Link ist der Mindestabstand.',
+	'prw.hint.itemCorners' => 'Legt fest, welche Ecken ein neuer Eintrag abgerundet hat. Der Radius wird in der Gestaltung festgelegt.',
 	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht, eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.globalValue' => 'Globaler Wert',
 	'prw.prop.tagline-spacing' => 'Tagline',
