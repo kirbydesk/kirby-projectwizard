@@ -794,9 +794,10 @@ export default {
       // own display …), named after it
       // (the variant with a help text below its card)
       const styleHelp = (key) => (this.view === 'defaults' && key === 'theme' ? this.$t('prw.hint.themeDefault') : null);
-      // (also a single one, e.g. only the variant: its card keeps its heading)
+      // one card "Style" with all its rows (the variant, the hero's
+      // background and height …), the variant's help text below
       if (this.view === 'defaults' && cat.key === 'style') {
-        return fields.map(f => ({ key: f.key, heading: this.styleSectionHeading(f.key), help: styleHelp(f.key), fields: [f] }));
+        return [{ key: 'style', heading: this.drawerLabel('style'), help: fields.some(f => f.key === 'theme') ? styleHelp('theme') : null, fields }];
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
@@ -836,13 +837,6 @@ export default {
       for (const f of fields.filter(fl => fl.key.endsWith('-' + bp))) {
         this.selectOption('settings.fields.grid.' + f.key + '.default', f.key.startsWith('grid-size-') ? 12 : 0, f.defaultValue);
       }
-    },
-    // heading of a style card: the variant, else the field's own label
-    styleSectionHeading(key) {
-      if (key === 'theme') return this.$t('prw.headline.variant');
-      const tKey = 'prw.property.' + key;
-      const t = this.$t(tKey);
-      return t && t !== tKey ? t : key;
     },
 
     // name of a drawer tab (as in the block's drawer)
