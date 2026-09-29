@@ -135,7 +135,7 @@ export default {
   color: var(--color-gray-600);
 }
 /* the label column: the name, below it how often the block is used
-   (left aligned with the icon) */
+   (indented in line with the name, past the icon) */
 .pw-active-label-col {
   flex-direction: column;
   align-items: flex-start;
@@ -143,6 +143,7 @@ export default {
   gap: 1px;
 }
 .pw-active-count {
+  padding-inline-start: calc(16px + var(--spacing-2));
   font-size: var(--text-xs);
   color: var(--color-gray-500);
   font-variant-numeric: tabular-nums;
