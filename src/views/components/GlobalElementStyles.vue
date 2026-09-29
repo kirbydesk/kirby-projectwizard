@@ -2165,10 +2165,11 @@ export default {
 .pw-element-preview.has-guides.has-focus .pw-element-preview-button .pw-preview-link-icon::after {
   border-color: transparent;
 }
-.pw-element-preview.has-guides.has-focus .is-hot-icon .pw-preview-link-icon::after {
+.pw-element-preview.has-guides.has-focus .is-hot-icon .pw-element-preview-button .pw-preview-link-icon::after {
+  border-color: rgba(255, 140, 0, 0.9);
   background: rgba(255, 140, 0, 0.3);
 }
-/* a question mark hovered: the buttons' guide lines hidden */
+/* a value's field with the cursor: the other guide lines hidden */
 .pw-element-preview.has-guides.has-focus .pw-element-preview-buttons-row::before,
 .pw-element-preview.has-guides.has-focus .pw-element-preview-buttons-row::after,
 .pw-element-preview.has-guides.has-focus .pw-element-preview-button-second::before,
@@ -2180,11 +2181,26 @@ export default {
    (violet), the paddings left/right (magenta) or top/bottom (green) */
 .pw-element-preview.has-guides.has-focus .is-hot-gap .pw-element-preview-button-second::after {
   width: var(--pw-button-gap);
+  border-color: rgba(0, 170, 255, 0.8);
   background: rgba(0, 170, 255, 0.15);
+}
+.pw-element-preview.has-guides.has-focus .is-hot-gap .pw-element-preview-button-second::before {
+  border-color: rgba(0, 170, 255, 0.8);
 }
 .pw-element-preview.has-guides.has-focus .is-hot-row .pw-element-preview-buttons-row::after {
   height: var(--pw-button-row-gap);
+  border-color: rgba(130, 80, 255, 0.9);
   background: rgba(130, 80, 255, 0.15);
+}
+.pw-element-preview.has-guides.has-focus .is-hot-row .pw-element-preview-buttons-row::before {
+  border-color: rgba(130, 80, 255, 0.9);
+}
+/* the paddings: the content's edge (left/right or top/bottom) stays */
+.pw-element-preview.has-guides.has-focus .is-hot-padding-h .pw-button-content::before {
+  border-inline-color: rgba(255, 0, 170, 0.6);
+}
+.pw-element-preview.has-guides.has-focus .is-hot-padding-v .pw-button-content::before {
+  border-block-color: rgba(0, 180, 90, 0.9);
 }
 .pw-element-preview.has-focus .is-hot-padding-h .pw-element-preview-button {
   background-image: linear-gradient(to right,
@@ -2247,20 +2263,24 @@ export default {
 .pw-element-preview.has-guides .is-wrapped .pw-element-preview-button-second::after {
   top: calc(-1 * var(--pw-button-row-gap, 0px));
 }
-/* a question mark hovered: these lines hidden as well */
+/* another value's field with the cursor: these lines hidden as well */
 .pw-element-preview.has-guides.has-focus .is-wrapped .pw-element-preview-button-second::before,
 .pw-element-preview.has-guides.has-focus .is-wrapped .pw-element-preview-button-second::after {
   border-color: transparent;
 }
-/* its question mark hovered: the gap side by side is not there; the row
-   gap tints above the second button as well */
+/* its field with the cursor: the gap side by side is not there; the row
+   gap tints above the second button as well (with its lines) */
 .pw-element-preview.has-guides.has-focus .is-wrapped.is-hot-gap .pw-element-preview-button-second::after {
   width: 200vw;
   background: transparent;
 }
 .pw-element-preview.has-guides.has-focus .is-wrapped.is-hot-row .pw-element-preview-button-second::after {
   height: var(--pw-button-row-gap);
+  border-color: rgba(130, 80, 255, 0.9);
   background: rgba(130, 80, 255, 0.15);
+}
+.pw-element-preview.has-guides.has-focus .is-wrapped.is-hot-row .pw-element-preview-button-second::before {
+  border-color: rgba(130, 80, 255, 0.9);
 }
 /* colours with hover/active: the three states next to each other (as wide
    as their content), hover and active marked by their purple pill */
@@ -2351,10 +2371,14 @@ export default {
   background: none;
 }
 .pw-element-preview.has-guides .pw-element-preview-list.is-hot-indent {
-  background: linear-gradient(rgba(255, 0, 170, 0.18), rgba(255, 0, 170, 0.18)) no-repeat 0 0 / var(--pw-list-indent, 0px) 100%;
+  --pw-indent-tint: rgba(255, 0, 170, 0.18);
+  background:
+    linear-gradient(var(--pw-indent-line), var(--pw-indent-line)) no-repeat 0 0 / 1px 100%,
+    linear-gradient(var(--pw-indent-line), var(--pw-indent-line)) no-repeat var(--pw-list-indent, 0px) 0 / 1px 100%,
+    linear-gradient(var(--pw-indent-tint), var(--pw-indent-tint)) no-repeat 0 0 / var(--pw-list-indent, 0px) 100%;
 }
 .pw-element-preview.has-guides .pw-element-preview-list.is-numbered.is-hot-indent {
-  background: linear-gradient(rgba(0, 180, 90, 0.18), rgba(0, 180, 90, 0.18)) no-repeat 0 0 / var(--pw-list-indent, 0px) 100%;
+  --pw-indent-tint: rgba(0, 180, 90, 0.18);
 }
 .pw-element-preview.has-guides .pw-element-preview-list > li {
   position: relative;
@@ -2371,7 +2395,7 @@ export default {
   border-block: 1px solid rgba(255, 140, 0, 0.9);
   pointer-events: none;
 }
-.pw-element-preview.has-focus .pw-element-preview-list > li + li::before {
+.pw-element-preview.has-focus .pw-element-preview-list:not(.is-hot-gap) > li + li::before {
   border-color: transparent;
 }
 .pw-element-preview-list.is-hot-gap > li + li::before {
@@ -2418,13 +2442,19 @@ export default {
   bottom: 0;
   border-top-color: rgba(255, 140, 0, 0.9);
 }
-/* its question marks hovered: the spacing above or below tinted */
+/* its field with the cursor: the spacing above or below tinted, with its
+   lines */
 .pw-element-preview.has-focus .pw-element-preview-flourish-box.is-hot-top::before {
   height: var(--pw-flourish-pt);
+  box-sizing: border-box;
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
   background: rgba(130, 80, 255, 0.15);
 }
 .pw-element-preview.has-focus .pw-element-preview-flourish-box.is-hot-bottom::after {
   height: var(--pw-flourish-pb);
+  box-sizing: border-box;
+  border-top: 0;
+  border-block: 1px solid rgba(255, 140, 0, 0.9);
   background: rgba(255, 140, 0, 0.15);
 }
 /* marked heading in the preview: no padding above it */
@@ -2638,12 +2668,13 @@ export default {
   margin-inline: calc(-1 * var(--spacing-6));
   border-block: 1px solid rgba(0, 170, 255, 0.8);
 }
-/* a question mark hovered: its area tinted, all guide lines hidden */
-.pw-element-preview.has-focus .pw-element-space-below,
-.pw-element-preview.has-guides.has-focus .pw-element-preview-paragraphs p + p::before,
-.pw-element-preview.has-guides.has-focus .pw-element-preview-paragraphs p:not(:last-child)::after,
-.pw-element-preview.has-focus .pw-element-preview-cite::before,
-.pw-element-preview.has-focus .pw-element-preview-cite::after,
+/* a value's field with the cursor: its area tinted with its lines, all
+   other guide lines hidden */
+.pw-element-preview.has-focus .pw-element-space-below:not(.is-hot),
+.pw-element-preview.has-guides.has-focus .pw-element-preview-paragraphs:not(.is-hot) p + p::before,
+.pw-element-preview.has-guides.has-focus .pw-element-preview-paragraphs:not(.is-hot) p:not(:last-child)::after,
+.pw-element-preview.has-focus .pw-element-preview-cite:not(.is-hot)::before,
+.pw-element-preview.has-focus .pw-element-preview-cite:not(.is-hot)::after,
 .pw-element-preview.has-focus .pw-element-preview-flourish-box::before,
 .pw-element-preview.has-focus .pw-element-preview-flourish-box::after {
   border-color: transparent;
@@ -2657,10 +2688,11 @@ export default {
 .pw-element-preview.has-focus .pw-element-preview-paragraphs.is-hot p + p::before {
   top: calc(-1 * var(--pw-paragraph-gap));
   height: var(--pw-paragraph-gap);
+  box-sizing: border-box;
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
   background: rgba(130, 80, 255, 0.15);
 }
 .pw-element-space-below.is-hot {
-  border-color: transparent;
   background: rgba(0, 170, 255, 0.15);
 }
 .pw-element-preview-text {
