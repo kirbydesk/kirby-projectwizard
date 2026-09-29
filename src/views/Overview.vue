@@ -775,6 +775,7 @@
               <div class="pw-code">
                 <pre ref="patchesHl" class="pw-code-hl" aria-hidden="true" v-html="patchesHighlighted"></pre>
                 <textarea
+                  ref="patchesInput"
                   :key="'patches-' + discardKey"
                   v-model="patchesText"
                   class="pw-patches-input"
@@ -2467,11 +2468,17 @@ export default {
     itemBp(bp) {
       savePreviewBp(bp);
     },
+    // the configuration's field grows with its content (also on inserting
+    // from the tree, loading, discarding, opening the page)
+    patchesText() {
+      this.$nextTick(this.fitPatchesInput);
+    },
     // the blocks page: how often each block is used (for its row)
     globalActiveTab: {
       immediate: true,
       handler(tab) {
         if (tab === 'blocks') this.loadBlockUsage();
+        if (tab === 'patches') this.$nextTick(this.fitPatchesInput);
       },
     },
     // another block: start on its first tab
@@ -3056,6 +3063,12 @@ export default {
         last = re.lastIndex;
       }
       return out + esc(text.slice(last)) + '\n';
+    },
+    fitPatchesInput() {
+      const el = this.$refs.patchesInput;
+      if (!el || !el.offsetParent) return;
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
     },
     // an entry of the tree into the JSON: its path with its current value
     // (nested objects; what the JSON holds there already is replaced)
@@ -4042,13 +4055,15 @@ export default {
   position: relative;
   display: block;
   width: 100%;
-  min-height: 60vh;
+  /* as high as its content (patchesText watcher), at least a few lines */
+  min-height: 12rem;
+  overflow: hidden;
   color: transparent;
   caret-color: #ffffff;
   background: transparent;
   border: 0;
   border-radius: var(--rounded);
-  resize: vertical;
+  resize: none;
 }
 .pw-patches-input::placeholder {
   color: #6a6a6a;
