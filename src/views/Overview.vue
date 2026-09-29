@@ -3958,8 +3958,12 @@ export default {
 .pw-patches-input:focus {
   outline: var(--outline);
 }
+/* white and edge to edge in the preview column (as the element previews) */
 .pw-patches-tree {
-  padding-bottom: var(--spacing-6);
+  margin: calc(-1 * var(--spacing-6));
+  padding: var(--spacing-6);
+  min-height: calc(100dvh - 2 * var(--menu-padding) - 25px);
+  background: var(--color-white);
 }
 .pw-json-root {
   margin-top: var(--spacing-3);
