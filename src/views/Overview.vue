@@ -3804,8 +3804,9 @@ export default {
   color: var(--color-text-dimmed);
 }
 /* rows with the global values (Standard): the value fainter (not its px),
-   so it does not look clickable */
+   so it does not look clickable (hovered: the "not allowed" cursor) */
 .pw-field-row.is-readonly .pw-readonly-value {
+  cursor: not-allowed;
   opacity: 0.5;
 }
 .pw-field-table .pw-readonly-value .pw-element-unit {
