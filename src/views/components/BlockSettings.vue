@@ -781,7 +781,7 @@ export default {
         const sections = [];
         if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), help: this.$t('prw.hint.blockPaddings'), fields: paddings });
         if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), help: this.$t('prw.hint.blockRadius'), fields: [radius] });
-        const headings = { 'position-': 'pw.headline.contentposition', 'columns-': 'pw.headline.columns', 'logos-': 'prw.headline.logos' };
+        const headings = { 'position-': 'prw.headline.contentPosition', 'columns-': 'pw.headline.columns', 'logos-': 'prw.headline.logos' };
         for (const f of others) {
           const prefix = Object.keys(headings).find(p => f.key.startsWith(p));
           const key = prefix || f.key;
