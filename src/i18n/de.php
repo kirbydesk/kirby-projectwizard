@@ -139,7 +139,7 @@
 	'prw.property.theme' => 'Theme',
 
 	/* -------------- Headlines --------------*/
-	'prw.headline.pagewizard' => 'Pagewizard',
+	'prw.headline.pagewizard' => 'Aktive Blöcke',
 	'prw.headline.projectRelated' => 'Projektbezogen',
 
 	/* -------------- Props: Navigation groups --------------*/
