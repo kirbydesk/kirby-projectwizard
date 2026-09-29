@@ -1801,7 +1801,7 @@ export default {
 .pw-block-live-preview.has-focus .pw-steplist-step-gap:not(.is-hot),
 .pw-block-live-preview.has-focus .pw-steplist-gap:not(.is-hot),
 .pw-block-live-preview.has-focus .pw-logocloud-gap:not(.is-hot),
-.pw-block-live-preview.has-focus .pw-logocloud-text-gap:not(.is-hot) {
+.pw-block-live-preview.has-focus .pw-logocloud-text-gap:not(.is-hot)::before {
   border-color: transparent;
 }
 .pw-block-live-preview.has-focus:not([data-focus="item-padding"]):not([data-focus="item-padding-y"]) .pw-logocloud-preview.has-guides .pw-logocloud-pad,
@@ -1809,15 +1809,24 @@ export default {
   display: none;
 }
 /* a value's row hovered (guides on): its area tinted in its colour */
-.pw-logocloud-text-gap.is-hot { background: rgba(255, 140, 0, 0.15); }
+.pw-logocloud-text-gap.is-hot::before { background: rgba(255, 140, 0, 0.15); }
 .pw-logocloud-gap.is-column.is-hot,
 .pw-steplist-step-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-logocloud-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.18); }
 .pw-steplist-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
-/* logocloud guides: the gap between the text and the logos (violet) */
+/* the gap between the text and the items (logos, features, cards):
+   lines and tint across the whole block (cut off at its edge), as the
+   elements' space below */
 .pw-logocloud-text-gap {
+  position: relative;
+}
+.pw-logocloud-text-gap::before {
+  content: "";
+  position: absolute;
+  inset: 0 -100vw;
   box-sizing: border-box;
   border-block: 1px solid rgba(255, 140, 0, 0.9);
+  pointer-events: none;
 }
 /* flexible (the logos wrap freely): the gaps shown at each tile's outer
    edge – left and right cyan (between the logos), top and bottom orange
