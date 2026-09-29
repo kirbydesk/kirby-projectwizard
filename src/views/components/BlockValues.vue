@@ -25,34 +25,49 @@
             </div>
           </div>
 
-          <!-- Multi-theme colors (default / variant / variant2) -->
+          <!-- Multi-theme colors (default / variant / variant2); with one variant
+               chosen, hover and active next to their colour in one row -->
           <div
-            v-for="(themes, varName) in group.colors"
-            :key="'color-' + varName"
+            v-for="row in colorRows(group)"
+            :key="'color-' + row.varName"
             class="pw-field-row"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
+                  <label class="pw-field-row-label" v-html="varLabel(row.varName)"></label>
                 </div>
                 <div class="pw-field-row-options" :class="{ 'pw-group-type-theme-color': !theme }">
-                  <span
-                    v-for="(themeValue, themeKey) in visibleThemes(themes)"
-                    :key="themeKey"
-                    class="pw-element-field"
-                  >
-                    <pw-color-field-row
-                      :group="'block-values-' + themeKey"
-                      :var-name="varName"
-                      :default-value="themeValue"
-                      :override-value="getThemeOverride(themeKey, varName) || ''"
-                      @update:value="setThemeColor(themeKey, varName, $event || '', themeValue)"
-                    />
+                  <span v-if="row.states.length > 1" class="pw-state-grid">
+                    <span v-for="st in row.states" :key="st.varName" class="pw-state-cell">
+                      <span v-if="st.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + st.state">:{{ $t('prw.state.' + st.state) }}</span>
+                      <pw-color-field-row
+                        :group="'block-values-' + theme"
+                        :var-name="st.varName"
+                        :default-value="group.colors[st.varName][theme] || ''"
+                        :override-value="getThemeOverride(theme, st.varName) || ''"
+                        @update:value="setThemeColor(theme, st.varName, $event || '', group.colors[st.varName][theme] || '')"
+                      />
+                    </span>
                   </span>
+                  <template v-else>
+                    <span
+                      v-for="(themeValue, themeKey) in visibleThemes(group.colors[row.varName])"
+                      :key="themeKey"
+                      class="pw-element-field"
+                    >
+                      <pw-color-field-row
+                        :group="'block-values-' + themeKey"
+                        :var-name="row.varName"
+                        :default-value="themeValue"
+                        :override-value="getThemeOverride(themeKey, row.varName) || ''"
+                        @update:value="setThemeColor(themeKey, row.varName, $event || '', themeValue)"
+                      />
+                    </span>
+                  </template>
                 </div>
               </span>
-              <k-button v-if="hasColorOverride(varName)" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetColor(varName)" />
+              <k-button v-if="row.states.some(st => hasColorOverride(st.varName))" class="pw-field-reset" :text="$t('prw.label.reset')" icon="undo" size="xs" variant="filled" @click="resetColors(row.states.map(st => st.varName))" />
             </div>
           </div>
 
@@ -299,6 +314,23 @@ export default {
     bpLabel(bp) {
       return { default: this.$t('prw.label.mobile'), lg: this.$t('prw.label.tablet'), xl: this.$t('prw.label.desktop') }[bp];
     },
+    // the colour rows: with one variant chosen, a colour's hover and active
+    // join it (states side by side, as the buttons' on the elements page)
+    colorRows(group) {
+      const names = Object.keys(group.colors || {});
+      const rows = [];
+      for (const name of names) {
+        const state = name.endsWith('-hover') ? 'hover' : name.endsWith('-active') ? 'active' : 'normal';
+        const base = state === 'normal' ? name : name.replace(/-(hover|active)$/, '');
+        if (this.theme && state !== 'normal' && names.includes(base)) continue;
+        const states = [{ varName: name, state: 'normal' }];
+        if (this.theme && state === 'normal') {
+          for (const s of ['hover', 'active']) if (names.includes(name + '-' + s)) states.push({ varName: name + '-' + s, state: s });
+        }
+        rows.push({ varName: name, states });
+      }
+      return rows;
+    },
     visibleThemes(themes) {
       if (!this.theme) return themes;
       return this.theme in themes ? { [this.theme]: themes[this.theme] } : {};
@@ -434,10 +466,14 @@ export default {
       this.$emit('update:overrides', next);
     },
     resetColor(varName) {
+      this.resetColors([varName]);
+    },
+    // several colours at once (a colour with its hover and active)
+    resetColors(names) {
       const next = JSON.parse(JSON.stringify(this.overrides || {}));
       for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
         if (next[theme] && typeof next[theme] === 'object') {
-          delete next[theme][varName];
+          for (const varName of names) delete next[theme][varName];
           if (Object.keys(next[theme]).length === 0) delete next[theme];
         }
       }
