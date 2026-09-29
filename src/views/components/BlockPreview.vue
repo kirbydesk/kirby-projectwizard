@@ -150,7 +150,7 @@
                each other violet) and each element's space below as a band in
                its colour (the design card's) -->
           <div v-if="isMulticolumn" class="pw-mc-preview" :style="mcStyle">
-            <div class="pw-mc-column">
+            <div class="pw-mc-column" :style="mcColumnStyle('left')">
               <div :style="mcTextStyle('tagline', 'tagline')">{{ $t('prw.preview.tagline') }}</div>
               <span v-if="guides" class="pw-mc-band is-tagline" :class="{ 'is-hot': highlight === 'tagline-spacing' }" :style="{ height: spaceAfter('tagline') }"></span>
               <div :style="mcTextStyle('heading', 'heading')">{{ $t('prw.preview.heading') }}</div>
@@ -166,12 +166,12 @@
               <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.mc.text') }}</p>
             </div>
             <span v-if="guides" class="pw-mc-gap" :class="{ 'is-row': !mcSide, 'is-hot': highlight === (mcSide ? 'column-gap' : 'row-gap') }" :style="mcSide ? null : { height: itemValueAt('row-gap') }"></span>
-            <div class="pw-mc-column">
+            <div class="pw-mc-column" :style="mcColumnStyle('right')">
               <blockquote class="pw-mc-quote" :style="mcQuoteStyle">{{ $t('prw.preview.quote') }}</blockquote>
               <span v-if="guides" class="pw-mc-band is-quote" :class="{ 'is-hot': highlight === 'quote-spacing' }" :style="{ height: spaceAfter('quote') }"></span>
               <div class="pw-media-preview-photo pw-mc-image" :style="{ marginBottom: guides ? 0 : spaceAfter('media') }"></div>
               <span v-if="guides" class="pw-mc-band is-media" :class="{ 'is-hot': highlight === 'media-spacing' }" :style="{ height: spaceAfter('media') }"></span>
-              <div :style="{ marginBottom: guides ? 0 : spaceAfter('button') }"><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
+              <div :style="{ marginBottom: guides ? 0 : spaceAfter('button'), textAlign: preset('button', 'align') || 'left' }"><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
               <span v-if="guides" class="pw-mc-band is-button" :class="{ 'is-hot': highlight === 'button-spacing' }" :style="{ height: spaceAfter('button') }"></span>
               <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.mc.text') }}</p>
             </div>
@@ -775,22 +775,37 @@ export default {
     // the list in a column: the text's type, the lists' indent, gap, marker
     // (Elements › Lists); its space below the block's own or the lists'
     mcListStyle() {
-      const marker = { disc: 'disc', circle: 'circle', box: 'square', dash: '"–  "', arrow: '"→  "', chevron: '"›  "', check: '"✓  "', star: '"★  "' }[this.elementValue('list', 'marker')] || 'disc';
+      // its start values: style (bullets, numbers, none), alignment, size
+      const kind = this.preset('list', 'style') || 'bullet';
+      const marker = kind === 'none' ? 'none'
+        : kind === 'ordered' ? ({ decimal: 'decimal', 'decimal-paren': 'pw-decimal-paren', 'lower-alpha': 'lower-alpha', 'lower-roman': 'lower-roman' }[this.elementValue('list', 'number-format')] || 'decimal')
+        : ({ disc: 'disc', circle: 'circle', box: 'square', dash: '"–  "', arrow: '"→  "', chevron: '"›  "', check: '"✓  "', star: '"★  "' }[this.elementValue('list', 'marker')] || 'disc');
+      const size = this.preset('list', 'sizes') || 'normal';
+      const step = size !== 'normal' ? this.sizeStep('editor', size) : '';
       return {
         ...this.typography('editor'),
+        ...(step ? { fontSize: step } : {}),
         color: this.elementColor('editor', 'element-editor-text'),
+        textAlign: this.preset('list', 'align') || 'left',
         margin: 0,
         marginBottom: this.guides ? 0 : this.mcListSpacing,
-        paddingLeft: this.elementValue('list', 'indent'),
+        paddingLeft: kind === 'none' ? 0 : this.elementValue('list', kind === 'ordered' ? 'number-indent' : 'indent'),
         listStyleType: marker,
         '--pw-list-gap': this.elementValue('list', 'item-spacing'),
-        '--pw-list-marker': this.elementColor('list', 'element-list-marker'),
-        '--pw-list-marker-size': this.elementValue('list', 'marker-size') || '100%',
+        '--pw-list-marker': this.elementColor('list', kind === 'ordered' ? 'element-list-number' : 'element-list-marker'),
+        '--pw-list-marker-size': kind === 'ordered' ? '100%' : (this.elementValue('list', 'marker-size') || '100%'),
       };
     },
-    // the quote in a column: the quote's type and colour, its space below
+    // the quote in a column: the quote's type and colour, its start values
+    // (alignment, size), its space below
     mcQuoteStyle() {
-      return { ...this.typography('quote'), color: this.elementColor('quote', 'element-quote-text'), margin: 0, marginBottom: this.guides ? 0 : this.spaceAfter('quote') };
+      const step = this.sizeStep('quote', this.preset('quote', 'sizes') || 'lg');
+      return { ...this.typography('quote'), ...(step ? { fontSize: step } : {}), color: this.elementColor('quote', 'element-quote-text'), textAlign: this.preset('quote', 'align') || 'left', margin: 0, marginBottom: this.guides ? 0 : this.spaceAfter('quote') };
+    },
+    // a column: its vertical position next to the other (start value)
+    mcColumnStyle(side) {
+      if (!this.mcSide) return null;
+      return { alignSelf: { top: 'start', middle: 'center', bottom: 'end' }[this.setting('layout', 'multicolumn-' + side)] || 'start' };
     },
     mcListSpacing() {
       if (this.ownSpacing) {
@@ -1429,7 +1444,9 @@ export default {
     // a text in a column: the element's type and colour, the preset size step
     // (headline lg, text normal), its space below (with guides a band instead)
     mcTextStyle(element, spaceOf) {
-      const style = { ...this.typography(element), color: this.elementColor(element, 'element-' + element + '-text'), margin: 0 };
+      // (the column's fields: tagline, headline, text – their start values)
+      const field = { tagline: 'tagline', heading: 'headline', editor: 'text' }[element];
+      const style = { ...this.typography(element), color: this.elementColor(element, 'element-' + element + '-text'), margin: 0, textAlign: this.preset(field, 'align') || 'left' };
       const preset = element === 'heading' ? (this.preset('headline', 'sizes') || 'lg') : element === 'editor' ? (this.preset('text', 'sizes') || 'normal') : 'normal';
       if (preset !== 'normal') {
         const step = this.sizeStep(element, preset);
