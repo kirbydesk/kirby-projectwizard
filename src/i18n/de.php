@@ -89,6 +89,7 @@
 	'prw.headline.fields' => 'Elemente',
 	'prw.headline.logos' => 'Logos',
 	'prw.headline.card' => 'Karte',
+	'prw.headline.padding' => 'Innenabstand',
 	'prw.headline.border' => 'Rahmen',
 	'prw.headline.link' => 'Link',
 	'prw.headline.icon' => 'Icons',

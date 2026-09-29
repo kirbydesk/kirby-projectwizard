@@ -89,6 +89,7 @@
 	'prw.headline.fields' => 'Elements',
 	'prw.headline.logos' => 'Logos',
 	'prw.headline.card' => 'Card',
+	'prw.headline.padding' => 'Padding',
 	'prw.headline.border' => 'Border',
 	'prw.headline.link' => 'Link',
 	'prw.headline.icon' => 'Icons',

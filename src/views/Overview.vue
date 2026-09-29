@@ -1451,7 +1451,7 @@
             <template v-if="block.blockType === 'pwcardlets' && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.card') }}</h3>
+                <h3 class="pw-card-heading">{{ $t('prw.headline.padding') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -1460,6 +1460,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-padding-x', 'item-padding-y']"
+                  :labels="{ 'item-padding-x': $t('prw.label.leftRight'), 'item-padding-y': $t('prw.label.topBottom') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
