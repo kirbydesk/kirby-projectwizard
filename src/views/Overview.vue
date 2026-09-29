@@ -789,15 +789,16 @@
             </section>
           </div>
 
-          <!-- AI (kirbydesk AI plugins: contentwizard settings, API keys) -->
+          <!-- AI: translation (translatewizard: its keys) and page generator
+               (contentwizard: its settings and keys), each a page of its own -->
           <div
             v-if="hasAiTab"
-            v-show="globalActiveTab === 'ai'"
+            v-show="['translate', 'generator'].includes(globalActiveTab)"
             class="pw-wizard-global-content pw-ai-settings"
-            :class="{ 'pw-ai-single': !aiForm || !(aiSecrets && aiSecrets.length) }"
+            :class="{ 'pw-ai-single': !(globalActiveTab === 'generator' && aiForm) || !aiPageSecrets.length }"
           >
             <!-- 3/4: AI defaults (contentwizard) -->
-            <div v-if="aiForm" class="pw-ai-main">
+            <div v-if="aiForm && globalActiveTab === 'generator'" class="pw-ai-main">
               <k-form
                 v-if="aiForm"
                 :key="'ai-' + discardKey"
@@ -808,13 +809,13 @@
             </div>
 
             <!-- 1/4: API keys -->
-            <aside v-if="aiSecrets && aiSecrets.length" class="pw-ai-aside">
+            <aside v-if="aiPageSecrets.length" class="pw-ai-aside">
               <!-- API keys (admins only) — written to the project's .env -->
-              <section v-if="aiSecrets && aiSecrets.length" class="pw-ai-secrets">
+              <section class="pw-ai-secrets">
                 <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.ai.keys') }}</h2>
                 <p class="pw-ai-secrets-help">{{ $t('prw.ai.keys.help') }}</p>
                 <k-box v-if="!aiSecretsWritable" theme="negative" :text="$t('prw.ai.keys.readonly')" />
-                <div v-for="secret in aiSecrets" :key="secret.env" class="pw-ai-secret">
+                <div v-for="secret in aiPageSecrets" :key="secret.env" class="pw-ai-secret">
                   <label class="k-label" :for="'pw-secret-' + secret.env">{{ secret.label }}</label>
                   <div class="pw-ai-secret-row">
                     <input
@@ -2292,7 +2293,19 @@ export default {
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return ['general', 'settings', ...(this.hasAiTab ? ['ai'] : []), 'patches'];
+      return ['general', 'settings', ...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'patches'];
+    },
+    // the AI pages: translation with the translatewizard's keys, the page
+    // generator with the contentwizard's settings and keys
+    hasTranslateTab() {
+      return (this.aiSecrets || []).some(s => s.plugin === 'kirbydesk.translatewizard');
+    },
+    hasGeneratorTab() {
+      return !!this.aiForm || (this.aiSecrets || []).some(s => s.plugin === 'kirbydesk.contentwizard');
+    },
+    aiPageSecrets() {
+      const plugin = { translate: 'kirbydesk.translatewizard', generator: 'kirbydesk.contentwizard' }[this.globalActiveTab];
+      return (this.aiSecrets || []).filter(s => s.plugin === plugin);
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
     // tabs of a block view: design (only with values), start values, restrictions
@@ -2328,7 +2341,8 @@ export default {
         { key: 'footer', icon: 'prw-footer' },
       ];
       // AI defaults — only when kirby-contentwizard is installed
-      if (this.hasAiTab) tabs.push({ key: 'ai', icon: 'ai' });
+      if (this.hasTranslateTab) tabs.push({ key: 'translate', icon: 'translate' });
+      if (this.hasGeneratorTab) tabs.push({ key: 'generator', icon: 'ai' });
       tabs.push({ key: 'patches', icon: 'code' });
       tabs.push({ key: 'settings', icon: 'cog' });
       return tabs;
@@ -2440,6 +2454,8 @@ export default {
         // the project page also holds the block activation
         if (tab === 'general') return !!this.dirtyTabs['global-settings'] || !!this.dirtyTabs['global'];
         if (['site', 'blocks', 'fonts'].includes(tab)) return !!this.dirtyTabs['global-settings'];
+        // (both AI pages save the AI settings and keys together)
+        if (tab === 'translate' || tab === 'generator') return !!this.dirtyTabs['ai'];
         return !!this.dirtyTabs[tab];
       }
       return !!this.dirtyTabs[this.activeTab];
@@ -3425,7 +3441,7 @@ export default {
           await this.saveNavigation();
         } else if (tab === 'footer') {
           await this.saveFooter();
-        } else if (tab === 'ai') {
+        } else if (tab === 'translate' || tab === 'generator') {
           await this.saveAi();
         } else if (tab === 'patches') {
           await this.savePatches();
@@ -3490,7 +3506,7 @@ export default {
           this.patchesText = this.originalPatchesText;
           this.patchesError = '';
           this.$set(this.dirtyTabs, 'patches', false);
-        } else if (tab === 'ai') {
+        } else if (tab === 'translate' || tab === 'generator') {
           this.aiValues = JSON.parse(JSON.stringify(this.originalAiValues));
           this.aiSecretInputs = {};
           this.$set(this.dirtyTabs, 'ai', false);

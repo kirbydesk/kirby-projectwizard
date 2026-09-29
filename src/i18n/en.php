@@ -111,6 +111,8 @@
 	'prw.tab.elements' => 'Elements',
 	'prw.tab.header' => 'Header',
 	'prw.tab.ai' => 'AI',
+	'prw.tab.translate' => 'Translation',
+	'prw.tab.generator' => 'Page generator',
 	'prw.tab.footer' => 'Footer',
 	'prw.view.design' => 'Design',
 	'prw.view.defaults' => 'Start values',
