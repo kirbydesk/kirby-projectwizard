@@ -1491,6 +1491,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsCard')" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1530,6 +1531,7 @@
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsLink')" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1557,6 +1559,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsColors')" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -1615,6 +1618,7 @@
                   @hover-var="hoveredVar = $event"
                 />
               </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsSpacing')" />
             </section>
             </template>
 

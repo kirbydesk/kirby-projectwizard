@@ -576,7 +576,13 @@ export default {
     // its content inside the card's padding, the link at the bottom
     cardContentStyle() {
       const p = this.itemValue('item-padding') || [];
-      return { flex: 1, display: 'flex', flexDirection: 'column', padding: Array.isArray(p) ? p.join(' ') : p };
+      const style = { flex: 1, display: 'flex', flexDirection: 'column', padding: Array.isArray(p) ? p.join(' ') : p };
+      // its padding hovered: tinted on all four sides
+      if (this.guides && this.highlight === 'item-padding' && Array.isArray(p)) {
+        const t = ' rgba(255, 0, 170, 0.18)';
+        style.boxShadow = ['inset 0 ' + p[0] + ' 0 0' + t, 'inset calc(-1 * ' + p[1] + ') 0 0 0' + t, 'inset 0 calc(-1 * ' + p[2] + ') 0 0' + t, 'inset ' + p[3] + ' 0 0 0' + t].join(', ');
+      }
+      return style;
     },
     // the card's texts shown (as switched on in the block)
     cardFields() {
