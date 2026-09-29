@@ -7,6 +7,7 @@
   <div
     class="pw-element-preview-side pw-block-live-preview"
     :class="{ 'has-focus': guides && highlightsArea }"
+    :data-focus="guides && highlightsArea ? highlight : null"
   >
     <div class="pw-preview-switches">
       <!-- guides on/off: the padding line, as in Photoshop -->
@@ -311,15 +312,15 @@ export default {
     variant: { type: String, default: '' },
   },
   computed: {
-    // a hovered value that has an area to tint (the gaps, the paddings):
-    // only then the other guides give way
+    // the value whose field has the cursor, if it has an area to tint (the
+    // gaps, the paddings): its lines stay, the other guides give way
     highlightsArea() {
       const h = this.highlight || '';
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
         'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap',
         'tagline-spacing', 'heading-spacing', 'editor-spacing',
         'item-tagline-spacing', 'item-heading-spacing', 'item-cta-gap',
-        'item-padding-x',
+        'item-padding-x', 'item-overhang', 'column-gap', 'row-gap', 'element-gap',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -1532,7 +1533,7 @@ export default {
 }
 .pw-mc-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-mc-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.15); }
-.pw-block-live-preview.has-focus :is(.pw-mc-band, .pw-mc-gap) {
+.pw-block-live-preview.has-focus :is(.pw-mc-band, .pw-mc-gap):not(.is-hot) {
   border-color: transparent;
 }
 .pw-space-band {
@@ -1553,7 +1554,7 @@ export default {
 .pw-space-band.is-tagline.is-hot::before { background: rgba(0, 170, 255, 0.15); }
 .pw-space-band.is-heading.is-hot::before { background: rgba(130, 80, 255, 0.15); }
 .pw-space-band.is-editor.is-hot::before { background: rgba(255, 140, 0, 0.15); }
-.pw-block-live-preview.has-focus .pw-space-band::before {
+.pw-block-live-preview.has-focus .pw-space-band:not(.is-hot)::before {
   border-color: transparent;
 }
 /* the sample text's link: as the block links */
@@ -1578,7 +1579,7 @@ export default {
 .pw-block-live-section.is-hero.has-guides .pw-block-live-content {
   outline: 0;
 }
-.pw-block-live-preview.has-focus .pw-hero-pad {
+.pw-block-live-preview.has-focus:not([data-focus^="padding-"]) .pw-hero-pad {
   display: none;
 }
 /* hero: its overlay over the background, below the content */
@@ -1620,7 +1621,7 @@ export default {
 .pw-card-gap.is-tagline.is-hot { background: rgba(130, 80, 255, 0.15); }
 .pw-card-gap.is-heading.is-hot { background: rgba(215, 160, 0, 0.18); }
 .pw-card-gap.is-cta.is-hot { background: rgba(0, 150, 136, 0.15); }
-.pw-block-live-preview.has-focus .pw-card-gap {
+.pw-block-live-preview.has-focus .pw-card-gap:not(.is-hot) {
   border-color: transparent;
 }
 /* cardlets: the image flush at the top of the card, the link's icon */
@@ -1665,7 +1666,7 @@ export default {
   pointer-events: none;
 }
 .pw-card-overhang.is-hot { background: rgba(230, 60, 60, 0.18); }
-.pw-block-live-preview.has-focus .pw-card-overhang {
+.pw-block-live-preview.has-focus .pw-card-overhang:not(.is-hot) {
   border-color: transparent;
 }
 .pw-cardlets-cta svg {
@@ -1748,38 +1749,38 @@ export default {
   outline: 1px solid rgba(255, 0, 170, 0.6);
   pointer-events: none;
 }
-.pw-block-live-preview.has-focus .pw-featurelist-offset-gap,
-.pw-block-live-preview.has-focus .pw-featurelist-gap,
-.pw-block-live-preview.has-focus .pw-featurelist-icon-gap,
-.pw-block-live-preview.has-focus .pw-featurelist-title-gap {
+.pw-block-live-preview.has-focus .pw-featurelist-offset-gap:not(.is-hot),
+.pw-block-live-preview.has-focus .pw-featurelist-gap:not(.is-hot),
+.pw-block-live-preview.has-focus .pw-featurelist-icon-gap:not(.is-hot),
+.pw-block-live-preview.has-focus .pw-featurelist-title-gap:not(.is-hot) {
   border-color: transparent;
 }
-.pw-block-live-preview.has-focus .pw-featurelist-pad {
+.pw-block-live-preview.has-focus:not([data-focus="item-icon-tile-padding"]) .pw-featurelist-pad {
   display: none;
 }
 .pw-featurelist-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-featurelist-icon-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
 .pw-featurelist-title-gap.is-hot { background: rgba(215, 160, 0, 0.18); }
-/* a value's label hovered: every other guide hidden (each rule prefixed
-   with the preview's class, so it beats the guides' own, e.g. the gaps side
-   by side or with the icon on top) – the block's own
-   lines, the other gaps, the padding frames, the flexible tiles' edges */
-.pw-block-live-preview.has-focus .pw-block-live-block::before,
-.pw-block-live-preview.has-focus .pw-block-live-block::after {
+/* a value's field with the cursor: its area tinted with its lines, every
+   other guide hidden (each rule prefixed with the preview's class, so it
+   beats the guides' own, e.g. the gaps side by side or with the icon on
+   top) – the block's own lines, the other gaps, the padding frames, the
+   flexible tiles' edges */
+.pw-block-live-preview.has-focus:not([data-focus="margin-top"]) .pw-block-live-block::before,
+.pw-block-live-preview.has-focus:not([data-focus="margin-bottom"]) .pw-block-live-block::after {
   display: none;
 }
-.pw-block-live-preview.has-focus .pw-block-live-section.has-guides .pw-block-live-content {
+.pw-block-live-preview.has-focus:not([data-focus^="padding-"]) .pw-block-live-section.has-guides .pw-block-live-content {
   outline: 0;
 }
-/* (the hovered value too: only its tinted area shows, no lines) */
-.pw-block-live-preview.has-focus .pw-steplist-step-gap,
-.pw-block-live-preview.has-focus .pw-steplist-gap,
-.pw-block-live-preview.has-focus .pw-logocloud-gap,
-.pw-block-live-preview.has-focus .pw-logocloud-text-gap {
+.pw-block-live-preview.has-focus .pw-steplist-step-gap:not(.is-hot),
+.pw-block-live-preview.has-focus .pw-steplist-gap:not(.is-hot),
+.pw-block-live-preview.has-focus .pw-logocloud-gap:not(.is-hot),
+.pw-block-live-preview.has-focus .pw-logocloud-text-gap:not(.is-hot) {
   border-color: transparent;
 }
-.pw-block-live-preview.has-focus .pw-logocloud-preview.has-guides .pw-logocloud-pad,
-.pw-block-live-preview.has-focus .pw-logocloud-preview.is-flexible .pw-logocloud-item::before {
+.pw-block-live-preview.has-focus:not([data-focus="item-padding"]):not([data-focus="item-padding-y"]) .pw-logocloud-preview.has-guides .pw-logocloud-pad,
+.pw-block-live-preview.has-focus:not([data-focus="item-gap"]) .pw-logocloud-preview.is-flexible .pw-logocloud-item::before {
   display: none;
 }
 /* a value's row hovered (guides on): its area tinted in its colour */
