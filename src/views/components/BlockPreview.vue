@@ -123,9 +123,11 @@
             <div :key="'card-' + n" class="pw-cardlets-item" :style="cardStyle">
               <div class="pw-media-preview-photo pw-cardlets-image"></div>
               <div class="pw-cardlets-content" :style="cardContentStyle">
-                <div v-if="hasField('item-tagline')" :style="cardFieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</div>
-                <div v-if="hasField('item-heading')" :style="cardFieldStyle('heading')">{{ $t('prw.preview.card.title') }} {{ n }}</div>
-                <div v-if="hasField('item-editor')" :style="cardFieldStyle('editor')">{{ $t('prw.preview.card.text') }}</div>
+                <!-- tagline, heading, text; the gap below each (guides: a band) -->
+                <template v-for="el in cardFields">
+                  <div :key="'cf-' + el" :style="cardFieldStyle(el)">{{ cardFieldText(el, n) }}</div>
+                  <span v-if="guides && cardGapAfter(el)" :key="'cg-' + el" class="pw-card-gap" :class="['is-' + cardGapKind(el), { 'is-hot': highlight === cardGapVar(el) }]" :style="{ height: cardGapAfter(el) }"></span>
+                </template>
                 <!-- the link at the card's bottom: text (with icon) or button -->
                 <span class="pw-cardlets-cta" :style="cardCtaStyle">{{ $t('prw.preview.card.cta') }}<svg v-if="cardCtaIcon" viewBox="0 0 24 24" aria-hidden="true" v-html="cardCtaIcon"></svg></span>
               </div>
@@ -286,6 +288,7 @@ export default {
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
         'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap',
         'tagline-spacing', 'heading-spacing', 'editor-spacing',
+        'item-tagline-spacing', 'item-heading-spacing', 'item-cta-gap',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -575,10 +578,27 @@ export default {
       const p = this.itemValue('item-padding') || [];
       return { flex: 1, display: 'flex', flexDirection: 'column', padding: Array.isArray(p) ? p.join(' ') : p };
     },
+    // the card's texts shown (as switched on in the block)
+    cardFields() {
+      return ['tagline', 'heading', 'editor'].filter(el => this.hasField('item-' + el));
+    },
+    // the gap below a text in the card: to the next one, or (the last) to the link
+    cardGapVar(el) {
+      const i = this.cardFields.indexOf(el);
+      if (i === this.cardFields.length - 1) return 'item-cta-gap';
+      return el === 'tagline' ? 'item-tagline-spacing' : el === 'heading' ? 'item-heading-spacing' : '';
+    },
+    cardGapAfter(el) {
+      const name = this.cardGapVar(el);
+      return name ? this.itemValue(name) : 0;
+    },
+    // its guide colour: tagline violet, heading gold, to the link teal
+    cardGapKind(el) {
+      return { 'item-tagline-spacing': 'tagline', 'item-heading-spacing': 'heading', 'item-cta-gap': 'cta' }[this.cardGapVar(el)] || '';
+    },
     // the link: text (link colour, underline, icon) or a button
     cardCtaStyle() {
-      const p = this.itemValue('item-padding') || [];
-      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: 'auto', paddingTop: p[2] || 0, backgroundClip: 'content-box' };
+      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: 'auto' };
       if (this.setting('layout', 'item-link-style') !== 'button') {
         return {
           ...base,
@@ -1184,12 +1204,19 @@ export default {
     },
     // tagline, heading and text in a card: the element's type, the card's
     // text colours, the preset size step and alignment
+    cardFieldText(el, n) {
+      if (el === 'tagline') return this.$t('prw.preview.tagline');
+      if (el === 'heading') return this.$t('prw.preview.card.title') + ' ' + n;
+      return this.$t('prw.preview.card.text');
+    },
     cardFieldStyle(el) {
       const style = {
         ...this.typography(el),
         color: this.itemColor('item-' + el + '-text'),
         textAlign: this.preset('item-' + el, 'align') || 'left',
         margin: 0,
+        // the gap below it (with guides a band of its own)
+        marginBottom: this.guides ? 0 : this.cardGapAfter(el),
       };
       const size = this.preset('item-' + el, 'sizes');
       if (size && size !== 'normal') {
@@ -1377,6 +1404,22 @@ export default {
   border-radius: 50%;
   color: #fff;
   background: rgba(0, 0, 0, 0.45);
+}
+/* cardlets guides: the gaps inside the card, below the tagline violet,
+   below the heading gold, to the link teal (a line above and below) */
+.pw-card-gap {
+  display: block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-block: 1px solid rgba(130, 80, 255, 0.9);
+}
+.pw-card-gap.is-heading { border-color: rgba(215, 160, 0, 0.95); }
+.pw-card-gap.is-cta { border-color: rgba(0, 150, 136, 0.9); }
+.pw-card-gap.is-tagline.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-card-gap.is-heading.is-hot { background: rgba(215, 160, 0, 0.18); }
+.pw-card-gap.is-cta.is-hot { background: rgba(0, 150, 136, 0.15); }
+.pw-block-live-preview.has-focus .pw-card-gap {
+  border-color: transparent;
 }
 /* cardlets: the image flush at the top of the card, the link's icon */
 .pw-cardlets-image {
