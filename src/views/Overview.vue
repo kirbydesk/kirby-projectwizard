@@ -287,25 +287,23 @@
             <!-- which blocks can be used -->
             <pw-global-elements
               :blocks="blocks"
+              :usage="blockUsage"
               @toggle="toggleBlock($event.blockType, $event.checked)"
             />
             <!-- theme variants that can be chosen in the blocks ("default" always on) -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row"><h3 class="pw-card-heading">{{ $t('prw.label.variants') }}</h3></div>
               <div class="pw-card pw-field-table">
-                <div v-for="variant in ['variant', 'variant2', 'variant3']" :key="variant" class="pw-field-row">
+                <div v-for="variant in ['variant', 'variant2', 'variant3']" :key="variant" class="pw-field-row pw-active-row" :class="{ 'is-inactive': !activeVariants.includes(variant) }">
                   <div class="k-input" data-type="text">
                     <span class="k-input-element pw-field-row-inner">
                       <div class="pw-field-row-label-col">
-                        <label class="pw-field-row-label">{{ $t('pw.option.' + variant) }}</label>
+                        <label class="pw-field-row-label pw-active-label">{{ $t('pw.option.' + variant) }}</label>
                       </div>
                       <div class="pw-field-row-options">
-                        <k-toggles-input
-                          :value="activeVariants.includes(variant) ? 'true' : 'false'"
-                          :options="[{ value: 'true', text: $t('pw.option.enabled') }, { value: 'false', text: $t('pw.option.disabled') }]"
-                          :grow="false"
-                          :required="true"
-                          @input="toggleVariant(variant, $event === 'true')"
+                        <k-toggle-input
+                          :value="activeVariants.includes(variant)"
+                          @input="toggleVariant(variant, $event)"
                         />
                       </div>
                     </span>
@@ -2455,6 +2453,13 @@ export default {
     // remembered for the next visit
     itemBp(bp) {
       savePreviewBp(bp);
+    },
+    // the blocks page: how often each block is used (for its row)
+    globalActiveTab: {
+      immediate: true,
+      handler(tab) {
+        if (tab === 'blocks') this.loadBlockUsage();
+      },
     },
     // another block: start on its first tab
     activeTab() {

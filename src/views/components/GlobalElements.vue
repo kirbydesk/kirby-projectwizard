@@ -14,21 +14,25 @@
           <div
             v-for="block in group.blocks"
             :key="block.blockType"
-            class="pw-field-row"
+            class="pw-field-row pw-active-row"
+            :class="{ 'is-inactive': !block.active }"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">{{ blockLabel(block.blockType) }}</label>
+                  <!-- its icon (as in the blocks menu) before the name -->
+                  <label class="pw-field-row-label pw-active-label">
+                    <k-icon :type="block.icon || 'box'" class="pw-active-icon" />
+                    <span>{{ blockLabel(block.blockType) }}</span>
+                  </label>
                 </div>
                 <div class="pw-field-row-options">
-                  <k-toggles-input
-                    :value="block.active ? 'true' : 'false'"
-                    :options="[{ value: 'true', text: $t('pw.option.enabled') || 'Enabled' }, { value: 'false', text: $t('pw.option.disabled') || 'Disabled' }]"
-                    :grow="false"
-                    :required="true"
-                    @input="$emit('toggle', { blockType: block.blockType, checked: $event === 'true' })"
+                  <!-- one switch; at the end how often the block is used -->
+                  <k-toggle-input
+                    :value="block.active"
+                    @input="$emit('toggle', { blockType: block.blockType, checked: $event })"
                   />
+                  <span class="pw-active-count">{{ usage[block.blockType] ? usage[block.blockType] + ' ×' : '–' }}</span>
                 </div>
               </span>
             </div>
@@ -45,6 +49,11 @@ export default {
     blocks: {
       type: Array,
       default: () => [],
+    },
+    // how often each block is used in the project (blockType → count)
+    usage: {
+      type: Object,
+      default: () => ({}),
     },
   },
   computed: {
@@ -77,3 +86,25 @@ export default {
   },
 };
 </script>
+
+<style>
+.pw-active-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+.pw-active-icon {
+  --icon-size: 16px;
+  color: var(--color-gray-600);
+}
+.pw-active-count {
+  margin-inline-start: auto;
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+  font-variant-numeric: tabular-nums;
+}
+/* switched off: faded, the switch stays clear */
+.pw-active-row.is-inactive :is(.pw-active-label, .pw-active-count) {
+  opacity: 0.45;
+}
+</style>
