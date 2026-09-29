@@ -757,12 +757,12 @@ export default {
       if (this.stepAlign !== 'top') return '0rem';
       return this.stepValue('item-number-offset') || '0rem';
     },
-    // item title and text: heading at its "lg" step, text like the editor
+    // step title and description: Elements › Items (own values when switched on)
     stepHeadingStyle() {
-      return { ...this.typography('heading'), fontSize: this.sizeStep('heading', 'lg'), color: this.itemColor('item-heading-text') };
+      return this.entryTypography('title');
     },
     stepTextStyle() {
-      return { ...this.typography('editor'), marginTop: '0.2rem', color: this.itemColor('item-editor-text') };
+      return { ...this.entryTypography('text'), marginTop: this.entryValue('item-title-spacing') };
     },
     sectionStyle() {
       const layout = (key) => this.setting('layout', key);

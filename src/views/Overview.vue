@@ -872,6 +872,85 @@
           <!-- Design: the items' values (CSS variables), for all blocks at once -->
           <div v-show="currentBlockView === 'design'" v-if="blockConfigs[block.blockType] && hasDesign(block.blockType)">
 
+            <!-- entries (featurelist, steplist): their title and description –
+                 the global items' values (Elements › Items) or the block's own;
+                 the first card -->
+            <section v-if="hasEntry(block.blockType)" class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.text') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <!-- (featurelist: the title above the text or in it) -->
+                <pw-block-settings
+                  v-if="itemLayoutDefault(block.blockType, 'item-title-style') !== undefined"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-title-style']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <!-- the entries' values: the global items' (Elements › Items) or
+                     the block's own -->
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-entry']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <!-- standard: the global values, grey (not editable here) -->
+                <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
+                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <label class="pw-field-row-label">{{ entryLabel(block.blockType, name) }}</label>
+                          <span
+                            v-if="previewGuides && name === 'item-title-spacing'"
+                            class="pw-area-hint"
+                            :title="$t('prw.hint.itemTitleSpacing')"
+                            @mouseenter="hoveredVar = name"
+                            @mouseleave="hoveredVar = null"
+                          ><k-icon type="question" /></span>
+                        </div>
+                        <div class="pw-field-row-options">
+                          <span class="pw-element-field">
+                            <span class="pw-readonly-value">{{ String(globalItemValue(name)).replace(/(rem|em)$/, '') }}<span class="pw-element-unit">{{ (String(globalItemValue(name)).match(/(rem|em)$/) || [''])[0] }}</span></span>
+                            <span v-if="/rem$/.test(globalItemValue(name))" class="pw-px-calculator">{{ remToPx(globalItemValue(name)) }}</span>
+                          </span>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <!-- custom: the block's own values, the global ones grey at the end -->
+                <template v-else>
+                  <pw-block-values
+                    v-for="name in entryRows(block.blockType)"
+                    :key="'oe-' + name"
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="[name]"
+                    :labels="{ [name]: entryLabel(block.blockType, name) }"
+                    :guides="previewGuides && name === 'item-title-spacing' ? { 'item-title-spacing': 'gap-4' } : null"
+                    :hints="{ [name]: globalItemValue(name) }"
+                    :hint-title="$t('prw.hint.globalValue')"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
+                  />
+                </template>
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureText')" />
+            </section>
+
             <!-- steplist: the item styles as pills (a view, not saved: the
                  preview shows that style) and the values that matter for it –
                  the number's size (bubble or, minimal, plain text), the
@@ -1037,81 +1116,8 @@
               </div>
             </section>
 
-            <!-- featurelist: text, icon, tile, colours, gaps -->
+            <!-- featurelist: icon, tile, colours, gaps (its text: the entries' card above) -->
             <template v-if="block.blockType === 'pwfeaturelist' && blockValueDefaults[block.blockType]">
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.subtab.text') }}</h3>
-              </div>
-              <div class="pw-card pw-field-table">
-                <pw-block-settings
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-title-style']"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
-                />
-                <!-- the entries' values: the global items' (Elements › Items) or
-                     the block's own -->
-                <pw-block-settings
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-entry']"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
-                />
-                <!-- standard: the global values, grey (not editable here) -->
-                <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
-                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
-                    <div class="k-input" data-type="text">
-                      <span class="k-input-element pw-field-row-inner">
-                        <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ entryLabel(block.blockType, name) }}</label>
-                          <span
-                            v-if="previewGuides && name === 'item-title-spacing'"
-                            class="pw-area-hint"
-                            :title="$t('prw.hint.itemTitleSpacing')"
-                            @mouseenter="hoveredVar = name"
-                            @mouseleave="hoveredVar = null"
-                          ><k-icon type="question" /></span>
-                        </div>
-                        <div class="pw-field-row-options">
-                          <span class="pw-element-field">
-                            <span class="pw-readonly-value">{{ String(globalItemValue(name)).replace(/(rem|em)$/, '') }}<span class="pw-element-unit">{{ (String(globalItemValue(name)).match(/(rem|em)$/) || [''])[0] }}</span></span>
-                            <span v-if="/rem$/.test(globalItemValue(name))" class="pw-px-calculator">{{ remToPx(globalItemValue(name)) }}</span>
-                          </span>
-                        </div>
-                      </span>
-                    </div>
-                  </div>
-                </template>
-                <!-- custom: the block's own values, the global ones grey at the end -->
-                <template v-else>
-                  <pw-block-values
-                    v-for="name in entryRows(block.blockType)"
-                    :key="'oe-' + name"
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="[name]"
-                    :labels="{ [name]: entryLabel(block.blockType, name) }"
-                    :guides="previewGuides && name === 'item-title-spacing' ? { 'item-title-spacing': 'gap-4' } : null"
-                    :hints="{ [name]: globalItemValue(name) }"
-                    :hint-title="$t('prw.hint.globalValue')"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                </template>
-              </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureText')" />
-            </section>
             <!-- featurelist icon: its position, alignment, size, gap and whether
                  it sits on a tile -->
             <section class="pw-card-section">
@@ -2450,6 +2456,10 @@ export default {
     globalElementSpacing(el) {
       const name = el + '-spacing';
       return (this.elementOverrides.global || {})[name] || this.elementDefaults[el]?.vars?.[name]?.value || '';
+    },
+    // a block whose entries take Elements › Items (with own values to switch on)
+    hasEntry(blockType) {
+      return Object.values(this.blockValueDefaults[blockType] || {}).some(g => g && g.vars && g.vars['item-title-font-size']);
     },
     // featurelist entries: the rows of their values (title in the text:
     // only the description's size, which then is the size of both)
