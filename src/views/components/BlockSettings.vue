@@ -169,7 +169,27 @@
           <h3 class="pw-card-heading">{{ sec.heading }}</h3>
         </div>
         <div class="pw-card pw-field-table">
-          <template v-for="field in sec.fields">
+          <!-- grid start values: full width or adjusted (then the columns and
+               offsets per screen size); not stored itself, it follows the values -->
+          <div v-if="isGridDefaults(cat)" class="pw-field-row">
+            <div class="k-input" data-type="text">
+              <span class="k-input-element pw-field-row-inner">
+                <div class="pw-field-row-label-col">
+                  <label class="pw-field-row-label">{{ $t('prw.label.gridLayout') }}</label>
+                </div>
+                <div class="pw-field-row-options">
+                  <k-toggles-input
+                    :value="gridAdjusted(sec.fields) ? 'custom' : 'full'"
+                    :options="[{ value: 'full', text: $t('prw.option.gridFull') }, { value: 'custom', text: $t('prw.option.gridCustom') }]"
+                    :grow="false"
+                    :required="true"
+                    @input="setGridMode(sec.fields, $event)"
+                  />
+                </div>
+              </span>
+            </div>
+          </div>
+          <template v-for="field in (isGridDefaults(cat) && !gridAdjusted(sec.fields) ? [] : sec.fields)">
             <!-- FieldRow (e.g. theme with options + click logic) -->
             <pw-field-row
               v-if="field.type === 'fieldrow'"
@@ -477,6 +497,8 @@ export default {
     return {
       // chosen tab of the drawer header (null: the first with rows)
       drawerTab: null,
+      // grid start values switched to "adjusted" (still full width values)
+      gridCustom: false,
     };
   },
   computed: {
@@ -769,6 +791,26 @@ export default {
       return [{ key: 'main', heading: repeats ? null : heading, help, fields }];
     },
 
+    // the grid's start values (Startwerte › Raster)
+    isGridDefaults(cat) {
+      return this.view === 'defaults' && cat.key === 'grid';
+    },
+    // adjusted: switched so, or a size / offset other than full width
+    gridAdjusted(fields) {
+      if (this.gridCustom) return true;
+      return fields.some(f => {
+        const val = Number(this.getVal('settings.fields.grid.' + f.key + '.default', f.defaultValue));
+        return f.key.startsWith('grid-size-') ? val !== 12 : val !== 0;
+      });
+    },
+    // full width: every size 12, every offset 0
+    setGridMode(fields, mode) {
+      this.gridCustom = mode === 'custom';
+      if (mode !== 'full') return;
+      for (const f of fields) {
+        this.selectOption('settings.fields.grid.' + f.key + '.default', f.key.startsWith('grid-size-') ? 12 : 0, f.defaultValue);
+      }
+    },
     // heading of a style card: the variant, else the field's own label
     styleSectionHeading(key) {
       if (key === 'theme') return this.$t('prw.headline.variant');
