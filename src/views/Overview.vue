@@ -301,7 +301,11 @@
                   <div class="k-input" data-type="text">
                     <span class="k-input-element pw-field-row-inner">
                       <div class="pw-field-row-label-col">
-                        <label class="pw-field-row-label pw-active-label">{{ $t('pw.option.' + variant) }}</label>
+                        <!-- a dot in the variant's block background before its name -->
+                        <label class="pw-field-row-label pw-active-label">
+                          <span class="pw-variant-dot" :style="{ backgroundColor: variantBackground(variant) }"></span>
+                          <span>{{ $t('pw.option.' + variant) }}</span>
+                        </label>
                       </div>
                       <div class="pw-field-row-options">
                         <k-toggle-input
@@ -3225,6 +3229,11 @@ export default {
         console.error('Failed to load fonts', e);
       }
     },
+    // a variant's block background (override, else the plugin's)
+    variantBackground(theme) {
+      return ((this.globalOverrides.global || {})[theme] || {})['block-background'] ||
+        (this.globalDefaults.colors?.colors?.['block-background']?.[theme]) || '#ffffff';
+    },
     blockPreviewStyle(theme, single = false) {
       const bg = ((this.globalOverrides.global || {})[theme] || {})['block-background'] ||
         (this.globalDefaults.colors?.colors?.['block-background']?.[theme]) || '#ffffff';
@@ -4136,6 +4145,14 @@ export default {
 }
 /* white and edge to edge in the preview column: its paddings taken back
    (top the menu's, else spacing-6), as high as the column */
+.pw-variant-dot {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  /* a ring, so a white variant shows as well */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
 .pw-blocks-active {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
