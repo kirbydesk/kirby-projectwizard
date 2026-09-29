@@ -164,9 +164,12 @@
     <div class="pw-wizard-content">
 
         <!-- Global views: the page's name as heading (an element: its name) -->
-        <div v-if="!loading && activeTab === 'global'" class="pw-page-title-row">
+        <div v-if="!loading && activeTab === 'global'" class="pw-page-title-row" :class="{ 'has-intro': globalPageIntro }">
           <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
         </div>
+        <!-- a page's intro below its heading, as on the block pages (the items:
+             which blocks use them) -->
+        <p v-if="!loading && activeTab === 'global' && globalPageIntro" class="pw-block-view-intro" v-html="globalPageIntro"></p>
 
         <!-- Block view: the block's name as page heading, Kirby's tabs (design,
              start values, visibility) on the right in its line, below what the
@@ -1965,6 +1968,10 @@ export default {
     },
     // global tabs collected in the cog dropdown (above the block settings), AI only with contentwizard
     // heading of a global view: the tab's name, for an element its name
+    globalPageIntro() {
+      if (this.globalActiveTab === 'elements' && this.selectedElement === 'item') return this.$t('prw.hint.itemElement');
+      return '';
+    },
     globalPageTitle() {
       if (this.globalActiveTab === 'elements') {
         const element = this.elementOptions.find(o => o.value === this.selectedElement);
@@ -3553,6 +3560,7 @@ export default {
 
 /* block view: Kirby's tabs on the right of the heading, centred on its
    line; below them what the chosen tab does */
+.pw-page-title-row.has-intro,
 .pw-page-title-row-tabs {
   margin-bottom: var(--spacing-3);
 }

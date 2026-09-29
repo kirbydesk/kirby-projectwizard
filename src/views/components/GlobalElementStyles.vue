@@ -104,9 +104,6 @@
           </div>
           </div>
           </pw-portal>
-          <!-- the items: which blocks use them, above the cards (as the block
-               pages' intro) -->
-          <p v-if="groupKey === 'item'" class="pw-block-view-intro" v-html="$t('prw.hint.itemElement')"></p>
           <!-- One section per former subtab (Text, Sizes, Flourish, Colors): heading above a card with the rows in the table look -->
           <template v-for="st in combinedSubtabs(groupKey)">
           <section :key="'card-' + st.key" class="pw-card-section">
