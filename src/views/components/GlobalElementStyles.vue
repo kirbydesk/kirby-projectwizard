@@ -2151,11 +2151,16 @@ export default {
 .pw-element-preview.has-guides .pw-element-preview-button .pw-preview-link-icon {
   position: relative;
 }
+/* (through the whole button: far up and down, cut off at the button's
+   edges – the content clipped to its box including the paddings) */
+.pw-element-preview.has-guides .pw-element-preview-button .pw-button-content {
+  clip-path: inset(calc(-1 * var(--pw-btn-pt)) calc(-1 * var(--pw-btn-pr)) calc(-1 * var(--pw-btn-pb)) calc(-1 * var(--pw-btn-pl)));
+}
 .pw-element-preview.has-guides .pw-element-preview-button .pw-preview-link-icon::after {
   content: "";
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: -100vh;
+  bottom: -100vh;
   left: 100%;
   box-sizing: border-box;
   width: var(--pw-icon-gap);
