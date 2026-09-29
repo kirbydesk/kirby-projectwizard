@@ -229,7 +229,7 @@
 	'prw.hint.settingsDefault' => 'Legt fest, ob ein neuer Block in der Inhaltsbreite oder über die volle Bildschirmbreite läuft und ob er Außenabstände nach oben und unten aktiviert hat. Die Werte der Außenabstände werden global unter <code>Blöcke</code> festgelegt.',
 	'prw.hint.logosPerRow' => 'Legt fest, wie viele Logos ein neuer Block auf dieser Bildschirmgröße höchstens in einer Reihe zeigt.',
 	'prw.hint.columnsDefault' => 'Legt fest, in wie vielen Spalten ein neuer Block seine Einträge auf dieser Bildschirmgröße zeigt.',
-	'prw.hint.featureText' => 'Legt fest, wie Titel und Text in den Einträgen dargestellt werden.',
+	'prw.hint.featureText' => 'Legt fest, wie Titel und Text in den Einträgen dargestellt werden. Schriftart und Farbe kommen wie bei der Einleitung aus den globalen Elementen.',
 	'prw.hint.featureIcons' => 'Legt fest, ob und wo die Einträge ein Icon zeigen. Ist keine Position gewählt, erscheinen keine Icons und das Icon-Feld im Eintrag wird ausgeblendet.',
 	'prw.hint.featureTile' => 'Legt das Aussehen der Kachel hinter den Icons fest.',
 	'prw.hint.featureColors' => 'Legt die Farben von Icon und Kachel für jede Variante fest.',

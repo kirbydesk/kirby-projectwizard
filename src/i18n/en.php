@@ -229,7 +229,7 @@
 	'prw.hint.settingsDefault' => 'Sets whether a new block runs in the content width or across the full screen width and whether its outer spacing above and below is switched on. The values of the outer spacing are set globally under <code>Blocks</code>.',
 	'prw.hint.logosPerRow' => 'Sets how many logos a new block shows at most in one row on this screen size.',
 	'prw.hint.columnsDefault' => 'Sets in how many columns a new block shows its items on this screen size.',
-	'prw.hint.featureText' => 'Sets how the title and text are shown in the items.',
+	'prw.hint.featureText' => 'Sets how the title and text are shown in the items. Font and colour come from the global elements, as in the intro.',
 	'prw.hint.featureIcons' => 'Sets whether and where the items show an icon. With no position chosen, no icons appear and the icon field in the item is hidden.',
 	'prw.hint.featureTile' => 'Sets the look of the tile behind the icons.',
 	'prw.hint.featureColors' => 'Sets the colours of the icon and the tile for each variant.',
