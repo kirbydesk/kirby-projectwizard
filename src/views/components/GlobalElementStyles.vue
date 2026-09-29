@@ -707,6 +707,8 @@
             </div>
           </section>
           </template>
+          <!-- the items: which blocks use them -->
+          <k-text v-if="groupKey === 'item'" size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.itemElement')" />
         </div>
     </section>
   </div>

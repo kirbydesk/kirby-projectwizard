@@ -246,6 +246,7 @@
 	'prw.hint.citeSpacing' => 'Abstand zwischen Zitat und Quelle',
 	'prw.hint.buttonGap' => 'Abstand zwischen zwei Buttons nebeneinander',
 	'prw.hint.itemTitleSpacing' => 'Abstand zwischen Titel und Beschreibung',
+	'prw.hint.itemElement' => 'Titel und Beschreibung der Einträge in <code>Featurelist</code> und <code>Steplist</code>. Beide Blöcke können in ihrer Gestaltung eigene Werte festlegen.',
 	'prw.hint.buttonRowGap' => 'Abstand zwischen zwei Button-Reihen',
 	'prw.hint.paddingX' => 'Innenabstand links und rechts',
 	'prw.hint.paddingY' => 'Innenabstand oben und unten',
