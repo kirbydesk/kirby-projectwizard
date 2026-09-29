@@ -36,6 +36,8 @@
               </div>
             </div>
           </div>
+          <!-- a help text below the card -->
+          <k-text v-if="group.help" size="tiny" class="k-help pw-card-help" :html="group.help" />
         </section>
 
         <!-- a field's further settings (not dropdowns in the drawer, e.g.
@@ -900,7 +902,7 @@ export default {
         else own.push(editor);
       }
       const ownRows = own.map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
-      if (ownRows.length) groups.push({ key: 'block', heading: null, rows: ownRows });
+      if (ownRows.length) groups.push({ key: 'block', heading: null, help: this.$t('prw.hint.contentDefaults'), rows: ownRows });
       const itemRows = this.presetFields(this.getItemDefaultsContentFields())
         .map(f => this.contentToolbarRow(f)).filter(r => r.items.length);
       if (itemRows.length) groups.push({ key: 'items', heading: this.$t('prw.tab.items'), rows: itemRows });
