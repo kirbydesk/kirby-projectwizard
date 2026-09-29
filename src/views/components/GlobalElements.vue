@@ -134,6 +134,14 @@ export default {
   --icon-size: 16px;
   color: var(--color-gray-600);
 }
+/* the switch needs little room: the label column takes the rest (also
+   in the variants' card) */
+.pw-field-table .pw-active-row .pw-field-row-inner {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.pw-active-row .pw-field-row-options {
+  padding-inline: var(--spacing-3);
+}
 /* the label column: the name, below it how often the block is used
    (indented in line with the name, past the icon) */
 .pw-active-label-col {
