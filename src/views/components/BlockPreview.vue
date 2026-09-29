@@ -163,7 +163,12 @@
             <div class="pw-mc-column">
               <div class="pw-media-preview-photo pw-mc-image" :style="{ marginBottom: guides ? 0 : itemValue('element-gap') }"></div>
               <span v-if="guides" class="pw-mc-band is-element" :class="{ 'is-hot': highlight === 'element-gap' }" :style="{ height: itemValue('element-gap') }"></span>
-              <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.card.textLong') }}</p>
+              <!-- a list (Elements › Lists) with its space below -->
+              <ul class="pw-mc-list" :style="mcListStyle">
+                <li v-for="n in 3" :key="'mcl-' + n">{{ $t('prw.sample.list.' + n) }}</li>
+              </ul>
+              <span v-if="guides" class="pw-mc-band is-list" :class="{ 'is-hot': highlight === 'list-spacing' }" :style="{ height: mcListSpacing, fontSize: mcListStyle.fontSize }"></span>
+              <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.card.text') }}</p>
             </div>
           </div>
           <!-- featurelist: two features (icon, title, text) as in its snippet -->
@@ -325,7 +330,7 @@ export default {
         'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap',
         'tagline-spacing', 'heading-spacing', 'editor-spacing',
         'item-tagline-spacing', 'item-heading-spacing', 'item-cta-gap',
-        'item-padding-x', 'item-overhang', 'column-gap', 'row-gap', 'element-gap',
+        'item-padding-x', 'item-overhang', 'column-gap', 'row-gap', 'element-gap', 'list-spacing',
         'padding-top', 'padding-bottom', 'padding-left', 'padding-right', 'margin-top', 'margin-bottom'].includes(h)
         || h.startsWith('item-content-gap');
     },
@@ -761,6 +766,29 @@ export default {
       return this.guides
         ? { display: 'grid', gridTemplateColumns: 'minmax(0, ' + a + 'fr) ' + gap + ' minmax(0, ' + b + 'fr)' }
         : { display: 'grid', gridTemplateColumns: 'minmax(0, ' + a + 'fr) minmax(0, ' + b + 'fr)', columnGap: gap };
+    },
+    // the list in a column: the text's type, the lists' indent, gap, marker
+    // (Elements › Lists); its space below the block's own or the lists'
+    mcListStyle() {
+      const marker = { disc: 'disc', circle: 'circle', box: 'square', dash: '"–  "', arrow: '"→  "', chevron: '"›  "', check: '"✓  "', star: '"★  "' }[this.elementValue('list', 'marker')] || 'disc';
+      return {
+        ...this.typography('editor'),
+        color: this.elementColor('editor', 'element-editor-text'),
+        margin: 0,
+        marginBottom: this.guides ? 0 : this.mcListSpacing,
+        paddingLeft: this.elementValue('list', 'indent'),
+        listStyleType: marker,
+        '--pw-list-gap': this.elementValue('list', 'item-spacing'),
+        '--pw-list-marker': this.elementColor('list', 'element-list-marker'),
+        '--pw-list-marker-size': this.elementValue('list', 'marker-size') || '100%',
+      };
+    },
+    mcListSpacing() {
+      if (this.ownSpacing) {
+        const own = this.itemValue('list-spacing');
+        if (own) return own;
+      }
+      return this.elementValue('list', 'spacing');
     },
     isFeaturelist() {
       return this.blockType === 'pwfeaturelist';
@@ -1530,6 +1558,10 @@ export default {
   border-block: 1px solid transparent;
 }
 .pw-mc-band.is-tagline { border-color: rgba(0, 170, 255, 0.8); }
+.pw-mc-band.is-list { border-color: rgba(215, 160, 0, 0.95); }
+.pw-mc-band.is-list.is-hot { background: rgba(215, 160, 0, 0.18); }
+.pw-mc-list > li + li { margin-top: var(--pw-list-gap); }
+.pw-mc-list > li::marker { color: var(--pw-list-marker); font-size: var(--pw-list-marker-size); }
 .pw-mc-band.is-heading { border-color: rgba(130, 80, 255, 0.9); }
 .pw-mc-band.is-editor { border-color: rgba(255, 140, 0, 0.9); }
 .pw-mc-band.is-element { border-color: rgba(215, 160, 0, 0.95); }
