@@ -1,5 +1,5 @@
 <template>
-  <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'" :style="{ '--pw-body-background': bodyBackgroundColor }">
+  <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'" :data-full="fullWidthPage ? 'true' : null" :style="{ '--pw-body-background': bodyBackgroundColor }">
     <!-- Header in Kirby's topbar (like kirby-explorer): tabs as a pill, save buttons -->
     <pw-portal to=".pw-wizard .k-topbar">
       <div class="pw-topbar">
@@ -2306,6 +2306,10 @@ export default {
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
+    // pages without the preview column: the AI pages over the full width
+    fullWidthPage() {
+      return this.activeTab === 'global' && ['translate', 'generator'].includes(this.globalActiveTab);
+    },
     patchesHighlighted() {
       return this.patchesHighlightedFor(this.patchesText);
     },
@@ -4268,6 +4272,13 @@ export default {
   }
   .pw-wizard .k-panel-main {
     margin-inline-end: var(--pw-preview-width);
+  }
+  /* pages without a preview (the AI pages): no column, the full width */
+  .pw-wizard[data-full="true"] .k-panel-main {
+    margin-inline-end: 0;
+  }
+  .pw-wizard[data-full="true"] :is(.pw-preview-column, .pw-preview-toggle, .pw-preview-open) {
+    display: none !important;
   }
   .pw-preview-column {
     order: 0;
