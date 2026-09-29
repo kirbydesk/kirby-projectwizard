@@ -225,7 +225,7 @@
               <div class="k-input" data-type="text">
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : (bpKeyOf(cat, sec) ? bpRowLabel(bpKeyOf(cat, sec), sec) : categoryFieldLabel(field.key)) }}<span v-if="field.required" class="pw-field-required">*</span></label>
+                    <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : (bpKeyOf(cat, sec) ? bpRowLabel(bpKeyOf(cat, sec), sec) : (field.label ? $t(field.label) : categoryFieldLabel(field.key))) }}<span v-if="field.required" class="pw-field-required">*</span></label>
                     <!-- guides on: hovering the question mark tints the value's area in the preview -->
                     <k-icon
                       v-if="guideType(field.key, getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue))"
@@ -819,7 +819,7 @@ export default {
         // (only the variant: its own text, with further rows: the values)
         const help = !fields.some(f => f.key === 'theme') ? null
           : (fields.length > 1 ? this.$t('prw.hint.styleDefault') : styleHelp('theme'));
-        return [{ key: 'style', heading: this.drawerLabel('style'), help, fields }];
+        return [{ key: 'style', heading: this.drawerLabel('style'), help, fields: fields.filter(f => this.whenMet(f, cat.key)) }];
       }
       const heading = this.categoryHeading(cat.key);
       const repeats = this.view !== 'layout' && heading === this.drawerLabel(cat.key);
@@ -1235,7 +1235,12 @@ export default {
                 defaultValue,
                 required,
                 reset: !required,
-                options: opts.map(v => ({ value: v, text: this.toggleOptionLabel(v) })),
+                // the block's own wording (its label key + the value), else the general one
+                label: val.label || null,
+                options: opts.map(v => ({ value: v, text: this.itemOptionLabel({ label: val.label }, v) })),
+                // shown only while another start value has a certain value
+                // (e.g. the cards' ratio only for the display on the image)
+                when: val.when || null,
               });
               continue;
             }
@@ -1430,6 +1435,16 @@ export default {
 
     markDirty() {
       this.$emit('update:overrides', this.overrides);
+    },
+
+    // a start value shown only while other start values of its category
+    // have certain values (its when)
+    whenMet(field, catKey) {
+      if (!field.when) return true;
+      return Object.entries(field.when).every(([k, v]) => {
+        const path = 'settings.fields.' + catKey + '.' + k + '.default';
+        return this.getVal(path, this.getDefault(path)) === v;
+      });
     },
 
     // --- Label helpers ---

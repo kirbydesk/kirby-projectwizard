@@ -121,7 +121,9 @@
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'card-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="cardColumns > 1 ? { width: itemValueAt('item-gap') } : { height: itemValueAt('item-gap') }"></span>
             <div :key="'card-' + n" class="pw-cardlets-item" :style="cardStyle">
-              <div class="pw-media-preview-photo pw-cardlets-image"></div>
+              <div class="pw-media-preview-photo pw-cardlets-image" :class="{ 'is-overlay': cardOverlay }"></div>
+              <!-- on the image: the overlay fades in from the texts' side -->
+              <div v-if="cardOverlay" class="pw-cardlets-overlay" :style="cardOverlayStyle"></div>
               <div class="pw-cardlets-content" :style="cardContentStyle">
                 <!-- tagline, heading, text; the gap below each (guides: a band) -->
                 <template v-for="el in cardFields">
@@ -570,6 +572,9 @@ export default {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        // on the image: the card in its ratio, the image fills it
+        position: this.cardOverlay ? 'relative' : null,
+        aspectRatio: this.cardOverlay ? (this.setting('style', 'card-ratio') || '4/5').replace('/', ' / ') : null,
         backgroundColor: this.itemColor('item-background'),
         border: this.setting('layout', 'item-border') === true ? this.itemValue('item-border-width') + ' solid ' + this.itemColor('item-border-color') : 0,
         // the shadow step (as the buttons')
@@ -582,6 +587,10 @@ export default {
       const x = this.itemValue('item-padding-x');
       const y = this.itemValue('item-padding-y');
       const style = { flex: 1, display: 'flex', flexDirection: 'column', padding: y + ' ' + x };
+      // on the image: above the image, the texts at the top or bottom
+      if (this.cardOverlay) {
+        Object.assign(style, { position: 'relative', justifyContent: this.cardTextTop ? 'flex-start' : 'flex-end' });
+      }
       // a padding hovered: tinted on its two sides (horizontal magenta, vertical green)
       if (this.guides && this.highlight === 'item-padding-x') {
         style.boxShadow = 'inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)';
@@ -591,6 +600,20 @@ export default {
       return style;
     },
 
+    // the display on the image (start value), the texts at the top
+    cardOverlay() {
+      return this.setting('style', 'card-display') === 'overlay';
+    },
+    cardTextTop() {
+      return this.setting('style', 'card-text-position') === 'top';
+    },
+    // the overlay in the variant's colour with the start strength, from the
+    // texts' side
+    cardOverlayStyle() {
+      const color = this.itemColor('item-overlay') || '#000000';
+      const strength = Number(this.setting('style', 'card-overlay') || 50);
+      return { background: 'linear-gradient(to ' + (this.cardTextTop ? 'bottom' : 'top') + ', color-mix(in srgb, ' + color + ' ' + strength + '%, transparent), transparent)' };
+    },
     // the card's texts shown (as switched on in the block)
     cardFields() {
       return ['tagline', 'heading', 'editor'].filter(el => this.hasField('item-' + el));
@@ -598,7 +621,7 @@ export default {
     // the link: text (link colour, underline, icon) or a button
     cardCtaStyle() {
       // at the card's bottom, or right after the text
-      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: this.setting('layout', 'item-link-position') === 'inline' ? 0 : 'auto' };
+      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: this.setting('layout', 'item-link-position') === 'inline' || this.cardOverlay ? 0 : 'auto' };
       if (this.setting('layout', 'item-link-style') !== 'button') {
         return {
           ...base,
@@ -1443,6 +1466,13 @@ export default {
   aspect-ratio: 16 / 9;
   background-size: cover;
   background-position: center;
+}
+/* on the image: the image fills the card, the overlay above it */
+.pw-cardlets-image.is-overlay,
+.pw-cardlets-overlay {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
 }
 .pw-cardlets-cta svg {
   width: 1em;

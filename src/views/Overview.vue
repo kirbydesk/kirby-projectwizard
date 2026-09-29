@@ -1771,7 +1771,7 @@
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="isItemLinkStyleButton(block.blockType) ? ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-background'] : ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active', 'item-background']"
+                  :show-only="isItemLinkStyleButton(block.blockType) ? ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-overlay', 'item-background'] : ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active', 'item-overlay', 'item-background']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
