@@ -126,7 +126,7 @@
               <div class="pw-cardlets-image-wrap" :class="{ 'is-overhang': cardOverhang }">
                 <span v-if="cardOverhang" class="pw-cardlets-overhang" :style="cardOverhangStyle"></span>
                 <span v-if="cardOverhang && guides" class="pw-card-overhang" :class="{ 'is-hot': highlight === 'item-overhang' }" :style="{ height: itemValueAt('item-overhang') }"></span>
-                <div class="pw-media-preview-photo pw-cardlets-image" :class="{ 'is-overlay': cardOverlay }"></div>
+                <div class="pw-media-preview-photo pw-cardlets-image" :class="{ 'is-overlay': cardOverlay, 'is-cutout': cardOverhang }"></div>
               </div>
               <!-- on the image: the overlay fades in from the texts' side -->
               <div v-if="cardOverlay" class="pw-cardlets-overlay" :style="cardOverlayStyle"></div>
@@ -1535,6 +1535,12 @@ export default {
   inset-inline: 0;
   bottom: 0;
   z-index: -1;
+}
+/* standing out: the landscape's mountains cut out (without sky and sun),
+   their peaks rising out of the card */
+.pw-cardlets-image.is-cutout {
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90' preserveAspectRatio='xMidYMid slice'%3E%3Cpath d='M0 90 L0 58 L40 12 L70 42 L100 4 L138 48 L160 34 L160 90Z' fill='%235f7f6b'/%3E%3Cpath d='M0 90 L0 72 L32 50 L62 68 L102 42 L142 68 L160 60 L160 90Z' fill='%23405c4c'/%3E%3C/svg%3E");
 }
 /* guides: the overhang as a band from the image's top to the card's (red,
    a kind of its own) */
