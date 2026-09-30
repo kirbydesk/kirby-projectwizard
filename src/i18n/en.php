@@ -581,7 +581,7 @@
 	'prw.translate.batch.unsaved' => 'Save the field choice first.',
 	'prw.translate.batch.start' => 'Translate {count} pages',
 	'prw.translate.batch.stop' => 'Stop',
-	'prw.translate.batch.progress' => 'Page {n} of {total}: {title}',
+	'prw.translate.batch.progress' => 'Page {n} of {total}:',
 	'prw.translate.batch.done' => '{count} pages translated',
 	'prw.translate.batch.chars' => 'About {chars} characters are sent to DeepL for the translation into {lang}.',
 	'prw.translate.batch.stopping' => 'Stopping after the current page …',

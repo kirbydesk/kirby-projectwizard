@@ -26,7 +26,10 @@
       </template>
 
       <template v-else-if="dialog.step === 'run'">
-        <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.progress', { n: Math.min(batch.done + 1, batch.total), total: batch.total, title: batch.current }) }}</p>
+        <!-- the count and the page in lines of their own (a long title
+             cut off, so nothing jumps) -->
+        <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.progress', { n: Math.min(batch.done + 1, batch.total), total: batch.total }) }}</p>
+        <p class="pw-batch-dialog-page">{{ batch.current }}</p>
         <div class="pw-usage-bar">
           <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
         </div>
@@ -72,6 +75,12 @@ export default {
 }
 .pw-batch-dialog-text {
   line-height: 1.5;
+}
+.pw-batch-dialog-page {
+  margin-top: calc(-1 * var(--spacing-2));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .pw-batch-dialog-headline {
   font-weight: var(--font-semi);
