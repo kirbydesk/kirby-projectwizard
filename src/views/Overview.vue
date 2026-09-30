@@ -881,7 +881,6 @@
               <!-- API keys (admins only) — written to the project's .env -->
               <section class="pw-ai-secrets">
                 <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.ai.keys') }}</h2>
-                <p class="pw-ai-secrets-help">{{ $t('prw.ai.keys.help') }}</p>
                 <k-box v-if="!aiSecretsWritable" theme="negative" :text="$t('prw.ai.keys.readonly')" />
                 <div v-for="secret in aiPageSecrets" :key="secret.env" class="pw-ai-secret">
                   <!-- a valid key's kind with it (DeepL: Free / Pro) -->

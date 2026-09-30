@@ -477,7 +477,6 @@
 	'prw.notify.block.success' => '{block} settings saved',
 	'prw.notify.block.error' => 'Failed to save {block} settings',
 	'prw.ai.keys' => 'Access keys',
-	'prw.ai.keys.help' => 'Stored in the .env file of this server — not in the content and not in git. Saved keys are never shown again; enter a new one to replace it.',
 	'prw.ai.keys.readonly' => 'The .env file is not writable on this server. Enter the keys by hand.',
 	'prw.ai.keys.empty' => 'Enter key …',
 	'prw.ai.keys.set' => 'The API key is stored in the .env file of this server.',

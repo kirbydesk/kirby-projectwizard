@@ -477,7 +477,6 @@
 	'prw.notify.block.success' => 'Einstellungen für {block} gespeichert',
 	'prw.notify.block.error' => 'Einstellungen für {block} konnten nicht gespeichert werden',
 	'prw.ai.keys' => 'Zugangsdaten',
-	'prw.ai.keys.help' => 'Gespeichert in der .env-Datei dieses Servers – nicht im Inhalt und nicht in Git. Gespeicherte Keys werden nie wieder angezeigt; zum Ändern einen neuen eingeben.',
 	'prw.ai.keys.readonly' => 'Die .env-Datei ist auf diesem Server nicht beschreibbar. Bitte die Keys von Hand eintragen.',
 	'prw.ai.keys.empty' => 'Key eingeben …',
 	'prw.ai.keys.set' => 'Der API-Key ist in der .env-Datei dieses Servers gespeichert.',
