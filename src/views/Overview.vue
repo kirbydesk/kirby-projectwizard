@@ -17,6 +17,7 @@
               <k-icon type="sitemap" />
               <span class="pw-tab-text">{{ $t('prw.tab.project') }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+              <span v-if="groupPending('project')" class="pw-change-badge">{{ groupPending('project') }}</span>
             </button>
             <k-dropdown-content ref="settingsMenu" align-x="start">
               <nav class="k-navigate">
@@ -31,7 +32,7 @@
                     @click="$refs.settingsMenu.close(); openGlobal(tab.key)"
                   >
                     <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
-                    <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+                    <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}<span v-if="pendingCounts[tab.key]" class="pw-change-count">{{ pendingCounts[tab.key] }}</span></span>
                   </button>
                 </template>
               </nav>
@@ -51,6 +52,7 @@
               <k-icon type="layers" />
               <span class="pw-tab-text">{{ $t('prw.tab.elements') }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+              <span v-if="groupPending('elements')" class="pw-change-badge">{{ groupPending('elements') }}</span>
             </button>
             <k-dropdown-content ref="elementsMenu" align-x="start">
               <nav class="k-navigate">
@@ -66,7 +68,7 @@
                   @click="$refs.elementsMenu.close(); selectedElement = option.value; openGlobal('elements', option.value)"
                 >
                   <span class="k-button-icon"><k-icon :type="option.icon" /></span>
-                  <span class="k-button-text">{{ option.text }}</span>
+                  <span class="k-button-text">{{ option.text }}<span v-if="pendingCounts['element:' + option.value]" class="pw-change-count">{{ pendingCounts['element:' + option.value] }}</span></span>
                 </button>
               </nav>
             </k-dropdown-content>
@@ -87,6 +89,7 @@
                 <k-icon type="box" />
                 <span class="pw-tab-text">{{ $t('prw.tab.blocks') }}</span>
                 <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+                <span v-if="groupPending('blocks')" class="pw-change-badge">{{ groupPending('blocks') }}</span>
               </button>
               <k-dropdown-content ref="blocksMenu" align-x="start">
                 <nav class="k-navigate">
@@ -105,7 +108,7 @@
                     >
                       <span class="k-button-icon"><k-icon :type="entry.icon || 'box'" /></span>
                       <span class="k-button-text">
-                        {{ blockLabel(entry.blockType) }}
+                        {{ blockLabel(entry.blockType) }}<span v-if="pendingCounts['block:' + entry.blockType]" class="pw-change-count">{{ pendingCounts['block:' + entry.blockType] }}</span>
                         <!-- how often the block is used in the project, like the counts in kirby-explorer -->
                         <span v-if="blockUsage[entry.blockType] !== undefined" class="pw-menu-count">{{ blockUsage[entry.blockType] }}</span>
                       </span>
@@ -129,6 +132,7 @@
               <k-icon type="cog" />
               <span class="pw-tab-text">{{ $t('prw.tab.config') }}</span>
               <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+              <span v-if="groupPending('config')" class="pw-change-badge">{{ groupPending('config') }}</span>
             </button>
             <k-dropdown-content ref="configMenu" align-x="start">
               <nav class="k-navigate">
@@ -143,33 +147,35 @@
                   @click="$refs.configMenu.close(); openGlobal(tab.key)"
                 >
                   <span class="k-button-icon"><k-icon :type="tab.icon" /></span>
-                  <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}</span>
+                  <span class="k-button-text">{{ $t('prw.tab.' + tab.key) }}<span v-if="pendingCounts[tab.key]" class="pw-change-count">{{ pendingCounts[tab.key] }}</span></span>
                 </button>
               </nav>
             </k-dropdown-content>
           </div>
         </div>
 
-        <div v-if="isDirty" class="k-form-controls pw-topbar-controls">
+        <!-- all changes of every page at once: discard (asked first) or save -->
+        <div v-if="pendingPageCount" class="k-form-controls pw-topbar-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
-              :text="$t('discard')"
+              :text="$t('prw.discardAll')"
               icon="undo"
               theme="notice"
               variant="filled"
               size="sm"
               responsive="true"
               class="k-form-controls-button"
-              @click="discardChanges"
+              @click="confirmDiscardAll"
             />
             <k-button
-              :text="$t('save')"
+              :text="$t('prw.saveAll', { count: pendingPageCount })"
               icon="check"
               theme="notice"
               variant="filled"
               size="sm"
               class="k-form-controls-button"
-              @click="saveCurrentView"
+              :disabled="savingAll"
+              @click="saveAll"
             />
           </div>
         </div>
@@ -2234,6 +2240,8 @@ export default {
       originalFooterOverrides: {},
       // exceptions (Project › Exceptions): the JSON as text, its check
       patchesText: '',
+      // saving everything at once: the single saves stay quiet
+      savingAll: false,
       originalPatchesText: '',
       patchesError: '',
       patchesUnknown: [],
@@ -2340,6 +2348,44 @@ export default {
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
+    // unsaved changes per page (how many values differ from the saved
+    // ones): block:<type>, element:<group>, site, header, footer, blocks,
+    // fonts, translate, generator, patches
+    pendingCounts() {
+      const out = {};
+      const add = (key, n = 1) => { if (n) out[key] = (out[key] || 0) + n; };
+      for (const block of this.blocks) {
+        const bt = block.blockType;
+        add('block:' + bt, this.diffPaths(this.blockOverrides[bt] || {}, this.originalOverrides[bt] || {}).length
+          + this.diffPaths(this.blockValueOverrides[bt] || {}, this.originalBlockValueOverrides[bt] || {}).length);
+      }
+      // the project values: the page background (Site), the fonts, else the blocks page
+      for (const path of this.diffPaths(this.globalOverrides, this.originalGlobalOverrides)) {
+        const name = String(path[path.length - 1]);
+        add(name === 'body-background' ? 'site' : name.startsWith('font-') ? 'fonts' : 'blocks');
+      }
+      // the active blocks and colour variants (blocks page)
+      const changed = (a, b) => a.filter(x => !b.includes(x)).length + b.filter(x => !a.includes(x)).length;
+      add('blocks', changed(this.activeBlocks, this.originalActiveBlocks) + changed(this.activeVariants, this.originalActiveVariants));
+      // the elements and their size steps: by element
+      for (const path of [...this.diffPaths(this.elementOverrides, this.originalElementOverrides), ...this.diffPaths(this.fontOverrides, this.originalFontOverrides)]) {
+        add('element:' + this.elementGroupOf(String(path[path.length - 1])));
+      }
+      add('header', this.diffPaths(this.navOverrides, this.originalNavOverrides).length);
+      add('footer', this.diffPaths(this.footerOverrides, this.originalFooterOverrides).length);
+      // AI: the generator's settings, the keys typed in (by plugin)
+      add('generator', this.diffPaths(this.aiValues, this.originalAiValues).length);
+      for (const [env, value] of Object.entries(this.aiSecretInputs || {})) {
+        if (!value || !value.trim()) continue;
+        const secret = (this.aiSecrets || []).find(sc => sc.env === env);
+        add(secret && secret.plugin === 'kirbydesk.translatewizard' ? 'translate' : 'generator');
+      }
+      if (this.patchesText !== this.originalPatchesText) add('patches');
+      return out;
+    },
+    pendingPageCount() {
+      return Object.keys(this.pendingCounts).length;
+    },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
       return this.activeTab === 'global' && ['translate', 'generator'].includes(this.globalActiveTab);
@@ -2550,9 +2596,7 @@ export default {
     this._onKeydown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        if (this.isDirty) {
-          this.saveCurrentView();
-        }
+        if (this.pendingPageCount) this.saveAll();
       }
     };
     window.addEventListener('keydown', this._onKeydown);
@@ -3074,7 +3118,7 @@ export default {
       try {
         this.setAiSecrets(await this.$api.post('pagewizard/secrets', { remove: [secret.env] }));
         this.updateAiDirty();
-        this.$panel.notification.success(this.$t('prw.notify.ai.success'));
+        this.notifySaved(this.$t('prw.notify.ai.success'));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.ai.error'));
       }
@@ -3122,6 +3166,107 @@ export default {
       if (!el || !el.offsetParent) return;
       el.style.height = 'auto';
       el.style.height = el.scrollHeight + 'px';
+    },
+    // the paths of the values that differ between two stored states
+    // (objects compared key by key, lists and plain values as a whole)
+    diffPaths(a, b, path = []) {
+      const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
+      if (isObj(a) || isObj(b)) {
+        const x = isObj(a) ? a : {};
+        const y = isObj(b) ? b : {};
+        const keys = new Set([...Object.keys(x), ...Object.keys(y)]);
+        return [...keys].flatMap(k => this.diffPaths(x[k], y[k], [...path, k]));
+      }
+      const empty = (v) => v === undefined || v === null || v === '';
+      if (empty(a) && empty(b)) return [];
+      return JSON.stringify(a) === JSON.stringify(b) ? [] : [path];
+    },
+    // the element a value belongs to (element-heading-text → heading,
+    // cite-spacing → quote, element-image-zoom → media …)
+    elementGroupOf(name) {
+      const key = name.replace(/^element-/, '').split('-')[0];
+      return { cite: 'quote', caption: 'media', image: 'media', slideshow: 'media', video: 'media', editor: 'editor' }[key] || key;
+    },
+    // a menu's badge: how many of its pages have changes
+    groupPending(group) {
+      const keys = Object.keys(this.pendingCounts);
+      if (group === 'project') return keys.filter(k => ['site', 'header', 'footer', 'blocks', 'fonts'].includes(k)).length;
+      if (group === 'elements') return keys.filter(k => k.startsWith('element:')).length;
+      if (group === 'blocks') return keys.filter(k => k.startsWith('block:')).length;
+      return keys.filter(k => ['translate', 'generator', 'patches'].includes(k)).length;
+    },
+    // a single save's success message: none while everything is saved at once
+    notifySaved(message) {
+      if (!this.savingAll) this.$panel.notification.success(message);
+    },
+    // save the changes of every page, one summary message
+    async saveAll() {
+      const pending = { ...this.pendingCounts };
+      const pages = Object.keys(pending).length;
+      if (!pages || this.savingAll) return;
+      const cssBefore = await this.frontendCssVersion();
+      const activation = this.globalSnapshot() !== this.snapshots['global'];
+      this.savingAll = true;
+      try {
+        for (const key of Object.keys(pending).filter(k => k.startsWith('block:'))) await this.saveBlock(key.slice(6));
+        if (Object.keys(pending).some(k => k.startsWith('element:'))) await this.saveElements();
+        if (pending.header) await this.saveNavigation();
+        if (pending.footer) await this.saveFooter();
+        if (this.diffPaths(this.globalOverrides, this.originalGlobalOverrides).length) await this.saveGlobalSettings();
+        if (pending.translate || pending.generator) await this.saveAi();
+        if (pending.patches) await this.savePatches();
+      } finally {
+        this.savingAll = false;
+      }
+      // (a failed save kept its changes and reported its error)
+      const left = Object.keys(this.pendingCounts).length - (activation ? 1 : 0);
+      if (left <= 0) this.$panel.notification.success(this.$t('prw.notify.saveAll', { count: pages }));
+      // the active blocks and variants last: saving them reloads the panel
+      if (activation) {
+        await this.saveGlobal();
+        return;
+      }
+      try { await fetch(window.location.origin, { cache: 'no-store' }); } catch (e) {}
+      this.reloadFrontend(cssBefore);
+    },
+    confirmDiscardAll() {
+      this.$panel.dialog.open({
+        component: 'k-text-dialog',
+        props: {
+          text: this.$t('prw.discardAll.confirm', { count: this.pendingPageCount }),
+          submitButton: { text: this.$t('prw.discardAll'), icon: 'undo', theme: 'negative' },
+        },
+        on: {
+          submit: () => {
+            this.$panel.dialog.close();
+            this.discardAll();
+          },
+        },
+      });
+    },
+    // every page back to its saved state
+    discardAll() {
+      const copy = (v) => JSON.parse(JSON.stringify(v || {}));
+      this.activeBlocks = [...this.originalActiveBlocks];
+      this.activeVariants = [...this.originalActiveVariants];
+      for (const block of this.blocks) {
+        block.active = this.activeBlocks.includes(block.blockType);
+        this.$set(this.blockOverrides, block.blockType, copy(this.originalOverrides[block.blockType]));
+        if (this.blockValueOverrides[block.blockType] !== undefined) {
+          this.$set(this.blockValueOverrides, block.blockType, copy(this.originalBlockValueOverrides[block.blockType]));
+        }
+      }
+      this.globalOverrides = copy(this.originalGlobalOverrides);
+      this.elementOverrides = copy(this.originalElementOverrides);
+      this.fontOverrides = copy(this.originalFontOverrides);
+      this.navOverrides = copy(this.originalNavOverrides);
+      this.footerOverrides = copy(this.originalFooterOverrides);
+      this.aiValues = copy(this.originalAiValues);
+      this.aiSecretInputs = {};
+      this.patchesText = this.originalPatchesText;
+      this.patchesError = '';
+      for (const key of Object.keys(this.dirtyTabs)) this.$set(this.dirtyTabs, key, false);
+      this.discardKey++;
     },
     // an entry of the tree into the JSON: its path with its current value
     // (nested objects; what the JSON holds there already is replaced)
@@ -3190,7 +3335,7 @@ export default {
         this.originalPatchesText = this.patchesText;
         this.patchesUnknown = res.unknown || [];
         this.$set(this.dirtyTabs, 'patches', false);
-        this.$panel.notification.success(this.$t('prw.notify.patches.success'));
+        this.notifySaved(this.$t('prw.notify.patches.success'));
       } catch (e) {
         this.patchesError = e.message || String(e);
         this.$panel.notification.error(this.$t('prw.notify.patches.error'));
@@ -3210,7 +3355,7 @@ export default {
           this.setAiSecrets(await this.$api.post('pagewizard/secrets', { set }));
         }
         this.updateAiDirty();
-        this.$panel.notification.success(this.$t('prw.notify.ai.success'));
+        this.notifySaved(this.$t('prw.notify.ai.success'));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.ai.error'));
       }
@@ -3230,7 +3375,7 @@ export default {
         this.originalFooterOverrides = JSON.parse(JSON.stringify(ov));
         this.$set(this.snapshots, 'footer', JSON.stringify(ov));
         this.$set(this.dirtyTabs, 'footer', false);
-        this.$panel.notification.success(this.$t('prw.notify.footer.success'));
+        this.notifySaved(this.$t('prw.notify.footer.success'));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.footer.error'));
       }
@@ -3251,7 +3396,7 @@ export default {
         // Also save font sizes
         await this.saveFonts();
         this.$set(this.dirtyTabs, 'elements', false);
-        this.$panel.notification.success(this.$t('prw.notify.elements.success'));
+        this.notifySaved(this.$t('prw.notify.elements.success'));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.elements.error'));
       }
@@ -3454,7 +3599,7 @@ export default {
         this.originalNavOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.snapshots, 'header', JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, 'header', false);
-        this.$panel.notification.success(this.$t('prw.notify.header.success'));
+        this.notifySaved(this.$t('prw.notify.header.success'));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.header.error'));
       }
@@ -3657,7 +3802,7 @@ export default {
         this.originalActiveVariants = [...this.activeVariants];
         this.$set(this.snapshots, 'global', this.globalSnapshot());
         this.$set(this.dirtyTabs, 'global', false);
-        this.$panel.notification.success(this.$t('prw.notify.blocks.success'));
+        this.notifySaved(this.$t('prw.notify.blocks.success'));
         setTimeout(() => window.location.reload(), 100);
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.blocks.error'));
@@ -3671,7 +3816,7 @@ export default {
         this.originalGlobalOverrides = JSON.parse(JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.snapshots, 'global-settings', JSON.stringify(this.safeOverrides(res.overrides)));
         this.$set(this.dirtyTabs, 'global-settings', false);
-        this.$panel.notification.success(this.$t('prw.notify.global.success'));
+        this.notifySaved(this.$t('prw.notify.global.success'));
 
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.global.error'));
@@ -3705,7 +3850,7 @@ export default {
           this.$set(this.snapshots, blockType + ':values', JSON.stringify(ov));
         }
 
-        this.$panel.notification.success(this.$t('prw.notify.block.success', { block: this.blockLabel(blockType) }));
+        this.notifySaved(this.$t('prw.notify.block.success', { block: this.blockLabel(blockType) }));
       } catch (e) {
         this.$panel.notification.error(this.$t('prw.notify.block.error', { block: this.blockLabel(blockType) }));
       }
@@ -4183,6 +4328,37 @@ export default {
 }
 /* white and edge to edge in the preview column: its paddings taken back
    (top the menu's, else spacing-6), as high as the column */
+/* unsaved changes (as in kirby-explorer): an orange badge at the menu
+   button's top end corner, a count behind a dropdown item's name */
+.pw-change-badge,
+.pw-change-count {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: 1.5em;
+  min-height: 1.5em;
+  padding: 0 var(--spacing-1);
+  border-radius: 1em;
+  font-size: 0.6rem;
+  font-weight: var(--font-normal);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-black);
+  background: light-dark(var(--color-orange-400), var(--color-orange-500));
+  border: 1px solid light-dark(var(--color-orange-500), var(--color-black));
+}
+.pw-change-badge {
+  position: absolute;
+  top: 0;
+  inset-inline-end: var(--spacing-1);
+  transform: translate(50%, -40%);
+  pointer-events: none;
+  z-index: 1;
+}
+.pw-change-count {
+  margin-inline-start: var(--spacing-2);
+  vertical-align: 0.1em;
+}
 .pw-variant-dot {
   flex: 0 0 auto;
   width: 14px;

@@ -568,4 +568,8 @@
 	'prw.hint.variants' => 'Sets which colour variants the blocks offer in addition to <code>Default</code>.',
 	'prw.label.usedTimes' => 'used {count}×',
 	'prw.label.unused' => 'not used',
+	'prw.saveAll' => 'Save all ({count})',
+	'prw.discardAll' => 'Discard all',
+	'prw.discardAll.confirm' => 'The unsaved changes on {count} pages will be discarded.',
+	'prw.notify.saveAll' => '{count} pages saved',
 ];
