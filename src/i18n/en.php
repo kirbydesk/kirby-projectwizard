@@ -477,6 +477,8 @@
 	'prw.notify.block.success' => '{block} settings saved',
 	'prw.notify.block.error' => 'Failed to save {block} settings',
 	'prw.ai.keys' => 'Access keys',
+	'prw.ai.keys.intro.translate' => 'Automatic translation needs an API key from <a href="https://www.deepl.com/pro-api" target="_blank" rel="noopener">DeepL</a>.',
+	'prw.ai.keys.intro.generator' => 'Creating pages needs an API key from <a href="https://console.anthropic.com/" target="_blank" rel="noopener">Anthropic</a>. A key from <a href="https://www.pexels.com/api/" target="_blank" rel="noopener">Pexels</a> is optional and adds photos and videos.',
 	'prw.ai.keys.readonly' => 'The .env file is not writable on this server. Enter the keys by hand.',
 	'prw.ai.keys.empty' => 'Enter key …',
 	'prw.ai.keys.set' => 'The API key is stored in the .env file of this server.',
