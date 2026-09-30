@@ -211,6 +211,8 @@ export default {
 /* the panel's block: its own light surface (the project's colours, also in
    Kirby's dark mode), links do not lead away (PanelPreview) */
 .pw-panel-render {
+  /* (a too long word breaks, as in the frontend) */
+  overflow-wrap: break-word;
   color-scheme: light;
   color: #000;
   padding-inline: var(--spacing-3);

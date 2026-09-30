@@ -1530,6 +1530,8 @@ export default {
 .pw-block-live-item {
   box-sizing: border-box;
   min-width: 0;
+  /* (a too long word breaks, as in the frontend) */
+  overflow-wrap: break-word;
 }
 /* guides: the content edge (where the paddings end) as a fine line – as in
    Photoshop / Figma */
