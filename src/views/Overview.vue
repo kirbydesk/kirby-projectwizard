@@ -4495,19 +4495,19 @@ export default {
   display: inline-flex;
 }
 /* the stars: around the wand's head (its star, top left), each twinkling
-   in its own time – always a little visible, brightest at their peak */
+   in its own time (slowly) – always a little visible, brightest at their peak */
 .pw-welcome-star {
   position: absolute;
   width: 1.4rem;
   height: 1.4rem;
   fill: var(--color-yellow-500, #eab308);
   opacity: 0.15;
-  animation: pw-twinkle 2.4s ease-in-out infinite;
+  animation: pw-twinkle 4.8s ease-in-out infinite;
 }
 .pw-welcome-star.is-1 { top: -0.9rem; left: -0.9rem; animation-delay: 0s; }
-.pw-welcome-star.is-2 { top: 1.6rem; left: -1.9rem; width: 1rem; height: 1rem; animation-delay: 0.6s; }
-.pw-welcome-star.is-3 { top: -1.7rem; left: 2.4rem; width: 1.1rem; height: 1.1rem; animation-delay: 1.2s; }
-.pw-welcome-star.is-4 { top: -0.4rem; left: 4.4rem; width: 0.8rem; height: 0.8rem; animation-delay: 1.8s; }
+.pw-welcome-star.is-2 { top: 1.6rem; left: -1.9rem; width: 1rem; height: 1rem; animation-delay: 1.2s; }
+.pw-welcome-star.is-3 { top: -1.7rem; left: 2.4rem; width: 1.1rem; height: 1.1rem; animation-delay: 2.4s; }
+.pw-welcome-star.is-4 { top: -0.4rem; left: 4.4rem; width: 0.8rem; height: 0.8rem; animation-delay: 3.6s; }
 @keyframes pw-twinkle {
   0%, 100% { opacity: 0.15; transform: scale(0.5) rotate(0deg); }
   40% { opacity: 1; transform: scale(1.1) rotate(25deg); }
