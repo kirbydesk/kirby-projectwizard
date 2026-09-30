@@ -929,7 +929,8 @@
               </section>
               <!-- DeepL: the characters used this period and the limit -->
               <section v-if="globalActiveTab === 'translate' && deeplUsage" class="pw-ai-secrets pw-ai-usage">
-                <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.translate.usage') }}</h2>
+                <!-- (as small as the keys' labels) -->
+                <h3 class="k-label">{{ $t('prw.translate.usage') }}</h3>
                 <div class="pw-usage-bar" :class="{ 'is-high': deeplUsage.count / deeplUsage.limit > 0.9 }">
                   <span :style="{ width: Math.min(100, deeplUsage.count / deeplUsage.limit * 100) + '%' }"></span>
                 </div>
