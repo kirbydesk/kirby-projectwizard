@@ -589,7 +589,6 @@
 	'prw.translate.batch.close' => 'Close',
 	'prw.translate.batch.simulate' => 'Dry run, nothing is sent to DeepL or saved',
 	'prw.translate.batch.simulate.start' => 'Start dry run',
-	'prw.translate.batch.simulated' => 'Dry run with {count} pages done, nothing was translated or saved.',
 	'prw.translate.batch.overwrite' => 'Already existing translations are translated again.',
 	'prw.hint.variants' => 'Sets which colour variants the blocks offer in addition to <code>Default</code>.',
 	'prw.label.usedTimes' => 'used {count}×',
