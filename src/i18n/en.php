@@ -565,6 +565,7 @@
 	'prw.notify.patches.error' => 'Configuration could not be saved',
 	'prw.patches.tree' => 'All settings of the blocks as they currently apply. With {plus} an entry is copied into the configuration, where it can be changed.',
 	'prw.patches.take' => 'Copy into the configuration',
+	'prw.patches.locked' => 'Set in the configuration',
 	'prw.hint.variants' => 'Sets which colour variants the blocks offer in addition to <code>Default</code>.',
 	'prw.label.usedTimes' => 'used {count}×',
 	'prw.label.unused' => 'not used',

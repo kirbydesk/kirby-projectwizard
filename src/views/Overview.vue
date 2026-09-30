@@ -907,7 +907,7 @@
               <pw-block-preview
                 :block-type="block.blockType"
                 :config="blockConfigs[block.blockType]"
-                :overrides="blockOverrides[block.blockType] || {}"
+                :overrides="shownOverrides(block.blockType)"
                 :element-defaults="elementDefaults"
                 :element-overrides="elementOverrides"
                 :global-defaults="globalDefaults"
@@ -922,7 +922,7 @@
                 :with-block-guides="currentBlockView !== 'design'"
                 :bp.sync="itemBp"
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
-                :value-overrides="blockValueOverrides[block.blockType] || {}"
+                :value-overrides="shownValueOverrides(block.blockType)"
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
                 :feature-layout="block.blockType === 'pwfeaturelist' && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
@@ -1051,6 +1051,7 @@
                     :key="'oe-' + name"
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
+                    :patch="valuesPatch(block.blockType)"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="[name]"
                     :labels="{ [name]: entryLabel(block.blockType, name) }"
@@ -1089,6 +1090,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepValueKey(block.blockType, 'item-number-size')]"
                   :labels="{ [stepValueKey(block.blockType, 'item-number-size')]: $t(currentStepStyle(block.blockType) === 'minimal' ? 'prw.prop.font-size' : 'prw.label.size') }"
@@ -1112,6 +1114,7 @@
                     v-if="isItemRadiusVisible(block.blockType)"
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
+                    :patch="valuesPatch(block.blockType)"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="['item-radius']"
                     :hide-section-headers="true"
@@ -1137,6 +1140,7 @@
                   v-if="currentStepStyle(block.blockType) !== 'centered' && stepAlign(block.blockType) === 'top'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepValueKey(block.blockType, 'item-number-offset')]"
                   :labels="{ [stepValueKey(block.blockType, 'item-number-offset')]: $t('prw.label.offset') }"
@@ -1147,6 +1151,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepValueKey(block.blockType, 'item-content-gap')]"
                   :guides="previewGuides ? { [stepValueKey(block.blockType, 'item-content-gap')]: 'row' } : null"
@@ -1160,6 +1165,7 @@
                   v-if="currentStepStyle(block.blockType) === 'connected'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-connector-width']"
                   :labels="{ 'item-connector-width': $t('prw.prop.item-connector') }"
@@ -1194,6 +1200,7 @@
                   :labels="stepColorLabels(block.blockType)"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="itemColorsShowOnly(block.blockType)"
                   :hide-section-headers="true"
@@ -1213,6 +1220,7 @@
                   :labels="{ 'item-gap': $t('prw.label.betweenSteps') }"
                   :guides="previewGuides ? { 'item-gap': 'margin', 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-gap', 'item-text-gap']"
                   :hide-section-headers="true"
@@ -1245,6 +1253,7 @@
                   :bp.sync="itemBp"
                   :labels="itemLayoutDefault(block.blockType, 'item-format') === 'flexible' ? { 'item-size': $t('prw.label.height') } : {}"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-size']"
                   :hide-section-headers="true"
@@ -1273,6 +1282,7 @@
                   :bp.sync="itemBp"
                   v-if="isItemRadiusVisible(block.blockType)"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-radius']"
                   :hide-section-headers="true"
@@ -1292,6 +1302,7 @@
                   :labels="{ 'item-padding': $t('prw.label.leftRight'), 'item-padding-y': $t('prw.label.topBottom') }"
                   :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'padding-y' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-padding', 'item-padding-y']"
                   :hide-section-headers="true"
@@ -1322,6 +1333,7 @@
                   :labels="{ 'item-background': $t('prw.label.backgroundColor') }"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-background']"
                   :hide-section-headers="true"
@@ -1340,6 +1352,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-gap': 'margin' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-gap']"
                   :hide-section-headers="true"
@@ -1350,6 +1363,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-row-gap': 'row' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-row-gap']"
                   :hide-section-headers="true"
@@ -1360,6 +1374,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-text-gap']"
                   :hide-section-headers="true"
@@ -1408,6 +1423,7 @@
                   v-if="itemLayoutDefault(block.blockType, 'item-icon-position') === 'left' && itemLayoutDefault(block.blockType, 'item-icon-align') !== 'center'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-icon-offset']"
                   :labels="{ 'item-icon-offset': $t('prw.label.offset') }"
@@ -1418,6 +1434,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-icon-size']"
                   :hide-section-headers="true"
@@ -1428,6 +1445,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-icon-gap': 'row' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-icon-gap']"
                   :hide-section-headers="true"
@@ -1468,6 +1486,7 @@
                   :bp.sync="itemBp"
                   v-if="isItemRadiusVisible(block.blockType)"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-radius']"
                   :hide-section-headers="true"
@@ -1478,6 +1497,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-icon-tile-padding': 'padding' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-icon-tile-padding']"
                   :hide-section-headers="true"
@@ -1508,6 +1528,7 @@
                   :bp.sync="itemBp"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-icon-fill']"
                   :hide-section-headers="true"
@@ -1519,6 +1540,7 @@
                   :bp.sync="itemBp"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-icon-tile-background']"
                   :hide-section-headers="true"
@@ -1549,6 +1571,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-gap': 'margin' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-gap']"
                   :labels="{ 'item-gap': $t('prw.label.betweenItems') }"
@@ -1562,6 +1585,7 @@
                   v-if="currentFeatureLayout(block.blockType) === 'split' && itemBp !== 'default'"
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-offset-gap']"
                   :guides="previewGuides ? { 'item-offset-gap': 'text' } : null"
@@ -1588,6 +1612,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-text-gap']"
                   :hide-section-headers="true"
@@ -1651,6 +1676,7 @@
                   :bp.sync="itemBp"
                   :labels="{ ['height-' + currentHeroHeight(block.blockType)]: $t('prw.label.height') }"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['height-' + currentHeroHeight(block.blockType)]"
                   :hide-section-headers="true"
@@ -1682,6 +1708,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['overlay']"
                   :theme="currentItemColorTheme"
@@ -1705,6 +1732,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-padding-x': 'padding', 'item-padding-y': 'padding-y' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-padding-x', 'item-padding-y']"
                   :labels="{ 'item-padding-x': $t('prw.label.leftRight'), 'item-padding-y': $t('prw.label.topBottom') }"
@@ -1735,6 +1763,7 @@
                   :bp.sync="itemBp"
                   v-if="isItemRadiusVisible(block.blockType)"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-radius']"
                   :hide-section-headers="true"
@@ -1775,6 +1804,7 @@
                   :bp.sync="itemBp"
                   v-if="isItemBorderEnabled(block.blockType)"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-border-width']"
                   :hide-section-headers="true"
@@ -1786,6 +1816,7 @@
                   :bp.sync="itemBp"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-border-color']"
                   :labels="{ 'item-border-color': $t('prw.label.color') }"
@@ -1854,6 +1885,7 @@
                 />
                 <pw-block-values
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-overlay-strength']"
                   :hide-section-headers="true"
@@ -1880,6 +1912,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-overhang': 'overhang' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-overhang']"
                   :hide-section-headers="true"
@@ -1961,6 +1994,7 @@
                   :bp.sync="itemBp"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="isItemLinkStyleButton(block.blockType) ? ['item-tagline-text', 'item-heading-text', 'item-editor-text', ...(currentCardDisplay(block.blockType) === 'overlay' ? ['item-overlay'] : []), 'item-background'] : ['item-tagline-text', 'item-heading-text', 'item-editor-text', 'item-link', 'item-link-hover', 'item-link-active', ...(currentCardDisplay(block.blockType) === 'overlay' ? ['item-overlay'] : []), 'item-background']"
                   :hide-section-headers="true"
@@ -1980,6 +2014,7 @@
                   :labels="{ 'item-gap': $t('prw.label.betweenCards') }"
                   :guides="previewGuides ? { 'item-gap': 'margin' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-gap']"
                   :hide-section-headers="true"
@@ -1990,6 +2025,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-tagline-spacing': 'row' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-tagline-spacing']"
                   :hide-section-headers="true"
@@ -2000,6 +2036,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-heading-spacing': 'gap-4' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-heading-spacing']"
                   :hide-section-headers="true"
@@ -2010,6 +2047,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-cta-gap': 'gap-5' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-cta-gap']"
                   :hide-section-headers="true"
@@ -2020,6 +2058,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-text-gap']"
                   :hide-section-headers="true"
@@ -2042,6 +2081,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-text-gap']"
                   :hide-section-headers="true"
@@ -2065,6 +2105,7 @@
                   :bp.sync="itemBp"
                   :guides="previewGuides ? { 'column-gap': 'margin', 'row-gap': 'row' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[mcColumnsSide(block.blockType) ? 'column-gap' : 'row-gap']"
                   :hide-section-headers="true"
@@ -2130,6 +2171,7 @@
                     :key="'os-' + el"
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
+                    :patch="valuesPatch(block.blockType)"
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="[el + '-spacing']"
                     :labels="{ [el + '-spacing']: $t('prw.prop.' + el + '-spacing') }"
@@ -2173,6 +2215,7 @@
 </template>
 
 <script>
+import { withoutPatched, withoutPatchedValues } from '../helpers/patches.js';
 import autosize from '../directives/autosize.js';
 import { readPreviewBp, savePreviewBp, SCREEN_HEIGHTS } from '../helpers/preview-bp.js';
 
@@ -2285,7 +2328,24 @@ export default {
       aiSecretInputs: {},
     };
   },
+  // the saved exceptions for the block settings (their locked rows) and the
+  // way to them (the lock's click)
+  provide() {
+    return {
+      pwPatches: () => this.savedPatches,
+      pwOpenPatches: () => this.openGlobal('patches'),
+    };
+  },
   computed: {
+    // the exceptions as saved (what applies; not the text being edited)
+    savedPatches() {
+      try {
+        const data = JSON.parse(this.originalPatchesText || '{}');
+        return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+      } catch (e) {
+        return {};
+      }
+    },
     // tabs of the current view (global or block) for the header
     // top-level elements for the header dropdown (child elements like cite/caption
     // are edited together with their parent) — available on every view
@@ -3489,6 +3549,24 @@ export default {
           if (values.defaults && !Array.isArray(values.defaults)) this.$set(this.blockValueDefaults, type, values.defaults);
         } catch (e) { /* keep them */ }
       }));
+    },
+    // the preview: the own settings and values without those the exceptions
+    // set (these apply, as in the pagewizard)
+    shownOverrides(blockType) {
+      const own = this.blockOverrides[blockType] || {};
+      const patch = { ...(this.savedPatches[blockType] || {}) };
+      delete patch.editor;
+      delete patch.values;
+      if (!own.settings) return own;
+      return { ...own, settings: withoutPatched(own.settings, patch) || {} };
+    },
+    shownValueOverrides(blockType) {
+      return withoutPatchedValues(this.blockValueOverrides[blockType] || {}, this.valuesPatch(blockType));
+    },
+    // a block's values the exceptions set (values › group › vars / colors)
+    valuesPatch(blockType) {
+      const values = this.savedPatches[blockType]?.values;
+      return values && typeof values === 'object' ? values : null;
     },
     // what currently applies per block (plugin, exceptions, wizard settings),
     // fresh on each visit of the page and after saving the exceptions

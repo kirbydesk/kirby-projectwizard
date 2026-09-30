@@ -8,6 +8,7 @@ import GlobalElementStyles from './views/components/GlobalElementStyles.vue';
 import GlobalNavigation from './views/components/GlobalNavigation.vue';
 import GlobalFontManager from './views/components/GlobalFontManager.vue';
 import BlockValues from './views/components/BlockValues.vue';
+import Lock from './views/components/Lock.vue';
 import SetupWizard from './views/SetupWizard.vue';
 import Portal from './views/components/Portal.vue';
 import BlockPreview from './views/components/BlockPreview.vue';
@@ -56,5 +57,6 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-block-preview': BlockPreview,
 		'pw-device-select': DeviceSelect,
 		'pw-json-node': JsonNode,
+		'pw-lock': Lock,
 	},
 });

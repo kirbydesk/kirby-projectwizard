@@ -28,6 +28,7 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ fieldLabel(row.key) }}</label>
+                    <pw-lock v-if="row.items.some(i => i.locked)" />
                   </div>
                   <div class="pw-field-row-options">
                     <pw-field-toolbar :items="row.items" @input="setContentPreset(row, $event)" />
@@ -61,6 +62,7 @@
               :all-options="prop.allOptions"
               :active-options="prop.allOptions"
               :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
+              :locked="isLocked('settings.fields.content.' + field.key + '.' + prop.key + '.default')"
               :plugin-default="prop.pluginDefault"
               :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
@@ -71,6 +73,7 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ $t('prw.property.' + item.prop.key) }}</label>
+                    <pw-lock v-if="item.locked" />
                   </div>
                   <div class="pw-field-row-options">
                     <pw-field-toolbar :items="[item]" @input="setContentPreset(field.toolbar, $event)" />
@@ -87,6 +90,7 @@
               :all-options="prop.allOptions"
               :active-options="prop.allOptions"
               :current-default="getVal('settings.fields.content.' + field.key + '.' + prop.key + '.default', prop.pluginDefault)"
+              :locked="isLocked('settings.fields.content.' + field.key + '.' + prop.key + '.default')"
               :plugin-default="prop.pluginDefault"
               :modified="hasOverride('settings.fields.content.' + field.key + '.' + prop.key)"
               @update:default="selectOption('settings.fields.content.' + field.key + '.' + prop.key + '.default', $event, prop.pluginDefault)"
@@ -97,9 +101,10 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel('radius') }}</label>
+                    <pw-lock v-if="['top-left', 'top-right', 'bottom-left', 'bottom-right'].some(c => isLocked('settings.fields.content.' + field.key + '.radius-' + c + '.default'))" />
                   </div>
                   <div class="pw-field-row-options pw-toggle-group pw-corner-grid">
-                    <span v-for="corner in ['top-left', 'top-right', 'bottom-left', 'bottom-right']" :key="corner" class="pw-corner-cell">
+                    <span v-for="corner in ['top-left', 'top-right', 'bottom-left', 'bottom-right']" :key="corner" class="pw-corner-cell" :inert="isLocked('settings.fields.content.' + field.key + '.radius-' + corner + '.default') || null">
                       <k-toggle-input
                         :value="getVal('settings.fields.content.' + field.key + '.radius-' + corner + '.default', false)"
                         :text="toggleOptionLabel(corner)"
@@ -212,6 +217,7 @@
               :all-options="fieldOptions(field)"
               :active-options="cat.key === 'grid' ? fieldOptions(field) : getCategoryActiveOptions(cat.key, field.key, field).filter(o => fieldOptions(field).includes(o))"
               :current-default="getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.pluginDefault)"
+              :locked="isLocked('settings.fields.' + cat.key + '.' + field.key + '.default')"
               :plugin-default="field.pluginDefault"
               :enabled="true"
               :modified="hasOverride('settings.fields.' + cat.key + '.' + field.key)"
@@ -226,8 +232,9 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ isGridDefaults(cat) ? gridFieldLabel(field.key) : (bpKeyOf(cat, sec) ? bpRowLabel(bpKeyOf(cat, sec), sec) : (field.label ? $t(field.label) : categoryFieldLabel(field.key))) }}<span v-if="field.required" class="pw-field-required">*</span></label>
+                    <pw-lock v-if="isLocked('settings.fields.' + cat.key + '.' + field.key + '.default')" />
                   </div>
-                  <div class="pw-field-row-options">
+                  <div class="pw-field-row-options" :inert="isLocked('settings.fields.' + cat.key + '.' + field.key + '.default') || null">
                     <k-toggles-input
                       :value="getVal('settings.fields.' + cat.key + '.' + field.key + '.default', field.defaultValue)"
                       :options="field.options"
@@ -251,9 +258,10 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
+                    <pw-lock v-if="field.subFields.some(sub => isLocked('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default'))" />
                   </div>
                   <div class="pw-field-row-options pw-toggle-group" :class="{ 'pw-corner-grid': isCornerGroup(field) }">
-                    <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell">
+                    <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell" :inert="isLocked('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default') || null">
                       <k-toggle-input
                         :value="getVal('settings.fields.' + (field.catKey || cat.key) + '.' + sub.key + '.default', sub.defaultValue)"
                         :text="toggleOptionLabel(sub.label)"
@@ -275,8 +283,9 @@
                 <span class="k-input-element pw-field-row-inner">
                   <div class="pw-field-row-label-col">
                     <label class="pw-field-row-label">{{ categoryFieldLabel(field.key) }}</label>
+                    <pw-lock v-if="isLocked('settings.fields.' + cat.key + '.' + field.key + '.default')" />
                   </div>
-                  <div class="pw-field-row-options">
+                  <div class="pw-field-row-options" :inert="isLocked('settings.fields.' + cat.key + '.' + field.key + '.default') || null">
                     <!-- Boolean: toggle -->
                     <k-toggle-input
                       v-if="field.defaultValue !== null && typeof field.defaultValue === 'boolean'"
@@ -349,12 +358,13 @@
             <span class="k-input-element pw-field-row-inner">
               <div class="pw-field-row-label-col">
                 <label class="pw-field-row-label">{{ fieldLabel(field.displayKey) }}</label>
+                <pw-lock v-if="field.subFields.some(sub => isLocked('settings.fields.layout.' + sub.key + '.default'))" />
               </div>
               <div
                 class="pw-field-row-options"
                 :class="{ 'pw-toggle-group': field.type === 'toggle-group', 'pw-corner-grid': isCornerGroup(field) }"
               >
-                <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell">
+                <span v-for="sub in cornerOrder(field.subFields)" :key="sub.key" class="pw-corner-cell" :inert="isLocked('settings.fields.layout.' + sub.key + '.default') || null">
                   <k-toggle-input
                     :value="getVal('settings.fields.layout.' + sub.key + '.default', sub.defaultValue)"
                     :text="toggleOptionLabel(sub.label)"
@@ -384,8 +394,9 @@
             <span class="k-input-element pw-field-row-inner">
               <div class="pw-field-row-label-col">
                 <label class="pw-field-row-label">{{ field.label ? $t(field.label) : fieldLabel(field.displayKey) }}</label>
+                <pw-lock v-if="isLocked('settings.fields.layout.' + field.key + '.default')" />
               </div>
-              <div class="pw-field-row-options">
+              <div class="pw-field-row-options" :inert="isLocked('settings.fields.layout.' + field.key + '.default') || null">
                 <!-- Icon-select: SVG buttons -->
                 <div v-if="field.type === 'icon-select'" class="pw-icon-select">
                   <button
@@ -446,6 +457,7 @@
 import { validStart } from '../../helpers/valid-start.js';
 
 export default {
+  inject: { pwPatches: { default: null } },
   props: {
     block: {
       type: Object,
@@ -1046,6 +1058,7 @@ export default {
             prop: p,
             value: options.includes(value) ? value : options[0],
             options,
+            locked: this.isLocked('settings.fields.content.' + field.key + '.' + p.key + '.default'),
           };
         });
       return { key: field.key, items };
@@ -1371,6 +1384,7 @@ export default {
 
 
     selectOption(path, value, pluginDefault) {
+      if (this.isLocked(path)) return;
       if (value === pluginDefault || value === String(pluginDefault)) {
         this.deleteNested(this.overrides || {}, path);
         const parts = path.split('.');
@@ -1395,7 +1409,7 @@ export default {
 
     // --- Value getters/setters ---
     getVal(path, defaultVal) {
-      const ov = this.nested(this.overrides || {}, path);
+      const ov = this.isLocked(path) ? this.patchedAt(path) : this.nested(this.overrides || {}, path);
       const value = ov !== undefined ? ov : defaultVal;
       // a start value: always one of the field's options (validStart)
       if (!path.endsWith('.default')) return value;
@@ -1403,7 +1417,22 @@ export default {
     },
 
     getOverrideOnly(path) {
+      if (this.isLocked(path)) return this.patchedAt(path);
       return this.nested(this.overrides || {}, path);
+    },
+
+    // --- Values the exceptions set (Settings › Configuration) ---
+    // the value at a settings path (settings.fields.… → the exception's
+    // fields.…); undefined where the exceptions set none
+    patchedAt(path) {
+      const all = this.pwPatches ? this.pwPatches() : null;
+      const patch = all && this.block ? all[this.block.blockType] : null;
+      if (!patch || typeof patch !== 'object' || !path.startsWith('settings.')) return undefined;
+      return this.nested(patch, path.slice('settings.'.length));
+    },
+    // locked: shown with the value that applies, not changeable here
+    isLocked(path) {
+      return this.patchedAt(path) !== undefined;
     },
 
     hasOverride(path) {
@@ -1411,6 +1440,7 @@ export default {
     },
 
     setVal(path, value) {
+      if (this.isLocked(path)) return;
       if (!this.overrides || Array.isArray(this.overrides)) {
         this.$emit('update:overrides', {});
       }
@@ -1419,6 +1449,7 @@ export default {
     },
 
     setValOrClear(path, value, placeholder) {
+      if (this.isLocked(path)) return;
       if (!this.overrides || Array.isArray(this.overrides)) {
         this.$emit('update:overrides', {});
       }

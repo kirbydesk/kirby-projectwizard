@@ -1,14 +1,15 @@
 <template>
   <div
     class="pw-field-row"
-    :class="{ 'is-disabled': !enabled, 'is-modified': modified }"
+    :class="{ 'is-disabled': !enabled, 'is-modified': modified, 'is-locked': locked }"
   >
     <div class="k-input" data-type="text">
       <span class="k-input-element pw-field-row-inner">
         <div class="pw-field-row-label-col">
           <label class="pw-field-row-label">{{ propertyLabel(label) }}<span v-if="required" class="pw-field-required">*</span></label>
+          <pw-lock v-if="locked" />
         </div>
-        <div class="pw-field-row-options">
+        <div class="pw-field-row-options" :inert="locked || null">
           <!-- start value: the option a new block starts with (Kirby's toggles) -->
           <k-toggles-input
             :value="defaultValue"
@@ -35,6 +36,8 @@ export default {
     enabled: { type: Boolean, default: true },
     modified: { type: Boolean, default: false },
     required: { type: Boolean, default: false },
+    // the value set by the exceptions (Settings › Configuration): locked
+    locked: { type: Boolean, default: false },
     // the block's plugin (kirbyblock-steplist): its own option labels
     plugin: { type: String, default: '' },
   },

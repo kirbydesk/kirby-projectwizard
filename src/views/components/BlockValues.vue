@@ -36,10 +36,11 @@
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
                   <label class="pw-field-row-label" v-html="varLabel(row.varName)"></label>
+                  <pw-lock v-if="colorRowLocked(row, group)" />
                 </div>
                 <div class="pw-field-row-options" :class="{ 'pw-group-type-theme-color': !theme }">
                   <span v-if="row.states.length > 1" class="pw-state-grid">
-                    <span v-for="st in row.states" :key="st.varName" class="pw-state-cell">
+                    <span v-for="st in row.states" :key="st.varName" class="pw-state-cell" :inert="colorLocked(st.varName, theme) || null">
                       <span v-if="st.state !== 'normal'" class="pw-state-pill" :class="'pw-state-' + st.state">:{{ $t('prw.state.' + st.state) }}</span>
                       <pw-color-field-row
                         :group="'block-values-' + theme"
@@ -55,6 +56,7 @@
                       v-for="(themeValue, themeKey) in visibleThemes(group.colors[row.varName])"
                       :key="themeKey"
                       class="pw-element-field"
+                      :inert="colorLocked(row.varName, themeKey) || null"
                     >
                       <pw-color-field-row
                         :group="'block-values-' + themeKey"
@@ -87,6 +89,7 @@
           <div
             :key="varName"
             class="pw-field-row"
+            :class="{ 'is-locked': varLocked(varName) }"
             :data-guide="guides ? guides[varName] || null : null"
             @focusin="guides && guides[varName] && $emit('hover-var', varName)"
             @focusout="guides && guides[varName] && $emit('hover-var', null)"
@@ -95,8 +98,9 @@
               <span class="k-input-element pw-field-row-inner">
                 <div class="pw-field-row-label-col">
                   <label class="pw-field-row-label" v-html="varLabel(varName)"></label>
+                  <pw-lock v-if="varLocked(varName)" />
                 </div>
-                <div class="pw-field-row-options" :class="{ 'pw-group-type-responsive': isResponsive(def) && !bp, 'pw-corner-grid': isCorners(def) }">
+                <div class="pw-field-row-options" :class="{ 'pw-group-type-responsive': isResponsive(def) && !bp, 'pw-corner-grid': isCorners(def) }" :inert="varLocked(varName) || null">
 
                   <!-- Color -->
                   <template v-if="def.type === 'color'">
@@ -264,6 +268,8 @@
 </template>
 
 <script>
+import { withoutPatchedValues } from '../../helpers/patches.js';
+
 import autosize from '../../directives/autosize.js';
 import { SCREEN_HEIGHTS } from '../../helpers/preview-bp.js';
 
@@ -288,11 +294,19 @@ export default {
     // global elements' value next to a block's own
     hints: { type: Object, default: null },
     hintTitle: { type: String, default: '' },
+    // the block's values the exceptions set (Settings › Configuration):
+    // shown with the value that applies, locked
+    patch: { type: Object, default: null },
   },
   data() {
     return { open: {} };
   },
   computed: {
+    // the own values as shown: without those the exceptions set (their
+    // rows show the value that applies, as the pagewizard drops them too)
+    shown() {
+      return withoutPatchedValues(this.overrides, this.patch);
+    },
     groups() {
       const out = {};
       for (const [k, v] of Object.entries(this.defaults || {})) {
@@ -323,6 +337,26 @@ export default {
     },
   },
   methods: {
+    // a var whose value the exceptions set (values › group › vars › name › value)
+    varLocked(varName) {
+      return Object.values(this.patch || {}).some(g => {
+        const v = g && g.vars && g.vars[varName];
+        return !!v && typeof v === 'object' && 'value' in v;
+      });
+    },
+    // a colour of a variant the exceptions set (values › group › colors › name › variant)
+    colorLocked(varName, variant) {
+      if (!variant) return false;
+      return Object.values(this.patch || {}).some(g => {
+        const c = g && g.colors && g.colors[varName];
+        return !!c && typeof c === 'object' && variant in c;
+      });
+    },
+    // a colour row with a locked colour among those it shows
+    colorRowLocked(row, group) {
+      return row.states.some(st => (this.theme ? [this.theme] : Object.keys(this.visibleThemes(group.colors[st.varName]) || {}))
+        .some(variant => this.colorLocked(st.varName, variant)));
+    },
     // four corner values (top-left, top-right, bottom-left, bottom-right):
     // shown as a 2×2 grid in the cell, like the corners themselves
     isCorners(def) {
@@ -432,14 +466,14 @@ export default {
       return unit !== 'px' && unit !== '%';
     },
     getOverride(varName) {
-      return this.overrides[varName];
+      return this.shown[varName];
     },
     overrideAt(varName, idx) {
-      const v = this.overrides[varName];
+      const v = this.shown[varName];
       return Array.isArray(v) ? v[idx] : undefined;
     },
     getThemeOverride(theme, varName) {
-      const t = this.overrides[theme];
+      const t = this.shown[theme];
       return (t && typeof t === 'object') ? t[varName] : undefined;
     },
     setThemeColor(theme, varName, value, defaultVal) {
@@ -473,11 +507,11 @@ export default {
       this.$emit('update:overrides', next);
     },
     hasVarOverride(varName) {
-      return this.overrides[varName] !== undefined;
+      return this.shown[varName] !== undefined;
     },
     hasColorOverride(varName) {
       for (const theme of ['default', 'variant', 'variant2', 'variant3']) {
-        const t = this.overrides[theme];
+        const t = this.shown[theme];
         if (t && typeof t === 'object' && t[varName] !== undefined) return true;
       }
       return false;
@@ -506,7 +540,7 @@ export default {
         && def.default !== undefined && def.lg !== undefined;
     },
     responsiveAt(varName, bp) {
-      const v = this.overrides[varName];
+      const v = this.shown[varName];
       return (v && typeof v === 'object' && !Array.isArray(v)) ? v[bp] : undefined;
     },
     // unit of a responsive value at a device: % when set so, else the field's
