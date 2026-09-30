@@ -15,7 +15,7 @@
     </div>
     <ul v-if="open" class="pw-json-children">
       <li v-for="field in node.fields" :key="field.key" class="pw-json-node">
-        <!-- the whole row switches; a small box in the tree's look -->
+        <!-- the whole row switches; on: a green check at its end -->
         <div
           class="pw-json-row pw-translate-field"
           :class="{ 'is-off': !values[field.key] }"
@@ -25,12 +25,13 @@
           @click="$emit('toggle', { key: field.key, value: !values[field.key] })"
           @keydown.space.prevent="$emit('toggle', { key: field.key, value: !values[field.key] })"
         >
-          <span class="pw-translate-check" :class="{ 'is-on': values[field.key] }">
-            <k-icon v-if="values[field.key]" type="check" />
-          </span>
+          <span class="pw-json-toggle"></span>
           <span class="pw-translate-label">{{ field.label }}</span>
           <code class="pw-json-key">{{ field.name }}</code>
           <span class="pw-translate-type">{{ field.type }}</span>
+          <span class="pw-translate-check">
+            <k-icon v-if="values[field.key]" type="check" />
+          </span>
         </div>
       </li>
       <pw-translate-node
@@ -101,25 +102,16 @@ export default {
   outline: var(--outline);
   outline-offset: -2px;
 }
-/* the box: in place of the tree's arrow, so the labels line up */
+/* the check at the row's end (room kept while off, so nothing shifts) */
 .pw-translate-check {
   flex: 0 0 auto;
   display: inline-grid;
   place-items: center;
-  width: 1rem;
-  height: 1rem;
-  box-sizing: border-box;
-  border: 1px solid light-dark(var(--color-gray-400), var(--color-gray-600));
-  border-radius: var(--rounded-sm);
-  background: light-dark(var(--color-white), var(--color-gray-850));
-}
-.pw-translate-check.is-on {
-  border-color: var(--color-blue-600);
-  background: var(--color-blue-600);
-  color: var(--color-white);
+  width: 1.25rem;
+  color: var(--color-green-600, #16a34a);
 }
 .pw-translate-check .k-icon {
-  --icon-size: 12px;
+  --icon-size: 16px;
 }
 /* the type at the row's end */
 .pw-translate-type {
