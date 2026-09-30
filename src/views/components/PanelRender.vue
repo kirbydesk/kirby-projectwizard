@@ -35,6 +35,12 @@
               v-html="editorHtml"
             ></div>
 
+            <!-- quote: its text (marks as the element sets), the source below -->
+            <figure v-if="isQuote && quoteHtml" class="pw-panel-quote">
+              <blockquote :style="quoteStyle" v-html="quoteHtml"></blockquote>
+              <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ fieldData('author').text }}</cite></figcaption>
+            </figure>
+
             <div v-if="hasField('buttons')" :style="buttonsRowStyle">
               <span
                 v-for="button in visibleButtons"
@@ -127,6 +133,15 @@ export default {
       const text = String(d[mode] || '');
       if (mode === 'writer') return text;
       return esc(text).replace(/\r\n|\r|\n/g, '<br>');
+    },
+    // the quote: plain text, masked, its line breaks kept; in marks unless
+    // the element switches them off
+    quoteHtml() {
+      const d = this.fieldData('quote');
+      const text = String(d[d.mode || 'textarea'] || d.textarea || '').trim();
+      if (!text) return '';
+      const html = esc(text).replace(/\r\n|\r|\n/g, '<br>');
+      return this.elementValue('quote', 'marks') !== 'disabled' ? '\u201E' + html + '\u201C' : html;
     },
     // paragraphs, lists and links in the text (Elements › Text, Lists,
     // Blocks › Links)
@@ -223,7 +238,7 @@ export default {
         const d = this.fieldData('editor');
         return String(d[d.mode || 'textarea'] || '').replace(/<[^>]*>/g, '').trim() !== '';
       }
-      if (['tagline', 'heading'].includes(field)) {
+      if (['tagline', 'heading', 'author'].includes(field)) {
         return String(this.fieldData(field).text || '').replace(/<[^>]*>/g, '').trim() !== '';
       }
       return true;
@@ -275,6 +290,9 @@ export default {
 }
 .pw-panel-render.has-grid .pw-block-live-item::after {
   right: 0;
+}
+.pw-panel-quote {
+  margin: 0;
 }
 /* the heading's marking and flourish, as the frontend (body.css) */
 .pw-panel-marked {
