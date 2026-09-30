@@ -2596,12 +2596,17 @@ export default {
       if (step === 'run') return { text: this.$t('prw.translate.batch.stop'), icon: 'cancel', disabled: this.batch.stop };
       return false;
     },
+    // more characters than the usage has left (a dry run sends none)
+    batchOverQuota() {
+      const d = this.batchDialog;
+      return !!(d && !d.simulate && this.deeplUsage && d.chars > this.deeplUsage.limit - this.deeplUsage.count);
+    },
     batchDialogSubmit() {
       const step = this.batchDialog?.step;
       if (step === 'ask') {
         return this.batchDialog.simulate
           ? { text: this.$t('prw.translate.batch.simulate.start'), icon: 'play' }
-          : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive' };
+          : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive', disabled: this.batchOverQuota };
       }
       if (step === 'done') return { text: this.$t('prw.translate.batch.close'), icon: 'check' };
       return false;
