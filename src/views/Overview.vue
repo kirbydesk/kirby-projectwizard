@@ -805,6 +805,7 @@
                     :icon="block.icon || 'box'"
                     :value="patchesTree[block.blockType] || { ...(block.settings || {}), editor: block.editor || {} }"
                     :path="[block.blockType]"
+                    :focus-path="patchesFocus"
                     @take="takePatch"
                   />
                 </ul>
@@ -823,6 +824,8 @@
                   spellcheck="false"
                   :placeholder="'{\n  &quot;pwhero&quot;: { … }\n}'"
                   @input="onPatchesInput"
+                  @click="focusPatchesTree"
+                  @keyup="/^(Arrow|Home|End|Page)/.test($event.key) && focusPatchesTree()"
                   @scroll="$refs.patchesHl.scrollTop = $event.target.scrollTop; $refs.patchesHl.scrollLeft = $event.target.scrollLeft"
                 ></textarea>
               </div>
@@ -2313,6 +2316,8 @@ export default {
       // exceptions (Project › Exceptions): the JSON as text, its check
       patchesText: '',
       patchesTree: {},
+      // the path at the editor's cursor: the tree opens and marks it
+      patchesFocus: null,
       // the start page's figures: the site's pages (loaded with the wizard)
       sitePageCount: null,
       // saving everything at once: the single saves stay quiet
@@ -3281,6 +3286,63 @@ export default {
     },
 
     // --- Global: Exceptions ---
+    // the tree follows the editor: the entry at the cursor opened and marked
+    focusPatchesTree() {
+      const input = this.$refs.patchesInput;
+      if (!input) return;
+      const path = this.patchesPathAt(this.patchesText, input.selectionStart);
+      this.patchesFocus = path.length ? path : null;
+    },
+    // the JSON path at a position of the text (keys, list positions), read
+    // as far as it goes – the text need not be complete or valid
+    patchesPathAt(text, pos) {
+      const stack = [];
+      let lastString = null;
+      let i = 0;
+      const stringEnd = (start) => {
+        let j = start + 1;
+        while (j < text.length && text[j] !== '"') j += text[j] === '\\' ? 2 : 1;
+        return j;
+      };
+      while (i < text.length) {
+        const ch = text[i];
+        if (ch === '"') {
+          const end = stringEnd(i);
+          let str;
+          try { str = JSON.parse(text.slice(i, end + 1)); } catch (e) { str = text.slice(i + 1, end); }
+          // the cursor in this string: a key (a colon follows) counts too
+          if (pos > i && pos <= end) {
+            let k = end + 1;
+            while (/\s/.test(text[k] || '')) k++;
+            const top = stack[stack.length - 1];
+            if (text[k] === ':' && top && !top.list) top.key = str;
+            break;
+          }
+          if (i >= pos) break;
+          lastString = str;
+          i = end + 1;
+          continue;
+        }
+        if (i >= pos) break;
+        const top = stack[stack.length - 1];
+        if (ch === ':' && top && !top.list) top.key = lastString;
+        else if (ch === '{') stack.push({ list: false, key: null, index: 0 });
+        else if (ch === '[') stack.push({ list: true, key: null, index: 0 });
+        else if (ch === '}' || ch === ']') stack.pop();
+        else if (ch === ',' && top) {
+          if (top.list) top.index++;
+          else top.key = null;
+        }
+        i++;
+      }
+      const path = [];
+      for (const entry of stack) {
+        if (entry.list) path.push(String(entry.index));
+        else if (entry.key !== null) path.push(entry.key);
+        else break;
+      }
+      return path;
+    },
     onPatchesInput() {
       this.patchesError = this.patchesCheck(this.patchesText);
       this.$set(this.dirtyTabs, 'patches', this.patchesText !== this.originalPatchesText);

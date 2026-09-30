@@ -3,7 +3,7 @@
        its children to open and close, or (a value) the value itself; the
        plus takes the node with its current value into the exceptions -->
   <li class="pw-json-node" :class="{ 'is-block': depth === 0, 'is-section': depth === 1 }">
-    <div class="pw-json-row" :class="{ 'is-open': open, 'is-branch': isBranch }" @click="isBranch && (open = !open)">
+    <div ref="row" class="pw-json-row" :class="{ 'is-open': open, 'is-branch': isBranch, 'is-focus': isFocus }" @click="isBranch && (open = !open)">
       <span class="pw-json-toggle">
         <k-icon v-if="isBranch" :type="open ? 'angle-down' : 'angle-right'" />
       </span>
@@ -41,6 +41,7 @@
         :value="child"
         :path="[...path, key]"
         :depth="depth + 1"
+        :focus-path="focusPath"
         @take="$emit('take', $event)"
       />
     </ul>
@@ -58,11 +59,39 @@ export default {
     value: { default: null },
     path: { type: Array, default: () => [] },
     depth: { type: Number, default: 0 },
+    // the path at the configuration editor's cursor: opened up to it, the
+    // entry marked (a list of plain values: the list itself)
+    focusPath: { type: Array, default: null },
   },
   data() {
     return { open: false };
   },
+  watch: {
+    focusPath: {
+      immediate: true,
+      handler() {
+        if (this.focusMatch && this.isBranch) this.open = true;
+        if (!this.isFocus && !(this.depth === 0 && this.focusMatch === 'exact')) return;
+        // (in view – while the tree is the sidebar; below the editor the
+        // page would scroll away from the text)
+        this.$nextTick(() => {
+          if (!this.$refs.row || !window.matchMedia('(min-width: 75rem)').matches) return;
+          this.$refs.row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        });
+      },
+    },
+  },
   computed: {
+    // this node on the focus path: the path's end, or on the way to it
+    focusMatch() {
+      const focus = this.focusPath;
+      if (!focus || this.path.length > focus.length) return null;
+      if (!this.path.every((key, i) => String(key) === focus[i])) return null;
+      return this.path.length === focus.length ? 'exact' : 'prefix';
+    },
+    isFocus() {
+      return this.depth > 0 && (this.focusMatch === 'exact' || (this.focusMatch === 'prefix' && !this.isBranch));
+    },
     // objects open; lists of plain values (options, nodes …) show as one value
     isBranch() {
       if (!this.value || typeof this.value !== 'object') return false;
@@ -119,6 +148,11 @@ export default {
 }
 .pw-json-row.is-branch {
   cursor: pointer;
+}
+/* the entry at the editor's cursor */
+.pw-json-row.is-focus,
+.pw-json-row.is-focus:hover {
+  background: light-dark(var(--color-yellow-200, #fef08a), rgba(255, 214, 0, 0.25));
 }
 .pw-json-row:hover {
   background: light-dark(var(--color-gray-100), var(--color-gray-800));
