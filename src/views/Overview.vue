@@ -851,7 +851,7 @@
                   <h2 class="pw-card-heading">{{ $t('prw.translate.fields') }}</h2>
                   <!-- every entry of the tree open, or all shut again -->
                   <k-button
-                    :icon="translateExpanded ? 'collapse' : 'expand'"
+                    :icon="translateExpanded ? 'prw-collapse' : 'prw-expand'"
                     :text="$t(translateExpanded ? 'prw.translate.collapse' : 'prw.translate.expand')"
                     size="xs"
                     variant="filled"
