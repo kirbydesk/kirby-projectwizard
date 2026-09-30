@@ -2604,9 +2604,11 @@ export default {
     batchDialogSubmit() {
       const step = this.batchDialog?.step;
       if (step === 'ask') {
+        // (not enough usage: only "Cancel" – a dry run still can start)
+        if (this.batchOverQuota) return false;
         return this.batchDialog.simulate
           ? { text: this.$t('prw.translate.batch.simulate.start'), icon: 'play' }
-          : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive', disabled: this.batchOverQuota };
+          : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive' };
       }
       if (step === 'done') return { text: this.$t('prw.translate.batch.close'), icon: 'check' };
       return false;
