@@ -13,7 +13,7 @@
   >
     <template v-if="dialog">
       <template v-if="dialog.step === 'ask'">
-        <p>{{ $t('prw.translate.batch.chars', { chars: dialog.chars.toLocaleString(), lang: dialog.lang.name }) }}</p>
+        <p class="pw-batch-dialog-text">{{ $t('prw.translate.batch.chars', { chars: dialog.chars.toLocaleString(), lang: dialog.lang.name }) }}</p>
         <k-box v-if="usage && !dialog.simulate && dialog.chars > usage.limit - usage.count" theme="negative" :text="$t('prw.translate.batch.over')" />
         <k-box v-if="dialog.mode === 'all' && !dialog.simulate" theme="notice" :text="$t('prw.translate.batch.overwrite')" />
         <!-- a dry run: everything but DeepL and saving -->
@@ -68,6 +68,9 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
+}
+.pw-batch-dialog-text {
+  line-height: 1.5;
 }
 .pw-batch-dialog-headline {
   font-weight: var(--font-semi);
