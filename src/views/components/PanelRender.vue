@@ -3,7 +3,7 @@
        project's colours, fonts, spacings, variants) – with the block's real
        content: no sample texts, no guides, no switches; empty fields are
        left out -->
-  <div class="pw-panel-render" :style="{ backgroundColor: bodyBackground }">
+  <div class="pw-panel-render" :class="{ 'has-grid': hasGrid }" :style="{ backgroundColor: bodyBackground, '--pw-grid-line': elementColor('editor', 'element-editor-text') || '#000' }">
     <div
       class="pw-block-live-block"
       :class="{ 'is-fullscreen': setting('settings', 'block-size') === 'fullscreen' }"
@@ -168,9 +168,12 @@ export default {
     },
     // a block setting: the block's own (content keys: without hyphens),
     // else the project's start value
+    // (a field the block has but left empty – a padding switched off –
+    // counts as empty, as in the frontend; only a field it does not have
+    // yet takes the start value)
     setting(category, key) {
-      const v = this.content[key.replace(/-/g, '')];
-      if (v !== undefined && v !== null && v !== '') return v;
+      const k = key.replace(/-/g, '');
+      if (Object.prototype.hasOwnProperty.call(this.content, k) && this.content[k] !== null) return this.content[k];
       return BlockPreview.methods.setting.call(this, category, key);
     },
     // a field's alignment, size, level …: its own, else the start value
@@ -219,6 +222,26 @@ export default {
 }
 .pw-panel-render p {
   margin: 0;
+}
+/* the grid: the content's columns marked by dashed lines at their edges
+   (as the old preview did), from tablet on */
+.pw-panel-render.has-grid .pw-block-live-item {
+  position: relative;
+}
+.pw-panel-render.has-grid .pw-block-live-item::before,
+.pw-panel-render.has-grid .pw-block-live-item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed color-mix(in srgb, var(--pw-grid-line) 40%, transparent);
+  pointer-events: none;
+}
+.pw-panel-render.has-grid .pw-block-live-item::before {
+  left: 0;
+}
+.pw-panel-render.has-grid .pw-block-live-item::after {
+  right: 0;
 }
 /* the heading's marking and flourish, as the frontend (body.css) */
 .pw-panel-marked {
