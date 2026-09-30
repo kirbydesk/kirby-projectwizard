@@ -572,5 +572,5 @@
 	'prw.discardAll.confirm' => 'Die ungespeicherten Änderungen auf {count} Seiten werden verworfen.',
 	'prw.notify.saveAll' => '{count} Seiten gespeichert',
 	'prw.welcome.slogan' => 'Build something beautiful.',
-	'prw.welcome.stats' => '{blocks} Blöcke aktiv · {pages} Seiten · {variants} Farbvarianten',
+	'prw.welcome.stats' => '{blocks} Blöcke · {pages} Seiten · {variants} Farbvarianten',
 ];
