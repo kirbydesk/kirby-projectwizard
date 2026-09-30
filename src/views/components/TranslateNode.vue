@@ -99,10 +99,15 @@ export default {
   font-size: 11px;
   font-weight: 400;
 }
+/* the field's type: a small purple badge */
 .pw-translate-type {
+  padding: 0 0.4rem;
   font-family: var(--font-mono);
   font-size: 10px;
-  color: var(--color-text-dimmed);
+  line-height: 1.4rem;
+  color: light-dark(var(--color-purple-800), var(--color-purple-200));
+  background: light-dark(var(--color-purple-200), var(--color-purple-800));
+  border-radius: 999px;
 }
 .pw-translate-field {
   cursor: pointer;
