@@ -83,12 +83,12 @@ class ProjectConfig
 		$pkgDesc = is_string($pkg['description'] ?? null) ? trim($pkg['description']) : '';
 		$pkgIcon = is_string($pkg['icon'] ?? null) ? trim($pkg['icon']) : '';
 
-		// Resolve display name: <plugin>.name in the panel's language →
-		// package.json.description → i18n en.php → auto-slug
-		$translated = \Kirby\Toolkit\I18n::translate($plugin . '.name');
-		$name = is_string($translated) && $translated !== '' && $translated !== $plugin . '.name'
-			? $translated
-			: ($pkgDesc !== '' ? $pkgDesc : self::resolveBlockNameFromI18n($dir, $plugin));
+		// Resolve display name: package.json.description → i18n <plugin>.name → auto-slug
+		// (no translation lookup here: this runs while the plugins load – a
+		// lookup that early would fix Kirby's translations without the other
+		// plugins' texts; the panel's language is applied in the wizard and
+		// in the areas, when they are used)
+		$name = $pkgDesc !== '' ? $pkgDesc : self::resolveBlockNameFromI18n($dir, $plugin);
 		if ($name === '') {
 			$name = preg_replace('/([a-z])([A-Z])/', '$1 $2', ucfirst(preg_replace('/^pw/', '', $blockType)));
 		}

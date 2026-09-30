@@ -844,7 +844,7 @@
                     v-for="block in blocks"
                     :key="'pt-' + block.blockType"
                     :node-key="block.blockType"
-                    :label="block.name || block.blockType"
+                    :label="blockLabel(block.blockType)"
                     :icon="block.icon || 'box'"
                     :value="patchesTree[block.blockType] || { ...(block.settings || {}), editor: block.editor || {} }"
                     :path="[block.blockType]"

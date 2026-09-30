@@ -40,9 +40,13 @@ $allBlocks  = ProjectConfig::detectBlocks();
 $active     = ProjectConfig::activeBlocks();
 $blocks     = array_filter($allBlocks, fn($type) => in_array($type, $active), ARRAY_FILTER_USE_KEY);
 
-// Per-block display label — prefer the resolved name from detectBlocks()
-// (which already merged package.json.name → i18n → fallback).
+// Per-block display label: <plugin>.name in the panel's language (worked out
+// when the area is used – the user's language is known only then), else the
+// name from detectBlocks() (package.json, i18n, fallback)
 $blockLabel = function(array $info, string $blockType): string {
+	$key = ($info['plugin'] ?? '') . '.name';
+	$translated = t($key, '');
+	if (is_string($translated) && $translated !== '' && $translated !== $key) return $translated;
 	if (!empty($info['name'])) return $info['name'];
 	$fallback = ucfirst(preg_replace('/^pw/', '', $blockType));
 	return preg_replace('/([a-z])([A-Z])/', '$1 $2', $fallback);
@@ -74,12 +78,11 @@ $areas['projectwizard'] = fn() => [
 foreach ($blocks as $blockType => $info) {
 	if (!str_starts_with($blockType, 'pw')) continue;
 
-	$plugin = $info['plugin'];
-	$label  = $blockLabel($info, $blockType);
-	$slug   = strtolower($blockType);
+	$slug = strtolower($blockType);
 
-	$areas['pw-block-' . $slug] = [
-		'label' => $label,
+	// (a closure: Kirby evaluates it with the user's language set)
+	$areas['pw-block-' . $slug] = fn() => [
+		'label' => $label = $blockLabel($info, $blockType),
 		'icon'  => $info['icon'] ?? 'box',
 		// reached via the "Blocks" dropdown in the wizard's header, not the panel menu
 		'menu'  => false,
@@ -89,7 +92,7 @@ foreach ($blocks as $blockType => $info) {
 				'pattern' => 'projectwizard/block/' . $blockType,
 				'action'  => fn() => [
 					'component' => 'pw-wizard-overview',
-					'title'     => $label,
+					'title'     => $blockLabel($info, $blockType),
 					'props'     => [
 						'blockType' => $blockType,
 					],
