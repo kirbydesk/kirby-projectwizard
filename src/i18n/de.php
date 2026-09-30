@@ -569,6 +569,8 @@
 	'prw.patches.take' => 'In die Konfiguration übernehmen',
 	'prw.patches.locked' => 'Gesperrt durch manuelle Konfiguration',
 	'prw.translate.fields' => 'Übersetzte Felder',
+	'prw.translate.expand' => 'Alles aufklappen',
+	'prw.translate.collapse' => 'Alles zuklappen',
 	'prw.translate.fields.help' => 'Legt fest, welche Felder beim Übersetzen an DeepL gehen. Neue Blöcke und Felder sind automatisch dabei, Felder mit IDs wie Sprungmarken bleiben aus.',
 	'prw.translate.usage' => 'Aktuelles Kontingent',
 	'prw.translate.usage.text' => '{count} / {limit} Zeichen',

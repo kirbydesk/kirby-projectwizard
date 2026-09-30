@@ -850,6 +850,14 @@
                 <div class="pw-card-heading-row">
                   <!-- (as large as the keys' heading beside it) -->
                   <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.translate.fields') }}</h2>
+                  <!-- every entry of the tree open, or all shut again -->
+                  <k-button
+                    :icon="translateExpanded ? 'collapse' : 'expand'"
+                    :text="$t(translateExpanded ? 'prw.translate.collapse' : 'prw.translate.expand')"
+                    size="xs"
+                    variant="filled"
+                    @click="translateExpanded = !translateExpanded"
+                  />
                 </div>
                 <div class="pw-card pw-translate-tree">
                   <ul class="pw-json-children pw-json-root">
@@ -858,6 +866,7 @@
                       :key="'tr-' + node.key"
                       :node="node"
                       :values="translateValues"
+                      :expanded="translateExpanded"
                       @toggle="onTranslateToggle"
                     />
                   </ul>
@@ -2377,6 +2386,8 @@ export default {
       // Settings › Translation (translatewizard): the tree of the text
       // fields, which are translated ("owner.field" → on), DeepL's usage
       translateTree: null,
+      // the tree: all entries opened (true) or shut (false) at once
+      translateExpanded: false,
       // the stored keys checked with their services (env → true / false / null)
       aiSecretValid: {},
       aiSecretTypes: {},

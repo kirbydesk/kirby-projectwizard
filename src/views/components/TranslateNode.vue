@@ -41,6 +41,7 @@
         :node="child"
         :values="values"
         :depth="depth + 1"
+        :expanded="expanded"
         @toggle="$emit('toggle', $event)"
       />
     </ul>
@@ -56,9 +57,16 @@ export default {
     // "owner.field" → on/off
     values: { type: Object, default: () => ({}) },
     depth: { type: Number, default: 0 },
+    // "expand all" / "collapse all" of the page: every node follows
+    expanded: { type: Boolean, default: false },
   },
   data() {
-    return { open: false };
+    return { open: this.expanded };
+  },
+  watch: {
+    expanded(now) {
+      this.open = now;
+    },
   },
   computed: {
     counts() {

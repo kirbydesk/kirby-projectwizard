@@ -569,6 +569,8 @@
 	'prw.patches.take' => 'Copy into the configuration',
 	'prw.patches.locked' => 'Locked by manual configuration',
 	'prw.translate.fields' => 'Translated fields',
+	'prw.translate.expand' => 'Expand all',
+	'prw.translate.collapse' => 'Collapse all',
 	'prw.translate.fields.help' => 'Sets which fields go to DeepL when translating. New blocks and fields are included automatically, fields holding ids such as anchors stay off.',
 	'prw.translate.usage' => 'Current usage',
 	'prw.translate.usage.text' => '{count} / {limit} characters',
