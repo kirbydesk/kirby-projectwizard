@@ -587,6 +587,7 @@
 	'prw.translate.batch.stopping' => 'Wird angehalten …',
 	'prw.translate.batch.stopped' => 'Angehalten, {count} Seiten wurden nicht übersetzt.',
 	'prw.translate.batch.close' => 'Schließen',
+	'prw.translate.batch.resume' => 'Weiter mit {count} Seiten',
 	'prw.translate.batch.simulate' => 'Probelauf, nichts wird an DeepL geschickt oder gespeichert',
 	'prw.translate.batch.simulate.start' => 'Probelauf starten',
 	'prw.translate.batch.overwrite' => 'Bereits bestehende Übersetzungen werden erneut übersetzt.',

@@ -2590,6 +2590,8 @@ export default {
     batchDialogCancel() {
       const step = this.batchDialog?.step;
       if (step === 'ask') return this.$t('cancel');
+      // stopped: close, or go on (the submit button)
+      if (step === 'done' && this.batch.result?.stopped) return { text: this.$t('prw.translate.batch.close'), icon: 'cancel' };
       // (stopping: the button says so, no extra line in the dialog)
       if (step === 'run') {
         return this.batch.stop
@@ -2611,6 +2613,9 @@ export default {
         return this.batchDialog.simulate
           ? { text: this.$t('prw.translate.batch.simulate.start'), icon: 'play' }
           : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive' };
+      }
+      if (step === 'done' && this.batch.result?.stopped) {
+        return { text: this.$t('prw.translate.batch.resume', { count: this.batch.result.left }), icon: 'play', theme: 'positive' };
       }
       if (step === 'done') return { text: this.$t('prw.translate.batch.close'), icon: 'check' };
       return false;
@@ -3458,7 +3463,10 @@ export default {
       });
     },
     onBatchSubmit() {
-      if (this.batchDialog?.step === 'ask') this.runBatch();
+      const step = this.batchDialog?.step;
+      if (step === 'ask') this.runBatch();
+      // stopped: on with the pages left
+      else if (step === 'done' && this.batch.result?.stopped) this.runBatch(true);
       else this.$panel.dialog.close();
     },
     // cancel: before the start closes, while running stops after the
@@ -3473,13 +3481,15 @@ export default {
       this.batchDialog = null;
     },
     // one page after the other (each its own request: no time limit hit);
-    // stoppable between two pages
-    async runBatch() {
+    // stoppable between two pages – and to be continued from there
+    async runBatch(resume = false) {
       const { lang, mode, pages, simulate } = this.batchDialog;
-      Object.assign(this.batch, { lang: lang.code, mode, running: true, stop: false, done: 0, total: pages.length, current: '', result: null });
+      // (continuing: the pages not done yet, the count goes on)
+      const from = resume ? this.batch.done : 0;
+      const errors = resume && this.batch.result ? [...this.batch.result.errors] : [];
+      Object.assign(this.batch, { lang: lang.code, mode, running: true, stop: false, done: from, total: pages.length, current: '', result: null });
       this.batchDialog = { ...this.batchDialog, step: 'run' };
-      const errors = [];
-      for (const page of pages) {
+      for (const page of pages.slice(from)) {
         if (this.batch.stop) break;
         this.batch.current = page.title;
         try {
@@ -3493,8 +3503,8 @@ export default {
         done: this.batch.done - errors.length,
         errors,
         stopped: this.batch.done < pages.length,
-        simulated: simulate,
         left: pages.length - this.batch.done,
+        simulated: simulate,
       };
       this.batch.running = false;
       if (this.batchDialog) this.batchDialog = { ...this.batchDialog, step: 'done' };

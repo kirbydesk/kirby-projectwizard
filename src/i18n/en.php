@@ -587,6 +587,7 @@
 	'prw.translate.batch.stopping' => 'Stopping …',
 	'prw.translate.batch.stopped' => 'Stopped, {count} pages were not translated.',
 	'prw.translate.batch.close' => 'Close',
+	'prw.translate.batch.resume' => 'Continue with {count} pages',
 	'prw.translate.batch.simulate' => 'Dry run, nothing is sent to DeepL or saved',
 	'prw.translate.batch.simulate.start' => 'Start dry run',
 	'prw.translate.batch.overwrite' => 'Already existing translations are translated again.',
