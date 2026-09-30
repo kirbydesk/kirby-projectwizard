@@ -9,7 +9,7 @@
       </span>
       <k-icon :type="node.icon || 'box'" class="pw-json-block-icon" />
       <span class="pw-json-block-name">{{ node.label }}</span>
-      <code v-if="node.key !== 'page'" class="pw-json-block-type">{{ node.key }}</code>
+      <code v-if="node.code" class="pw-json-block-type">{{ node.code }}</code>
       <!-- how many of its fields (with the nested ones) are translated -->
       <span class="pw-json-count pw-translate-count" :class="{ 'is-none': counts.on === 0 }">{{ counts.on }}/{{ counts.all }}</span>
     </div>
