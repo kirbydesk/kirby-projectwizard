@@ -125,19 +125,6 @@ export default {
 </script>
 
 <style>
-/* in the drawers: the values the previews show at the device chosen above
-   the blocks (desktop: xl, tablet: lg) – a blue dot after their label */
-html[data-pw-device="xl"] .k-drawer :is([class*="k-field-name-columnsxl"], [class*="k-field-name-gridsizexl"], [class*="k-field-name-gridoffsetxl"], [class*="k-field-name-logosxl"]) .k-field-header .k-label::after,
-html[data-pw-device="lg"] .k-drawer :is([class*="k-field-name-columnslg"], [class*="k-field-name-gridsizelg"], [class*="k-field-name-gridoffsetlg"], [class*="k-field-name-logoslg"]) .k-field-header .k-label::after {
-  content: "";
-  display: inline-block;
-  width: 0.5em;
-  height: 0.5em;
-  margin-inline-start: 0.5em;
-  border-radius: 50%;
-  background: var(--color-blue-600);
-  vertical-align: middle;
-}
 .pw-blocks-field-options {
   display: flex;
   align-items: center;
