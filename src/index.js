@@ -49,6 +49,11 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'prw-collapse': '<path d="M4 3H20C20.5523 3 21 3.44772 21 4V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V4C3 3.44772 3.44772 3 4 3ZM5 5V19H19V5H5ZM7 11H17V13H7V11Z"></path>',
 		'prw-footer': '<path d="M21 3C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3H21ZM4 16V19H20V16H4ZM4 14H20V5H4V14Z"></path>',
 	},
+	// the pages' blocks field (pagewizard's pwblocks): the device of the
+	// block previews next to "Add" – Kirby's own blocks field stays untouched
+	fields: {
+		pwblocks: BlocksField,
+	},
 	components: {
 		'pw-wizard-overview': Overview,
 		'pw-field-row': FieldRow,
@@ -71,7 +76,5 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		// the block previews on the pages (used by the block plugins)
 		'pw-panel-render': PanelRender,
 		'pw-block-panel-preview': PanelPreview,
-		// Kirby's blocks field with the device of the previews
-		'k-blocks-field': BlocksField,
 	},
 });

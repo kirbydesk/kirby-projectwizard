@@ -1,7 +1,8 @@
 <template>
-  <!-- Kirby's blocks field, with the device of the block previews next to
-       its "Add" button (the Project Wizard's block previews) – otherwise
-       as Kirby's own (kirby/panel: k-blocks-field) -->
+  <!-- the pages' blocks field (pagewizard's pwblocks): Kirby's blocks
+       field with the device of the block previews next to its "Add" button
+       – otherwise as Kirby's own (kirby/panel: k-blocks-field); the nested
+       blocks fields stay Kirby's -->
   <k-field
     v-bind="$props"
     :class="['k-blocks-field', $attrs.class]"
