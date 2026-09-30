@@ -588,8 +588,6 @@
 	'prw.translate.batch.pending' => '{count} Seiten ausstehend (~{chars} Zeichen)',
 	'prw.translate.batch.close' => 'Schließen',
 	'prw.translate.batch.resume' => 'Weiter',
-	'prw.translate.batch.simulate' => 'Probelauf, nichts wird an DeepL geschickt oder gespeichert',
-	'prw.translate.batch.simulate.start' => 'Probelauf starten',
 	'prw.translate.batch.overwrite' => 'Bereits bestehende Übersetzungen werden erneut übersetzt.',
 	'prw.hint.variants' => 'Legt fest, welche Farbvarianten die Blöcke zusätzlich zu <code>Standard</code> anbieten.',
 	'prw.label.usedTimes' => '{count}× verwendet',

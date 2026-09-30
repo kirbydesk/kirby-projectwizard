@@ -2603,16 +2603,14 @@ export default {
     // more characters than the usage has left (a dry run sends none)
     batchOverQuota() {
       const d = this.batchDialog;
-      return !!(d && !d.simulate && this.deeplUsage && d.chars > this.deeplUsage.limit - this.deeplUsage.count);
+      return !!(d && this.deeplUsage && d.chars > this.deeplUsage.limit - this.deeplUsage.count);
     },
     batchDialogSubmit() {
       const step = this.batchDialog?.step;
       if (step === 'ask') {
-        // (not enough usage: only "Cancel" – a dry run still can start)
+        // (not enough usage: only "Cancel")
         if (this.batchOverQuota) return false;
-        return this.batchDialog.simulate
-          ? { text: this.$t('prw.translate.batch.simulate.start'), icon: 'play' }
-          : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive' };
+        return { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive' };
       }
       if (step === 'done' && this.batch.result?.stopped) {
         return { text: this.$t('prw.translate.batch.resume'), icon: 'play', theme: 'positive' };
@@ -3453,7 +3451,7 @@ export default {
       if (!pages.length) return;
       const chars = pages.reduce((sum, p) => sum + (p.chars || 0), 0);
       this.batch.result = null;
-      this.batchDialog = { step: 'ask', lang, mode, pages, chars, simulate: false };
+      this.batchDialog = { step: 'ask', lang, mode, pages, chars };
       // (Kirby shows dialogs only when opened through the panel; the
       // dialog reads its state from here)
       this.$panel.dialog.open({
@@ -3483,7 +3481,7 @@ export default {
     // one page after the other (each its own request: no time limit hit);
     // stoppable between two pages – and to be continued from there
     async runBatch(resume = false) {
-      const { lang, mode, pages, simulate } = this.batchDialog;
+      const { lang, mode, pages } = this.batchDialog;
       // (continuing: the pages not done yet, the count goes on)
       const from = resume ? this.batch.done : 0;
       const errors = resume && this.batch.result ? [...this.batch.result.errors] : [];
@@ -3493,7 +3491,7 @@ export default {
         if (this.batch.stop) break;
         this.batch.current = page.title;
         try {
-          await this.$api.post(page.path + '/translatewizard/translate', { to: lang.code, simulate });
+          await this.$api.post(page.path + '/translatewizard/translate', { to: lang.code });
         } catch (e) {
           errors.push({ path: page.path, title: page.title, message: e.message || String(e) });
         }
@@ -3509,7 +3507,6 @@ export default {
         stopped: this.batch.done < pages.length,
         left: pages.length - this.batch.done,
         leftChars: chars(pages.slice(this.batch.done)),
-        simulated: simulate,
       };
       this.batch.running = false;
       if (this.batchDialog) this.batchDialog = { ...this.batchDialog, step: 'done' };
