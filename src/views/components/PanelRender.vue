@@ -497,7 +497,7 @@ export default {
 /* as a layout grid in Figma: the columns tinted, no lines, the gaps
    empty; the columns the content stands on stronger */
 .pw-panel-gridlines span {
-  background: rgba(255, 0, 170, 0.05);
+  background: rgba(255, 0, 170, 0.04);
 }
 .pw-panel-gridlines span.is-used {
   background: rgba(255, 0, 170, 0.14);
