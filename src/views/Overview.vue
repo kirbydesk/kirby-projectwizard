@@ -4495,13 +4495,15 @@ export default {
   display: inline-flex;
 }
 /* the stars: around the wand's head (its star, top left), each twinkling
-   in its own time (slowly) – always a little visible, brightest at their peak */
+   in its own time (slowly), brightest at their peak */
 .pw-welcome-star {
   position: absolute;
   width: 1.4rem;
   height: 1.4rem;
   fill: var(--color-yellow-500, #eab308);
-  opacity: 0.15;
+  /* invisible until its turn: one after the other they appear, then keep
+     twinkling (never quite gone) */
+  opacity: 0;
   animation: pw-twinkle 4.8s ease-in-out infinite;
 }
 .pw-welcome-star.is-1 { top: -0.9rem; left: -0.9rem; animation-delay: 0s; }
