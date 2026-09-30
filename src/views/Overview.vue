@@ -2591,6 +2591,11 @@ export default {
     patchesText() {
       this.$nextTick(this.fitPatchesInput);
     },
+    // (the text arrives while the loading view still stands, e.g. coming
+    // from a block: measured once the page is there)
+    loading(now) {
+      if (!now) this.$nextTick(this.fitPatchesInput);
+    },
     // the unsaved changes written along (a draft in the browser, see saveDraft)
     pendingCounts() {
       clearTimeout(this._draftTimer);
