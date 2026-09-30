@@ -929,14 +929,12 @@
               </section>
               <!-- DeepL: the characters used this period and the limit -->
               <section v-if="globalActiveTab === 'translate' && deeplUsage" class="pw-ai-secrets pw-ai-usage">
-                <!-- (as small as the keys' labels; the figures at its right) -->
-                <div class="pw-ai-usage-head">
-                  <h3 class="k-label">{{ $t('prw.translate.usage') }}</h3>
-                  <span class="pw-ai-usage-figures">{{ deeplUsage.count.toLocaleString() }} / {{ deeplUsage.limit.toLocaleString() }}</span>
-                </div>
+                <!-- (as small as the keys' labels) -->
+                <h3 class="k-label">{{ $t('prw.translate.usage') }}</h3>
                 <div class="pw-usage-bar" :class="{ 'is-high': deeplUsage.count / deeplUsage.limit > 0.9 }">
                   <span :style="{ width: Math.min(100, deeplUsage.count / deeplUsage.limit * 100) + '%' }"></span>
                 </div>
+                <p class="pw-ai-secrets-help pw-ai-usage-figures">{{ $t('prw.translate.usage.text', { count: deeplUsage.count.toLocaleString(), limit: deeplUsage.limit.toLocaleString() }) }}</p>
               </section>
             </aside>
           </div>
@@ -5548,16 +5546,8 @@ export default {
 .pw-ai-usage {
   margin-top: var(--spacing-8);
 }
-.pw-ai-usage-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--spacing-3);
-}
 .pw-ai-usage-figures {
-  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-dimmed);
 }
 @media (max-width: 60rem) {
   .pw-ai-settings { grid-template-columns: 1fr; }
