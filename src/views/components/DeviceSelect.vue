@@ -12,6 +12,7 @@
         @click="$refs.menu.toggle()"
       >
         <k-icon :type="icon(value)" />
+        <span v-if="showLabel" class="pw-device-select-label">{{ label(value) }}</span>
         <k-icon type="angle-down" class="pw-tab-menu-chevron" />
       </button>
       <k-dropdown-content ref="menu" align-x="end">
@@ -40,6 +41,8 @@ export default {
   props: {
     // default (mobile), lg (tablet) or xl (desktop)
     value: { type: String, default: 'default' },
+    // the device's name next to its icon (e.g. above the blocks)
+    showLabel: { type: Boolean, default: false },
   },
   methods: {
     icon(bp) {
@@ -63,5 +66,9 @@ export default {
 }
 .pw-device-select .k-icon {
   --icon-size: 14px;
+}
+.pw-device-select-label {
+  margin-inline: var(--spacing-1) 2px;
+  font-size: var(--text-xs);
 }
 </style>

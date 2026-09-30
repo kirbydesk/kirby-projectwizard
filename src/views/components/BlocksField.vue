@@ -10,7 +10,7 @@
   >
     <template v-if="!disabled && hasFieldsets" #options>
       <div class="pw-blocks-field-options">
-        <pw-device-select :value="device" @input="setDevice" />
+        <pw-device-select :value="device" :show-label="true" @input="setDevice" />
         <k-button-group layout="collapsed">
           <k-button
             :autofocus="autofocus"
