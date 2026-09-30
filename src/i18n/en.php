@@ -574,7 +574,7 @@
 	'prw.translate.fields.help' => 'Sets which fields go to DeepL when translating. New blocks and fields are included automatically, fields holding ids such as anchors stay off.',
 	'prw.translate.usage' => 'Current usage',
 	'prw.translate.usage.text' => '{count} / {limit} characters',
-	'prw.translate.batch' => 'Bulk translation',
+	'prw.translate.batch' => 'Translate pages',
 	'prw.translate.batch.missing' => 'Missing pages',
 	'prw.translate.batch.all' => 'All pages',
 	'prw.translate.batch.over' => 'The remaining usage is not enough for this.',

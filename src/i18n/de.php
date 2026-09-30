@@ -574,7 +574,7 @@
 	'prw.translate.fields.help' => 'Legt fest, welche Felder beim Übersetzen an DeepL gehen. Neue Blöcke und Felder sind automatisch dabei, Felder mit IDs wie Sprungmarken bleiben aus.',
 	'prw.translate.usage' => 'Aktuelles Kontingent',
 	'prw.translate.usage.text' => '{count} / {limit} Zeichen',
-	'prw.translate.batch' => 'Sammelübersetzung',
+	'prw.translate.batch' => 'Seiten übersetzen',
 	'prw.translate.batch.missing' => 'Fehlende Seiten',
 	'prw.translate.batch.all' => 'Alle Seiten',
 	'prw.translate.batch.over' => 'Das freie Kontingent reicht dafür nicht aus.',
