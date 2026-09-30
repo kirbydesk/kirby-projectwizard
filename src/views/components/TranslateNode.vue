@@ -81,10 +81,6 @@ export default {
 </script>
 
 <style>
-/* the top entries (Templates, Blöcke): some room between them */
-.pw-translate-tree .pw-json-root > .pw-json-node + .pw-json-node {
-  margin-top: var(--spacing-3);
-}
 /* a field: its label, name and type, the switch at the end */
 .pw-translate-field {
   gap: var(--spacing-2);
