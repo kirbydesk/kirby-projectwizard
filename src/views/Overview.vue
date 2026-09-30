@@ -2607,17 +2607,9 @@ export default {
       }
     };
     window.addEventListener('keydown', this._onKeydown);
-    // leaving with unsaved changes (reload, closing the tab): the browser asks
-    this._onBeforeUnload = (e) => {
-      if (!this.pendingPageCount) return;
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', this._onBeforeUnload);
   },
   beforeDestroy() {
     window.removeEventListener('keydown', this._onKeydown);
-    window.removeEventListener('beforeunload', this._onBeforeUnload);
   },
   methods: {
     async load() {
