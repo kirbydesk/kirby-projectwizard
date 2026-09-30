@@ -575,7 +575,6 @@
 	'prw.translate.usage' => 'Aktuelles Kontingent',
 	'prw.translate.usage.text' => '{count} / {limit} Zeichen',
 	'prw.translate.batch' => 'Seiten übersetzen',
-	'prw.translate.batch.into' => 'Übersetzen in: {lang}',
 	'prw.translate.batch.missing' => 'Fehlende Seiten',
 	'prw.translate.batch.all' => 'Alle Seiten',
 	'prw.translate.batch.over' => 'Das freie Kontingent reicht dafür nicht aus.',

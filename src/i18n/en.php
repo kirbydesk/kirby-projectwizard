@@ -575,7 +575,6 @@
 	'prw.translate.usage' => 'Current usage',
 	'prw.translate.usage.text' => '{count} / {limit} characters',
 	'prw.translate.batch' => 'Translate pages',
-	'prw.translate.batch.into' => 'Translate into: {lang}',
 	'prw.translate.batch.missing' => 'Missing pages',
 	'prw.translate.batch.all' => 'All pages',
 	'prw.translate.batch.over' => 'The remaining usage is not enough for this.',
