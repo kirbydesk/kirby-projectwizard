@@ -4342,7 +4342,7 @@ export default {
    variant pills of the previews keep the blue hover of the buttons) */
 .pw-theme-switch .pw-tool:not([aria-pressed="true"]):hover,
 .pw-bp-switch .pw-tool:not([aria-pressed="true"]):hover {
-  background: var(--color-white);
+  background: var(--item-color-back, light-dark(var(--color-white), var(--color-gray-850)));
   color: var(--color-text);
 }
 .pw-field-table .pw-group-end {
@@ -4875,7 +4875,7 @@ export default {
   font-size: var(--text-sm);
   white-space: nowrap;
   color: var(--color-text);
-  background: var(--color-white);
+  background: var(--item-color-back, light-dark(var(--color-white), var(--color-gray-850)));
 }
 .pw-pill > :first-child {
   border-start-start-radius: var(--rounded);
