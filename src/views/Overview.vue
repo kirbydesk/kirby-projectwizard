@@ -882,7 +882,7 @@
               <section class="pw-ai-secrets">
                 <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.ai.keys') }}</h2>
                 <!-- what the keys are for, the services linked -->
-                <k-text class="pw-ai-secrets-help" :html="$t('prw.ai.keys.intro.' + globalActiveTab)" />
+                <k-text class="pw-ai-secrets-help pw-ai-secrets-intro" :html="$t('prw.ai.keys.intro.' + globalActiveTab)" />
                 <k-box v-if="!aiSecretsWritable" theme="negative" :text="$t('prw.ai.keys.readonly')" />
                 <div v-for="secret in aiPageSecrets" :key="secret.env" class="pw-ai-secret">
                   <!-- a valid key's kind with it (DeepL: Free / Pro) -->
@@ -5565,6 +5565,8 @@ export default {
 .pw-ai-secrets { display: flex; flex-direction: column; gap: var(--spacing-4); }
 .pw-ai-secrets-title { font-size: var(--text-lg); }
 .pw-ai-secrets-help, .pw-ai-secret-status { color: var(--color-text-dimmed); font-size: var(--text-sm); line-height: 1.5; }
+/* more room below the intro, before the keys */
+.pw-ai-secrets-intro { margin-bottom: var(--spacing-4); }
 .pw-ai-secret-row { display: flex; gap: var(--spacing-2); align-items: center; margin-block: var(--spacing-2); }
 /* the field with the key's state inside, at its right end */
 .pw-ai-secret-field { position: relative; display: flex; flex: 1 1 auto; min-width: 0; }
