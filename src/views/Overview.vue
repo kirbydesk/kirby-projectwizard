@@ -3435,7 +3435,7 @@ export default {
       const step = () => {
         if (this.sloganTyped >= length) {
           setTimeout(() => { this.statsShown = true; }, 400);
-          setTimeout(() => { this.sloganCaret = false; }, 1600);
+          setTimeout(() => { this.sloganCaret = false; }, 5000);
           return;
         }
         this.sloganTyped++;
