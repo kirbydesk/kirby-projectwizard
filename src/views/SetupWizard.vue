@@ -182,7 +182,7 @@ export default {
   align-items: center;
   gap: var(--spacing-3);
   padding: var(--spacing-3) var(--spacing-4);
-  background: var(--color-white);
+  background: light-dark(var(--color-white), var(--color-gray-850));
   border-radius: var(--rounded);
   border: 1px solid var(--color-border);
 }
