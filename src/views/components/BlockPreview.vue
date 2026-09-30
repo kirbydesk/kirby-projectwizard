@@ -247,6 +247,7 @@
 // the screen height of the shown device (px): the preview is as wide as the
 // sidebar, the hero as high as on that device (its heights are vh)
 import { SCREEN_HEIGHTS } from '../../helpers/preview-bp.js';
+import { validStart } from '../../helpers/valid-start.js';
 
 // fixed gaps between the fields, from the blocks' own CSS (kirbyblock-text,
 // kirbyblock-steplist: tagline / heading / text before the items)
@@ -1265,15 +1266,17 @@ export default {
     },
     // a block setting (category field) default: override, else the plugin's
     setting(category, key) {
-      const path = 'settings.fields.' + category + '.' + key + '.default';
-      const ov = this.nested(this.overrides || {}, path);
-      return ov !== undefined ? ov : this.nested(this.config.defaults || {}, path);
+      const path = 'settings.fields.' + category + '.' + key;
+      const ov = this.nested(this.overrides || {}, path + '.default');
+      const value = ov !== undefined ? ov : this.nested(this.config.defaults || {}, path + '.default');
+      return validStart(value, this.nested(this.config.defaults || {}, path + '.options'));
     },
     // a content field preset (align, sizes, …)
     preset(field, prop) {
-      const path = 'settings.fields.content.' + field + '.' + prop + '.default';
-      const ov = this.nested(this.overrides || {}, path);
-      return ov !== undefined ? ov : this.nested(this.config.defaults || {}, path);
+      const path = 'settings.fields.content.' + field + '.' + prop;
+      const ov = this.nested(this.overrides || {}, path + '.default');
+      const value = ov !== undefined ? ov : this.nested(this.config.defaults || {}, path + '.default');
+      return validStart(value, this.nested(this.config.defaults || {}, path + '.options'));
     },
     // a content field of the block, unless hidden from the editors (then
     // nobody fills it in)

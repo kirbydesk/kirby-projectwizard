@@ -151,9 +151,24 @@ class ProjectConfig
 				$settings['fields'] = self::withoutOptions($settings['fields']);
 			}
 			$tree[$blockType] = self::deepMerge($info['settings'] ?? [], $settings);
+			if (is_array($tree[$blockType]['fields'] ?? null)) {
+				$tree[$blockType]['fields'] = self::validStarts($tree[$blockType]['fields']);
+			}
 			$tree[$blockType]['editor'] = $info['editor'] ?? [];
 		}
 		return $tree;
+	}
+
+	// (start values always among the options, as the pagewizard uses them)
+	private static function validStarts(array $fields): array
+	{
+		if (array_key_exists('default', $fields) && isset($fields['options'])) {
+			$fields['default'] = pwConfig::validStart($fields['default'], $fields['options']);
+		}
+		foreach ($fields as $key => $value) {
+			if (is_array($value) && !array_is_list($value)) $fields[$key] = self::validStarts($value);
+		}
+		return $fields;
 	}
 
 	// (the options offered to the editors: never from the wizard settings,

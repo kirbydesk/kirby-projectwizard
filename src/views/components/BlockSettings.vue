@@ -443,6 +443,8 @@
 </template>
 
 <script>
+import { validStart } from '../../helpers/valid-start.js';
+
 export default {
   props: {
     block: {
@@ -1394,7 +1396,10 @@ export default {
     // --- Value getters/setters ---
     getVal(path, defaultVal) {
       const ov = this.nested(this.overrides || {}, path);
-      return ov !== undefined ? ov : defaultVal;
+      const value = ov !== undefined ? ov : defaultVal;
+      // a start value: always one of the field's options (validStart)
+      if (!path.endsWith('.default')) return value;
+      return validStart(value, this.getDefault(path.slice(0, -'.default'.length) + '.options'));
     },
 
     getOverrideOnly(path) {
