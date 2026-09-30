@@ -1089,7 +1089,9 @@ export default {
       const corner = (key, idx) => (layout('radius-' + key) === true ? radius[idx] || 0 : 0);
       return {
         // hero: its height, a sample image as background
-        ...(this.isHero ? { height: this.heroHeightPx } : {}),
+        // (a minimum, as in the frontend: more content lets the hero grow; the
+        // grid fills it as a flex column)
+        ...(this.isHero ? { minHeight: this.heroHeightPx, display: 'flex', flexDirection: 'column' } : {}),
         backgroundColor: this.heroImage ? null : this.globalColor('block-background'),
         // global- values: top-left, top-right, bottom-left, bottom-right
         borderRadius: [corner('top-left', 0), corner('top-right', 1), corner('bottom-right', 3), corner('bottom-left', 2)].join(' '),
@@ -1113,7 +1115,7 @@ export default {
     },
     gridStyle() {
       // hero: grid and item as high as the section (content placed in it)
-      const fill = this.isHero ? { height: '100%' } : {};
+      const fill = this.isHero ? { flex: '1 1 auto' } : {};
       if (!this.hasGrid) return { display: 'block', ...fill };
       return {
         ...fill,
