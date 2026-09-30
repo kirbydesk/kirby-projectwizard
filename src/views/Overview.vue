@@ -2,7 +2,7 @@
   <k-panel-inside class="pw-wizard" :data-preview="showPreview ? 'on' : 'off'" :data-full="fullWidthPage ? 'true' : null" :style="{ '--pw-body-background': bodyBackgroundColor}">
     <!-- Header in Kirby's topbar (like kirby-explorer): tabs as a pill, save buttons -->
     <pw-portal to=".pw-wizard .k-topbar">
-      <div class="pw-topbar">
+      <div ref="topbar" class="pw-topbar">
         <!-- Main navigation: the same on the global view and on every block view -->
         <!-- Project: site, header, footer, blocks, fonts -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
@@ -159,16 +159,17 @@
           <div data-layout="collapsed" class="k-button-group">
             <k-button
               :text="$t('discard')"
+              :title="$t('discard')"
               icon="undo"
               theme="notice"
               variant="filled"
               size="sm"
-              responsive="true"
               class="k-form-controls-button"
               @click="confirmDiscardAll"
             />
             <k-button
               :text="$t('save')"
+              :title="$t('save')"
               icon="check"
               theme="notice"
               variant="filled"
@@ -2595,6 +2596,11 @@ export default {
     // from a block: measured once the page is there)
     loading(now) {
       if (!now) this.$nextTick(this.fitPatchesInput);
+      if (!now) this.$nextTick(this.fitTopbar);
+    },
+    // (the save buttons come and go)
+    pendingPageCount() {
+      this.$nextTick(this.fitTopbar);
     },
     // the unsaved changes written along (a draft in the browser, see saveDraft)
     pendingCounts() {
@@ -2658,8 +2664,16 @@ export default {
     };
     window.addEventListener('keydown', this._onKeydown);
   },
+  mounted() {
+    // the topbar: save buttons with their icon only while the room is short
+    if (typeof ResizeObserver !== 'undefined' && this.$refs.topbar) {
+      this._topbarObserver = new ResizeObserver(() => this.fitTopbar());
+      this._topbarObserver.observe(this.$refs.topbar);
+    }
+  },
   beforeDestroy() {
     window.removeEventListener('keydown', this._onKeydown);
+    if (this._topbarObserver) this._topbarObserver.disconnect();
     if (this._patchesObserver) this._patchesObserver.disconnect();
   },
   methods: {
@@ -3245,6 +3259,14 @@ export default {
       if (!el || !el.offsetParent) return;
       el.style.height = 'auto';
       el.style.height = el.scrollHeight + 'px';
+    },
+    // the topbar too narrow for the menus and the save buttons with their
+    // texts: the buttons show their icon only (texts as tooltips)
+    fitTopbar() {
+      const bar = this.$refs.topbar;
+      if (!bar) return;
+      bar.classList.remove('is-compact');
+      if (bar.scrollWidth > bar.clientWidth + 1) bar.classList.add('is-compact');
     },
     // the lines wrap anew with every other width (window, preview column,
     // panel menu) and the field is measured only while visible: measured
@@ -4115,6 +4137,10 @@ export default {
   align-items: center;
   gap: var(--spacing-3);
   min-height: var(--height-md, 2.25rem);
+  /* the room of Kirby's topbar, not more: too little shows as an overflow
+     (fitTopbar), the save buttons then keep their icons only */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 /* the groups stay in one line each */
 .pw-topbar > .pw-pill {
@@ -4734,7 +4760,11 @@ export default {
 
 /* the save buttons sit on the right, so nothing moves when they appear */
 .pw-topbar-controls {
+  flex-shrink: 0;
   margin-inline-start: auto;
+}
+.pw-topbar.is-compact .pw-topbar-controls .k-button-text {
+  display: none;
 }
 
 /* Preview column: 1/3 next to the settings while the preview is on,
