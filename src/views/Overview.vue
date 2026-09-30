@@ -5515,7 +5515,7 @@ export default {
 }
 .pw-ai-secrets { display: flex; flex-direction: column; gap: var(--spacing-4); }
 .pw-ai-secrets-title { font-size: var(--text-lg); }
-.pw-ai-secrets-help, .pw-ai-secret-status { color: var(--color-text-dimmed); font-size: var(--text-sm); }
+.pw-ai-secrets-help, .pw-ai-secret-status { color: var(--color-text-dimmed); font-size: var(--text-sm); line-height: 1.5; }
 .pw-ai-secret-row { display: flex; gap: var(--spacing-2); align-items: center; margin-block: var(--spacing-2); }
 .pw-ai-secret-input {
   flex: 1;
