@@ -572,7 +572,7 @@
 	'prw.translate.fields' => 'Übersetzte Felder',
 	'prw.translate.fields.help' => 'Legt fest, welche Felder beim Übersetzen an DeepL gehen. Neue Blöcke und Felder sind automatisch dabei, Felder mit IDs wie Sprungmarken bleiben aus.',
 	'prw.translate.usage' => 'Kontingent',
-	'prw.translate.usage.text' => '{count} / {limit} Zeichen im aktuellen Abrechnungszeitraum',
+	'prw.translate.usage.text' => 'Zeichen im aktuellen Abrechnungszeitraum',
 	'prw.hint.variants' => 'Legt fest, welche Farbvarianten die Blöcke zusätzlich zu <code>Standard</code> anbieten.',
 	'prw.label.usedTimes' => '{count}× verwendet',
 	'prw.label.unused' => 'nicht verwendet',
