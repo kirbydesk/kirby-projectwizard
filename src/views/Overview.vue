@@ -909,7 +909,8 @@
                     <template v-if="secret.source === 'config'">{{ $t('prw.ai.keys.config') }}</template>
                     <template v-else-if="secret.source === 'env'">{{ $t('prw.ai.keys.set') }}</template>
                     <template v-else>{{ $t('prw.ai.keys.notset') }}</template>
-                    <template v-if="secret.help"> · {{ secret.help }}</template>
+                    <!-- (the plugin's hint only while there is no key yet) -->
+                    <template v-if="secret.help && !secret.source"> · {{ secret.help }}</template>
                   </p>
                 </div>
               </section>

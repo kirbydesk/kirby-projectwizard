@@ -480,7 +480,7 @@
 	'prw.ai.keys.help' => 'Gespeichert in der .env-Datei dieses Servers – nicht im Inhalt und nicht in Git. Gespeicherte Keys werden nie wieder angezeigt; zum Ändern einen neuen eingeben.',
 	'prw.ai.keys.readonly' => 'Die .env-Datei ist auf diesem Server nicht beschreibbar. Bitte die Keys von Hand eintragen.',
 	'prw.ai.keys.empty' => 'Key eingeben …',
-	'prw.ai.keys.set' => 'Gespeichert',
+	'prw.ai.keys.set' => 'Der API-Key ist in der .env-Datei dieses Servers gespeichert.',
 	'prw.ai.keys.notset' => 'Nicht gesetzt',
 	'prw.ai.keys.config' => 'In config.php gesetzt (hat Vorrang, hier nicht änderbar)',
 	'prw.ai.keys.remove' => 'Key entfernen',
