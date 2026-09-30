@@ -43,6 +43,14 @@
             <!-- media: the image, slideshow or video -->
             <pw-panel-media v-if="isMedia" :content="content" :box-style="panelMediaStyle" :caption-style="captionStyle" />
 
+            <!-- logocloud: its logos, as many per row as set for the device,
+                 square tiles or one height (flexible) -->
+            <div v-if="isLogocloud && panelLogos.length" :style="panelLogosStyle">
+              <div v-for="(logo, i) in panelLogos" :key="logo.id || i" :style="panelLogoStyle">
+                <img :src="logo.url" alt="" :style="panelLogoImgStyle" />
+              </div>
+            </div>
+
             <!-- featurelist: its features (icon, title, text) as the snippet;
                  hidden ones faded -->
             <div v-if="isFeaturelist && featureItems.length" class="pw-featurelist-items" :class="{ 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
@@ -247,6 +255,41 @@ export default {
       style.maxWidth = widths[this.content.mediasize] || '100%';
       return style;
     },
+    // the logocloud's logos (its files field)
+    panelLogos() {
+      const logos = Array.isArray(this.content.logos) ? this.content.logos : [];
+      return logos.filter(logo => logo && logo.url);
+    },
+    // the logos' row, as the block's CSS: at most "per row" tiles wide
+    // (flexible: no limit), wrapping, aligned as set; the gap to the intro
+    panelLogosStyle() {
+      const size = this.itemValueAt('item-size') || '8rem';
+      const gap = this.itemValue('item-gap') || '1.5rem';
+      const rowGap = this.itemValue('item-row-gap') || gap;
+      const perRow = Number(this.setting('layout', 'logos-' + ({ lg: 'lg', xl: 'xl' }[this.bp] || 'sm'))) || 2;
+      const align = this.preset('logos', 'align') || 'center';
+      return {
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: { left: 'flex-start', right: 'flex-end' }[align] || 'center',
+        columnGap: gap,
+        rowGap,
+        maxWidth: this.logosFlexible ? 'none' : 'calc(' + perRow + ' * ' + size + ' + ' + (perRow - 1) + ' * ' + gap + ')',
+        marginLeft: align === 'left' ? 0 : 'auto',
+        marginRight: align === 'right' ? 0 : 'auto',
+        marginTop: this.logosTextGap,
+      };
+    },
+    panelLogoStyle() {
+      const style = { ...this.logoStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', overflow: 'hidden' };
+      if (this.logosFlexible) return { ...style, flex: '0 0 auto' };
+      return { ...style, flex: '0 0 ' + (this.itemValueAt('item-size') || '8rem'), maxWidth: '100%' };
+    },
+    panelLogoImgStyle() {
+      return this.logosFlexible
+        ? { display: 'block', width: 'auto', maxWidth: '100%', height: '100%', objectFit: 'contain' }
+        : { display: 'block', width: '100%', height: '100%', objectFit: 'contain' };
+    },
     // the image's caption (Elements › Caption)
     captionStyle() {
       return {
@@ -351,6 +394,10 @@ export default {
         const own = this.content[key];
         if (own !== undefined && own !== null && own !== '') return own;
         return BlockPreview.methods.preset.call(this, field, prop);
+      }
+      // (the logos' alignment: the block's own field)
+      if (field === 'logos' && prop === 'align') {
+        return this.content.logosalignment || BlockPreview.methods.preset.call(this, field, prop);
       }
       // (the items' alignment: the block's own field)
       if (field === 'blocks' && prop === 'align') {
