@@ -231,7 +231,7 @@
             <!-- the wand with a few twinkling stars around it -->
             <span class="pw-welcome-wand">
               <k-icon type="wand" class="pw-welcome-icon" />
-              <svg v-for="n in 4" :key="'star-' + n" class="pw-welcome-star" :class="'is-' + n" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" /></svg>
+              <svg v-for="n in 5" :key="'star-' + n" class="pw-welcome-star" :class="'is-' + n" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" /></svg>
             </span>
             <div class="pw-welcome-text">
               <h1 class="pw-welcome-title">{{ $t('prw.area.title') }}</h1>
@@ -4504,18 +4504,19 @@ export default {
   /* invisible until its turn: one after the other they appear, then keep
      twinkling (never quite gone) */
   opacity: 0;
-  animation: pw-twinkle 4.8s ease-in-out infinite;
+  animation: pw-twinkle 6s ease-in-out infinite;
 }
 .pw-welcome-star.is-1 { top: -0.9rem; left: -0.9rem; animation-delay: 0s; }
 .pw-welcome-star.is-2 { top: 1.6rem; left: -1.9rem; width: 1rem; height: 1rem; animation-delay: 1.2s; }
 .pw-welcome-star.is-3 { top: -1.7rem; left: 2.4rem; width: 1.1rem; height: 1.1rem; animation-delay: 2.4s; }
 .pw-welcome-star.is-4 { top: -0.4rem; left: 4.4rem; width: 0.8rem; height: 0.8rem; animation-delay: 3.6s; }
+.pw-welcome-star.is-5 { top: 1.6rem; left: 5.6rem; width: 1.2rem; height: 1.2rem; animation-delay: 4.8s; }
 /* a flash as quick as before (the first half), then a pause while the
    others take their turn */
 @keyframes pw-twinkle {
-  0%, 50%, 100% { opacity: 0.15; transform: scale(0.5) rotate(0deg); }
-  20% { opacity: 1; transform: scale(1.1) rotate(25deg); }
-  35% { opacity: 0.3; transform: scale(0.7) rotate(45deg); }
+  0%, 40%, 100% { opacity: 0.15; transform: scale(0.5) rotate(0deg); }
+  16% { opacity: 1; transform: scale(1.1) rotate(25deg); }
+  28% { opacity: 0.3; transform: scale(0.7) rotate(45deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .pw-welcome-star { animation: none; opacity: 0.8; }
