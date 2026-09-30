@@ -12,6 +12,10 @@
       <section class="pw-block-live-section" :style="sectionStyle">
         <div class="pw-block-live-grid" :style="gridStyle">
           <div class="pw-block-live-item" :style="itemStyle">
+          <!-- (the featurelist's split layout: the intro a column of its own
+               next to the items) -->
+          <div class="pw-block-live-content" :style="contentStyle">
+            <div class="pw-block-live-intro">
             <!-- tagline, heading, text, buttons (the intro of every block) -->
             <p v-if="hasField('tagline')" :style="fieldStyle('tagline')" v-html="fieldData('tagline').text"></p>
 
@@ -34,6 +38,40 @@
               :style="{ ...fieldStyle('editor'), ...richStyle }"
               v-html="editorHtml"
             ></div>
+            </div>
+
+            <!-- featurelist: its features (icon, title, text) as the snippet;
+                 hidden ones faded -->
+            <div v-if="isFeaturelist && featureItems.length" class="pw-featurelist-items" :class="{ 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
+              <div
+                v-for="(item, i) in featureItems"
+                :key="item.id || i"
+                class="pw-featurelist-item"
+                :class="{ 'is-top': featureIconTop, 'is-hidden': item.isHidden }"
+                :style="featureItemStyle"
+              >
+                <div v-if="!featureNoIcon && item.content.icon" class="pw-featurelist-icon" :style="featureIconStyle">
+                  <span class="pw-panel-feature-svg" :style="featureSvgVars" v-html="item.content.icon"></span>
+                </div>
+                <div class="pw-featurelist-content">
+                  <div
+                    v-if="featureTitleInline"
+                    class="pw-panel-rich"
+                    :style="{ ...featureTextStyle, ...richStyle, '--pw-runin-font': featureTitleInlineStyle.fontFamily, '--pw-runin-weight': featureTitleInlineStyle.fontWeight, '--pw-runin-color': featureTitleInlineStyle.color }"
+                    v-html="featureRunIn(item.content)"
+                  ></div>
+                  <template v-else>
+                    <div v-if="item.content.heading" :style="featureTitleStyle">{{ item.content.heading }}</div>
+                    <div
+                      v-if="richFilled(item.content.description)"
+                      class="pw-panel-rich"
+                      :style="{ ...featureTextBelowStyle, ...(item.content.heading ? {} : { marginTop: 0 }), ...richStyle }"
+                      v-html="item.content.description"
+                    ></div>
+                  </template>
+                </div>
+              </div>
+            </div>
 
             <!-- quote: its text (marks as the element sets), the source below -->
             <figure v-if="isQuote && quoteHtml" class="pw-panel-quote">
@@ -79,6 +117,7 @@
                 <span v-if="buttonIcon(button, 'right')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginLeft: buttonIconStyle.gap }" v-html="buttonIcon(button, 'right')"></span>
               </span>
             </div>
+          </div>
           </div>
         </div>
       </section>
@@ -197,6 +236,20 @@ export default {
       const items = Array.isArray(this.content.blocks) ? this.content.blocks : [];
       return items.filter(item => item && item.content);
     },
+    // the featurelist's features (its blocks field)
+    featureItems() {
+      return this.isFeaturelist ? this.stepItems : [];
+    },
+    // the features' columns at the device shown, as set (mobile: one)
+    featureColumns() {
+      if (!this.hasGrid) return 1;
+      return Number(this.setting('layout', 'columns-' + this.bp)) || 1;
+    },
+    // the icon's size and colour for its own SVG
+    featureSvgVars() {
+      const s = this.featureSvgStyle;
+      return { '--pw-feature-size': s.width, '--pw-feature-fill': s.fill };
+    },
     // (the connector ends at the last step shown)
     stepCount() {
       return this.stepItems.length;
@@ -261,6 +314,10 @@ export default {
       if (field === 'buttons' && prop === 'align') {
         return this.content.buttonsalignment || BlockPreview.methods.preset.call(this, field, prop);
       }
+      // (the items' alignment: the block's own field)
+      if (field === 'blocks' && prop === 'align') {
+        return this.content.blocksalignment || BlockPreview.methods.preset.call(this, field, prop);
+      }
       const v = this.fieldData(field)[prop === 'sizes' ? 'size' : prop];
       return v || BlockPreview.methods.preset.call(this, field, prop);
     },
@@ -284,6 +341,18 @@ export default {
     // a writer's text with something in it
     richFilled(html) {
       return String(html || '').replace(/<[^>]*>/g, '').trim() !== '';
+    },
+    // a feature's title as run-in at the start of its text ("Title. Text …"),
+    // in its first paragraph as the snippet does
+    featureRunIn(c) {
+      const text = String(c.description || '');
+      const heading = String(c.heading || '');
+      if (!heading) return text;
+      const runIn = '<strong class="pw-panel-runin">' + esc(heading) + '.</strong> ';
+      const pos = text.indexOf('<p>');
+      return pos !== -1 && text.slice(0, pos).trim() === ''
+        ? text.slice(0, pos) + '<p>' + runIn + text.slice(pos + 3)
+        : runIn + text;
     },
     // a button's icon on one side (its position: left or right)
     buttonIcon(button, side) {
@@ -400,8 +469,24 @@ export default {
   display: inline-flex !important;
   align-items: center;
 }
+/* a feature's icon (its own SVG) in the item size and colour */
+.pw-panel-feature-svg {
+  display: flex;
+}
+.pw-panel-feature-svg svg {
+  width: var(--pw-feature-size, 1.5rem);
+  height: var(--pw-feature-size, 1.5rem);
+  fill: var(--pw-feature-fill, currentColor);
+}
+/* the run-in title: the heading's font and colour */
+.pw-panel-rich .pw-panel-runin {
+  font-family: var(--pw-runin-font);
+  font-weight: var(--pw-runin-weight);
+  color: var(--pw-runin-color);
+}
 .pw-panel-button.is-hidden,
-.pw-panel-render .pw-steplist-item.is-hidden {
+.pw-panel-render .pw-steplist-item.is-hidden,
+.pw-panel-render .pw-featurelist-item.is-hidden {
   opacity: 0.25;
 }
 .pw-panel-button-icon {
