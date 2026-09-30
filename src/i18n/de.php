@@ -565,7 +565,7 @@
 	'prw.notify.patches.error' => 'Konfiguration konnte nicht gespeichert werden',
 	'prw.patches.tree' => 'Alle Einstellungen der Blöcke, wie sie aktuell gelten. Mit {plus} übernimmst du einen Eintrag in die Konfiguration und kannst ihn dort ändern.',
 	'prw.patches.take' => 'In die Konfiguration übernehmen',
-	'prw.patches.locked' => 'Festgelegt in der Konfiguration',
+	'prw.patches.locked' => 'Gesperrt durch manuelle Konfiguration',
 	'prw.hint.variants' => 'Legt fest, welche Farbvarianten die Blöcke zusätzlich zu <code>Standard</code> anbieten.',
 	'prw.label.usedTimes' => '{count}× verwendet',
 	'prw.label.unused' => 'nicht verwendet',
