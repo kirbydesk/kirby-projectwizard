@@ -886,16 +886,27 @@
                 <div v-for="secret in aiPageSecrets" :key="secret.env" class="pw-ai-secret">
                   <label class="k-label" :for="'pw-secret-' + secret.env">{{ secret.label }}</label>
                   <div class="pw-ai-secret-row">
-                    <input
-                      :id="'pw-secret-' + secret.env"
-                      type="password"
-                      autocomplete="new-password"
-                      class="pw-ai-secret-input"
-                      :disabled="!aiSecretsWritable || secret.source === 'config'"
-                      :placeholder="secret.masked ? secret.masked : $t('prw.ai.keys.empty')"
-                      :value="aiSecretInputs[secret.env] || ''"
-                      @input="onSecretInput(secret.env, $event.target.value)"
-                    />
+                    <span class="pw-ai-secret-field">
+                      <input
+                        :id="'pw-secret-' + secret.env"
+                        type="password"
+                        autocomplete="new-password"
+                        class="pw-ai-secret-input"
+                        :disabled="!aiSecretsWritable || secret.source === 'config'"
+                        :placeholder="secret.masked ? secret.masked : $t('prw.ai.keys.empty')"
+                        :value="aiSecretInputs[secret.env] || ''"
+                        @input="onSecretInput(secret.env, $event.target.value)"
+                      />
+                      <!-- the stored key checked with its service: valid (green
+                           check) or not (red); nothing while unknown or typing -->
+                      <k-icon
+                        v-if="secret.source && aiSecretValid[secret.env] !== undefined && aiSecretValid[secret.env] !== null && !aiSecretInputs[secret.env]"
+                        :type="aiSecretValid[secret.env] ? 'check' : 'alert'"
+                        class="pw-ai-secret-state"
+                        :class="aiSecretValid[secret.env] ? 'is-valid' : 'is-invalid'"
+                        :title="$t(aiSecretValid[secret.env] ? 'prw.ai.keys.valid' : 'prw.ai.keys.invalid')"
+                      />
+                    </span>
                     <k-button
                       v-if="secret.source === 'env' && aiSecretsWritable"
                       icon="trash"
@@ -2362,6 +2373,8 @@ export default {
       // Settings › Translation (translatewizard): the tree of the text
       // fields, which are translated ("owner.field" → on), DeepL's usage
       translateTree: null,
+      // the stored keys checked with their services (env → true / false / null)
+      aiSecretValid: {},
       translateValues: {},
       originalTranslateValues: {},
       deeplUsage: null,
@@ -3336,6 +3349,15 @@ export default {
       this.aiSecrets = res.secrets || [];
       this.aiSecretsWritable = res.writable !== false;
       this.aiSecretInputs = {};
+      this.checkAiSecrets();
+    },
+    // (not awaited: the services may take a moment)
+    async checkAiSecrets() {
+      try {
+        this.aiSecretValid = (await this.$api.get('pagewizard/secrets/check')).valid || {};
+      } catch (e) {
+        this.aiSecretValid = {};
+      }
     },
 
     onSecretInput(env, value) {
@@ -5524,6 +5546,19 @@ export default {
 .pw-ai-secrets-title { font-size: var(--text-lg); }
 .pw-ai-secrets-help, .pw-ai-secret-status { color: var(--color-text-dimmed); font-size: var(--text-sm); line-height: 1.5; }
 .pw-ai-secret-row { display: flex; gap: var(--spacing-2); align-items: center; margin-block: var(--spacing-2); }
+/* the field with the key's state inside, at its right end */
+.pw-ai-secret-field { position: relative; display: flex; flex: 1 1 auto; min-width: 0; }
+.pw-ai-secret-field .pw-ai-secret-input { padding-inline-end: 2rem; }
+.pw-ai-secret-state {
+  position: absolute;
+  inset-inline-end: var(--spacing-2);
+  top: 50%;
+  transform: translateY(-50%);
+  --icon-size: 16px;
+  pointer-events: auto;
+}
+.pw-ai-secret-state.is-valid { color: var(--color-green-600, #16a34a); }
+.pw-ai-secret-state.is-invalid { color: var(--color-red-600, #dc2626); }
 .pw-ai-secret-input {
   flex: 1;
   height: var(--input-height);

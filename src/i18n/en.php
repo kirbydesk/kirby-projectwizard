@@ -482,6 +482,8 @@
 	'prw.ai.keys.empty' => 'Enter key …',
 	'prw.ai.keys.set' => 'The API key is stored in the .env file of this server.',
 	'prw.ai.keys.notset' => 'Not set',
+	'prw.ai.keys.valid' => 'Key valid',
+	'prw.ai.keys.invalid' => 'Key invalid',
 	'prw.ai.keys.config' => 'Set in config.php (takes precedence, cannot be changed here)',
 	'prw.ai.keys.remove' => 'Remove key',
 	'prw.ai.keys.confirm' => 'Remove “{label}”?',
