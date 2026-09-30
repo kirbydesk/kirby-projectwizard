@@ -40,6 +40,9 @@
             ></div>
             </div>
 
+            <!-- media: the image, slideshow or video -->
+            <pw-panel-media v-if="isMedia" :content="content" :box-style="panelMediaStyle" :caption-style="captionStyle" />
+
             <!-- featurelist: its features (icon, title, text) as the snippet;
                  hidden ones faded -->
             <div v-if="isFeaturelist && featureItems.length" class="pw-featurelist-items" :class="{ 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
@@ -127,6 +130,7 @@
 
 <script>
 import BlockPreview from './BlockPreview.vue';
+import PanelMedia from './PanelMedia.vue';
 
 // (a field of pagewizard's own types: its JSON; others as they are)
 const parse = (value) => {
@@ -138,6 +142,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 export default {
   extends: BlockPreview,
+  components: { 'pw-panel-media': PanelMedia },
   props: {
     // the block's content (Kirby's block content: fields in lower case)
     content: { type: Object, default: () => ({}) },
@@ -233,6 +238,23 @@ export default {
         '--pw-link-offset': this.linkValue('block-link-offset') || 'auto',
       };
     },
+    // the media's box: the block's size (none set: full width) and
+    // alignment, the corners switched on with the element's radii, the gap
+    // to the intro above
+    panelMediaStyle() {
+      const style = { ...this.mediaStyle };
+      const widths = { xsmall: '25%', small: '33%', medium: '50%', large: '75%', fullscreen: '100%' };
+      style.maxWidth = widths[this.content.mediasize] || '100%';
+      return style;
+    },
+    // the image's caption (Elements › Caption)
+    captionStyle() {
+      return {
+        ...this.typography('caption'),
+        color: this.elementColor('caption', 'element-caption-text'),
+        marginTop: this.elementValue('caption', 'spacing'),
+      };
+    },
     // an entry's description (steplist, featurelist): its paragraphs and
     // lists with the entries' paragraph spacing (Elements › Items), as the
     // frontend – no extra space below a list there
@@ -322,6 +344,13 @@ export default {
     preset(field, prop) {
       if (field === 'buttons' && prop === 'align') {
         return this.content.buttonsalignment || BlockPreview.methods.preset.call(this, field, prop);
+      }
+      // (the media's size, alignment and corners: the block's own fields)
+      if (field === 'media') {
+        const key = { size: 'mediasize', align: 'mediaalignment', radius: 'mediaradius' }[prop] || prop.replace(/-/g, '');
+        const own = this.content[key];
+        if (own !== undefined && own !== null && own !== '') return own;
+        return BlockPreview.methods.preset.call(this, field, prop);
       }
       // (the items' alignment: the block's own field)
       if (field === 'blocks' && prop === 'align') {
