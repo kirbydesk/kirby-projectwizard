@@ -2564,6 +2564,11 @@ export default {
     patchesText() {
       this.$nextTick(this.fitPatchesInput);
     },
+    // the unsaved changes written along (a draft in the browser, see saveDraft)
+    pendingCounts() {
+      clearTimeout(this._draftTimer);
+      this._draftTimer = setTimeout(() => this.saveDraft(), 400);
+    },
     // the blocks page: how often each block is used (for its row)
     globalActiveTab: {
       immediate: true,
@@ -2592,6 +2597,8 @@ export default {
   },
   async created() {
     await this.load();
+    // unsaved changes of an earlier visit (reload, closed tab) back
+    this.restoreDraft();
     this.showStartTheme();
     this._onKeydown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -2600,9 +2607,17 @@ export default {
       }
     };
     window.addEventListener('keydown', this._onKeydown);
+    // leaving with unsaved changes (reload, closing the tab): the browser asks
+    this._onBeforeUnload = (e) => {
+      if (!this.pendingPageCount) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', this._onBeforeUnload);
   },
   beforeDestroy() {
     window.removeEventListener('keydown', this._onKeydown);
+    window.removeEventListener('beforeunload', this._onBeforeUnload);
   },
   methods: {
     async load() {
@@ -3194,6 +3209,78 @@ export default {
       if (group === 'elements') return keys.filter(k => k.startsWith('element:')).length;
       if (group === 'blocks') return keys.filter(k => k.startsWith('block:')).length;
       return keys.filter(k => ['translate', 'generator', 'patches'].includes(k)).length;
+    },
+    // the editable state (what a draft keeps; not the typed API keys)
+    draftState() {
+      return {
+        blockOverrides: this.blockOverrides,
+        blockValueOverrides: this.blockValueOverrides,
+        globalOverrides: this.globalOverrides,
+        elementOverrides: this.elementOverrides,
+        fontOverrides: this.fontOverrides,
+        navOverrides: this.navOverrides,
+        footerOverrides: this.footerOverrides,
+        aiValues: this.aiValues,
+        activeBlocks: this.activeBlocks,
+        activeVariants: this.activeVariants,
+        patchesText: this.patchesText,
+      };
+    },
+    // the saved state the changes build on (a draft only fits it)
+    draftBase() {
+      return JSON.stringify({
+        blockOverrides: this.originalOverrides,
+        blockValueOverrides: this.originalBlockValueOverrides,
+        globalOverrides: this.originalGlobalOverrides,
+        elementOverrides: this.originalElementOverrides,
+        fontOverrides: this.originalFontOverrides,
+        navOverrides: this.originalNavOverrides,
+        footerOverrides: this.originalFooterOverrides,
+        aiValues: this.originalAiValues,
+        activeBlocks: this.originalActiveBlocks,
+        activeVariants: this.originalActiveVariants,
+        patchesText: this.originalPatchesText,
+      });
+    },
+    // unsaved changes into the browser (removed once all is saved or discarded)
+    saveDraft() {
+      if (this.loading) return;
+      try {
+        const hasAny = Object.keys(this.pendingCounts).some(k => !(k === 'translate' || k === 'generator') || this.diffPaths(this.aiValues, this.originalAiValues).length);
+        if (!hasAny) {
+          localStorage.removeItem('pw-wizard-draft');
+          return;
+        }
+        localStorage.setItem('pw-wizard-draft', JSON.stringify({ base: this.draftBase(), state: this.draftState() }));
+      } catch (e) { /* no storage */ }
+    },
+    // a draft of an earlier visit: back in place when it builds on the same
+    // saved state (else saved in the meantime: the draft is dropped)
+    restoreDraft() {
+      let draft = null;
+      try { draft = JSON.parse(localStorage.getItem('pw-wizard-draft') || 'null'); } catch (e) { /* no storage */ }
+      if (!draft || !draft.state) return;
+      if (draft.base !== this.draftBase()) {
+        try { localStorage.removeItem('pw-wizard-draft'); } catch (e) { /* no storage */ }
+        return;
+      }
+      const st = draft.state;
+      const copy = (v) => JSON.parse(JSON.stringify(v));
+      for (const [bt, ov] of Object.entries(st.blockOverrides || {})) this.$set(this.blockOverrides, bt, copy(ov));
+      for (const [bt, ov] of Object.entries(st.blockValueOverrides || {})) this.$set(this.blockValueOverrides, bt, copy(ov));
+      for (const key of ['globalOverrides', 'elementOverrides', 'fontOverrides', 'navOverrides', 'footerOverrides', 'aiValues']) {
+        if (st[key]) this[key] = copy(st[key]);
+      }
+      if (Array.isArray(st.activeBlocks)) {
+        this.activeBlocks = [...st.activeBlocks];
+        for (const block of this.blocks) block.active = this.activeBlocks.includes(block.blockType);
+      }
+      if (Array.isArray(st.activeVariants)) this.activeVariants = [...st.activeVariants];
+      if (typeof st.patchesText === 'string') this.patchesText = st.patchesText;
+      this.discardKey++;
+      this.$nextTick(() => {
+        if (this.pendingPageCount) this.$panel.notification.info(this.$t('prw.notify.draftRestored'));
+      });
     },
     // a single save's success message: none while everything is saved at once
     notifySaved(message) {

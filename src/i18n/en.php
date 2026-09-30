@@ -571,4 +571,5 @@
 	'prw.discardAll' => 'Discard all',
 	'prw.discardAll.confirm' => 'The unsaved changes on {count} pages will be discarded.',
 	'prw.notify.saveAll' => '{count} pages saved',
+	'prw.notify.draftRestored' => 'Unsaved changes restored',
 ];
