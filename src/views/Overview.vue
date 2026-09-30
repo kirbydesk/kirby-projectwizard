@@ -284,7 +284,8 @@
                    so the typing goes on across the switch -->
               <p class="pw-welcome-slogan" :aria-label="$t('prw.welcome.slogan')"><span aria-hidden="true">{{ $t('prw.welcome.slogan').slice(0, sloganTyped) }}</span><span class="pw-typewriter-caret" :class="{ 'is-done': !sloganCaret }" aria-hidden="true"></span><span class="pw-typewriter-rest" aria-hidden="true">{{ $t('prw.welcome.slogan').slice(sloganTyped) }}</span></p>
               <!-- the project in figures -->
-              <p class="pw-welcome-stats">{{ $t('prw.welcome.stats', { blocks: blockUsageTotal === null ? '…' : blockUsageTotal, pages: sitePageCount === null ? '…' : sitePageCount, variants: activeVariants.length + 1 }) }}</p>
+              <!-- (faded in once the slogan is typed) -->
+              <p class="pw-welcome-stats" :class="{ 'is-shown': statsShown }">{{ $t('prw.welcome.stats', { blocks: blockUsageTotal === null ? '…' : blockUsageTotal, pages: sitePageCount === null ? '…' : sitePageCount, variants: activeVariants.length + 1 }) }}</p>
             </div>
           </div>
 
@@ -2428,7 +2429,9 @@ export default {
       // fields, which are translated ("owner.field" → on), DeepL's usage
       // the start page's slogan, typed: letters shown so far, the caret
       sloganTyped: 0,
-      sloganCaret: true,
+      sloganCaret: false,
+      // the figures below it: faded in after the typing
+      statsShown: false,
       translateTree: null,
       // the tree: all entries opened (true) or shut (false) at once
       translateExpanded: false,
@@ -2820,6 +2823,8 @@ export default {
     loading(now) {
       if (!now) this.$nextTick(this.fitPatchesInput);
       if (!now) this.$nextTick(this.fitTopbar);
+      // (the slogan typed once the page is there, not while loading)
+      if (!now && !this.sloganTyped) this.typeSlogan();
     },
     // (the save buttons come and go)
     pendingPageCount() {
@@ -2880,7 +2885,6 @@ export default {
     navOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
   },
   async created() {
-    this.typeSlogan();
     await this.load();
     // unsaved changes of an earlier visit (reload, closed tab) back
     this.restoreDraft();
@@ -3424,10 +3428,13 @@ export default {
       if (reduced) {
         this.sloganTyped = length;
         this.sloganCaret = false;
+        this.statsShown = true;
         return;
       }
+      this.sloganCaret = true;
       const step = () => {
         if (this.sloganTyped >= length) {
+          setTimeout(() => { this.statsShown = true; }, 400);
           setTimeout(() => { this.sloganCaret = false; }, 1600);
           return;
         }
@@ -5111,6 +5118,12 @@ export default {
   font-size: var(--text-sm);
   color: var(--color-gray-500);
   font-variant-numeric: tabular-nums;
+  /* faded in after the slogan (its room always kept) */
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.pw-welcome-stats.is-shown {
+  opacity: 1;
 }
 .pw-welcome-text {
   text-align: center;
