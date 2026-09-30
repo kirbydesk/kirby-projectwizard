@@ -494,13 +494,13 @@ export default {
   grid-template-columns: repeat(12, minmax(0, 1fr));
   pointer-events: none;
 }
+/* as a layout grid in Figma: the columns tinted, no lines, the gaps
+   empty; the columns the content stands on stronger */
 .pw-panel-gridlines span {
-  border-inline: 1px solid rgba(255, 0, 170, 0.25);
+  background: rgba(255, 0, 170, 0.06);
 }
-/* the columns the content stands on: tinted, their lines stronger */
 .pw-panel-gridlines span.is-used {
-  background: rgba(255, 0, 170, 0.1);
-  border-color: rgba(255, 0, 170, 0.6);
+  background: rgba(255, 0, 170, 0.14);
 }
 /* the grid: the content's columns marked by dashed lines at their edges
    (as the old preview did), from tablet on */
