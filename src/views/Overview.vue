@@ -220,7 +220,10 @@
           <!-- the start page: empty, the wizard's wand and a slogan -->
           <div v-if="globalActiveTab === 'welcome'" class="pw-welcome">
             <k-icon type="wand" class="pw-welcome-icon" />
-            <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
+            <div class="pw-welcome-text">
+              <h1 class="pw-welcome-title">{{ $t('prw.area.title') }}</h1>
+              <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
+            </div>
           </div>
 
           <!-- Project → Site: the page background -->
@@ -4453,10 +4456,19 @@ export default {
 .pw-welcome-icon {
   --icon-size: 6rem;
 }
+.pw-welcome-text {
+  text-align: center;
+}
+.pw-welcome-title {
+  font-size: var(--text-4xl, 2.25rem);
+  font-weight: var(--font-bold, 700);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--color-text);
+}
 .pw-welcome-slogan {
-  font-size: var(--text-3xl, 1.875rem);
-  font-weight: var(--font-semi);
-  letter-spacing: -0.01em;
+  margin-top: var(--spacing-2);
+  font-size: var(--text-xl, 1.25rem);
   color: var(--color-text-dimmed);
 }
 .pw-variant-dot {
