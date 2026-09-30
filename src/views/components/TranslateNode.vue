@@ -28,7 +28,7 @@
         >
           <span class="pw-json-toggle"></span>
           <span class="pw-translate-label">{{ field.label }}</span>
-          <span class="pw-translate-type">{{ field.type }}</span>
+          <span v-if="values[field.key]" class="pw-translate-type">{{ field.type }}</span>
           <span class="pw-translate-check" :class="{ 'is-on': values[field.key] }">
             <!-- a plain check (Kirby's "check" has a circle): Remix check-line -->
             <svg v-if="values[field.key]" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z" /></svg>
@@ -148,8 +148,7 @@ export default {
   margin-inline-start: auto;
 }
 /* not translated: the label faded */
-.pw-translate-field.is-off .pw-translate-label,
-.pw-translate-field.is-off .pw-translate-type {
+.pw-translate-field.is-off .pw-translate-label {
   opacity: 0.5;
 }
 /* the count stays visible while open too, right after the name (the
