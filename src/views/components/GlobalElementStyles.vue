@@ -2518,7 +2518,7 @@ export default {
   font-size: var(--text-xs);
   border: 1px solid var(--color-border);
   border-radius: var(--rounded);
-  background: var(--color-white);
+  background: light-dark(var(--color-white), var(--color-gray-850));
   cursor: pointer;
   color: var(--color-text-dimmed);
 }

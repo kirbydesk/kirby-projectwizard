@@ -104,7 +104,7 @@ export default {
 .pw-json-children {
   margin: 0 0 0 calc(0.5rem - 0.5px);
   padding-left: calc(var(--spacing-3) - 1px);
-  border-left: 1px solid var(--color-gray-250, #e6e6e6);
+  border-left: 1px solid light-dark(var(--color-gray-250, #e6e6e6), var(--color-gray-700));
 }
 .pw-json-row {
   display: flex;
@@ -121,7 +121,7 @@ export default {
   cursor: pointer;
 }
 .pw-json-row:hover {
-  background: var(--color-gray-100);
+  background: light-dark(var(--color-gray-100), var(--color-gray-800));
 }
 .pw-json-toggle {
   flex: 0 0 auto;
@@ -144,7 +144,7 @@ export default {
   font-size: var(--text-sm);
 }
 .pw-json-node.is-block > .pw-json-row.is-open {
-  background: var(--color-gray-100);
+  background: light-dark(var(--color-gray-100), var(--color-gray-800));
 }
 .pw-json-block-icon {
   --icon-size: 16px;
@@ -162,7 +162,7 @@ export default {
 /* keys as in the debugger (purple), the sections of a block (fields,
    values, editor …) and every branch in bold */
 .pw-json-key {
-  color: #881391;
+  color: light-dark(#881391, #9cdcfe);
   white-space: nowrap;
 }
 .pw-json-row.is-branch .pw-json-key {
@@ -186,9 +186,9 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.pw-json-value .is-string { color: #c41a16; }
-.pw-json-value .is-number { color: #1c00cf; font-weight: 600; }
-.pw-json-value .is-boolean { color: #0d22aa; font-weight: 600; }
+.pw-json-value .is-string { color: light-dark(#c41a16, #ce9178); }
+.pw-json-value .is-number { color: light-dark(#1c00cf, #b5cea8); font-weight: 600; }
+.pw-json-value .is-boolean { color: light-dark(#0d22aa, #569cd6); font-weight: 600; }
 .pw-json-value .is-null { color: #808080; font-style: italic; }
 .pw-json-value .is-punct { color: var(--color-gray-500); }
 
@@ -199,8 +199,8 @@ export default {
   font-size: 10px;
   font-weight: 600;
   line-height: 1.4rem;
-  color: var(--color-blue-700, #1d4ed8);
-  background: var(--color-blue-200, #dbeafe);
+  color: light-dark(var(--color-blue-700, #1d4ed8), var(--color-blue-200, #dbeafe));
+  background: light-dark(var(--color-blue-200, #dbeafe), var(--color-blue-800, #1e40af));
   border-radius: 999px;
 }
 

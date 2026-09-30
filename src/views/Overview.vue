@@ -4443,7 +4443,7 @@ export default {
 /* the column behind the tree white as well (no other colour at its
    edges, e.g. while scrolling) */
 .pw-wizard .pw-preview-column:has(> .pw-portal > .pw-patches-tree:not([style*="display: none"])) {
-  background: var(--color-white);
+  background: light-dark(var(--color-white), var(--color-gray-900));
 }
 /* white and edge to edge in the preview column: its paddings taken back
    (top the menu's, else spacing-6), as high as the column */
@@ -4577,7 +4577,7 @@ export default {
   padding: var(--menu-padding, var(--spacing-3)) var(--spacing-6) var(--spacing-6);
   min-height: 100dvh;
   box-sizing: border-box;
-  background: var(--color-white);
+  background: light-dark(var(--color-white), var(--color-gray-900));
 }
 /* the top level: below the intro, without indent and guide line (more
    specific than the children's rule, which sets their margin) */

@@ -329,7 +329,7 @@ export default {
 
 <style>
 .pw-font-card {
-  background: var(--color-white);
+  background: light-dark(var(--color-white), var(--color-gray-850));
   border-radius: var(--rounded);
   padding: var(--spacing-3);
   margin-bottom: var(--spacing-2);

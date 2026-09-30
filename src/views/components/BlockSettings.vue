@@ -1725,7 +1725,7 @@ export default {
   justify-content: center;
   border: 1px solid var(--color-border);
   border-radius: var(--rounded);
-  background: var(--color-white);
+  background: light-dark(var(--color-white), var(--color-gray-850));
   color: var(--color-text-dimmed);
   cursor: pointer;
   padding: 0;
@@ -1813,7 +1813,7 @@ export default {
   border-radius: var(--rounded);
   font-size: var(--text-sm);
   font-family: var(--font-mono);
-  background: var(--color-white);
+  background: light-dark(var(--color-white), var(--color-gray-850));
 }
 
 .pw-category-select:focus,
