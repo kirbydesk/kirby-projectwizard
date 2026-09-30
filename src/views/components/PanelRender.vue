@@ -41,6 +41,31 @@
               <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ fieldData('author').text }}</cite></figcaption>
             </figure>
 
+            <!-- steplist: its steps (number, title, text) in the block's style;
+                 hidden ones faded, without a number (the frontend leaves them
+                 out, so the numbers count the shown ones) -->
+            <div v-if="isSteplist && stepItems.length" class="pw-steplist-items" :class="{ 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
+              <div
+                v-for="(item, i) in stepItems"
+                :key="item.id || i"
+                class="pw-steplist-item"
+                :class="{ 'is-connected': currentStepStyle === 'connected', 'is-centered': currentStepStyle === 'centered', 'is-hidden': item.isHidden }"
+                :style="stepItemStyle"
+              >
+                <span v-if="currentStepStyle === 'connected'" class="pw-steplist-connector" :style="stepConnectorStyle(i + 1)"></span>
+                <div class="pw-steplist-number" :style="stepNumberStyle">{{ item.isHidden ? '' : stepNumber(i) }}</div>
+                <div class="pw-steplist-content">
+                  <div v-if="item.content.heading" :style="stepHeadingStyle">{{ item.content.heading }}</div>
+                  <div
+                    v-if="richFilled(item.content.description)"
+                    class="pw-panel-rich"
+                    :style="{ ...stepTextStyle, ...(item.content.heading ? {} : { marginTop: 0 }), ...richStyle }"
+                    v-html="item.content.description"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
             <div v-if="hasField('buttons')" :style="buttonsRowStyle">
               <span
                 v-for="button in visibleButtons"
@@ -167,6 +192,15 @@ export default {
         '--pw-link-offset': this.linkValue('block-link-offset') || 'auto',
       };
     },
+    // the steplist's steps (its blocks field)
+    stepItems() {
+      const items = Array.isArray(this.content.blocks) ? this.content.blocks : [];
+      return items.filter(item => item && item.content);
+    },
+    // (the connector ends at the last step shown)
+    stepCount() {
+      return this.stepItems.length;
+    },
     // the buttons: hidden ones faded (so they can still be found), those
     // without a link left out – as the frontend does
     visibleButtons() {
@@ -242,6 +276,14 @@ export default {
         return String(this.fieldData(field).text || '').replace(/<[^>]*>/g, '').trim() !== '';
       }
       return true;
+    },
+    // a step's number: counting the shown steps (hidden ones have none)
+    stepNumber(index) {
+      return this.stepItems.slice(0, index + 1).filter(item => !item.isHidden).length;
+    },
+    // a writer's text with something in it
+    richFilled(html) {
+      return String(html || '').replace(/<[^>]*>/g, '').trim() !== '';
     },
     // a button's icon on one side (its position: left or right)
     buttonIcon(button, side) {
@@ -358,7 +400,8 @@ export default {
   display: inline-flex !important;
   align-items: center;
 }
-.pw-panel-button.is-hidden {
+.pw-panel-button.is-hidden,
+.pw-panel-render .pw-steplist-item.is-hidden {
   opacity: 0.25;
 }
 .pw-panel-button-icon {
