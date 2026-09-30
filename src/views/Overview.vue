@@ -2533,7 +2533,9 @@ export default {
         { key: 'footer', icon: 'prw-footer' },
       ];
       // AI defaults — only when kirby-contentwizard is installed
-      if (this.hasTranslateTab) tabs.push({ key: 'translate', icon: 'translate' });
+      // (the translatewizard's own icon, as its button on the pages; the tab
+      // exists only with that plugin, which registers it)
+      if (this.hasTranslateTab) tabs.push({ key: 'translate', icon: 'translatewizard-translate' });
       if (this.hasGeneratorTab) tabs.push({ key: 'generator', icon: 'ai' });
       tabs.push({ key: 'patches', icon: 'code' });
       return tabs;
