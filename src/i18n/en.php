@@ -572,4 +572,5 @@
 	'prw.discardAll.confirm' => 'The unsaved changes on {count} pages will be discarded.',
 	'prw.notify.saveAll' => '{count} pages saved',
 	'prw.welcome.slogan' => 'Build something beautiful.',
+	'prw.welcome.stats' => '{blocks} blocks active · {pages} pages · {variants} colour variants',
 ];

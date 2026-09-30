@@ -226,10 +226,16 @@
 
           <!-- the start page: empty, the wizard's wand and a slogan -->
           <div v-if="globalActiveTab === 'welcome'" class="pw-welcome">
-            <k-icon type="wand" class="pw-welcome-icon" />
+            <!-- the wand with a few twinkling stars around it -->
+            <span class="pw-welcome-wand">
+              <k-icon type="wand" class="pw-welcome-icon" />
+              <svg v-for="n in 4" :key="'star-' + n" class="pw-welcome-star" :class="'is-' + n" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" /></svg>
+            </span>
             <div class="pw-welcome-text">
               <h1 class="pw-welcome-title">{{ $t('prw.area.title') }}</h1>
               <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
+              <!-- the project in figures -->
+              <p class="pw-welcome-stats">{{ $t('prw.welcome.stats', { blocks: activeBlockEntries.length, pages: sitePageCount === null ? '…' : sitePageCount, variants: activeVariants.length + 1 }) }}</p>
             </div>
           </div>
 
@@ -2256,6 +2262,8 @@ export default {
       originalFooterOverrides: {},
       // exceptions (Project › Exceptions): the JSON as text, its check
       patchesText: '',
+      // the start page's figures: the site's pages (loaded with the wizard)
+      sitePageCount: null,
       // saving everything at once: the single saves stay quiet
       savingAll: false,
       originalPatchesText: '',
@@ -2719,6 +2727,9 @@ export default {
         this.footerOverrides = JSON.parse(JSON.stringify(footerOv));
         this.originalFooterOverrides = JSON.parse(JSON.stringify(footerOv));
         this.$set(this.snapshots, 'footer', JSON.stringify(footerOv));
+
+        // the start page's figures
+        try { this.sitePageCount = (await this.$api.get('projectwizard/stats')).pages; } catch (e) { /* none */ }
 
         // Load the exceptions (Project › Exceptions)
         const patches = await this.$api.get('projectwizard/patches');
@@ -4476,6 +4487,37 @@ export default {
 }
 .pw-welcome-icon {
   --icon-size: 6rem;
+}
+.pw-welcome-wand {
+  position: relative;
+  display: inline-flex;
+}
+/* the stars: small, around the wand's tip, each twinkling in its own time */
+.pw-welcome-star {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  fill: var(--color-yellow-500, #eab308);
+  opacity: 0;
+  animation: pw-twinkle 2.8s ease-in-out infinite;
+}
+.pw-welcome-star.is-1 { top: -0.4rem; right: -0.6rem; animation-delay: 0s; }
+.pw-welcome-star.is-2 { top: 0.8rem; right: -1.6rem; width: 0.7rem; height: 0.7rem; animation-delay: 0.7s; }
+.pw-welcome-star.is-3 { top: -1.4rem; right: 0.8rem; width: 0.6rem; height: 0.6rem; animation-delay: 1.4s; }
+.pw-welcome-star.is-4 { top: 1.9rem; right: -0.4rem; width: 0.5rem; height: 0.5rem; animation-delay: 2.1s; }
+@keyframes pw-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  45% { opacity: 1; transform: scale(1) rotate(20deg); }
+  70% { opacity: 0; transform: scale(0.6) rotate(40deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pw-welcome-star { animation: none; opacity: 0.8; }
+}
+.pw-welcome-stats {
+  margin-top: var(--spacing-6);
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  font-variant-numeric: tabular-nums;
 }
 .pw-welcome-text {
   text-align: center;

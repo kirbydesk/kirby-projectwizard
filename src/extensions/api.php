@@ -84,6 +84,13 @@ return [
 				return $counts;
 			}
 		],
+		// The start page's figures: how many pages the site has
+		[
+			'pattern' => 'projectwizard/stats',
+			'action'  => function () {
+				return ['pages' => kirby()->site()->index(true)->count()];
+			}
+		],
 		// The pages that use a block: path of titles, how often, panel link
 		[
 			'pattern' => 'projectwizard/blocks/usage/(:any)',
