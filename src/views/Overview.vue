@@ -2601,7 +2601,7 @@ export default {
       if (step === 'ask') {
         return this.batchDialog.simulate
           ? { text: this.$t('prw.translate.batch.simulate.start'), icon: 'play' }
-          : { text: this.$t('prw.translate.batch.start'), icon: 'translatewizard-translate', theme: 'positive' };
+          : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive' };
       }
       if (step === 'done') return { text: this.$t('prw.translate.batch.close'), icon: 'check' };
       return false;

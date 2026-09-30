@@ -13,13 +13,9 @@
   >
     <template v-if="dialog">
       <template v-if="dialog.step === 'ask'">
-        <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.confirm', { count: dialog.pages.length, lang: dialog.lang.name }) }}</p>
-        <k-box theme="info" :text="usage
-          ? $t('prw.translate.batch.charsfree', { chars: dialog.chars.toLocaleString(), free: Math.max(0, usage.limit - usage.count).toLocaleString() })
-          : $t('prw.translate.batch.chars', { chars: dialog.chars.toLocaleString() })" />
+        <p>{{ $t('prw.translate.batch.chars', { chars: dialog.chars.toLocaleString(), lang: dialog.lang.name }) }}</p>
         <k-box v-if="usage && !dialog.simulate && dialog.chars > usage.limit - usage.count" theme="negative" :text="$t('prw.translate.batch.over')" />
         <k-box v-if="dialog.mode === 'all' && !dialog.simulate" theme="notice" :text="$t('prw.translate.batch.overwrite')" />
-        <p class="pw-batch-dialog-help">{{ $t('prw.translate.batch.keepopen') }}</p>
         <!-- a dry run: everything but DeepL and saving -->
         <k-toggle-input
           :value="dialog.simulate"
@@ -33,7 +29,7 @@
         <div class="pw-usage-bar">
           <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
         </div>
-        <p class="pw-batch-dialog-help">{{ batch.stop ? $t('prw.translate.batch.stopping') : $t('prw.translate.batch.keepopen') }}</p>
+        <p v-if="batch.stop" class="pw-batch-dialog-help">{{ $t('prw.translate.batch.stopping') }}</p>
       </template>
 
       <template v-else-if="batch.result">
