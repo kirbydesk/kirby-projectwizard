@@ -242,7 +242,7 @@
               <h1 class="pw-welcome-title">{{ $t('prw.area.title') }}</h1>
               <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
               <!-- the project in figures -->
-              <p class="pw-welcome-stats">{{ $t('prw.welcome.stats', { blocks: activeBlockEntries.length, pages: sitePageCount === null ? '…' : sitePageCount, variants: activeVariants.length + 1 }) }}</p>
+              <p class="pw-welcome-stats">{{ $t('prw.welcome.stats', { blocks: blockUsageTotal === null ? '…' : blockUsageTotal, pages: sitePageCount === null ? '…' : sitePageCount, variants: activeVariants.length + 1 }) }}</p>
             </div>
           </div>
 
@@ -2546,6 +2546,11 @@ export default {
       if (this.patchesText !== this.originalPatchesText) add('patches');
       return out;
     },
+    // the start page's figures: the blocks used on all pages together
+    blockUsageTotal() {
+      const counts = Object.values(this.blockUsage || {});
+      return counts.length ? counts.reduce((sum, n) => sum + (Number(n) || 0), 0) : null;
+    },
     pendingPageCount() {
       return Object.keys(this.pendingCounts).length;
     },
@@ -2898,6 +2903,8 @@ export default {
 
         // the start page's figures
         try { this.sitePageCount = (await this.$api.get('projectwizard/stats')).pages; } catch (e) { /* none */ }
+        // (the blocks used on all pages, as counted in the blocks menu)
+        this.loadBlockUsage();
 
         // Load the exceptions (Project › Exceptions)
         const patches = await this.$api.get('projectwizard/patches');

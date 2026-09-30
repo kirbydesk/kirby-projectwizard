@@ -104,7 +104,7 @@ export default {
 .pw-translate-type {
   padding-inline: var(--spacing-1);
   font-family: var(--code-font-family, var(--font-mono));
-  font-size: 11px;
+  font-size: 10px;
   line-height: var(--text-line-height, 1.5);
   color: var(--color-purple-900);
   background: var(--color-purple-300);
