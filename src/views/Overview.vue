@@ -192,7 +192,10 @@
       <k-icon type="loader" class="pw-welcome-icon" />
       <div class="pw-welcome-text">
         <h1 class="pw-welcome-title">{{ $t('prw.area.title') }}</h1>
-        <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
+        <!-- typed letter by letter; the rest already takes its room (hidden),
+             so nothing moves – and loading view and start page share the count,
+             so the typing goes on across the switch -->
+        <p class="pw-welcome-slogan" :aria-label="$t('prw.welcome.slogan')"><span aria-hidden="true">{{ $t('prw.welcome.slogan').slice(0, sloganTyped) }}</span><span v-if="sloganCaret" class="pw-typewriter-caret" aria-hidden="true"></span><span class="pw-typewriter-rest" aria-hidden="true">{{ $t('prw.welcome.slogan').slice(sloganTyped) }}</span></p>
         <!-- (the figures' line reserved: nothing jumps when the page appears) -->
         <p class="pw-welcome-stats" style="visibility: hidden" aria-hidden="true">·</p>
       </div>
@@ -276,7 +279,10 @@
             </span>
             <div class="pw-welcome-text">
               <h1 class="pw-welcome-title">{{ $t('prw.area.title') }}</h1>
-              <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
+              <!-- typed letter by letter; the rest already takes its room (hidden),
+                   so nothing moves – and loading view and start page share the count,
+                   so the typing goes on across the switch -->
+              <p class="pw-welcome-slogan" :aria-label="$t('prw.welcome.slogan')"><span aria-hidden="true">{{ $t('prw.welcome.slogan').slice(0, sloganTyped) }}</span><span v-if="sloganCaret" class="pw-typewriter-caret" aria-hidden="true"></span><span class="pw-typewriter-rest" aria-hidden="true">{{ $t('prw.welcome.slogan').slice(sloganTyped) }}</span></p>
               <!-- the project in figures -->
               <p class="pw-welcome-stats">{{ $t('prw.welcome.stats', { blocks: blockUsageTotal === null ? '…' : blockUsageTotal, pages: sitePageCount === null ? '…' : sitePageCount, variants: activeVariants.length + 1 }) }}</p>
             </div>
@@ -2420,6 +2426,9 @@ export default {
       originalAiValues: {},
       // Settings › Translation (translatewizard): the tree of the text
       // fields, which are translated ("owner.field" → on), DeepL's usage
+      // the start page's slogan, typed: letters shown so far, the caret
+      sloganTyped: 0,
+      sloganCaret: true,
       translateTree: null,
       // the tree: all entries opened (true) or shut (false) at once
       translateExpanded: false,
@@ -2871,6 +2880,7 @@ export default {
     navOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
   },
   async created() {
+    this.typeSlogan();
     await this.load();
     // unsaved changes of an earlier visit (reload, closed tab) back
     this.restoreDraft();
@@ -3406,6 +3416,26 @@ export default {
       this.$set(this.dirtyTabs, 'ai', false);
     },
 
+    // the slogan letter by letter (at once where motion is reduced); the
+    // caret blinks a moment longer, then goes
+    typeSlogan() {
+      const length = this.$t('prw.welcome.slogan').length;
+      const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduced) {
+        this.sloganTyped = length;
+        this.sloganCaret = false;
+        return;
+      }
+      const step = () => {
+        if (this.sloganTyped >= length) {
+          setTimeout(() => { this.sloganCaret = false; }, 1600);
+          return;
+        }
+        this.sloganTyped++;
+        setTimeout(step, 55 + Math.random() * 60);
+      };
+      setTimeout(step, 250);
+    },
     // the translated fields: the tree and its values (a flat map)
     setTranslateTree(tree) {
       const values = {};
@@ -5096,6 +5126,23 @@ export default {
   margin-top: var(--spacing-2);
   font-size: var(--text-xl, 1.25rem);
   color: var(--color-text-dimmed);
+}
+/* the slogan's rest: already there, invisible (its room kept) */
+.pw-typewriter-rest {
+  visibility: hidden;
+}
+/* the caret: no width of its own, so the text does not move */
+.pw-typewriter-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-inline-end: -2px;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: pw-caret-blink 1s steps(1) infinite;
+}
+@keyframes pw-caret-blink {
+  50% { opacity: 0; }
 }
 .pw-variant-dot {
   flex: 0 0 auto;
