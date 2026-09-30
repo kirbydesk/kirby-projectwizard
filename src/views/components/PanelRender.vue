@@ -14,7 +14,7 @@
           <!-- the grid's twelve columns over the block (switched on above the
                blocks) -->
           <div v-if="gridLines && hasGrid" class="pw-panel-gridlines" :style="{ columnGap: gridStyle.columnGap }" aria-hidden="true">
-            <span v-for="n in 12" :key="'gl-' + n"></span>
+            <span v-for="n in 12" :key="'gl-' + n" :class="{ 'is-used': gridUsed(n) }"></span>
           </div>
           <div class="pw-block-live-item" :style="itemStyle">
           <!-- (the featurelist's split layout: the intro a column of its own
@@ -434,6 +434,13 @@ export default {
     richFilled(html) {
       return String(html || '').replace(/<[^>]*>/g, '').trim() !== '';
     },
+    // a column of the grid the block's content stands on (its size and
+    // offset at the device shown)
+    gridUsed(n) {
+      const size = Number(this.setting('grid', 'grid-size-' + this.bp)) || 12;
+      const offset = Number(this.setting('grid', 'grid-offset-' + this.bp)) || 0;
+      return n > offset && n <= offset + Math.min(size, 12 - offset);
+    },
     // a feature's title as run-in at the start of its text ("Title. Text …"),
     // in its first paragraph as the snippet does
     featureRunIn(c) {
@@ -488,8 +495,12 @@ export default {
   pointer-events: none;
 }
 .pw-panel-gridlines span {
-  background: rgba(255, 0, 170, 0.08);
-  border-inline: 1px solid rgba(255, 0, 170, 0.45);
+  border-inline: 1px solid rgba(255, 0, 170, 0.25);
+}
+/* the columns the content stands on: tinted, their lines stronger */
+.pw-panel-gridlines span.is-used {
+  background: rgba(255, 0, 170, 0.1);
+  border-color: rgba(255, 0, 170, 0.6);
 }
 /* the grid: the content's columns marked by dashed lines at their edges
    (as the old preview did), from tablet on */
