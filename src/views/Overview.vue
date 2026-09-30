@@ -228,7 +228,7 @@
               <nav class="k-navigate">
                 <template v-for="(lang, i) in batch.languages">
                   <hr v-if="i" :key="'sep-' + lang.code" />
-                  <p :key="'head-' + lang.code" class="pw-menu-heading">{{ lang.name }}</p>
+                  <p :key="'head-' + lang.code" class="pw-menu-heading">{{ $t('prw.translate.batch.into', { lang: lang.name }) }}</p>
                   <button
                     v-for="mode in ['missing', 'all']"
                     :key="lang.code + '-' + mode"
