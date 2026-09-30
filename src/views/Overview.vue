@@ -208,6 +208,42 @@
           <!-- the page's icon (an element's as in the elements menu) before the name -->
           <k-icon v-if="globalPageIcon" :type="globalPageIcon" class="pw-page-title-icon" />
           <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
+          <!-- translation: several pages at once, per language the missing
+               ones or all (run in a dialog, the characters shown first) -->
+          <div v-if="globalActiveTab === 'translate' && batch.languages.length" class="pw-tab-menu pw-ai-batch-menu">
+            <k-button
+              icon="translatewizard-translate"
+              :text="$t('prw.translate.batch')"
+              :dropdown="true"
+              variant="filled"
+              size="sm"
+              :disabled="!!dirtyTabs['ai'] || batch.running"
+              :title="dirtyTabs['ai'] ? $t('prw.translate.batch.unsaved') : null"
+              @click="$refs.batchMenu.toggle()"
+            />
+            <k-dropdown-content ref="batchMenu" align-x="end">
+              <nav class="k-navigate">
+                <template v-for="(lang, i) in batch.languages">
+                  <hr v-if="i" :key="'sep-' + lang.code" />
+                  <p :key="'head-' + lang.code" class="pw-menu-heading">{{ lang.name }}</p>
+                  <button
+                    v-for="mode in ['missing', 'all']"
+                    :key="lang.code + '-' + mode"
+                    type="button"
+                    class="k-dropdown-item k-button pw-menu-item"
+                    data-has-text="true"
+                    :disabled="!batchPagesOf(mode, lang.code).length"
+                    @click="$refs.batchMenu.close(); openBatch(lang, mode)"
+                  >
+                    <span class="k-button-text">
+                      {{ $t('prw.translate.batch.' + mode) }}
+                      <span class="pw-menu-count">{{ batchPagesOf(mode, lang.code).length }}</span>
+                    </span>
+                  </button>
+                </template>
+              </nav>
+            </k-dropdown-content>
+          </div>
         </div>
         <!-- a page's intro below its heading, as on the block pages (the items:
              which blocks use them) -->
@@ -944,45 +980,6 @@
                   <span :style="{ width: Math.min(100, deeplUsage.count / deeplUsage.limit * 100) + '%' }"></span>
                 </div>
                 <p class="pw-ai-secrets-help pw-ai-usage-figures">{{ $t('prw.translate.usage.text', { count: deeplUsage.count.toLocaleString(), limit: deeplUsage.limit.toLocaleString() }) }}</p>
-              </section>
-              <!-- several pages at once: the missing ones or all, one after
-                   the other, the characters they cost shown first -->
-              <section v-if="globalActiveTab === 'translate' && batch.languages.length" class="pw-ai-secrets pw-ai-usage pw-ai-batch">
-                <!-- a menu: per language the missing pages or all of them -->
-                <div class="pw-tab-menu pw-ai-batch-menu">
-                  <k-button
-                    icon="translatewizard-translate"
-                    :text="$t('prw.translate.batch')"
-                    :dropdown="true"
-                    variant="filled"
-                    size="sm"
-                    :disabled="!!dirtyTabs['ai'] || batch.running"
-                    @click="$refs.batchMenu.toggle()"
-                  />
-                  <k-dropdown-content ref="batchMenu" align-x="start">
-                    <nav class="k-navigate">
-                      <template v-for="(lang, i) in batch.languages">
-                        <hr v-if="i" :key="'sep-' + lang.code" />
-                        <p :key="'head-' + lang.code" class="pw-menu-heading">{{ lang.name }}</p>
-                        <button
-                          v-for="mode in ['missing', 'all']"
-                          :key="lang.code + '-' + mode"
-                          type="button"
-                          class="k-dropdown-item k-button pw-menu-item"
-                          data-has-text="true"
-                          :disabled="!batchPagesOf(mode, lang.code).length"
-                          @click="$refs.batchMenu.close(); openBatch(lang, mode)"
-                        >
-                          <span class="k-button-text">
-                            {{ $t('prw.translate.batch.' + mode) }}
-                            <span class="pw-menu-count">{{ batchPagesOf(mode, lang.code).length }}</span>
-                          </span>
-                        </button>
-                      </template>
-                    </nav>
-                  </k-dropdown-content>
-                </div>
-                <p v-if="!batch.running && dirtyTabs['ai']" class="pw-ai-secrets-help pw-ai-batch-over">{{ $t('prw.translate.batch.unsaved') }}</p>
               </section>
             </aside>
           </div>
@@ -5710,7 +5707,7 @@ export default {
   margin-top: var(--spacing-8);
 }
 .pw-ai-batch-menu {
-  align-self: flex-start;
+  margin-inline-start: auto;
 }
 /* a group's heading in a menu (the language) */
 .pw-menu-heading {
