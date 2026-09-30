@@ -571,4 +571,5 @@
 	'prw.discardAll' => 'Alles verwerfen',
 	'prw.discardAll.confirm' => 'Die ungespeicherten Änderungen auf {count} Seiten werden verworfen.',
 	'prw.notify.saveAll' => '{count} Seiten gespeichert',
+	'prw.welcome.slogan' => 'Make something beautiful.',
 ];

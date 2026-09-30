@@ -190,7 +190,7 @@
     <div class="pw-wizard-content">
 
         <!-- Global views: the page's name as heading (an element: its name) -->
-        <div v-if="!loading && activeTab === 'global'" class="pw-page-title-row" :class="{ 'has-intro': globalPageIntro }">
+        <div v-if="!loading && activeTab === 'global' && globalActiveTab !== 'welcome'" class="pw-page-title-row" :class="{ 'has-intro': globalPageIntro }">
           <!-- the page's icon (an element's as in the elements menu) before the name -->
           <k-icon v-if="globalPageIcon" :type="globalPageIcon" class="pw-page-title-icon" />
           <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
@@ -216,6 +216,12 @@
         <div v-if="activeTab === 'global'" class="pw-wizard-panel">
 
           <!-- Blocks -->
+
+          <!-- the start page: empty, the wizard's wand and a slogan -->
+          <div v-if="globalActiveTab === 'welcome'" class="pw-welcome">
+            <k-icon type="wand" class="pw-welcome-icon" />
+            <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
+          </div>
 
           <!-- Project → Site: the page background -->
           <div v-show="globalActiveTab === 'site'" class="pw-wizard-global-content">
@@ -2183,7 +2189,7 @@ export default {
       activeVariants: ['variant', 'variant2'],
       originalActiveVariants: ['variant', 'variant2'],
       activeTab: 'global',
-      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'site'; } catch (e) { return 'site'; } })(),
+      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'welcome'; } catch (e) { return 'welcome'; } })(),
       blockConfigs: {},
       blockOverrides: {},
       originalOverrides: {},
@@ -2388,7 +2394,7 @@ export default {
     },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
-      return this.activeTab === 'global' && ['translate', 'generator'].includes(this.globalActiveTab);
+      return this.activeTab === 'global' && ['welcome', 'translate', 'generator'].includes(this.globalActiveTab);
     },
     patchesHighlighted() {
       return this.patchesHighlightedFor(this.patchesText);
@@ -4434,6 +4440,24 @@ export default {
 .pw-change-count {
   margin-inline-start: var(--spacing-2);
   vertical-align: 0.1em;
+}
+.pw-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-6);
+  min-height: 60vh;
+  color: var(--color-gray-400);
+}
+.pw-welcome-icon {
+  --icon-size: 6rem;
+}
+.pw-welcome-slogan {
+  font-size: var(--text-3xl, 1.875rem);
+  font-weight: var(--font-semi);
+  letter-spacing: -0.01em;
+  color: var(--color-text-dimmed);
 }
 .pw-variant-dot {
   flex: 0 0 auto;
