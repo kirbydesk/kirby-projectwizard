@@ -15,7 +15,8 @@
       <template v-if="dialog.step === 'ask'">
         <p class="pw-batch-dialog-text">{{ $t('prw.translate.batch.chars', { chars: dialog.chars.toLocaleString(), lang: dialog.lang.name }) }}</p>
         <k-box v-if="host.batchOverQuota" theme="negative" :text="$t('prw.translate.batch.over')" />
-        <k-box v-if="dialog.mode === 'all' && !dialog.simulate" theme="negative" :text="$t('prw.translate.batch.overwrite')" />
+        <!-- (not enough usage: only that is said) -->
+        <k-box v-else-if="dialog.mode === 'all' && !dialog.simulate" theme="negative" :text="$t('prw.translate.batch.overwrite')" />
         <!-- a dry run: everything but DeepL and saving -->
         <k-toggle-input
           :value="dialog.simulate"
