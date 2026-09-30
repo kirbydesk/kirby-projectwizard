@@ -3027,11 +3027,12 @@ export default {
 
     blockLabel(blockType) {
       const block = this.blocks.find(b => b.blockType === blockType);
-      if (block && block.name) return block.name;
+      // (the translated name first, the plugin's own description after)
       if (block) {
         const translated = this.$t(block.plugin + '.name');
         if (translated && translated !== block.plugin + '.name') return translated;
       }
+      if (block && block.name) return block.name;
       const name = blockType.replace(/^pw/, '').replace(/([A-Z])/g, ' $1').trim() || blockType;
       return name.charAt(0).toUpperCase() + name.slice(1);
     },
