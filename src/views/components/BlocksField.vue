@@ -75,6 +75,16 @@ export default {
     return { windowWidth: window.innerWidth };
   },
   computed: {
+    // the menu's entries (a list: Kirby calls an options function with a
+    // callback); the one shown marked
+    deviceOptions() {
+      return ['default', 'lg', 'xl'].map(bp => ({
+        text: this.deviceLabel(bp),
+        icon: this.deviceIcon(bp),
+        current: this.device === bp,
+        click: () => setPreviewDevice(bp),
+      }));
+    },
     // the device shown: the one chosen, else by the browser window
     device() {
       const chosen = previewState().device;
@@ -97,15 +107,6 @@ export default {
     },
     deviceLabel(bp) {
       return this.$t({ default: 'prw.label.mobile', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[bp]);
-    },
-    // (the menu's entries; the one shown marked)
-    deviceOptions() {
-      return ['default', 'lg', 'xl'].map(bp => ({
-        text: this.deviceLabel(bp),
-        icon: this.deviceIcon(bp),
-        current: this.device === bp,
-        click: () => setPreviewDevice(bp),
-      }));
     },
   },
 };
