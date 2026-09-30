@@ -25,20 +25,24 @@
         />
       </template>
 
+      <!-- running and done in the same shape (headline, a line, the bar,
+           a line), so the centred dialog keeps its height and nothing jumps -->
       <template v-else-if="dialog.step === 'run'">
-        <!-- the count and the page in lines of their own (a long title
-             cut off, so nothing jumps) -->
         <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.progress', { n: Math.min(batch.done + 1, batch.total), total: batch.total }) }}</p>
         <p class="pw-batch-dialog-page">{{ batch.current }}</p>
         <div class="pw-usage-bar">
           <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
         </div>
-        <p v-if="batch.stop" class="pw-batch-dialog-help">{{ $t('prw.translate.batch.stopping') }}</p>
+        <p class="pw-batch-dialog-help" :style="{ visibility: batch.stop ? 'visible' : 'hidden' }">{{ $t('prw.translate.batch.stopping') }}</p>
       </template>
 
       <template v-else-if="batch.result">
         <p class="pw-batch-dialog-headline">{{ $t(batch.result.simulated ? 'prw.translate.batch.simulated' : 'prw.translate.batch.done', { count: batch.result.done }) }}</p>
-        <k-box v-if="batch.result.stopped" theme="notice" :text="$t('prw.translate.batch.stopped', { count: batch.result.left })" />
+        <p class="pw-batch-dialog-page">{{ batch.result.stopped ? $t('prw.translate.batch.stopped', { count: batch.result.left }) : '\u00a0' }}</p>
+        <div class="pw-usage-bar">
+          <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
+        </div>
+        <p class="pw-batch-dialog-help" style="visibility: hidden">{{ $t('prw.translate.batch.stopping') }}</p>
         <k-box v-for="err in batch.result.errors" :key="err.path" theme="negative" :text="err.title + ': ' + err.message" />
       </template>
     </template>
