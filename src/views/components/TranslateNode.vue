@@ -3,7 +3,7 @@
        the look of the configuration's tree: the page or a block with its
        text fields – each with a switch – and its nested blocks -->
   <li class="pw-json-node" :class="{ 'is-block': depth === 0 }">
-    <div class="pw-json-row is-branch" :class="{ 'is-open': open }" @click="open = !open">
+    <div class="pw-json-row is-branch" :class="{ 'is-open': open }" :title="node.title || null" @click="open = !open">
       <span class="pw-json-toggle">
         <k-icon :type="open ? 'angle-down' : 'angle-right'" />
       </span>
