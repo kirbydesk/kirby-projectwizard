@@ -2613,9 +2613,12 @@ export default {
       },
     },
     // another block: start on its first tab
-    activeTab() {
+    activeTab(tab) {
       this.blockViewTab = null;
       this.showStartTheme();
+      // (the global view is built anew when coming back from a block: its
+      // configuration field measured, its width watched again)
+      if (tab === 'global') this.$nextTick(this.fitPatchesInput);
     },
     // each load of the global view (Kirby sets a new timestamp, also for the
     // same address, e.g. its menu entry): the page chosen in a wizard menu
