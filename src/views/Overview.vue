@@ -983,47 +983,6 @@
                   </k-dropdown-content>
                 </div>
                 <p v-if="!batch.running && dirtyTabs['ai']" class="pw-ai-secrets-help pw-ai-batch-over">{{ $t('prw.translate.batch.unsaved') }}</p>
-                <!-- the run in a dialog: asked first (pages, characters),
-                     then its progress, then its result -->
-                <k-dialog
-                  class="pw-batch-dialog"
-                  size="medium"
-                  :visible="!!batchDialog"
-                  :cancel-button="batchDialogCancel"
-                  :submit-button="batchDialogSubmit"
-                  @cancel="onBatchCancel"
-                  @submit="onBatchSubmit"
-                >
-                  <template v-if="batchDialog">
-                    <template v-if="batchDialog.step === 'ask'">
-                      <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.confirm', { count: batchDialog.pages.length, lang: batchDialog.lang.name }) }}</p>
-                      <k-box theme="info" :text="deeplUsage
-                        ? $t('prw.translate.batch.charsfree', { chars: batchDialog.chars.toLocaleString(), free: Math.max(0, deeplUsage.limit - deeplUsage.count).toLocaleString() })
-                        : $t('prw.translate.batch.chars', { chars: batchDialog.chars.toLocaleString() })" />
-                      <k-box v-if="deeplUsage && batchDialog.chars > deeplUsage.limit - deeplUsage.count" theme="negative" :text="$t('prw.translate.batch.over')" />
-                      <k-box v-if="batchDialog.mode === 'all'" theme="notice" :text="$t('prw.translate.batch.overwrite')" />
-                      <p class="pw-ai-secrets-help">{{ $t('prw.translate.batch.keepopen') }}</p>
-                      <!-- a dry run: everything but DeepL and saving -->
-                      <k-toggle-input
-                        :value="batchDialog.simulate"
-                        :text="$t('prw.translate.batch.simulate')"
-                        @input="batchDialog = { ...batchDialog, simulate: $event }"
-                      />
-                    </template>
-                    <template v-else-if="batchDialog.step === 'run'">
-                      <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.progress', { n: Math.min(batch.done + 1, batch.total), total: batch.total, title: batch.current }) }}</p>
-                      <div class="pw-usage-bar">
-                        <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
-                      </div>
-                      <p class="pw-ai-secrets-help">{{ batch.stop ? $t('prw.translate.batch.stopping') : $t('prw.translate.batch.keepopen') }}</p>
-                    </template>
-                    <template v-else-if="batch.result">
-                      <p class="pw-batch-dialog-headline">{{ $t(batch.result.simulated ? 'prw.translate.batch.simulated' : 'prw.translate.batch.done', { count: batch.result.done }) }}</p>
-                      <k-box v-if="batch.result.stopped" theme="notice" :text="$t('prw.translate.batch.stopped', { count: batch.result.left })" />
-                      <k-box v-for="err in batch.result.errors" :key="err.path" theme="negative" :text="err.title + ': ' + err.message" />
-                    </template>
-                  </template>
-                </k-dialog>
               </section>
             </aside>
           </div>
@@ -3481,16 +3440,28 @@ export default {
       const chars = pages.reduce((sum, p) => sum + (p.chars || 0), 0);
       this.batch.result = null;
       this.batchDialog = { step: 'ask', lang, mode, pages, chars, simulate: false };
+      // (Kirby shows dialogs only when opened through the panel; the
+      // dialog reads its state from here)
+      this.$panel.dialog.open({
+        component: 'pw-batch-dialog',
+        props: { host: this },
+        on: { close: () => this.onBatchClosed() },
+      });
     },
     onBatchSubmit() {
       if (this.batchDialog?.step === 'ask') this.runBatch();
-      else this.batchDialog = null;
+      else this.$panel.dialog.close();
     },
     // cancel: before the start closes, while running stops after the
     // current page (the dialog stays until then)
     onBatchCancel() {
       if (this.batchDialog?.step === 'run') this.batch.stop = true;
-      else this.batchDialog = null;
+      else this.$panel.dialog.close();
+    },
+    // closed another way (Esc, outside): a run stops after its page
+    onBatchClosed() {
+      if (this.batch.running) this.batch.stop = true;
+      this.batchDialog = null;
     },
     // one page after the other (each its own request: no time limit hit);
     // stoppable between two pages
@@ -3517,7 +3488,7 @@ export default {
         left: pages.length - this.batch.done,
       };
       this.batch.running = false;
-      this.batchDialog = { ...this.batchDialog, step: 'done' };
+      if (this.batchDialog) this.batchDialog = { ...this.batchDialog, step: 'done' };
       this.loadDeeplUsage();
       this.loadBatch();
     },
@@ -5733,14 +5704,6 @@ export default {
 }
 .pw-ai-batch-menu {
   align-self: flex-start;
-}
-.pw-batch-dialog .k-dialog-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-.pw-batch-dialog-headline {
-  font-weight: var(--font-semi);
 }
 /* a group's heading in a menu (the language) */
 .pw-menu-heading {

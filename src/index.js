@@ -10,6 +10,7 @@ import GlobalFontManager from './views/components/GlobalFontManager.vue';
 import BlockValues from './views/components/BlockValues.vue';
 import Lock from './views/components/Lock.vue';
 import TranslateNode from './views/components/TranslateNode.vue';
+import BatchDialog from './views/components/BatchDialog.vue';
 import SetupWizard from './views/SetupWizard.vue';
 import Portal from './views/components/Portal.vue';
 import BlockPreview from './views/components/BlockPreview.vue';
@@ -63,5 +64,6 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-json-node': JsonNode,
 		'pw-lock': Lock,
 		'pw-translate-node': TranslateNode,
+		'pw-batch-dialog': BatchDialog,
 	},
 });
