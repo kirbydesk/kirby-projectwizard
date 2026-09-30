@@ -848,8 +848,7 @@
             <div v-if="translateTree && globalActiveTab === 'translate'" class="pw-ai-main">
               <section class="pw-card-section">
                 <div class="pw-card-heading-row">
-                  <!-- (as large as the keys' heading beside it) -->
-                  <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.translate.fields') }}</h2>
+                  <h2 class="pw-card-heading">{{ $t('prw.translate.fields') }}</h2>
                   <!-- every entry of the tree open, or all shut again -->
                   <k-button
                     :icon="translateExpanded ? 'collapse' : 'expand'"
