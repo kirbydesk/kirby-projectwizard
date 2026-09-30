@@ -22,14 +22,13 @@
           role="checkbox"
           tabindex="0"
           :aria-checked="values[field.key] ? 'true' : 'false'"
+          :title="field.name"
           @click="$emit('toggle', { key: field.key, value: !values[field.key] })"
           @keydown.space.prevent="$emit('toggle', { key: field.key, value: !values[field.key] })"
         >
           <span class="pw-json-toggle"></span>
           <span class="pw-translate-label">{{ field.label }}</span>
           <span class="pw-translate-type">{{ field.type }}</span>
-          <!-- the field's name in the blueprint: only while hovered -->
-          <code class="pw-json-key pw-translate-name">{{ field.name }}</code>
           <span class="pw-translate-check">
             <k-icon v-if="values[field.key]" type="check" />
           </span>
@@ -114,18 +113,13 @@ export default {
 .pw-translate-check .k-icon {
   --icon-size: 16px;
 }
-/* the name at the row's end, before the check – shown while hovered */
-.pw-translate-name {
+/* the type right after the label, the check at the row's end */
+.pw-translate-check {
   margin-inline-start: auto;
-  visibility: hidden;
-}
-.pw-translate-field:hover .pw-translate-name,
-.pw-translate-field:focus-visible .pw-translate-name {
-  visibility: visible;
 }
 /* not translated: the label faded */
 .pw-translate-field.is-off .pw-translate-label,
-.pw-translate-field.is-off .pw-json-key {
+.pw-translate-field.is-off .pw-translate-type {
   opacity: 0.5;
 }
 /* the count stays visible while open too; none translated: grey */
