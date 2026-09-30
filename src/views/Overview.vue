@@ -945,6 +945,59 @@
                 </div>
                 <p class="pw-ai-secrets-help pw-ai-usage-figures">{{ $t('prw.translate.usage.text', { count: deeplUsage.count.toLocaleString(), limit: deeplUsage.limit.toLocaleString() }) }}</p>
               </section>
+              <!-- several pages at once: the missing ones or all, one after
+                   the other, the characters they cost shown first -->
+              <section v-if="globalActiveTab === 'translate' && batch.languages.length" class="pw-ai-secrets pw-ai-usage pw-ai-batch">
+                <h3 class="k-label">{{ $t('prw.translate.batch') }}</h3>
+                <k-select-input
+                  v-if="batch.languages.length > 1"
+                  :value="batch.lang"
+                  :options="batch.languages.map(l => ({ value: l.code, text: l.name }))"
+                  :empty="false"
+                  :disabled="batch.running"
+                  @input="batch.lang = $event"
+                />
+                <k-toggles-input
+                  :value="batch.mode"
+                  :options="[
+                    { value: 'missing', text: $t('prw.translate.batch.missing', { count: batchPagesOf('missing').length }) },
+                    { value: 'all', text: $t('prw.translate.batch.all', { count: batchPagesOf('all').length }) }
+                  ]"
+                  :grow="true"
+                  :required="true"
+                  :disabled="batch.running"
+                  @input="batch.mode = $event"
+                />
+                <template v-if="!batch.running">
+                  <p v-if="batchPages.length" class="pw-ai-secrets-help">
+                    {{ $t('prw.translate.batch.chars', { chars: batchChars.toLocaleString() }) }}
+                    <template v-if="deeplUsage && batchChars > deeplUsage.limit - deeplUsage.count"> · <span class="pw-ai-batch-over">{{ $t('prw.translate.batch.over') }}</span></template>
+                  </p>
+                  <p v-else class="pw-ai-secrets-help">{{ $t('prw.translate.batch.none') }}</p>
+                  <p v-if="dirtyTabs['ai']" class="pw-ai-secrets-help pw-ai-batch-over">{{ $t('prw.translate.batch.unsaved') }}</p>
+                  <k-button
+                    icon="translatewizard-translate"
+                    :text="$t('prw.translate.batch.start')"
+                    variant="filled"
+                    theme="positive"
+                    size="sm"
+                    :disabled="!batchPages.length || !!dirtyTabs['ai']"
+                    @click="startBatch"
+                  />
+                </template>
+                <template v-else>
+                  <div class="pw-usage-bar">
+                    <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
+                  </div>
+                  <p class="pw-ai-secrets-help">{{ $t('prw.translate.batch.progress', { n: batch.done + 1, total: batch.total, title: batch.current }) }}</p>
+                  <k-button icon="cancel" :text="$t('prw.translate.batch.stop')" size="sm" variant="filled" :disabled="batch.stop" @click="batch.stop = true" />
+                </template>
+                <!-- the last run: how many, and the pages that failed -->
+                <template v-if="batch.result && !batch.running">
+                  <p class="pw-ai-secrets-help">{{ $t('prw.translate.batch.done', { count: batch.result.done }) }}</p>
+                  <p v-for="err in batch.result.errors" :key="err.path" class="pw-ai-secrets-help pw-ai-batch-over">{{ err.title }}: {{ err.message }}</p>
+                </template>
+              </section>
             </aside>
           </div>
 
@@ -2393,6 +2446,8 @@ export default {
       translateValues: {},
       originalTranslateValues: {},
       deeplUsage: null,
+      // translating several pages (Settings › Translation)
+      batch: { languages: [], pages: [], lang: null, mode: 'missing', running: false, stop: false, done: 0, total: 0, current: '', result: null },
       aiSecrets: null,
       aiSecretsWritable: true,
       aiSecretInputs: {},
@@ -2545,6 +2600,13 @@ export default {
       }
       if (this.patchesText !== this.originalPatchesText) add('patches');
       return out;
+    },
+    // translating several pages: the chosen ones and what they cost
+    batchPages() {
+      return this.batchPagesOf(this.batch.mode);
+    },
+    batchChars() {
+      return this.batchPages.reduce((sum, p) => sum + (p.chars || 0), 0);
     },
     // the start page's figures: the blocks used on all pages together
     blockUsageTotal() {
@@ -2755,7 +2817,10 @@ export default {
       handler(tab) {
         if (tab === 'blocks') this.loadBlockUsage();
         // (DeepL asked only when the page is opened)
-        if (tab === 'translate' && this.hasTranslateTab) this.loadDeeplUsage();
+        if (tab === 'translate' && this.hasTranslateTab) {
+          this.loadDeeplUsage();
+          this.loadBatch();
+        }
         if (tab === 'patches') {
           this.$nextTick(this.fitPatchesInput);
           this.loadPatchesTree();
@@ -3353,6 +3418,46 @@ export default {
       } catch (e) {
         this.translateTree = null;
       }
+    },
+    // the pages of a mode: without translation in the chosen language, or all
+    batchPagesOf(mode) {
+      const lang = this.batch.lang;
+      return this.batch.pages.filter(p => mode === 'all' || !(p.translated || {})[lang]);
+    },
+    async loadBatch() {
+      try {
+        const res = await this.$api.get('translatewizard/batch');
+        this.batch.languages = res.languages || [];
+        this.batch.pages = res.pages || [];
+        if (!this.batch.languages.some(l => l.code === this.batch.lang)) {
+          this.batch.lang = this.batch.languages[0] ? this.batch.languages[0].code : null;
+        }
+      } catch (e) {
+        this.batch.languages = [];
+      }
+    },
+    // one page after the other (each its own request: no time limit hit);
+    // stoppable between two pages
+    async startBatch() {
+      const pages = [...this.batchPages];
+      if (!pages.length) return;
+      if (this.batch.mode === 'all' && !window.confirm(this.$t('prw.translate.batch.confirm', { count: pages.length }))) return;
+      Object.assign(this.batch, { running: true, stop: false, done: 0, total: pages.length, current: '', result: null });
+      const errors = [];
+      for (const page of pages) {
+        if (this.batch.stop) break;
+        this.batch.current = page.title;
+        try {
+          await this.$api.post(page.path + '/translatewizard/translate', { to: this.batch.lang });
+        } catch (e) {
+          errors.push({ path: page.path, title: page.title, message: e.message || String(e) });
+        }
+        this.batch.done++;
+      }
+      this.batch.result = { done: this.batch.done - errors.length, errors };
+      this.batch.running = false;
+      this.loadDeeplUsage();
+      this.loadBatch();
     },
     async loadDeeplUsage() {
       try {
@@ -5563,6 +5668,13 @@ export default {
 }
 .pw-ai-usage {
   margin-top: var(--spacing-8);
+}
+.pw-ai-batch .k-button {
+  justify-self: start;
+  align-self: flex-start;
+}
+.pw-ai-batch-over {
+  color: var(--color-negative);
 }
 .pw-ai-usage-figures {
   font-variant-numeric: tabular-nums;
