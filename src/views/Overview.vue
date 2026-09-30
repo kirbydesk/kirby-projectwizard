@@ -5490,12 +5490,16 @@ export default {
   padding: 0;
   border: 0;
 }
-/* DeepL's usage: a bar (orange above 90 %) */
+/* DeepL's usage: a bar (orange above 90 %) on a faint track of its full
+   length (the panel's grey would hide it) */
 .pw-usage-bar {
   height: 0.5rem;
   overflow: hidden;
   border-radius: 999px;
-  background: light-dark(var(--color-gray-200), var(--color-gray-800));
+  background: light-dark(var(--color-blue-200, #dbeafe), var(--color-blue-900, #1e3a8a));
+}
+.pw-usage-bar.is-high {
+  background: light-dark(var(--color-orange-200, #fed7aa), var(--color-orange-900, #7c2d12));
 }
 .pw-usage-bar > span {
   display: block;
