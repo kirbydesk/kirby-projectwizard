@@ -11,6 +11,8 @@ import BlockValues from './views/components/BlockValues.vue';
 import Lock from './views/components/Lock.vue';
 import TranslateNode from './views/components/TranslateNode.vue';
 import BatchDialog from './views/components/BatchDialog.vue';
+import PanelRender from './views/components/PanelRender.vue';
+import PanelPreview from './views/components/PanelPreview.vue';
 import SetupWizard from './views/SetupWizard.vue';
 import Portal from './views/components/Portal.vue';
 import BlockPreview from './views/components/BlockPreview.vue';
@@ -65,5 +67,8 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-lock': Lock,
 		'pw-translate-node': TranslateNode,
 		'pw-batch-dialog': BatchDialog,
+		// the block previews on the pages (used by the block plugins)
+		'pw-panel-render': PanelRender,
+		'pw-block-panel-preview': PanelPreview,
 	},
 });
