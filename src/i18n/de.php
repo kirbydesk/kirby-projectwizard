@@ -584,7 +584,7 @@
 	'prw.translate.batch.stop' => 'Anhalten',
 	'prw.translate.batch.progress' => 'Seite {n} von {total}:',
 	'prw.translate.batch.done' => '{count} Seiten übersetzt (~{chars} Zeichen)',
-	'prw.translate.batch.chars' => 'Es werden ~{chars} Zeichen zum Übersetzen in die Sprache {lang} an DeepL geschickt.',
+	'prw.translate.batch.chars' => 'Es werden {chars} Zeichen zum Übersetzen in die Sprache {lang} an DeepL geschickt.',
 	'prw.translate.batch.stopping' => 'Wird angehalten …',
 	'prw.translate.batch.pending' => '{count} Seiten ausstehend (~{chars} Zeichen)',
 	'prw.translate.batch.close' => 'Schließen',
