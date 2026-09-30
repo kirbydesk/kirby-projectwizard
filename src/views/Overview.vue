@@ -2593,8 +2593,15 @@ export default {
     },
     blockType: {
       immediate: true,
-      handler(val) {
+      handler(val, old) {
         this.activeTab = val || 'global';
+        // from a block back to the global view: the page chosen in a menu
+        // (remembered by openGlobal), else the start page
+        if (!val && old !== undefined) {
+          let tab = null;
+          try { tab = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); } catch (e) { /* no storage */ }
+          this.globalActiveTab = tab || 'welcome';
+        }
       },
     },
     globalOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
@@ -2616,9 +2623,18 @@ export default {
       }
     };
     window.addEventListener('keydown', this._onKeydown);
+    // the wizard's entry in Kirby's menu: always the start page (as Kirby's
+    // own entries lead to their overview), also from a page of the wizard
+    this._onMenuClick = (e) => {
+      const link = e.target.closest && e.target.closest('.k-panel-menu a[href]');
+      if (!link || !/\/projectwizard\/?$/.test(link.getAttribute('href'))) return;
+      if (this.activeTab === 'global') this.globalActiveTab = 'welcome';
+    };
+    document.addEventListener('click', this._onMenuClick, true);
   },
   beforeDestroy() {
     window.removeEventListener('keydown', this._onKeydown);
+    document.removeEventListener('click', this._onMenuClick, true);
   },
   methods: {
     async load() {
