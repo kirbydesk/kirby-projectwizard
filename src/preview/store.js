@@ -15,7 +15,27 @@ const readDevice = () => {
   }
 };
 
-const state = window.Vue.observable({ data: null, error: null, version: 0, device: readDevice() });
+const state = window.Vue.observable({ data: null, error: null, version: 0, device: readDevice(), windowDevice: null });
+
+// the device by the browser window (frontend breakpoints)
+export function windowDevice() {
+  const w = window.innerWidth;
+  if (w >= 1280) return 'xl';
+  if (w >= 1024) return 'lg';
+  return 'default';
+}
+
+// crossing a breakpoint while resizing the window: the window rules again
+// (a device chosen by hand holds until then)
+let lastWindowDevice = windowDevice();
+state.windowDevice = lastWindowDevice;
+window.addEventListener('resize', () => {
+  const now = windowDevice();
+  if (now === lastWindowDevice) return;
+  lastWindowDevice = now;
+  state.windowDevice = now;
+  if (state.device) setPreviewDevice(null);
+});
 
 export function setPreviewDevice(device) {
   state.device = ['default', 'lg', 'xl'].includes(device) ? device : null;

@@ -41,9 +41,6 @@ export default {
     // the block's content
     content: { type: Object, default: null },
   },
-  data() {
-    return { width: 0 };
-  },
   computed: {
     state() {
       return previewState();
@@ -67,11 +64,8 @@ export default {
     // preview do: desktop from 1280 px (its grid values), tablet from
     // 1024 px, below as a phone (no grid)
     bp() {
-      // (chosen above the blocks: that device)
-      if (this.state.device) return this.state.device;
-      if (this.width >= 1280) return 'xl';
-      if (this.width >= 1024) return 'lg';
-      return 'default';
+      // (chosen above the blocks: that device; else the window's)
+      return this.state.device || this.state.windowDevice || 'xl';
     },
   },
   watch: {
@@ -82,14 +76,6 @@ export default {
   },
   created() {
     ensurePreviewData(this.$api);
-  },
-  mounted() {
-    this._onResize = () => { this.width = window.innerWidth; };
-    this._onResize();
-    window.addEventListener('resize', this._onResize);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this._onResize);
   },
   methods: {
     // links in the text lead nowhere here (a click selects the block)

@@ -71,9 +71,6 @@ import { previewState, setPreviewDevice } from '../../preview/store.js';
 
 export default {
   extends: 'k-blocks-field',
-  data() {
-    return { windowWidth: window.innerWidth };
-  },
   computed: {
     // the menu's entries (a list: Kirby calls an options function with a
     // callback); the one shown marked
@@ -87,19 +84,9 @@ export default {
     },
     // the device shown: the one chosen, else by the browser window
     device() {
-      const chosen = previewState().device;
-      if (chosen) return chosen;
-      if (this.windowWidth >= 1280) return 'xl';
-      if (this.windowWidth >= 1024) return 'lg';
-      return 'default';
+      const state = previewState();
+      return state.device || state.windowDevice || 'xl';
     },
-  },
-  mounted() {
-    this._onResize = () => { this.windowWidth = window.innerWidth; };
-    window.addEventListener('resize', this._onResize);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this._onResize);
   },
   methods: {
     deviceIcon(bp) {
