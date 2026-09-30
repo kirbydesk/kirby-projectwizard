@@ -570,7 +570,7 @@
 	'prw.patches.locked' => 'Locked by manual configuration',
 	'prw.translate.fields' => 'Translated fields',
 	'prw.translate.fields.help' => 'Sets which fields go to DeepL when translating. New blocks and fields are included automatically, fields holding ids such as anchors stay off.',
-	'prw.translate.usage' => 'Usage',
+	'prw.translate.usage' => 'Current usage',
 	'prw.hint.variants' => 'Sets which colour variants the blocks offer in addition to <code>Default</code>.',
 	'prw.label.usedTimes' => 'used {count}×',
 	'prw.label.unused' => 'not used',
