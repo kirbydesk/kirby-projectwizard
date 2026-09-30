@@ -182,7 +182,14 @@
       </div>
     </pw-portal>
 
-    <div v-if="loading" class="pw-wizard-loading">{{ $t('loading') }} …</div>
+    <!-- loading: the start page with a spinner in place of the wand -->
+    <div v-if="loading" class="pw-welcome pw-wizard-loading">
+      <k-icon type="loader" class="pw-welcome-icon" />
+      <div class="pw-welcome-text">
+        <h1 class="pw-welcome-title">{{ $t('prw.area.title') }}</h1>
+        <p class="pw-welcome-slogan">{{ $t('prw.welcome.slogan') }}</p>
+      </div>
+    </div>
 
     <!-- Two columns while the preview is on: settings 2/3, preview 1/3.
          The previews are moved into the right column via pw-portal. -->
@@ -4977,11 +4984,7 @@ export default {
 }
 
 
-.pw-wizard-loading {
-  padding: var(--spacing-12);
-  text-align: center;
-  color: var(--color-text-dimmed);
-}
+/* (the loading view is the start page: .pw-welcome) */
 
 .pw-block-preview-body {
   margin-bottom: var(--spacing-6);
