@@ -35,6 +35,7 @@ window.addEventListener('resize', () => {
   lastWindowDevice = now;
   state.windowDevice = now;
   if (state.device) setPreviewDevice(null);
+  markShownDevice();
 });
 
 // the devices from narrow to wide: one wider than the window cannot be shown
@@ -49,8 +50,15 @@ export function shownDevice() {
   return state.device && deviceFits(state.device) ? state.device : (state.windowDevice || 'xl');
 }
 
+// the device shown, on the page's root element (data-pw-device): the
+// drawers mark the values of that device (columns, grid, logos per row)
+export function markShownDevice() {
+  try { document.documentElement.dataset.pwDevice = shownDevice(); } catch (e) { /* no document */ }
+}
+
 export function setPreviewDevice(device) {
   state.device = ['default', 'lg', 'xl'].includes(device) ? device : null;
+  markShownDevice();
   try {
     if (state.device) window.localStorage.setItem(DEVICE_KEY, state.device);
     else window.localStorage.removeItem(DEVICE_KEY);
@@ -119,3 +127,5 @@ export function announcePreviewSaved() {
   invalidatePreviewData();
   try { channel && channel.postMessage('saved'); } catch (e) { /* ignore */ }
 }
+
+markShownDevice();
