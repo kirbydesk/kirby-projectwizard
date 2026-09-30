@@ -37,6 +37,18 @@ window.addEventListener('resize', () => {
   if (state.device) setPreviewDevice(null);
 });
 
+// the devices from narrow to wide: one wider than the window cannot be shown
+const RANK = { default: 0, lg: 1, xl: 2 };
+export function deviceFits(device) {
+  return RANK[device] <= RANK[state.windowDevice || 'xl'];
+}
+
+// the device the previews show: the one chosen while it fits the window,
+// else the window's
+export function shownDevice() {
+  return state.device && deviceFits(state.device) ? state.device : (state.windowDevice || 'xl');
+}
+
 export function setPreviewDevice(device) {
   state.device = ['default', 'lg', 'xl'].includes(device) ? device : null;
   try {

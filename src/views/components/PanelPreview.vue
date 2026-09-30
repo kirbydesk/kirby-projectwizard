@@ -2,7 +2,7 @@
   <!-- a block's preview on a page in the panel (the block plugins' own
        preview uses it): the project's saved values from the shared store,
        the device by the width it has -->
-  <div class="pw-panel-preview" :data-device="state.device || null" @click.capture="guardLinks">
+  <div class="pw-panel-preview" :data-device="state.device && bp === state.device ? state.device : null" @click.capture="guardLinks">
     <pw-panel-render
       v-if="data && block"
       :block-type="type"
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { previewState, ensurePreviewData } from '../../preview/store.js';
+import { previewState, ensurePreviewData, shownDevice } from '../../preview/store.js';
 import { themes, bodyDefaultFont, bodyBackground } from '../../preview/derive.js';
 
 export default {
@@ -65,7 +65,7 @@ export default {
     // 1024 px, below as a phone (no grid)
     bp() {
       // (chosen above the blocks: that device; else the window's)
-      return this.state.device || this.state.windowDevice || 'xl';
+      return shownDevice();
     },
   },
   watch: {

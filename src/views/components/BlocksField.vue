@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import { previewState, setPreviewDevice } from '../../preview/store.js';
+import { previewState, setPreviewDevice, shownDevice, deviceFits } from '../../preview/store.js';
 
 export default {
   extends: 'k-blocks-field',
@@ -79,13 +79,16 @@ export default {
         text: this.deviceLabel(bp),
         icon: this.deviceIcon(bp),
         current: this.device === bp,
+        // (wider than the window: greyed out until it is wide enough)
+        disabled: !deviceFits(bp),
         click: () => setPreviewDevice(bp),
       }));
     },
     // the device shown: the one chosen, else by the browser window
     device() {
+      // (read so the button follows the store)
       const state = previewState();
-      return state.device || state.windowDevice || 'xl';
+      return state.device || state.windowDevice ? shownDevice() : 'xl';
     },
   },
   methods: {
