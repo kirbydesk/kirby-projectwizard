@@ -841,8 +841,30 @@
             v-if="hasAiTab"
             v-show="['translate', 'generator'].includes(globalActiveTab)"
             class="pw-wizard-global-content pw-ai-settings"
-            :class="{ 'pw-ai-single': !(globalActiveTab === 'generator' && aiForm) || !aiPageSecrets.length }"
+            :class="{ 'pw-ai-single': !((globalActiveTab === 'generator' && aiForm) || (globalActiveTab === 'translate' && translateTree)) || !aiPageSecrets.length }"
           >
+            <!-- 2/3: the translated fields (translatewizard), a tree as the
+                 configuration's: each block with its text fields -->
+            <div v-if="translateTree && globalActiveTab === 'translate'" class="pw-ai-main">
+              <section class="pw-card-section">
+                <div class="pw-card-heading-row">
+                  <h2 class="pw-card-heading">{{ $t('prw.translate.fields') }}</h2>
+                </div>
+                <div class="pw-card pw-translate-tree">
+                  <ul class="pw-json-children pw-json-root">
+                    <pw-translate-node
+                      v-for="node in translateTree"
+                      :key="'tr-' + node.key"
+                      :node="node"
+                      :values="translateValues"
+                      @toggle="onTranslateToggle"
+                    />
+                  </ul>
+                </div>
+                <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.translate.fields.help')" />
+              </section>
+            </div>
+
             <!-- 3/4: AI defaults (contentwizard) -->
             <div v-if="aiForm && globalActiveTab === 'generator'" class="pw-ai-main">
               <k-form
@@ -890,6 +912,14 @@
                     <template v-if="secret.help"> · {{ secret.help }}</template>
                   </p>
                 </div>
+              </section>
+              <!-- DeepL: the characters used this period and the limit -->
+              <section v-if="globalActiveTab === 'translate' && deeplUsage" class="pw-ai-secrets pw-ai-usage">
+                <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.translate.usage') }}</h2>
+                <div class="pw-usage-bar" :class="{ 'is-high': deeplUsage.count / deeplUsage.limit > 0.9 }">
+                  <span :style="{ width: Math.min(100, deeplUsage.count / deeplUsage.limit * 100) + '%' }"></span>
+                </div>
+                <p class="pw-ai-secrets-help">{{ $t('prw.translate.usage.text', { count: deeplUsage.count.toLocaleString(), limit: deeplUsage.limit.toLocaleString() }) }}</p>
               </section>
             </aside>
           </div>
@@ -2328,6 +2358,12 @@ export default {
       aiForm: null,
       aiValues: {},
       originalAiValues: {},
+      // Settings › Translation (translatewizard): the tree of the text
+      // fields, which are translated ("owner.field" → on), DeepL's usage
+      translateTree: null,
+      translateValues: {},
+      originalTranslateValues: {},
+      deeplUsage: null,
       aiSecrets: null,
       aiSecretsWritable: true,
       aiSecretInputs: {},
@@ -2472,6 +2508,7 @@ export default {
       add('footer', this.diffPaths(this.footerOverrides, this.originalFooterOverrides).length);
       // AI: the generator's settings, the keys typed in (by plugin)
       add('generator', this.diffPaths(this.aiValues, this.originalAiValues).length);
+      add('translate', this.diffPaths(this.translateValues, this.originalTranslateValues).length);
       for (const [env, value] of Object.entries(this.aiSecretInputs || {})) {
         if (!value || !value.trim()) continue;
         const secret = (this.aiSecrets || []).find(sc => sc.env === env);
@@ -2683,6 +2720,8 @@ export default {
       immediate: true,
       handler(tab) {
         if (tab === 'blocks') this.loadBlockUsage();
+        // (DeepL asked only when the page is opened)
+        if (tab === 'translate' && this.hasTranslateTab) this.loadDeeplUsage();
         if (tab === 'patches') {
           this.$nextTick(this.fitPatchesInput);
           this.loadPatchesTree();
@@ -2850,6 +2889,8 @@ export default {
         } catch (e) {
           this.aiSecrets = null;
         }
+        // the translated fields (translatewizard)
+        if (this.hasTranslateTab) await this.loadTranslateFields();
 
         this.loading = false;
       } catch (e) {
@@ -3254,6 +3295,37 @@ export default {
       this.$set(this.dirtyTabs, 'ai', false);
     },
 
+    // the translated fields: the tree and its values (a flat map)
+    setTranslateTree(tree) {
+      const values = {};
+      const walk = (node) => {
+        for (const f of node.fields || []) values[f.key] = !!f.value;
+        (node.children || []).forEach(walk);
+      };
+      (tree || []).forEach(walk);
+      this.translateTree = tree || null;
+      this.translateValues = values;
+      this.originalTranslateValues = JSON.parse(JSON.stringify(values));
+    },
+    onTranslateToggle({ key, value }) {
+      this.$set(this.translateValues, key, value);
+      this.updateAiDirty();
+    },
+    async loadTranslateFields() {
+      try {
+        this.setTranslateTree((await this.$api.get('translatewizard/fields')).tree);
+      } catch (e) {
+        this.translateTree = null;
+      }
+    },
+    async loadDeeplUsage() {
+      try {
+        this.deeplUsage = (await this.$api.get('translatewizard/usage')).usage || null;
+      } catch (e) {
+        this.deeplUsage = null;
+      }
+    },
+
     onAiInput(values) {
       this.aiValues = values;
       this.updateAiDirty();
@@ -3273,7 +3345,8 @@ export default {
     updateAiDirty() {
       const settingsDirty = !!this.aiForm && JSON.stringify(this.aiValues) !== this.snapshots['ai'];
       const keysDirty = Object.values(this.aiSecretInputs).some(v => v && v.trim() !== '');
-      this.$set(this.dirtyTabs, 'ai', settingsDirty || keysDirty);
+      const fieldsDirty = JSON.stringify(this.translateValues) !== JSON.stringify(this.originalTranslateValues);
+      this.$set(this.dirtyTabs, 'ai', settingsDirty || keysDirty || fieldsDirty);
     },
 
     async removeSecret(secret) {
@@ -3458,6 +3531,7 @@ export default {
         navOverrides: this.navOverrides,
         footerOverrides: this.footerOverrides,
         aiValues: this.aiValues,
+        translateValues: this.translateValues,
         activeBlocks: this.activeBlocks,
         activeVariants: this.activeVariants,
         patchesText: this.patchesText,
@@ -3474,6 +3548,7 @@ export default {
         navOverrides: this.originalNavOverrides,
         footerOverrides: this.originalFooterOverrides,
         aiValues: this.originalAiValues,
+        translateValues: this.originalTranslateValues,
         activeBlocks: this.originalActiveBlocks,
         activeVariants: this.originalActiveVariants,
         patchesText: this.originalPatchesText,
@@ -3483,7 +3558,10 @@ export default {
     saveDraft() {
       if (this.loading) return;
       try {
-        const hasAny = Object.keys(this.pendingCounts).some(k => !(k === 'translate' || k === 'generator') || this.diffPaths(this.aiValues, this.originalAiValues).length);
+        // (keys typed in never go into the draft)
+        const hasAny = Object.keys(this.pendingCounts).some(k => !(k === 'translate' || k === 'generator'))
+          || this.diffPaths(this.aiValues, this.originalAiValues).length
+          || this.diffPaths(this.translateValues, this.originalTranslateValues).length;
         if (!hasAny) {
           localStorage.removeItem('pw-wizard-draft');
           return;
@@ -3505,7 +3583,7 @@ export default {
       const copy = (v) => JSON.parse(JSON.stringify(v));
       for (const [bt, ov] of Object.entries(st.blockOverrides || {})) this.$set(this.blockOverrides, bt, copy(ov));
       for (const [bt, ov] of Object.entries(st.blockValueOverrides || {})) this.$set(this.blockValueOverrides, bt, copy(ov));
-      for (const key of ['globalOverrides', 'elementOverrides', 'fontOverrides', 'navOverrides', 'footerOverrides', 'aiValues']) {
+      for (const key of ['globalOverrides', 'elementOverrides', 'fontOverrides', 'navOverrides', 'footerOverrides', 'aiValues', 'translateValues']) {
         if (st[key]) this[key] = copy(st[key]);
       }
       if (Array.isArray(st.activeBlocks)) {
@@ -3583,6 +3661,7 @@ export default {
       this.navOverrides = copy(this.originalNavOverrides);
       this.footerOverrides = copy(this.originalFooterOverrides);
       this.aiValues = copy(this.originalAiValues);
+      this.translateValues = copy(this.originalTranslateValues);
       this.aiSecretInputs = {};
       this.patchesText = this.originalPatchesText;
       this.patchesError = '';
@@ -3724,6 +3803,10 @@ export default {
         }
         if (Object.keys(set).length) {
           this.setAiSecrets(await this.$api.post('pagewizard/secrets', { set }));
+          if (set.DEEPL_API_KEY) this.loadDeeplUsage();
+        }
+        if (this.translateTree && JSON.stringify(this.translateValues) !== JSON.stringify(this.originalTranslateValues)) {
+          this.setTranslateTree((await this.$api.post('translatewizard/fields', { fields: this.translateValues })).tree);
         }
         this.updateAiDirty();
         this.notifySaved(this.$t('prw.notify.ai.success'));
@@ -4157,6 +4240,7 @@ export default {
           this.$set(this.dirtyTabs, 'patches', false);
         } else if (tab === 'translate' || tab === 'generator') {
           this.aiValues = JSON.parse(JSON.stringify(this.originalAiValues));
+          this.translateValues = JSON.parse(JSON.stringify(this.originalTranslateValues));
           this.aiSecretInputs = {};
           this.$set(this.dirtyTabs, 'ai', false);
         }
@@ -5391,11 +5475,40 @@ export default {
 
 .pw-ai-settings {
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: var(--spacing-12);
   align-items: start;
 }
 .pw-ai-settings.pw-ai-single { grid-template-columns: 1fr; }
+/* the translated fields' tree: in a card, the blocks as in the
+   configuration's tree */
+.pw-translate-tree {
+  padding: var(--spacing-2);
+}
+.pw-translate-tree .pw-json-root {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+/* DeepL's usage: a bar (orange above 90 %) */
+.pw-usage-bar {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: light-dark(var(--color-gray-200), var(--color-gray-800));
+}
+.pw-usage-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-blue-600);
+}
+.pw-usage-bar.is-high > span {
+  background: var(--color-orange-500);
+}
+.pw-ai-usage {
+  margin-top: var(--spacing-8);
+}
 @media (max-width: 60rem) {
   .pw-ai-settings { grid-template-columns: 1fr; }
 }
