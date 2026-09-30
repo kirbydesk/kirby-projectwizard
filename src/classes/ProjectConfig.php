@@ -185,6 +185,42 @@ class ProjectConfig
 	}
 
 	/**
+	 * Everything the panel's block previews need, in one go (the saved
+	 * state): the active colour variants, the global values, the elements,
+	 * the size steps, the fonts and per block its settings (with the
+	 * exceptions), its own start values (without what an exception sets)
+	 * and its values.
+	 */
+	public static function previewData(): array
+	{
+		$patches = pwConfig::patches();
+		$blocks  = [];
+		foreach (self::detectBlocks() as $blockType => $info) {
+			$own = self::loadBlockOverrides($blockType);
+			$patch = $patches[$blockType] ?? null;
+			if (is_array($own['settings'] ?? null) && is_array($patch)) {
+				unset($patch['editor'], $patch['values']);
+				$own['settings'] = pwConfig::withoutPatched($own['settings'], $patch);
+			}
+			$values = self::loadBlockValues($blockType);
+			$blocks[$blockType] = [
+				'config'         => ['defaults' => ['settings' => $info['settings'], 'editor' => $info['editor']]],
+				'overrides'      => $own ?: new \stdClass(),
+				'valueDefaults'  => $values['defaults'] ?: new \stdClass(),
+				'valueOverrides' => $values['overrides'] ?: new \stdClass(),
+			];
+		}
+		return [
+			'variants'  => self::activeVariants(),
+			'global'    => self::loadGlobal(),
+			'elements'  => self::loadElements(),
+			'fontsizes' => self::loadFontsizes(),
+			'fonts'     => self::loadFonts(),
+			'blocks'    => $blocks,
+		];
+	}
+
+	/**
 	 * Exceptions (Project › Exceptions): the raw text of patches.json (as
 	 * written, so its formatting stays) and the block types it names that
 	 * are not registered.

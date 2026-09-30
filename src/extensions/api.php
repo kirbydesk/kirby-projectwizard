@@ -225,6 +225,14 @@ return [
 				return ProjectConfig::mergedConfig();
 			}
 		],
+		// the panel's block previews: all project values at once
+		[
+			'pattern' => 'projectwizard/preview',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::previewData();
+			}
+		],
 		// Settings › Configuration: what currently applies per block (tree)
 		[
 			'pattern' => 'projectwizard/patches/tree',

@@ -2316,6 +2316,8 @@
 
 <script>
 import { withoutPatched, withoutPatchedValues } from '../helpers/patches.js';
+import { injectFontFaces } from '../preview/fonts.js';
+import { announcePreviewSaved } from '../preview/store.js';
 import autosize from '../directives/autosize.js';
 import { readPreviewBp, savePreviewBp, SCREEN_HEIGHTS } from '../helpers/preview-bp.js';
 
@@ -4259,29 +4261,9 @@ export default {
       const colorOv = ((this.globalOverrides.global || {})[theme] || {})[key];
       return colorOv || this.globalDefaults.colors?.colors?.[key]?.[theme] || '#1D548B';
     },
+    // (shared with the panel's block previews)
     injectFontFaces() {
-      const id = 'pw-panel-fontfaces';
-      let style = document.getElementById(id);
-      if (!style) {
-        style = document.createElement('style');
-        style.id = id;
-        document.head.appendChild(style);
-      }
-      const allFonts = { ...(this.fontsData.builtin || {}), ...(this.fontsData.project || {}) };
-      const rules = [];
-      for (const font of Object.values(allFonts)) {
-        for (const file of (font.files || [])) {
-          rules.push(
-            '@font-face { ' +
-            "font-family: '" + font.family + "'; " +
-            "src: url('/assets/fonts/" + file.src + "') format('woff2'); " +
-            'font-weight: ' + (file.weight || '400') + '; ' +
-            'font-style: ' + (file.style || 'normal') + '; ' +
-            'font-display: swap; }'
-          );
-        }
-      }
-      style.textContent = rules.join('\n');
+      injectFontFaces(this.fontsData);
     },
 
     // --- Global: Navigation ---
@@ -4443,6 +4425,8 @@ export default {
     // Reload open frontend tabs like a module save does (pagewizard's reloadOnSave
     // listens on this channel) — once the new CSS is built, at most after 3 s.
     async reloadFrontend(cssBefore) {
+      // the panel's block previews (this tab and others) load the saved values again
+      announcePreviewSaved();
       if (!('BroadcastChannel' in window)) return;
       for (let waited = 0; waited < 3000; waited += 250) {
         if ((await this.frontendCssVersion()) !== cssBefore) break;
