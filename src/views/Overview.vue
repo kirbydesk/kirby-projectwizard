@@ -195,7 +195,7 @@
         <!-- typed letter by letter; the rest already takes its room (hidden),
              so nothing moves – and loading view and start page share the count,
              so the typing goes on across the switch -->
-        <p class="pw-welcome-slogan" :aria-label="$t('prw.welcome.slogan')"><span aria-hidden="true">{{ $t('prw.welcome.slogan').slice(0, sloganTyped) }}</span><span v-if="sloganCaret" class="pw-typewriter-caret" aria-hidden="true"></span><span class="pw-typewriter-rest" aria-hidden="true">{{ $t('prw.welcome.slogan').slice(sloganTyped) }}</span></p>
+        <p class="pw-welcome-slogan" :aria-label="$t('prw.welcome.slogan')"><span aria-hidden="true">{{ $t('prw.welcome.slogan').slice(0, sloganTyped) }}</span><span class="pw-typewriter-caret" :class="{ 'is-done': !sloganCaret }" aria-hidden="true"></span><span class="pw-typewriter-rest" aria-hidden="true">{{ $t('prw.welcome.slogan').slice(sloganTyped) }}</span></p>
         <!-- (the figures' line reserved: nothing jumps when the page appears) -->
         <p class="pw-welcome-stats" style="visibility: hidden" aria-hidden="true">·</p>
       </div>
@@ -282,7 +282,7 @@
               <!-- typed letter by letter; the rest already takes its room (hidden),
                    so nothing moves – and loading view and start page share the count,
                    so the typing goes on across the switch -->
-              <p class="pw-welcome-slogan" :aria-label="$t('prw.welcome.slogan')"><span aria-hidden="true">{{ $t('prw.welcome.slogan').slice(0, sloganTyped) }}</span><span v-if="sloganCaret" class="pw-typewriter-caret" aria-hidden="true"></span><span class="pw-typewriter-rest" aria-hidden="true">{{ $t('prw.welcome.slogan').slice(sloganTyped) }}</span></p>
+              <p class="pw-welcome-slogan" :aria-label="$t('prw.welcome.slogan')"><span aria-hidden="true">{{ $t('prw.welcome.slogan').slice(0, sloganTyped) }}</span><span class="pw-typewriter-caret" :class="{ 'is-done': !sloganCaret }" aria-hidden="true"></span><span class="pw-typewriter-rest" aria-hidden="true">{{ $t('prw.welcome.slogan').slice(sloganTyped) }}</span></p>
               <!-- the project in figures -->
               <p class="pw-welcome-stats">{{ $t('prw.welcome.stats', { blocks: blockUsageTotal === null ? '…' : blockUsageTotal, pages: sitePageCount === null ? '…' : sitePageCount, variants: activeVariants.length + 1 }) }}</p>
             </div>
@@ -5140,6 +5140,11 @@ export default {
   vertical-align: -0.15em;
   background: currentColor;
   animation: pw-caret-blink 1s steps(1) infinite;
+}
+/* done: invisible, but still there (the line keeps its height) */
+.pw-typewriter-caret.is-done {
+  visibility: hidden;
+  animation: none;
 }
 @keyframes pw-caret-blink {
   50% { opacity: 0; }
