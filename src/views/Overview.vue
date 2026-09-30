@@ -4504,16 +4504,18 @@ export default {
   /* invisible until its turn: one after the other they appear, then keep
      twinkling (never quite gone) */
   opacity: 0;
-  animation: pw-twinkle 2.4s ease-in-out infinite;
+  animation: pw-twinkle 4.8s ease-in-out infinite;
 }
 .pw-welcome-star.is-1 { top: -0.9rem; left: -0.9rem; animation-delay: 0s; }
-.pw-welcome-star.is-2 { top: 1.6rem; left: -1.9rem; width: 1rem; height: 1rem; animation-delay: 0.6s; }
-.pw-welcome-star.is-3 { top: -1.7rem; left: 2.4rem; width: 1.1rem; height: 1.1rem; animation-delay: 1.2s; }
-.pw-welcome-star.is-4 { top: -0.4rem; left: 4.4rem; width: 0.8rem; height: 0.8rem; animation-delay: 1.8s; }
+.pw-welcome-star.is-2 { top: 1.6rem; left: -1.9rem; width: 1rem; height: 1rem; animation-delay: 1.2s; }
+.pw-welcome-star.is-3 { top: -1.7rem; left: 2.4rem; width: 1.1rem; height: 1.1rem; animation-delay: 2.4s; }
+.pw-welcome-star.is-4 { top: -0.4rem; left: 4.4rem; width: 0.8rem; height: 0.8rem; animation-delay: 3.6s; }
+/* a flash as quick as before (the first half), then a pause while the
+   others take their turn */
 @keyframes pw-twinkle {
-  0%, 100% { opacity: 0.15; transform: scale(0.5) rotate(0deg); }
-  40% { opacity: 1; transform: scale(1.1) rotate(25deg); }
-  70% { opacity: 0.3; transform: scale(0.7) rotate(45deg); }
+  0%, 50%, 100% { opacity: 0.15; transform: scale(0.5) rotate(0deg); }
+  20% { opacity: 1; transform: scale(1.1) rotate(25deg); }
+  35% { opacity: 0.3; transform: scale(0.7) rotate(45deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .pw-welcome-star { animation: none; opacity: 0.8; }
