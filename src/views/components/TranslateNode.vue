@@ -99,15 +99,19 @@ export default {
   font-size: 11px;
   font-weight: 400;
 }
-/* the field's type: a small purple badge */
+/* the field's type: a purple badge as kirby-explorer's templates
+   (Kirby's inline <code> look in purple) */
 .pw-translate-type {
-  padding: 0 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.4rem;
-  color: light-dark(var(--color-purple-800), var(--color-purple-200));
-  background: light-dark(var(--color-purple-200), var(--color-purple-800));
-  border-radius: 999px;
+  padding-inline: var(--spacing-1);
+  font-family: var(--code-font-family, var(--font-mono));
+  font-size: 11px;
+  line-height: var(--text-line-height, 1.5);
+  color: var(--color-purple-900);
+  background: var(--color-purple-300);
+  border-radius: var(--rounded);
+  outline: 1px solid light-dark(var(--color-purple-400), var(--color-purple-900));
+  outline-offset: -1px;
+  white-space: nowrap;
 }
 .pw-translate-field {
   cursor: pointer;
