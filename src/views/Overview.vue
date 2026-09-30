@@ -4815,15 +4815,14 @@ export default {
 /* Wide screens: the preview is a sidebar over the full height on the right,
    like Kirby's menu on the left; the main area makes room for it.
    Collapsed it keeps the width of Kirby's closed menu. */
-/* narrower than 75rem: no preview (too little room next to the settings);
-   the tree of the configuration is no preview – it stays, below the editor */
+/* narrower than 75rem: the preview (and the configuration's tree) below
+   the settings, not beside them; nothing to fold away */
 @media (max-width: 74.99rem) {
-  .pw-wizard .pw-preview-column:not(:has(> .pw-portal > .pw-patches-tree:not([style*="display: none"]))),
   .pw-wizard .pw-preview-toggle,
   .pw-wizard .pw-preview-open {
     display: none !important;
   }
-  .pw-wizard .pw-preview-column:has(> .pw-portal > .pw-patches-tree:not([style*="display: none"])) {
+  .pw-wizard .pw-preview-column {
     order: 1;
   }
   /* (as a card, not edge to edge as in the sidebar) */
