@@ -144,9 +144,13 @@ export default {
   opacity: 0.5;
 }
 /* the count stays visible while open too, right after the name (the
-   row's end is the fields' boxes); none translated: grey */
-.pw-translate-count.is-none {
+   row's end is the fields' boxes): blue figures without a badge; none
+   translated: grey */
+.pw-json-count.pw-translate-count {
+  padding: 0;
+  background: none;
+}
+.pw-json-count.pw-translate-count.is-none {
   color: var(--color-text-dimmed);
-  background: light-dark(var(--color-gray-200), var(--color-gray-800));
 }
 </style>
