@@ -509,6 +509,7 @@
 	'prw.preview.card.text' => 'Kurze Beschreibung, was diese Karte zeigt.',
 	'prw.preview.card.textLong' => 'Eine etwas längere Beschreibung, damit die Karten unterschiedlich hoch sind und die Position des Links sichtbar wird.',
 	'prw.preview.card.cta' => 'Mehr erfahren',
+	'prw.panel.gridlines' => 'Rasterlinien',
 	'prw.preview.guides' => 'Hilfslinien',
 	'prw.sample.heading' => 'Franz jagt im __marked__komplett verwahrlosten__/marked__ Taxi quer durch Bayern',
 	'prw.sample.tagline' => 'Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich',

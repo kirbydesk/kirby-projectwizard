@@ -11,6 +11,11 @@
     >
       <section class="pw-block-live-section" :style="sectionStyle">
         <div class="pw-block-live-grid" :style="gridStyle">
+          <!-- the grid's twelve columns over the block (switched on above the
+               blocks) -->
+          <div v-if="gridLines && hasGrid" class="pw-panel-gridlines" :style="{ columnGap: gridStyle.columnGap }" aria-hidden="true">
+            <span v-for="n in 12" :key="'gl-' + n"></span>
+          </div>
           <div class="pw-block-live-item" :style="itemStyle">
           <!-- (the featurelist's split layout: the intro a column of its own
                next to the items) -->
@@ -154,6 +159,8 @@ export default {
   props: {
     // the block's content (Kirby's block content: fields in lower case)
     content: { type: Object, default: () => ({}) },
+    // the grid's columns as lines over the block
+    gridLines: { type: Boolean, default: false },
   },
   computed: {
     // the block's own variant (a colour variant no longer active, or the
@@ -466,6 +473,23 @@ export default {
 }
 .pw-panel-render p {
   margin: 0;
+}
+/* the grid's twelve columns over the block: magenta, above the content,
+   not in the way of clicks */
+.pw-panel-render .pw-block-live-grid {
+  position: relative;
+}
+.pw-panel-gridlines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  pointer-events: none;
+}
+.pw-panel-gridlines span {
+  background: rgba(255, 0, 170, 0.08);
+  border-inline: 1px solid rgba(255, 0, 170, 0.45);
 }
 /* the grid: the content's columns marked by dashed lines at their edges
    (as the old preview did), from tablet on */

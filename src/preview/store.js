@@ -15,7 +15,25 @@ const readDevice = () => {
   }
 };
 
-const state = window.Vue.observable({ data: null, error: null, version: 0, device: readDevice(), windowDevice: null });
+// the grid's lines over the previews (on/off), remembered in the browser
+const GRID_KEY = 'pw-panel-grid';
+const readGrid = () => {
+  try {
+    return window.localStorage.getItem(GRID_KEY) === '1';
+  } catch (e) {
+    return false;
+  }
+};
+
+const state = window.Vue.observable({ data: null, error: null, version: 0, device: readDevice(), windowDevice: null, gridLines: readGrid() });
+
+export function setGridLines(on) {
+  state.gridLines = !!on;
+  try {
+    if (state.gridLines) window.localStorage.setItem(GRID_KEY, '1');
+    else window.localStorage.removeItem(GRID_KEY);
+  } catch (e) { /* not remembered */ }
+}
 
 // the device by the browser window (frontend breakpoints)
 export function windowDevice() {

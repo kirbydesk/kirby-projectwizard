@@ -11,6 +11,17 @@
   >
     <template v-if="!disabled && hasFieldsets" #options>
       <div class="pw-blocks-field-options">
+        <!-- the grid's twelve columns over all blocks (magenta), on/off -->
+        <k-button
+          :title="$t('prw.panel.gridlines')"
+          :aria-pressed="gridLines ? 'true' : 'false'"
+          :disabled="device === 'default'"
+          :theme="gridLines ? 'pink' : null"
+          icon="prw-guides"
+          variant="filled"
+          size="xs"
+          @click="toggleGridLines"
+        />
         <!-- the device: Kirby's own button (as "Add"), its menu the three -->
         <k-button
           :icon="deviceIcon(device)"
@@ -68,7 +79,7 @@
 </template>
 
 <script>
-import { previewState, setPreviewDevice, shownDevice, deviceFits } from '../../preview/store.js';
+import { previewState, setPreviewDevice, shownDevice, deviceFits, setGridLines } from '../../preview/store.js';
 
 export default {
   extends: 'k-blocks-field',
@@ -84,6 +95,9 @@ export default {
         disabled: !deviceFits(bp),
         click: () => setPreviewDevice(bp),
       }));
+    },
+    gridLines() {
+      return previewState().gridLines;
     },
     // the device shown: the one chosen, else by the browser window
     device() {
@@ -114,6 +128,9 @@ export default {
     });
   },
   methods: {
+    toggleGridLines() {
+      setGridLines(!this.gridLines);
+    },
     deviceIcon(bp) {
       return { default: 'mobile', lg: 'tablet', xl: 'display' }[bp];
     },

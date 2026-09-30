@@ -24,6 +24,7 @@
       :bp="bp"
       :guides="false"
       :with-block-guides="false"
+      :grid-lines="state.gridLines"
     />
     <!-- (until the values are there: room kept, nothing jumps much) -->
     <div v-else class="pw-panel-preview-wait"></div>
