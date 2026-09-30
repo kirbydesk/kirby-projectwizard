@@ -57,7 +57,7 @@
                   <div
                     v-if="featureTitleInline"
                     class="pw-panel-rich"
-                    :style="{ ...featureTextStyle, ...richStyle, '--pw-runin-font': featureTitleInlineStyle.fontFamily, '--pw-runin-weight': featureTitleInlineStyle.fontWeight, '--pw-runin-color': featureTitleInlineStyle.color }"
+                    :style="{ ...featureTextStyle, ...entryRichStyle, '--pw-runin-font': featureTitleInlineStyle.fontFamily, '--pw-runin-weight': featureTitleInlineStyle.fontWeight, '--pw-runin-color': featureTitleInlineStyle.color }"
                     v-html="featureRunIn(item.content)"
                   ></div>
                   <template v-else>
@@ -65,7 +65,7 @@
                     <div
                       v-if="richFilled(item.content.description)"
                       class="pw-panel-rich"
-                      :style="{ ...featureTextBelowStyle, ...(item.content.heading ? {} : { marginTop: 0 }), ...richStyle }"
+                      :style="{ ...featureTextBelowStyle, ...(item.content.heading ? {} : { marginTop: 0 }), ...entryRichStyle }"
                       v-html="item.content.description"
                     ></div>
                   </template>
@@ -97,7 +97,7 @@
                   <div
                     v-if="richFilled(item.content.description)"
                     class="pw-panel-rich"
-                    :style="{ ...stepTextStyle, ...(item.content.heading ? {} : { marginTop: 0 }), ...richStyle }"
+                    :style="{ ...stepTextStyle, ...(item.content.heading ? {} : { marginTop: 0 }), ...entryRichStyle }"
                     v-html="item.content.description"
                   ></div>
                 </div>
@@ -222,6 +222,8 @@ export default {
         '--pw-list-marker': this.elementColor('list', 'element-list-marker') || 'currentColor',
         '--pw-list-number': this.elementColor('list', 'element-list-number') || 'currentColor',
         '--pw-list-marker-size': this.elementValue('list', 'marker-size') || '100%',
+        // (below a list: the lists' space to what follows)
+        '--pw-list-spacing': this.elementValue('list', 'spacing') || this.elementValue('editor', 'paragraph-spacing') || '1em',
         // the links (Blocks › Links), as variables: the text keeps its own weight
         '--pw-link': this.globalColor('block-link') || 'inherit',
         '--pw-link-hover': this.globalColor('block-link-hover') || this.globalColor('block-link') || 'inherit',
@@ -230,6 +232,13 @@ export default {
         '--pw-link-thickness': this.linkValue('block-link-thickness') || 'auto',
         '--pw-link-offset': this.linkValue('block-link-offset') || 'auto',
       };
+    },
+    // an entry's description (steplist, featurelist): its paragraphs and
+    // lists with the entries' paragraph spacing (Elements › Items), as the
+    // frontend – no extra space below a list there
+    entryRichStyle() {
+      const gap = this.entryValue('item-text-paragraph-spacing') || this.richStyle['--pw-paragraph-gap'];
+      return { ...this.richStyle, '--pw-paragraph-gap': gap, '--pw-list-spacing': gap };
     },
     // the steplist's steps (its blocks field)
     stepItems() {
@@ -429,6 +438,9 @@ export default {
 .pw-panel-rich ol {
   padding-inline-start: var(--pw-ol-indent);
   list-style-type: var(--pw-ol-style);
+}
+.pw-panel-rich > :is(ul, ol) + * {
+  margin-top: var(--pw-list-spacing, var(--pw-paragraph-gap));
 }
 .pw-panel-rich li + li {
   margin-top: var(--pw-list-gap);
