@@ -43,9 +43,9 @@
                 :class="{ 'is-hidden': button.isHidden }"
                 :style="buttonStyle"
               >
-                <span v-if="buttonIcon(button, 'left')" class="pw-panel-button-icon" v-html="buttonIcon(button, 'left')"></span>
+                <span v-if="buttonIcon(button, 'left')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginRight: buttonIconStyle.gap }" v-html="buttonIcon(button, 'left')"></span>
                 <span>{{ button.content.linktext || $t('pw.field.link-text.placeholder') }}</span>
-                <span v-if="buttonIcon(button, 'right')" class="pw-panel-button-icon" v-html="buttonIcon(button, 'right')"></span>
+                <span v-if="buttonIcon(button, 'right')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginLeft: buttonIconStyle.gap }" v-html="buttonIcon(button, 'right')"></span>
               </span>
             </div>
           </div>
@@ -151,6 +151,15 @@ export default {
     visibleButtons() {
       const buttons = Array.isArray(this.content.buttons) ? this.content.buttons : [];
       return buttons.filter(b => b && b.content && (b.content.linkinternal || b.content.linkexternal));
+    },
+    // a button's icon: its own colour, size and gap to the text (Elements ›
+    // Buttons), as the frontend's .link-icon
+    buttonIconStyle() {
+      return {
+        color: this.elementColor('button', 'element-button-icon') || 'currentColor',
+        '--pw-icon-size': this.elementValue('button', 'icon-size') || '1em',
+        gap: this.elementValue('button', 'icon-gap') || '0.4em',
+      };
     },
     buttonsRowStyle() {
       return {
@@ -308,7 +317,6 @@ export default {
 .pw-panel-button {
   display: inline-flex !important;
   align-items: center;
-  gap: 0.5em;
 }
 .pw-panel-button.is-hidden {
   opacity: 0.25;
@@ -317,7 +325,8 @@ export default {
   display: inline-flex;
 }
 .pw-panel-button-icon svg {
-  width: 1em;
-  height: 1em;
+  width: var(--pw-icon-size, 1em);
+  height: var(--pw-icon-size, 1em);
+  fill: currentColor;
 }
 </style>
