@@ -194,7 +194,7 @@ export default {
   methods: {
     elementColor(element, name) {
       if (this.isCustom) {
-        const text = ['element-tagline-text', 'element-heading-text', 'element-editor-text', 'element-list-marker', 'element-list-number'];
+        const text = ['element-tagline-text', 'element-heading-text', 'element-editor-text', 'element-list-marker', 'element-list-number', 'element-quote-text', 'element-cite-text'];
         if (text.includes(name) && this.content.textcolor) return this.content.textcolor;
         if (element === 'button') {
           const theme = this.themes.includes(this.content.buttonstyle) ? this.content.buttonstyle : 'default';
