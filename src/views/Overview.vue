@@ -158,7 +158,7 @@
         <div v-if="pendingPageCount" class="k-form-controls pw-topbar-controls">
           <div data-layout="collapsed" class="k-button-group">
             <k-button
-              :text="$t('prw.discardAll')"
+              :text="$t('discard')"
               icon="undo"
               theme="notice"
               variant="filled"
@@ -168,7 +168,7 @@
               @click="confirmDiscardAll"
             />
             <k-button
-              :text="$t('prw.saveAll', { count: pendingPageCount })"
+              :text="$t('save')"
               icon="check"
               theme="notice"
               variant="filled"

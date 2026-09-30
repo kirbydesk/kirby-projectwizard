@@ -568,7 +568,6 @@
 	'prw.hint.variants' => 'Legt fest, welche Farbvarianten die Blöcke zusätzlich zu <code>Standard</code> anbieten.',
 	'prw.label.usedTimes' => '{count}× verwendet',
 	'prw.label.unused' => 'nicht verwendet',
-	'prw.saveAll' => 'Alles speichern ({count})',
 	'prw.discardAll' => 'Alles verwerfen',
 	'prw.discardAll.confirm' => 'Die ungespeicherten Änderungen auf {count} Seiten werden verworfen.',
 	'prw.notify.saveAll' => '{count} Seiten gespeichert',
