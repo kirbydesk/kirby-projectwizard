@@ -4826,6 +4826,14 @@ export default {
   .pw-wizard .pw-preview-column:has(> .pw-portal > .pw-patches-tree:not([style*="display: none"])) {
     order: 1;
   }
+  /* (as a card, not edge to edge as in the sidebar) */
+  .pw-wizard .pw-patches-tree {
+    margin: 0;
+    min-height: 0;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--rounded);
+    box-shadow: var(--shadow);
+  }
 }
 @media (min-width: 75rem) {
   .pw-wizard {
