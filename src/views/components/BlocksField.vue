@@ -10,7 +10,16 @@
   >
     <template v-if="!disabled && hasFieldsets" #options>
       <div class="pw-blocks-field-options">
-        <pw-device-select :value="device" :show-label="true" @input="setDevice" />
+        <!-- the device: Kirby's own button (as "Add"), its menu the three -->
+        <k-button
+          :icon="deviceIcon(device)"
+          :text="deviceLabel(device)"
+          :dropdown="true"
+          variant="filled"
+          size="xs"
+          @click="$refs.device.toggle()"
+        />
+        <k-dropdown-content ref="device" :options="deviceOptions" align-x="end" />
         <k-button-group layout="collapsed">
           <k-button
             :autofocus="autofocus"
@@ -83,8 +92,20 @@ export default {
     window.removeEventListener('resize', this._onResize);
   },
   methods: {
-    setDevice(device) {
-      setPreviewDevice(device);
+    deviceIcon(bp) {
+      return { default: 'mobile', lg: 'tablet', xl: 'display' }[bp];
+    },
+    deviceLabel(bp) {
+      return this.$t({ default: 'prw.label.mobile', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[bp]);
+    },
+    // (the menu's entries; the one shown marked)
+    deviceOptions() {
+      return ['default', 'lg', 'xl'].map(bp => ({
+        text: this.deviceLabel(bp),
+        icon: this.deviceIcon(bp),
+        current: this.device === bp,
+        click: () => setPreviewDevice(bp),
+      }));
     },
   },
 };
@@ -95,19 +116,5 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-}
-/* the device select as small and grey as Kirby's filled buttons beside it */
-.pw-blocks-field-options .pw-device-select {
-  --tool-size: var(--height-xs, 1.5rem);
-  box-shadow: none;
-}
-.pw-blocks-field-options .pw-device-select .pw-tool {
-  background: var(--button-filled-color-back);
-  color: var(--color-text);
-}
-.pw-blocks-field-options .pw-device-select .pw-tool:hover {
-  background: var(--button-filled-color-back);
-  color: var(--color-text);
-  filter: brightness(97%);
 }
 </style>
