@@ -3,7 +3,27 @@
 // dropped when the Project Wizard saves (this tab and others).
 import { injectFontFaces } from './fonts.js';
 
-const state = window.Vue.observable({ data: null, error: null, version: 0 });
+// the device chosen above the blocks (null: by the browser window),
+// remembered in the browser
+const DEVICE_KEY = 'pw-panel-device';
+const readDevice = () => {
+  try {
+    const d = window.localStorage.getItem(DEVICE_KEY);
+    return ['default', 'lg', 'xl'].includes(d) ? d : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const state = window.Vue.observable({ data: null, error: null, version: 0, device: readDevice() });
+
+export function setPreviewDevice(device) {
+  state.device = ['default', 'lg', 'xl'].includes(device) ? device : null;
+  try {
+    if (state.device) window.localStorage.setItem(DEVICE_KEY, state.device);
+    else window.localStorage.removeItem(DEVICE_KEY);
+  } catch (e) { /* not remembered */ }
+}
 let loading = null;
 
 // (an empty object may come as [] from PHP)

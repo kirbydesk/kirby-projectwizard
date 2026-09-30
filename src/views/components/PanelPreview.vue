@@ -2,7 +2,7 @@
   <!-- a block's preview on a page in the panel (the block plugins' own
        preview uses it): the project's saved values from the shared store,
        the device by the width it has -->
-  <div class="pw-panel-preview" @click.capture="guardLinks">
+  <div class="pw-panel-preview" :data-device="state.device || null" @click.capture="guardLinks">
     <pw-panel-render
       v-if="data && block"
       :block-type="type"
@@ -67,6 +67,8 @@ export default {
     // preview do: desktop from 1280 px (its grid values), tablet from
     // 1024 px, below as a phone (no grid)
     bp() {
+      // (chosen above the blocks: that device)
+      if (this.state.device) return this.state.device;
       if (this.width >= 1280) return 'xl';
       if (this.width >= 1024) return 'lg';
       return 'default';
@@ -99,6 +101,16 @@ export default {
 </script>
 
 <style>
+/* a device chosen above the blocks: the phone narrow (as wide as one), the
+   tablet at most its width – centred */
+.pw-panel-preview[data-device="default"] {
+  max-width: 390px;
+  margin-inline: auto;
+}
+.pw-panel-preview[data-device="lg"] {
+  max-width: 1024px;
+  margin-inline: auto;
+}
 .pw-panel-preview-wait {
   min-height: 6rem;
 }
