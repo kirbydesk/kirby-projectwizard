@@ -2606,6 +2606,8 @@ export default {
       if (this.blockType) return;
       const tab = this._pendingTab;
       this._pendingTab = null;
+      // (the view stayed: the storage for a fresh start is not needed)
+      try { sessionStorage.removeItem('pw-wizard-tab'); } catch (e) { /* no storage */ }
       this.globalActiveTab = tab || 'welcome';
     },
     blockType: {
