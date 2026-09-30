@@ -937,7 +937,6 @@
                 <div class="pw-usage-bar" :class="{ 'is-high': deeplUsage.count / deeplUsage.limit > 0.9 }">
                   <span :style="{ width: Math.min(100, deeplUsage.count / deeplUsage.limit * 100) + '%' }"></span>
                 </div>
-                <p class="pw-ai-secrets-help">{{ $t('prw.translate.usage.text') }}</p>
               </section>
             </aside>
           </div>
