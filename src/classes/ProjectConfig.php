@@ -130,10 +130,10 @@ class ProjectConfig
 
 	/**
 	 * What currently applies per block, for the tree of Settings › Configuration:
-	 * the plugin's settings.json (editor.json under "editor") with the
-	 * exceptions, the project's wizard settings (overrides.json) on top – only
-	 * what the pagewizard takes from them: fields without "options", defaults
-	 * and hidden; the editor is always the plugin's with the exceptions.
+	 * the plugin's settings.json (editor.json under "editor"), the project's
+	 * wizard settings (overrides.json) – only what the pagewizard takes from
+	 * them: fields without "options", defaults and hidden – and the exceptions
+	 * last; the editor is always the plugin's with the exceptions.
 	 */
 	public static function effectiveTree(): array
 	{
@@ -141,6 +141,12 @@ class ProjectConfig
 		foreach (self::detectBlocks() as $blockType => $info) {
 			$own = self::loadBlockOverrides($blockType)['settings'] ?? [];
 			$settings = array_intersect_key($own, array_flip(['fields', 'defaults', 'hidden']));
+			// (the exceptions come last: what they set, the settings leave)
+			$patch = pwConfig::patches()[$blockType] ?? null;
+			if (is_array($patch)) {
+				unset($patch['editor']);
+				$settings = pwConfig::withoutPatched($settings, $patch);
+			}
 			if (is_array($settings['fields'] ?? null)) {
 				$settings['fields'] = self::withoutOptions($settings['fields']);
 			}
@@ -156,7 +162,9 @@ class ProjectConfig
 	{
 		unset($fields['options']);
 		foreach ($fields as $key => $value) {
-			if (is_array($value) && !array_is_list($value)) $fields[$key] = self::withoutOptions($value);
+			if (!is_array($value) || array_is_list($value)) continue;
+			$fields[$key] = self::withoutOptions($value);
+			if ($fields[$key] === []) unset($fields[$key]);
 		}
 		return $fields;
 	}
