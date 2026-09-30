@@ -96,8 +96,18 @@ export default {
   align-items: center;
   gap: var(--spacing-2);
 }
-/* the device select as small as Kirby's buttons beside it */
+/* the device select as small and grey as Kirby's filled buttons beside it */
 .pw-blocks-field-options .pw-device-select {
   --tool-size: var(--height-xs, 1.5rem);
+  box-shadow: none;
+}
+.pw-blocks-field-options .pw-device-select .pw-tool {
+  background: var(--button-filled-color-back);
+  color: var(--color-text);
+}
+.pw-blocks-field-options .pw-device-select .pw-tool:hover {
+  background: var(--button-filled-color-back);
+  color: var(--color-text);
+  filter: brightness(97%);
 }
 </style>
