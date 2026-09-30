@@ -848,7 +848,8 @@
             <div v-if="translateTree && globalActiveTab === 'translate'" class="pw-ai-main">
               <section class="pw-card-section">
                 <div class="pw-card-heading-row">
-                  <h2 class="pw-card-heading">{{ $t('prw.translate.fields') }}</h2>
+                  <!-- (as large as the keys' heading beside it) -->
+                  <h2 class="k-label pw-ai-secrets-title">{{ $t('prw.translate.fields') }}</h2>
                 </div>
                 <div class="pw-card pw-translate-tree">
                   <ul class="pw-json-children pw-json-root">
