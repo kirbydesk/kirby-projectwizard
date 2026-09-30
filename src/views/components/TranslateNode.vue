@@ -15,16 +15,22 @@
     </div>
     <ul v-if="open" class="pw-json-children">
       <li v-for="field in node.fields" :key="field.key" class="pw-json-node">
-        <div class="pw-json-row pw-translate-field" :class="{ 'is-off': !values[field.key] }">
-          <span class="pw-json-toggle"></span>
+        <!-- the whole row switches; a small box in the tree's look -->
+        <div
+          class="pw-json-row pw-translate-field"
+          :class="{ 'is-off': !values[field.key] }"
+          role="checkbox"
+          tabindex="0"
+          :aria-checked="values[field.key] ? 'true' : 'false'"
+          @click="$emit('toggle', { key: field.key, value: !values[field.key] })"
+          @keydown.space.prevent="$emit('toggle', { key: field.key, value: !values[field.key] })"
+        >
+          <span class="pw-translate-check" :class="{ 'is-on': values[field.key] }">
+            <k-icon v-if="values[field.key]" type="check" />
+          </span>
           <span class="pw-translate-label">{{ field.label }}</span>
           <code class="pw-json-key">{{ field.name }}</code>
           <span class="pw-translate-type">{{ field.type }}</span>
-          <k-toggle-input
-            class="pw-translate-switch"
-            :value="!!values[field.key]"
-            @input="$emit('toggle', { key: field.key, value: $event })"
-          />
         </div>
       </li>
       <pw-translate-node
@@ -88,8 +94,35 @@ export default {
   font-size: 10px;
   color: var(--color-text-dimmed);
 }
-.pw-translate-switch {
+.pw-translate-field {
+  cursor: pointer;
+}
+.pw-translate-field:focus-visible {
+  outline: var(--outline);
+  outline-offset: -2px;
+}
+/* the box: in place of the tree's arrow, so the labels line up */
+.pw-translate-check {
   flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--color-gray-400), var(--color-gray-600));
+  border-radius: var(--rounded-sm);
+  background: light-dark(var(--color-white), var(--color-gray-850));
+}
+.pw-translate-check.is-on {
+  border-color: var(--color-blue-600);
+  background: var(--color-blue-600);
+  color: var(--color-white);
+}
+.pw-translate-check .k-icon {
+  --icon-size: 12px;
+}
+/* the type at the row's end */
+.pw-translate-type {
   margin-inline-start: auto;
 }
 /* not translated: the label faded */
