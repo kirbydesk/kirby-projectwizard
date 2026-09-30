@@ -3270,9 +3270,6 @@ export default {
       if (Array.isArray(st.activeVariants)) this.activeVariants = [...st.activeVariants];
       if (typeof st.patchesText === 'string') this.patchesText = st.patchesText;
       this.discardKey++;
-      this.$nextTick(() => {
-        if (this.pendingPageCount) this.$panel.notification.info(this.$t('prw.notify.draftRestored'));
-      });
     },
     // a single save's success message: none while everything is saved at once
     notifySaved(message) {
