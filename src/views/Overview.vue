@@ -4820,6 +4820,12 @@ export default {
   margin-inline-start: var(--spacing-2);
   vertical-align: 0.1em;
 }
+/* in the menus: right after the text (not spread by the item's
+   space-between – the gap taken back), the usage count stays right */
+.pw-menu-item .pw-change-count {
+  margin-inline-start: calc(var(--spacing-2) - var(--spacing-6));
+  margin-inline-end: auto;
+}
 .pw-welcome {
   display: flex;
   flex-direction: column;
