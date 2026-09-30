@@ -3418,6 +3418,29 @@ export default {
     },
     // an entry of the tree into the JSON: its path with its current value
     // (nested objects; what the JSON holds there already is replaced)
+    // the blocks' plugin settings with the exceptions anew (after saving
+    // them): options, start values and values in the block pages follow at
+    // once; the unsaved changes (blockOverrides) stay untouched
+    async reloadBlockDefaults() {
+      try {
+        const res = await this.$api.get('projectwizard/blocks');
+        const byType = Object.fromEntries((res.blocks || []).map(b => [b.blockType, b]));
+        this.blocks = this.blocks.map(b => byType[b.blockType]
+          ? { ...b, settings: byType[b.blockType].settings, editor: byType[b.blockType].editor }
+          : b);
+      } catch (e) { /* keep them */ }
+      await Promise.all(this.blocks.map(async (block) => {
+        const type = block.blockType;
+        try {
+          this.$set(this.blockConfigs, type, await this.$api.get('projectwizard/block/' + type));
+        } catch (e) { /* keep it */ }
+        if (!this.blockValueDefaults[type]) return;
+        try {
+          const values = await this.$api.get('projectwizard/values/' + type);
+          if (values.defaults && !Array.isArray(values.defaults)) this.$set(this.blockValueDefaults, type, values.defaults);
+        } catch (e) { /* keep them */ }
+      }));
+    },
     // what currently applies per block (plugin, exceptions, wizard settings),
     // fresh on each visit of the page and after saving the exceptions
     async loadPatchesTree() {
@@ -3491,6 +3514,7 @@ export default {
         this.patchesUnknown = res.unknown || [];
         this.$set(this.dirtyTabs, 'patches', false);
         this.loadPatchesTree();
+        this.reloadBlockDefaults();
         this.notifySaved(this.$t('prw.notify.patches.success'));
       } catch (e) {
         this.patchesError = e.message || String(e);
