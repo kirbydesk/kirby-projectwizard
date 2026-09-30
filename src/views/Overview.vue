@@ -2598,17 +2598,20 @@ export default {
       this.blockViewTab = null;
       this.showStartTheme();
     },
+    // each load of the global view (Kirby sets a new timestamp, also for the
+    // same address, e.g. its menu entry): the page chosen in a wizard menu
+    // (openGlobal), else the start page – as Kirby's own entries lead to
+    // their overview
+    '$panel.view.timestamp'() {
+      if (this.blockType) return;
+      const tab = this._pendingTab;
+      this._pendingTab = null;
+      this.globalActiveTab = tab || 'welcome';
+    },
     blockType: {
       immediate: true,
-      handler(val, old) {
+      handler(val) {
         this.activeTab = val || 'global';
-        // from a block back to the global view: the page chosen in a menu
-        // (remembered by openGlobal), else the start page
-        if (!val && old !== undefined) {
-          let tab = null;
-          try { tab = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); } catch (e) { /* no storage */ }
-          this.globalActiveTab = tab || 'welcome';
-        }
       },
     },
     globalOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
@@ -2630,18 +2633,9 @@ export default {
       }
     };
     window.addEventListener('keydown', this._onKeydown);
-    // the wizard's entry in Kirby's menu: always the start page (as Kirby's
-    // own entries lead to their overview), also from a page of the wizard
-    this._onMenuClick = (e) => {
-      const link = e.target.closest && e.target.closest('.k-panel-menu a[href]');
-      if (!link || !/\/projectwizard\/?$/.test(link.getAttribute('href'))) return;
-      if (this.activeTab === 'global') this.globalActiveTab = 'welcome';
-    };
-    document.addEventListener('click', this._onMenuClick, true);
   },
   beforeDestroy() {
     window.removeEventListener('keydown', this._onKeydown);
-    document.removeEventListener('click', this._onMenuClick, true);
   },
   methods: {
     async load() {
@@ -3782,6 +3776,8 @@ export default {
     openGlobal(tab, element = null) {
       this.globalActiveTab = tab;
       if (this.activeTab === 'global') return;
+      // (for the load that follows; the storage for a fresh start of the view)
+      this._pendingTab = tab;
       try {
         sessionStorage.setItem('pw-wizard-tab', tab);
         if (element) sessionStorage.setItem('pw-wizard-element', element);
