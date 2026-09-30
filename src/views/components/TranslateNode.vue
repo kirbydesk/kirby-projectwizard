@@ -132,10 +132,8 @@ export default {
 .pw-translate-field.is-off .pw-translate-type {
   opacity: 0.5;
 }
-/* the count stays visible while open too; none translated: grey */
-.pw-translate-count {
-  margin-inline-start: auto;
-}
+/* the count stays visible while open too, right after the name (the
+   row's end is the fields' boxes); none translated: grey */
 .pw-translate-count.is-none {
   color: var(--color-text-dimmed);
   background: light-dark(var(--color-gray-200), var(--color-gray-800));
