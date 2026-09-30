@@ -92,6 +92,27 @@ export default {
       return state.device || state.windowDevice ? shownDevice() : 'xl';
     },
   },
+  mounted() {
+    // the block edited in the drawer stays selected when the drawer closes:
+    // Kirby selects it again, but the click that closed the drawer lands
+    // outside the field and takes the selection away right after – that
+    // one is undone (a later click elsewhere deselects as usual)
+    this.$watch(() => this.$refs.blocks && this.$refs.blocks.selected, (now) => {
+      if (Array.isArray(now) && now.length === 1) {
+        this._lastSelected = now[0];
+        return;
+      }
+      if (Array.isArray(now) && now.length === 0 && this._lastSelected && Date.now() < (this._restoreUntil || 0)) {
+        const id = this._lastSelected;
+        this.$nextTick(() => {
+          if (this.$refs.blocks && this.$refs.blocks.find(id)) this.$refs.blocks.selected = [id];
+        });
+      }
+    });
+    this.$watch(() => this.$panel.drawer.isOpen, (open, was) => {
+      if (was && !open) this._restoreUntil = Date.now() + 600;
+    });
+  },
   methods: {
     deviceIcon(bp) {
       return { default: 'mobile', lg: 'tablet', xl: 'display' }[bp];
