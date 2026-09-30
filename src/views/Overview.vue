@@ -884,7 +884,8 @@
                 <p class="pw-ai-secrets-help">{{ $t('prw.ai.keys.help') }}</p>
                 <k-box v-if="!aiSecretsWritable" theme="negative" :text="$t('prw.ai.keys.readonly')" />
                 <div v-for="secret in aiPageSecrets" :key="secret.env" class="pw-ai-secret">
-                  <label class="k-label" :for="'pw-secret-' + secret.env">{{ secret.label }}</label>
+                  <!-- a valid key's kind with it (DeepL: Free / Pro) -->
+                  <label class="k-label" :for="'pw-secret-' + secret.env">{{ secret.label }}<template v-if="aiSecretValid[secret.env] && aiSecretTypes[secret.env]"> · {{ aiSecretTypes[secret.env] }}</template></label>
                   <div class="pw-ai-secret-row">
                     <span class="pw-ai-secret-field">
                       <input
@@ -2375,6 +2376,7 @@ export default {
       translateTree: null,
       // the stored keys checked with their services (env → true / false / null)
       aiSecretValid: {},
+      aiSecretTypes: {},
       translateValues: {},
       originalTranslateValues: {},
       deeplUsage: null,
@@ -3354,9 +3356,12 @@ export default {
     // (not awaited: the services may take a moment)
     async checkAiSecrets() {
       try {
-        this.aiSecretValid = (await this.$api.get('pagewizard/secrets/check')).valid || {};
+        const res = await this.$api.get('pagewizard/secrets/check');
+        this.aiSecretValid = res.valid || {};
+        this.aiSecretTypes = res.types || {};
       } catch (e) {
         this.aiSecretValid = {};
+        this.aiSecretTypes = {};
       }
     },
 
