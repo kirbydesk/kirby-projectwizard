@@ -79,6 +79,12 @@ export default {
       const chosen = this.content.theme || this.setting('style', 'theme') || 'default';
       return this.themes.includes(chosen) ? chosen : 'default';
     },
+    // custom colours (the block's own): background and text colour from the
+    // block, the buttons in the chosen variant's colours, the rest as the
+    // default variant – as the frontend's custom-css
+    isCustom() {
+      return this.content.theme === 'custom';
+    },
     headingLines() {
       const d = this.fieldData('heading');
       const text = String(d.text || '');
@@ -171,6 +177,22 @@ export default {
     },
   },
   methods: {
+    elementColor(element, name) {
+      if (this.isCustom) {
+        const text = ['element-tagline-text', 'element-heading-text', 'element-editor-text', 'element-list-marker', 'element-list-number'];
+        if (text.includes(name) && this.content.textcolor) return this.content.textcolor;
+        if (element === 'button') {
+          const theme = this.themes.includes(this.content.buttonstyle) ? this.content.buttonstyle : 'default';
+          return ((this.elementOverrides.global || {})[theme] || {})[name]
+            || this.elementDefaults.button?.colors?.[name]?.[theme] || '';
+        }
+      }
+      return BlockPreview.methods.elementColor.call(this, element, name);
+    },
+    globalColor(name) {
+      if (this.isCustom && name === 'block-background' && this.content.backgroundcolor) return this.content.backgroundcolor;
+      return BlockPreview.methods.globalColor.call(this, name);
+    },
     // a field's own data (tagline, heading, editor: pagewizard's JSON)
     fieldData(field) {
       return parse(this.content[field]);
