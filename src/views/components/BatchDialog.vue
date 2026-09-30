@@ -25,24 +25,26 @@
         />
       </template>
 
-      <!-- running and done in the same shape (headline, a line, the bar,
-           a line), so the centred dialog keeps its height and nothing jumps -->
+      <!-- running and done in the same shape (two lines, the bar), so the
+           centred dialog keeps its height and nothing jumps -->
       <template v-else-if="dialog.step === 'run'">
-        <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.progress', { n: Math.min(batch.done + 1, batch.total), total: batch.total }) }}</p>
-        <p class="pw-batch-dialog-page">{{ batch.current }}</p>
+        <div class="pw-batch-dialog-lines">
+          <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.progress', { n: Math.min(batch.done + 1, batch.total), total: batch.total }) }}</p>
+          <p class="pw-batch-dialog-page">{{ batch.current }}</p>
+        </div>
         <div class="pw-usage-bar">
           <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
         </div>
-        <p class="pw-batch-dialog-help" :style="{ visibility: batch.stop ? 'visible' : 'hidden' }">{{ $t('prw.translate.batch.stopping') }}</p>
       </template>
 
       <template v-else-if="batch.result">
-        <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.done', { count: batch.result.done }) }}</p>
-        <p class="pw-batch-dialog-page">{{ batch.result.stopped ? $t('prw.translate.batch.stopped', { count: batch.result.left }) : '\u00a0' }}</p>
+        <div class="pw-batch-dialog-lines">
+          <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.done', { count: batch.result.done }) }}</p>
+          <p class="pw-batch-dialog-page">{{ batch.result.stopped ? $t('prw.translate.batch.stopped', { count: batch.result.left }) : '\u00a0' }}</p>
+        </div>
         <div class="pw-usage-bar">
           <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
         </div>
-        <p class="pw-batch-dialog-help" style="visibility: hidden">{{ $t('prw.translate.batch.stopping') }}</p>
         <k-box v-for="err in batch.result.errors" :key="err.path" theme="negative" :text="err.title + ': ' + err.message" />
       </template>
     </template>
@@ -80,8 +82,12 @@ export default {
 .pw-batch-dialog-text {
   line-height: 1.5;
 }
+/* the headline and its line as one block, a normal line height (nothing
+   cut off below) */
+.pw-batch-dialog-lines {
+  line-height: 1.5;
+}
 .pw-batch-dialog-page {
-  margin-top: calc(-1 * var(--spacing-2));
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

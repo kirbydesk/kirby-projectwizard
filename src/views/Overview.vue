@@ -2590,7 +2590,12 @@ export default {
     batchDialogCancel() {
       const step = this.batchDialog?.step;
       if (step === 'ask') return this.$t('cancel');
-      if (step === 'run') return { text: this.$t('prw.translate.batch.stop'), icon: 'cancel', disabled: this.batch.stop };
+      // (stopping: the button says so, no extra line in the dialog)
+      if (step === 'run') {
+        return this.batch.stop
+          ? { text: this.$t('prw.translate.batch.stopping'), icon: 'loader', disabled: true }
+          : { text: this.$t('prw.translate.batch.stop'), icon: 'cancel' };
+      }
       return false;
     },
     // more characters than the usage has left (a dry run sends none)

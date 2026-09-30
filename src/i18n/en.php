@@ -584,7 +584,7 @@
 	'prw.translate.batch.progress' => 'Page {n} of {total}:',
 	'prw.translate.batch.done' => '{count} pages translated',
 	'prw.translate.batch.chars' => 'About {chars} characters are sent to DeepL for the translation into {lang}.',
-	'prw.translate.batch.stopping' => 'Stopping after the current page …',
+	'prw.translate.batch.stopping' => 'Stopping …',
 	'prw.translate.batch.stopped' => 'Stopped, {count} pages were not translated.',
 	'prw.translate.batch.close' => 'Close',
 	'prw.translate.batch.simulate' => 'Dry run, nothing is sent to DeepL or saved',
