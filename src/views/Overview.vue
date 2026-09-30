@@ -2951,6 +2951,20 @@ export default {
       const n = parseFloat(val);
       return isNaN(n) ? '' : Math.round(n * 16) + 'px';
     },
+    // the block's text allows lists: its editor (with the exceptions) has a
+    // list among some "nodes" – no "nodes" at all is Kirby's writer, lists
+    // included
+    allowsLists(blockType) {
+      const editor = this.blocks.find(b => b.blockType === blockType)?.editor;
+      const lists = [];
+      const walk = (o) => {
+        if (!o || typeof o !== 'object' || Array.isArray(o)) return;
+        if (Array.isArray(o.nodes)) lists.push(o.nodes);
+        Object.values(o).forEach(walk);
+      };
+      walk(editor);
+      return !lists.length || lists.some(n => n.includes('bulletList') || n.includes('orderedList'));
+    },
     // a block that brings values for its own space below (tagline, heading, text)
     hasOwnSpacing(blockType) {
       return this.ownSpacingElements(blockType).length > 0;
@@ -2963,7 +2977,10 @@ export default {
       // (lists live in the text: hidden with it; the multicolumn's own list
       // element stays)
       const isHidden = (el) => hidden.includes(el === 'list' && blockType !== 'pwmulticolumn' ? 'editor' : el);
-      const els = ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].filter(el => !isHidden(el) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+      // (lists only where the text allows them – with the exceptions; the
+      // multicolumn's list is an element of its own)
+      const noLists = blockType !== 'pwmulticolumn' && !this.allowsLists(blockType);
+      const els = ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].filter(el => !isHidden(el) && !(el === 'list' && noLists) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
       // a block with a gap to the intro (cards, features, logos, steps,
       // media below it): the intro's last visible element has no space below
       // of its own there – its row would have no effect
