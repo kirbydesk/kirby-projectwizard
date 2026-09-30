@@ -2591,7 +2591,7 @@ export default {
       const step = this.batchDialog?.step;
       if (step === 'ask') return this.$t('cancel');
       // stopped: close, or go on (the submit button)
-      if (step === 'done' && this.batch.result?.stopped) return { text: this.$t('prw.translate.batch.close'), icon: 'cancel' };
+      if (step === 'done' && this.batch.result?.stopped) return this.$t('cancel');
       // (stopping: the button says so, no extra line in the dialog)
       if (step === 'run') {
         return this.batch.stop
@@ -2615,7 +2615,7 @@ export default {
           : { text: this.$t('prw.translate.batch.start', { count: this.batchDialog.pages.length }), icon: 'translatewizard-translate', theme: 'positive' };
       }
       if (step === 'done' && this.batch.result?.stopped) {
-        return { text: this.$t('prw.translate.batch.resume', { count: this.batch.result.left }), icon: 'play', theme: 'positive' };
+        return { text: this.$t('prw.translate.batch.resume'), icon: 'play', theme: 'positive' };
       }
       if (step === 'done') return { text: this.$t('prw.translate.batch.close'), icon: 'check' };
       return false;
@@ -3499,11 +3499,16 @@ export default {
         }
         this.batch.done++;
       }
+      // (the characters: of the pages done without error, of those left)
+      const chars = (list) => list.reduce((sum, p) => sum + (p.chars || 0), 0);
+      const failed = errors.map(e => e.path);
       this.batch.result = {
         done: this.batch.done - errors.length,
+        doneChars: chars(pages.slice(0, this.batch.done).filter(p => !failed.includes(p.path))),
         errors,
         stopped: this.batch.done < pages.length,
         left: pages.length - this.batch.done,
+        leftChars: chars(pages.slice(this.batch.done)),
         simulated: simulate,
       };
       this.batch.running = false;

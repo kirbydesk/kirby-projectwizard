@@ -39,8 +39,8 @@
 
       <template v-else-if="batch.result">
         <div class="pw-batch-dialog-lines">
-          <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.done', { count: batch.result.done }) }}</p>
-          <p class="pw-batch-dialog-page">{{ batch.result.stopped ? $t('prw.translate.batch.stopped', { count: batch.result.left }) : '\u00a0' }}</p>
+          <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.done', { count: batch.result.done, chars: batch.result.doneChars.toLocaleString() }) }}</p>
+          <p class="pw-batch-dialog-page">{{ batch.result.stopped ? $t('prw.translate.batch.pending', { count: batch.result.left, chars: batch.result.leftChars.toLocaleString() }) : '\u00a0' }}</p>
         </div>
         <div class="pw-usage-bar">
           <span :style="{ width: (batch.done / batch.total * 100) + '%' }"></span>
