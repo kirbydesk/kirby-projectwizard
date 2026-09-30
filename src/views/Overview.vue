@@ -10,6 +10,7 @@
             <button
               type="button"
               class="pw-tool pw-tab"
+              :title="$t('prw.tab.project')"
               aria-haspopup="menu"
               :aria-pressed="isGlobalTab(...projectMenuTabs) ? 'true' : 'false'"
               @click="$refs.settingsMenu.toggle()"
@@ -45,6 +46,7 @@
             <button
               type="button"
               class="pw-tool pw-tab"
+              :title="$t('prw.tab.elements')"
               aria-haspopup="menu"
               :aria-pressed="isGlobalTab('elements') ? 'true' : 'false'"
               @click="$refs.elementsMenu.toggle()"
@@ -82,6 +84,7 @@
               <button
                 type="button"
                 class="pw-tool pw-tab"
+                :title="$t('prw.tab.blocks')"
                 aria-haspopup="menu"
                 :aria-pressed="activeTab !== 'global' ? 'true' : 'false'"
                 @click="$refs.blocksMenu.toggle(); loadBlockUsage()"
@@ -125,6 +128,7 @@
             <button
               type="button"
               class="pw-tool pw-tab"
+              :title="$t('prw.tab.config')"
               aria-haspopup="menu"
               :aria-pressed="isGlobalTab(...configMenuTabs) ? 'true' : 'false'"
               @click="$refs.configMenu.toggle()"
@@ -3265,8 +3269,14 @@ export default {
     fitTopbar() {
       const bar = this.$refs.topbar;
       if (!bar) return;
-      bar.classList.remove('is-compact');
-      if (bar.scrollWidth > bar.clientWidth + 1) bar.classList.add('is-compact');
+      // step by step, as long as it does not fit: 1 the save buttons with
+      // their icons only, 2 the menus without icons, 3 the menus with their
+      // icons only
+      const fits = () => bar.scrollWidth <= bar.clientWidth + 1;
+      bar.removeAttribute('data-compact');
+      for (let step = 1; step <= 3 && !fits(); step++) {
+        bar.setAttribute('data-compact', String(step));
+      }
     },
     // the lines wrap anew with every other width (window, preview column,
     // panel menu) and the field is measured only while visible: measured
@@ -4763,7 +4773,18 @@ export default {
   flex-shrink: 0;
   margin-inline-start: auto;
 }
-.pw-topbar.is-compact .pw-topbar-controls .k-button-text {
+/* short of room (fitTopbar), step by step; the hidden texts stay for
+   screen readers, the buttons carry them as tooltips too */
+.pw-topbar[data-compact] .pw-topbar-controls .k-button-text,
+.pw-topbar[data-compact="3"] .pw-tab .pw-tab-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.pw-topbar[data-compact="2"] .pw-tab > .k-icon:not(.pw-tab-menu-chevron) {
   display: none;
 }
 
