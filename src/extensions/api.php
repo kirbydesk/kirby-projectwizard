@@ -225,6 +225,14 @@ return [
 				return ProjectConfig::mergedConfig();
 			}
 		],
+		// Settings › Configuration: what currently applies per block (tree)
+		[
+			'pattern' => 'projectwizard/patches/tree',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::effectiveTree();
+			}
+		],
 		// Exceptions (Project › Exceptions): the raw JSON and unknown blocks
 		[
 			'pattern' => 'projectwizard/patches',

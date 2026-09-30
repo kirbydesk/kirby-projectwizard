@@ -798,7 +798,7 @@
                     :node-key="block.blockType"
                     :label="block.name || block.blockType"
                     :icon="block.icon || 'box'"
-                    :value="{ ...(block.settings || {}), editor: block.editor || {} }"
+                    :value="patchesTree[block.blockType] || { ...(block.settings || {}), editor: block.editor || {} }"
                     :path="[block.blockType]"
                     @take="takePatch"
                   />
@@ -2264,6 +2264,7 @@ export default {
       originalFooterOverrides: {},
       // exceptions (Project › Exceptions): the JSON as text, its check
       patchesText: '',
+      patchesTree: {},
       // the start page's figures: the site's pages (loaded with the wizard)
       sitePageCount: null,
       // saving everything at once: the single saves stay quiet
@@ -2600,7 +2601,10 @@ export default {
       immediate: true,
       handler(tab) {
         if (tab === 'blocks') this.loadBlockUsage();
-        if (tab === 'patches') this.$nextTick(this.fitPatchesInput);
+        if (tab === 'patches') {
+          this.$nextTick(this.fitPatchesInput);
+          this.loadPatchesTree();
+        }
       },
     },
     // another block: start on its first tab
@@ -3387,6 +3391,13 @@ export default {
     },
     // an entry of the tree into the JSON: its path with its current value
     // (nested objects; what the JSON holds there already is replaced)
+    // what currently applies per block (plugin, exceptions, wizard settings),
+    // fresh on each visit of the page and after saving the exceptions
+    async loadPatchesTree() {
+      try {
+        this.patchesTree = await this.$api.get('projectwizard/patches/tree');
+      } catch (e) { /* keep the last one */ }
+    },
     takePatch({ path, value }) {
       let data = {};
       if (this.patchesText.trim()) {
@@ -3452,6 +3463,7 @@ export default {
         this.originalPatchesText = this.patchesText;
         this.patchesUnknown = res.unknown || [];
         this.$set(this.dirtyTabs, 'patches', false);
+        this.loadPatchesTree();
         this.notifySaved(this.$t('prw.notify.patches.success'));
       } catch (e) {
         this.patchesError = e.message || String(e);

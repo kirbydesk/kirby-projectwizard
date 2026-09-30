@@ -106,8 +106,8 @@ class ProjectConfig
 			'name'     => $name,
 			'icon'     => $icon,
 			// (with the project's exceptions, Project › Exceptions)
-			'settings' => pwConfig::blockJson($configDir, 'settings'),
-			'editor'   => pwConfig::blockJson($configDir, 'editor'),
+			'settings' => pwConfig::blockJson($configDir, 'settings', $blockType),
+			'editor'   => pwConfig::blockJson($configDir, 'editor', $blockType),
 		];
 	}
 
@@ -126,6 +126,39 @@ class ProjectConfig
 			return $m[1];
 		}
 		return '';
+	}
+
+	/**
+	 * What currently applies per block, for the tree of Settings › Configuration:
+	 * the plugin's settings.json (editor.json under "editor") with the
+	 * exceptions, the project's wizard settings (overrides.json) on top – only
+	 * what the pagewizard takes from them: fields without "options", defaults
+	 * and hidden; the editor is always the plugin's with the exceptions.
+	 */
+	public static function effectiveTree(): array
+	{
+		$tree = [];
+		foreach (self::detectBlocks() as $blockType => $info) {
+			$own = self::loadBlockOverrides($blockType)['settings'] ?? [];
+			$settings = array_intersect_key($own, array_flip(['fields', 'defaults', 'hidden']));
+			if (is_array($settings['fields'] ?? null)) {
+				$settings['fields'] = self::withoutOptions($settings['fields']);
+			}
+			$tree[$blockType] = self::deepMerge($info['settings'] ?? [], $settings);
+			$tree[$blockType]['editor'] = $info['editor'] ?? [];
+		}
+		return $tree;
+	}
+
+	// (the options offered to the editors: never from the wizard settings,
+	// also within content fields such as heading › level)
+	private static function withoutOptions(array $fields): array
+	{
+		unset($fields['options']);
+		foreach ($fields as $key => $value) {
+			if (is_array($value) && !array_is_list($value)) $fields[$key] = self::withoutOptions($value);
+		}
+		return $fields;
 	}
 
 	/**
