@@ -103,7 +103,7 @@ export default {
   outline: var(--outline);
   outline-offset: -2px;
 }
-/* the box at the row's end: blue with a check while on, an empty frame
+/* the box at the row's end: Kirby's green with a check while on, an empty frame
    while off */
 .pw-translate-check {
   flex: 0 0 auto;
@@ -117,8 +117,8 @@ export default {
   background: light-dark(var(--color-white), var(--color-gray-850));
 }
 .pw-translate-check.is-on {
-  border-color: var(--color-blue-600);
-  background: var(--color-blue-600);
+  border-color: var(--color-positive);
+  background: var(--color-positive);
   color: var(--color-white);
 }
 .pw-translate-check svg {
