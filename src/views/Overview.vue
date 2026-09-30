@@ -1003,6 +1003,12 @@
                       <k-box v-if="deeplUsage && batchDialog.chars > deeplUsage.limit - deeplUsage.count" theme="negative" :text="$t('prw.translate.batch.over')" />
                       <k-box v-if="batchDialog.mode === 'all'" theme="notice" :text="$t('prw.translate.batch.overwrite')" />
                       <p class="pw-ai-secrets-help">{{ $t('prw.translate.batch.keepopen') }}</p>
+                      <!-- a dry run: everything but DeepL and saving -->
+                      <k-toggle-input
+                        :value="batchDialog.simulate"
+                        :text="$t('prw.translate.batch.simulate')"
+                        @input="batchDialog = { ...batchDialog, simulate: $event }"
+                      />
                     </template>
                     <template v-else-if="batchDialog.step === 'run'">
                       <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.progress', { n: Math.min(batch.done + 1, batch.total), total: batch.total, title: batch.current }) }}</p>
@@ -1012,7 +1018,7 @@
                       <p class="pw-ai-secrets-help">{{ batch.stop ? $t('prw.translate.batch.stopping') : $t('prw.translate.batch.keepopen') }}</p>
                     </template>
                     <template v-else-if="batch.result">
-                      <p class="pw-batch-dialog-headline">{{ $t('prw.translate.batch.done', { count: batch.result.done }) }}</p>
+                      <p class="pw-batch-dialog-headline">{{ $t(batch.result.simulated ? 'prw.translate.batch.simulated' : 'prw.translate.batch.done', { count: batch.result.done }) }}</p>
                       <k-box v-if="batch.result.stopped" theme="notice" :text="$t('prw.translate.batch.stopped', { count: batch.result.left })" />
                       <k-box v-for="err in batch.result.errors" :key="err.path" theme="negative" :text="err.title + ': ' + err.message" />
                     </template>
@@ -2633,7 +2639,11 @@ export default {
     },
     batchDialogSubmit() {
       const step = this.batchDialog?.step;
-      if (step === 'ask') return { text: this.$t('prw.translate.batch.start'), icon: 'translatewizard-translate', theme: 'positive' };
+      if (step === 'ask') {
+        return this.batchDialog.simulate
+          ? { text: this.$t('prw.translate.batch.simulate.start'), icon: 'play' }
+          : { text: this.$t('prw.translate.batch.start'), icon: 'translatewizard-translate', theme: 'positive' };
+      }
       if (step === 'done') return { text: this.$t('prw.translate.batch.close'), icon: 'check' };
       return false;
     },
@@ -3470,7 +3480,7 @@ export default {
       if (!pages.length) return;
       const chars = pages.reduce((sum, p) => sum + (p.chars || 0), 0);
       this.batch.result = null;
-      this.batchDialog = { step: 'ask', lang, mode, pages, chars };
+      this.batchDialog = { step: 'ask', lang, mode, pages, chars, simulate: false };
     },
     onBatchSubmit() {
       if (this.batchDialog?.step === 'ask') this.runBatch();
@@ -3485,7 +3495,7 @@ export default {
     // one page after the other (each its own request: no time limit hit);
     // stoppable between two pages
     async runBatch() {
-      const { lang, mode, pages } = this.batchDialog;
+      const { lang, mode, pages, simulate } = this.batchDialog;
       Object.assign(this.batch, { lang: lang.code, mode, running: true, stop: false, done: 0, total: pages.length, current: '', result: null });
       this.batchDialog = { ...this.batchDialog, step: 'run' };
       const errors = [];
@@ -3493,7 +3503,7 @@ export default {
         if (this.batch.stop) break;
         this.batch.current = page.title;
         try {
-          await this.$api.post(page.path + '/translatewizard/translate', { to: lang.code });
+          await this.$api.post(page.path + '/translatewizard/translate', { to: lang.code, simulate });
         } catch (e) {
           errors.push({ path: page.path, title: page.title, message: e.message || String(e) });
         }
@@ -3503,6 +3513,7 @@ export default {
         done: this.batch.done - errors.length,
         errors,
         stopped: this.batch.done < pages.length,
+        simulated: simulate,
         left: pages.length - this.batch.done,
       };
       this.batch.running = false;
