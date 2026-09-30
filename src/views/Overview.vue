@@ -808,7 +808,7 @@
             <section class="pw-card-section">
               <!-- a code editor: the JSON coloured below, the field above it
                    transparent but for the cursor (both scroll together) -->
-              <div class="pw-code">
+              <div ref="patchesCode" class="pw-code">
                 <pre ref="patchesHl" class="pw-code-hl" aria-hidden="true" v-html="patchesHighlighted"></pre>
                 <textarea
                   ref="patchesInput"
@@ -2652,6 +2652,7 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('keydown', this._onKeydown);
+    if (this._patchesObserver) this._patchesObserver.disconnect();
   },
   methods: {
     async load() {
@@ -3214,10 +3215,28 @@ export default {
       return out + esc(text.slice(last)) + '\n';
     },
     fitPatchesInput() {
+      this.observePatchesWidth();
       const el = this.$refs.patchesInput;
       if (!el || !el.offsetParent) return;
       el.style.height = 'auto';
       el.style.height = el.scrollHeight + 'px';
+    },
+    // the lines wrap anew with every other width (window, preview column,
+    // panel menu) and the field is measured only while visible: measured
+    // again whenever its width changes, also from hidden to shown
+    observePatchesWidth() {
+      const box = this.$refs.patchesCode;
+      if (!box || this._patchesObserved === box || typeof ResizeObserver === 'undefined') return;
+      if (this._patchesObserver) this._patchesObserver.disconnect();
+      let width = -1;
+      this._patchesObserver = new ResizeObserver(([entry]) => {
+        const w = Math.round(entry.contentRect.width);
+        if (w === width) return;
+        width = w;
+        this.fitPatchesInput();
+      });
+      this._patchesObserver.observe(box);
+      this._patchesObserved = box;
     },
     // the paths of the values that differ between two stored states
     // (objects compared key by key, lists and plain values as a whole)
