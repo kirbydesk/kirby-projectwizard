@@ -27,8 +27,9 @@
         >
           <span class="pw-json-toggle"></span>
           <span class="pw-translate-label">{{ field.label }}</span>
-          <code class="pw-json-key">{{ field.name }}</code>
           <span class="pw-translate-type">{{ field.type }}</span>
+          <!-- the field's name in the blueprint: only while hovered -->
+          <code class="pw-json-key pw-translate-name">{{ field.name }}</code>
           <span class="pw-translate-check">
             <k-icon v-if="values[field.key]" type="check" />
           </span>
@@ -113,9 +114,14 @@ export default {
 .pw-translate-check .k-icon {
   --icon-size: 16px;
 }
-/* the type at the row's end */
-.pw-translate-type {
+/* the name at the row's end, before the check – shown while hovered */
+.pw-translate-name {
   margin-inline-start: auto;
+  visibility: hidden;
+}
+.pw-translate-field:hover .pw-translate-name,
+.pw-translate-field:focus-visible .pw-translate-name {
+  visibility: visible;
 }
 /* not translated: the label faded */
 .pw-translate-field.is-off .pw-translate-label,
