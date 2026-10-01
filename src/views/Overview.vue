@@ -3029,7 +3029,7 @@ export default {
       ];
       // design: pencil and ruler, elements: the layers (as the Elements page), start values: the pen,
       // restrictions: the crossed-out eye
-      const icons = { design: 'prw-design', elements: 'layers', defaults: 'edit-line', presets: 'hidden', usage: 'list-bullet' };
+      const icons = { design: 'prw-design', elements: 'layers', defaults: 'edit-line', presets: 'hidden', usage: 'copy' };
       return views.map(name => ({
         name,
         icon: icons[name],
