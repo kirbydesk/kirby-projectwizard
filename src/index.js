@@ -13,6 +13,7 @@ import TranslateNode from './views/components/TranslateNode.vue';
 import BatchDialog from './views/components/BatchDialog.vue';
 import PanelRender from './views/components/PanelRender.vue';
 import PanelPreview from './views/components/PanelPreview.vue';
+import PanelSubBlock from './views/components/PanelSubBlock.vue';
 import BlocksField from './views/components/BlocksField.vue';
 import OverlayField from './views/components/OverlayField.vue';
 import SetupWizard from './views/SetupWizard.vue';
@@ -79,5 +80,7 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		// the block previews on the pages (used by the block plugins)
 		'pw-panel-render': PanelRender,
 		'pw-block-panel-preview': PanelPreview,
+		// a multicolumn sub-block (preview columns, drawer)
+		'pw-panel-sub': PanelSubBlock,
 	},
 });

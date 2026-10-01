@@ -2,8 +2,9 @@
   <!-- a block's preview on a page in the panel (the block plugins' own
        preview uses it): the project's saved values from the shared store,
        the device by the width it has -->
-  <div class="pw-panel-preview" :data-device="state.device && bp === state.device ? state.device : null" @click.capture="guardLinks">
-    <pw-panel-render
+  <div class="pw-panel-preview" :data-device="!sub && state.device && bp === state.device ? state.device : null" @click.capture="guardLinks">
+    <component
+      :is="sub ? 'pw-panel-sub' : 'pw-panel-render'"
       v-if="data && block"
       :block-type="type"
       :content="content || {}"
@@ -25,6 +26,7 @@
       :guides="false"
       :with-block-guides="false"
       :grid-lines="state.gridLines"
+      v-bind="sub ? { item: sub, standalone: true } : {}"
     />
     <!-- (until the values are there: room kept, nothing jumps much) -->
     <div v-else class="pw-panel-preview-wait"></div>
@@ -41,6 +43,9 @@ export default {
     type: { type: String, required: true },
     // the block's content
     content: { type: Object, default: null },
+    // a multicolumn sub-block alone ({ type, content }): only it, on the
+    // block's background (the drawer)
+    sub: { type: Object, default: null },
   },
   computed: {
     state() {
