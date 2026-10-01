@@ -332,15 +332,6 @@ export default {
       const files = [...this.panelCards.map(item => this.cardImage(item)), this.isHero ? this.heroFile : null];
       return files.filter(f => f && f.link).map(f => f.link);
     },
-    // the hero's height in proportion to the preview's width, as on the
-    // screen of the size shown (the panel's column is narrower than the
-    // screen: fixed pixels would make it far too high)
-    heroHeightPx() {
-      const px = parseFloat(BlockPreview.computed.heroHeightPx.call(this));
-      if (!px) return null;
-      const width = { default: 390, sm: 640, md: 768, lg: 1024, xl: 1440 }[this.bp] || 1440;
-      return (px / width * 100).toFixed(2) + 'cqw';
-    },
     // the hero's background file (image or video)
     heroFile() {
       const list = this.content[this.heroBackground === 'video' ? 'video' : 'image'];
@@ -664,8 +655,6 @@ export default {
 /* the panel's block: its own light surface (the project's colours, also in
    Kirby's dark mode), links do not lead away (PanelPreview) */
 .pw-panel-render {
-  /* (the hero's height in proportion to its width: cqw) */
-  container-type: inline-size;
   /* (a too long word breaks, as in the frontend) */
   overflow-wrap: break-word;
   color-scheme: light;
