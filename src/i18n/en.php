@@ -127,7 +127,7 @@
 	'prw.view.defaults' => 'Start values',
 	'prw.view.presets' => 'Visibility',
 	'prw.view.usage' => 'Usage',
-	'prw.view.usage.intro' => 'The pages that use this block. A click opens the page.',
+	'prw.view.usage.intro' => 'The pages that use this block.',
 	'prw.usage.none' => 'This block is not used on any page yet.',
 	'prw.view.design.intro' => 'These values apply to all blocks of this kind, including existing ones.',
 	'prw.view.defaults.intro' => 'Start values apply to newly created blocks. The values can still be changed in the block itself.',

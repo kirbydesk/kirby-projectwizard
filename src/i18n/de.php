@@ -127,7 +127,7 @@
 	'prw.view.defaults' => 'Startwerte',
 	'prw.view.presets' => 'Sichtbarkeit',
 	'prw.view.usage' => 'Benutzung',
-	'prw.view.usage.intro' => 'Die Seiten, auf denen dieser Block verwendet wird. Ein Klick öffnet die Seite.',
+	'prw.view.usage.intro' => 'Die Seiten, auf denen dieser Block verwendet wird.',
 	'prw.usage.none' => 'Dieser Block wird noch auf keiner Seite verwendet.',
 	'prw.view.design.intro' => 'Diese Werte gelten für alle Blöcke dieser Art, auch für bereits angelegte Blöcke.',
 	'prw.view.defaults.intro' => 'Startwerte gelten für neu angelegte Blöcke. Im Block selbst lassen sich die Werte weiterhin ändern.',
