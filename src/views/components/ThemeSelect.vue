@@ -1,6 +1,7 @@
 <template>
-  <!-- variant of a preview: a button with the chosen variant's name, Kirby's
-       black menu with all variants (v-model) – as the device select -->
+  <!-- variant of a preview (or another choice of it, e.g. the layout): a
+       button with the chosen one's name, Kirby's black menu with all of them
+       (v-model) – as the device select -->
   <div class="pw-pill pw-theme-select" role="group">
     <div class="pw-tab-menu">
       <button
@@ -9,7 +10,7 @@
         aria-haspopup="menu"
         @click="$refs.menu.toggle()"
       >
-        <span class="pw-theme-select-text">{{ $t('pw.option.' + value) }}</span>
+        <span class="pw-theme-select-text">{{ $t(prefix + value) }}</span>
         <k-icon type="angle-down" class="pw-tab-menu-chevron" />
       </button>
       <k-dropdown-content ref="menu" align-x="start">
@@ -23,7 +24,7 @@
             :aria-current="value === theme ? 'true' : undefined"
             @click="$refs.menu.close(); $emit('input', theme)"
           >
-            <span class="k-button-text">{{ $t('pw.option.' + theme) }}</span>
+            <span class="k-button-text">{{ $t(prefix + theme) }}</span>
           </button>
         </nav>
       </k-dropdown-content>
@@ -37,6 +38,8 @@ export default {
     // the variant shown (default, variant, variant2 …)
     value: { type: String, default: 'default' },
     themes: { type: Array, default: () => [] },
+    // the names' translation keys (prefix + value)
+    prefix: { type: String, default: 'pw.option.' },
   },
 };
 </script>

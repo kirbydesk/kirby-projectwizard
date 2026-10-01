@@ -28,18 +28,14 @@
       <pw-theme-select :value="currentTheme" :themes="themes" class="pw-preview-theme" @input="$emit('update:variant', $event)" />
       <!-- featurelist, faq (design and elements tab): the layout shown, after
            the variant (a view, not saved; at first the start value) -->
-      <div v-if="layoutSwitch" class="pw-preview-layout">
-        <div class="pw-pill pw-preview-theme" role="group">
-          <button
-            v-for="lay in ['stacked', 'split']"
-            :key="'pl-' + lay"
-            type="button"
-            class="pw-tool"
-            :aria-pressed="(featureLayout || setting('style', 'section-layout') || 'stacked') === lay ? 'true' : 'false'"
-            @click="$emit('update:feature-layout', lay)"
-          >{{ $t((isFaq ? 'kirbyblock-faq.section-layout.' : 'pw.option.') + lay) }}</button>
-        </div>
-      </div>
+      <pw-theme-select
+        v-if="layoutSwitch"
+        class="pw-preview-layout"
+        :value="featureLayout || setting('style', 'section-layout') || 'stacked'"
+        :themes="['stacked', 'split']"
+        :prefix="isFaq ? 'kirbyblock-faq.section-layout.' : 'pw.option.'"
+        @input="$emit('update:feature-layout', $event)"
+      />
     </div>
 
     <div class="pw-block-live-body" :style="{ backgroundColor: bodyBackground }">
