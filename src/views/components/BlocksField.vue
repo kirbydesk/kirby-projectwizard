@@ -25,7 +25,6 @@
         <!-- the size: Kirby's own button (as "Add"), its menu the five
              breakpoints of the frontend -->
         <k-button
-          :icon="deviceIcon(device)"
           :text="deviceCode(device)"
           :title="deviceLabel(device)"
           :dropdown="true"
@@ -91,7 +90,6 @@ export default {
     deviceOptions() {
       return PANEL_SIZES.map(bp => ({
         text: this.deviceLabel(bp),
-        icon: this.deviceIcon(bp),
         current: this.device === bp,
         // (wider than the window: greyed out until it is wide enough)
         disabled: !deviceFits(bp),
@@ -132,10 +130,6 @@ export default {
   methods: {
     toggleGridLines() {
       setGridLines(!this.gridLines);
-    },
-    deviceIcon(bp) {
-      // (as an orientation: phone, tablet, screen)
-      return { default: 'mobile', sm: 'mobile', md: 'tablet', lg: 'tablet', xl: 'display' }[bp];
     },
     deviceLabel(bp) {
       return this.$t('prw.panel.size.' + bp);
