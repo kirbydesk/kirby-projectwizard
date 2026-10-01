@@ -22,10 +22,13 @@
             type="button"
             class="k-dropdown-item k-button pw-menu-item"
             data-has-text="true"
+            :data-has-icon="colors ? 'true' : null"
             :aria-current="value === theme ? 'true' : undefined"
             @click="$refs.menu.close(); $emit('input', theme)"
           >
-            <span class="k-button-text"><span v-if="colors" class="pw-variant-dot is-small" :style="{ backgroundColor: colors[theme] }"></span>{{ $t(prefix + theme) }}</span>
+            <!-- (the dot in the icon's place, as the device select's icons) -->
+            <span v-if="colors" class="k-button-icon"><span class="pw-variant-dot pw-theme-select-dot" :style="{ backgroundColor: colors[theme] }"></span></span>
+            <span class="k-button-text">{{ $t(prefix + theme) }}</span>
           </button>
         </nav>
       </k-dropdown-content>
@@ -65,7 +68,11 @@ export default {
 .pw-pill.pw-theme-select .pw-variant-dot.is-small {
   margin-inline-end: 3px;
 }
-.pw-theme-select .k-dropdown-item .pw-variant-dot.is-small {
-  margin-inline-end: var(--spacing-2);
+.pw-theme-select-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  /* (a white ring on the dark menu) */
+  box-shadow: 0 0 0 1px #ffffff;
 }
 </style>
