@@ -5765,16 +5765,12 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* how often: a blue pill, as the counts in the translation's tree */
+/* how often: blue figures, as the counts in the translation's tree */
 .pw-usage-count {
-  padding: 0 0.4rem;
   font-size: 10px;
   font-weight: 600;
-  line-height: 1.4rem;
   font-variant-numeric: tabular-nums;
   color: light-dark(var(--color-blue-700, #1d4ed8), var(--color-blue-200, #dbeafe));
-  background: light-dark(var(--color-blue-200, #dbeafe), var(--color-blue-800, #1e40af));
-  border-radius: 999px;
 }
 .pw-usage-status {
   display: flex;
