@@ -1171,14 +1171,17 @@
             <!-- entries (featurelist, steplist): their title and description –
                  the global items' values (Elements › Items) or the block's own;
                  the first card -->
-            <section v-if="hasEntry(block.blockType)" class="pw-card-section">
+            <!-- (two cards: the title and the description; the values switch –
+                 standard or own – in both, it is one setting) -->
+            <template v-if="hasEntry(block.blockType)">
+            <section v-for="part in entryParts(block.blockType)" :key="'entry-' + part.key" class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.elementsItems') }}</h3>
+                <h3 class="pw-card-heading">{{ $t(part.heading) }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <!-- (featurelist: the title above the text or in it) -->
                 <pw-block-settings
-                  v-if="itemLayoutDefault(block.blockType, 'item-title-style') !== undefined"
+                  v-if="part.key === 'title' && itemLayoutDefault(block.blockType, 'item-title-style') !== undefined"
                   view="items-layout"
                   :block="block"
                   :config="blockConfigs[block.blockType]"
@@ -1202,7 +1205,7 @@
                 />
                 <!-- standard: the global values, grey (not editable here) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
-                  <div v-for="name in entryRows(block.blockType)" :key="'ge-' + name" class="pw-field-row is-readonly" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
+                  <div v-for="name in part.rows" :key="'ge-' + name" class="pw-field-row is-readonly" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
@@ -1221,7 +1224,7 @@
                 <!-- custom: the block's own values, the global ones grey at the end -->
                 <template v-else>
                   <pw-block-values
-                    v-for="name in entryRows(block.blockType)"
+                    v-for="name in part.rows"
                     :key="'oe-' + name"
                     :bp.sync="itemBp"
                     :defaults="blockValueDefaults[block.blockType]"
@@ -1238,8 +1241,9 @@
                   />
                 </template>
               </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureText')" />
+              <k-text v-if="part.key === 'text'" size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureText')" />
             </section>
+            </template>
           </div>
 
           <!-- Design: the items' values (CSS variables), for all blocks at once -->
@@ -3588,7 +3592,19 @@ export default {
       if (blockType === 'pwfaq') return ['item-title-font-size', 'item-title-line-height', 'item-text-font-size'];
       return ['item-title-font-size', 'item-title-line-height', 'item-text-font-size', 'item-title-spacing'];
     },
+    // the entries' two cards: the title (its size, line height, gap to the
+    // description) and the description (its size)
+    entryParts(blockType) {
+      const rows = this.entryRows(blockType);
+      return [
+        { key: 'title', heading: 'prw.headline.entryTitle', rows: rows.filter(n => n.startsWith('item-title-')) },
+        { key: 'text', heading: 'prw.headline.entryText', rows: rows.filter(n => n.startsWith('item-text-')) },
+      ];
+    },
     entryLabel(blockType, name) {
+      // (in its card: short – the card says title or description)
+      const short = { 'item-title-font-size': 'prw.prop.font-size', 'item-title-line-height': 'prw.prop.line-height', 'item-text-font-size': 'prw.prop.font-size', 'item-title-spacing': 'prw.element.item-title-spacing' }[name];
+      if (short) return this.$t(short);
       if (name === 'item-text-font-size' && this.itemLayoutDefault(blockType, 'item-title-style') === 'inline') return this.$t('prw.prop.font-size');
       return this.$t('prw.prop.' + name);
     },

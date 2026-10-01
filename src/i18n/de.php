@@ -90,7 +90,8 @@
 	// the cards of the elements tab, named after the block's part
 	'prw.headline.elementsIntro' => 'Einleitung',
 	'prw.headline.elementsColumns' => 'Spalten',
-	'prw.headline.elementsItems' => 'Einträge',
+	'prw.headline.entryTitle' => 'Titel',
+	'prw.headline.entryText' => 'Beschreibung',
 	'prw.headline.spacing' => 'Abstände',
 	'prw.headline.fields' => 'Elemente',
 	'prw.headline.logos' => 'Logos',
