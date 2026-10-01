@@ -5761,6 +5761,8 @@ export default {
 .pw-usage-title {
   flex: 1;
   min-width: 0;
+  /* (room for the descenders – g, p – inside the clipping) */
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
