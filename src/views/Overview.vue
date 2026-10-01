@@ -3215,6 +3215,9 @@ export default {
       try {
         const res = await this.$api.get('projectwizard/blocks');
         this.blocks = res.blocks || [];
+        // (alphabetical by the name in the panel's language – the names read
+        // from the blocks just set)
+        this.blocks = this.blocks.slice().sort((a, b) => this.blockLabel(a.blockType).localeCompare(this.blockLabel(b.blockType), this.$panel.translation.code));
         this.activeBlocks = res.activeBlocks || [];
         this.activeVariants = res.activeVariants || ['variant', 'variant2'];
         this.originalActiveVariants = [...this.activeVariants];
