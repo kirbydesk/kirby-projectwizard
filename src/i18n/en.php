@@ -280,6 +280,7 @@
 	'prw.hint.logocloudColors' => 'Sets the background colour of the logo tiles for each variant.',
 	'prw.hint.logocloudSpacing' => 'Sets the gaps between the logos and to the intro.',
 	'prw.hint.itemCorners' => 'Sets which corners of a new item are rounded. The radius is set in the design.',
+	'prw.hint.elementSpacingIntroGap' => 'Below the last element of the intro the gap to the intro from the design applies.',
 	'prw.hint.elementSpacing' => '<code>Default</code> takes the spacing values of the global elements, <code>Custom</code> lets you define your own values for all elements in this block.',
 	'prw.hint.globalValue' => 'Global value',
 	'prw.prop.tagline-spacing' => 'Tagline',

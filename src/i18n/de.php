@@ -280,6 +280,7 @@
 	'prw.hint.logocloudColors' => 'Legt die Hintergrundfarbe der Logokacheln für jede Variante fest.',
 	'prw.hint.logocloudSpacing' => 'Legt die Abstände zwischen den Logos und zur Einleitung fest.',
 	'prw.hint.itemCorners' => 'Legt fest, welche Ecken ein neuer Eintrag abgerundet hat. Der Radius wird in der Gestaltung festgelegt.',
+	'prw.hint.elementSpacingIntroGap' => 'Unter dem letzten Element der Einleitung gilt der Abstand zur Einleitung aus der Gestaltung.',
 	'prw.hint.elementSpacing' => '<code>Standard</code> übernimmt die Abstands-Werte der globalen Elemente, <code>Benutzerdefiniert</code> ermöglicht, eigene Werte für alle Elemente in diesem Block zu definieren.',
 	'prw.hint.globalValue' => 'Globaler Wert',
 	'prw.prop.tagline-spacing' => 'Tagline',

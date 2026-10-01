@@ -1164,7 +1164,7 @@
                   />
                 </template>
               </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing')" />
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing') + (hasIntroGap(block.blockType) ? ' ' + $t('prw.hint.elementSpacingIntroGap') : '')" />
             </section>
             </template>
 
@@ -3547,24 +3547,17 @@ export default {
     },
     // its elements with such a value (the heading block: only the tagline),
     // without those hidden under Visibility (they are not in the block)
+    // the elements whose space below the block has values for: always all,
+    // in a fixed order – used or not, hidden or not (below the intro's last
+    // one a block with entries takes its gap to the intro, said in a hint)
     ownSpacingElements(blockType) {
       const groups = Object.values(this.blockValueDefaults[blockType] || {});
-      const hidden = this.blockOverrides[blockType]?.settings?.hidden || [];
-      // (lists live in the text: hidden with it; the multicolumn's own list
-      // element stays)
-      const isHidden = (el) => hidden.includes(el === 'list' && blockType !== 'pwmulticolumn' ? 'editor' : el);
-      // (lists only where the text allows them – with the exceptions; the
-      // multicolumn's list is an element of its own)
-      const noLists = blockType !== 'pwmulticolumn' && !this.allowsLists(blockType);
-      const els = ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].filter(el => !isHidden(el) && !(el === 'list' && noLists) && groups.some(g => g && g.vars && g.vars[el + '-spacing']));
-      // a block with a gap to the intro (cards, features, logos, steps,
-      // media below it): the intro's last visible element has no space below
-      // of its own there – its row would have no effect
-      if (groups.some(g => g && g.vars && g.vars['item-text-gap'])) {
-        const last = ['editor', 'heading', 'tagline'].find(el => els.includes(el));
-        if (last) return els.filter(el => el !== last);
-      }
-      return els;
+      return ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button']
+        .filter(el => groups.some(g => g && g.vars && g.vars[el + '-spacing']));
+    },
+    // a block with a gap to its intro (entries, logos, media below it)
+    hasIntroGap(blockType) {
+      return Object.values(this.blockValueDefaults[blockType] || {}).some(g => g && g.vars && g.vars['item-text-gap']);
     },
     // multicolumn: the columns side by side at the device shown (then the
     // gap between them counts, else the one below each other); mobile always
