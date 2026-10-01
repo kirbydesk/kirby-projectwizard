@@ -90,9 +90,11 @@
             :key="varName"
             class="pw-field-row"
             :class="{ 'is-locked': varLocked(varName) }"
-            :data-guide="guides ? guides[varName] || null : null"
-            @focusin="guides && guides[varName] && $emit('hover-var', varName)"
-            @focusout="guides && guides[varName] && $emit('hover-var', null)"
+            :data-guide="guides && guides[varName] ? 'tab' : null"
+            :data-guide-var="guides && varName in guides ? varName : null"
+            :style="guides && guides[varName] ? { '--pw-guide-color': 'rgb(' + guides[varName] + ')' } : null"
+            @focusin="guides && varName in guides && $emit('hover-var', varName)"
+            @focusout="guides && varName in guides && $emit('hover-var', null)"
           >
             <div class="k-input" data-type="text">
               <span class="k-input-element pw-field-row-inner">
@@ -279,7 +281,8 @@ export default {
     defaults: { type: Object, default: () => ({}) },
     overrides: { type: Object, default: () => ({}) },
     groupLabels: { type: Object, default: null },
-    // guide stripes while the preview guides are on (varName → margin | padding)
+    // guide stripes while the preview guides are on (varName → its colour
+    // "r, g, b"; listed without one: still a guide, its colour not yet given)
     guides: { type: Object, default: null },
     hideSectionHeaders: { type: Boolean, default: false },
     showOnly: { type: Array, default: null },

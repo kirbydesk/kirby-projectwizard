@@ -1019,7 +1019,8 @@
                 :body-background="bodyBackgroundColor"
                 :themes="themes"
                 :guides.sync="previewGuides"
-                :with-block-guides="currentBlockView !== 'design'"
+                :with-block-guides="currentBlockView === 'defaults'"
+                :guide-colors="activeTab === block.blockType ? previewGuideColors : null"
                 :bp.sync="itemBp"
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="shownValueOverrides(block.blockType)"
@@ -1094,7 +1095,7 @@
 
           <!-- Elements: the values taken from Elements (the entries' type,
                the space below) – the block's own only by exception -->
-          <div v-show="currentBlockView === 'elements'" v-if="blockConfigs[block.blockType] && hasElementsView(block.blockType)">
+          <div v-show="currentBlockView === 'elements'" v-if="blockConfigs[block.blockType] && hasElementsView(block.blockType)" :data-guide-scope="block.blockType + ':elements'">
 
             <!-- elements: the space below tagline, heading and text – the global
                  elements' or the block's own (blocks that bring the values:
@@ -1126,7 +1127,9 @@
                     v-for="el in ownSpacingElements(block.blockType)"
                     :key="'gs-' + el"
                     class="pw-field-row is-readonly"
-                    :data-guide="previewGuides ? spaceGuide(el) : null"
+                    :data-guide="guideColor(el + '-spacing') ? 'tab' : null"
+                    :data-guide-var="previewGuides ? el + '-spacing' : null"
+                    :style="guideRowStyle(el + '-spacing')"
                   >
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
@@ -1155,7 +1158,7 @@
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="[el + '-spacing']"
                     :labels="{ [el + '-spacing']: $t('prw.prop.' + el + '-spacing') }"
-                    :guides="previewGuides ? { [el + '-spacing']: spaceGuide(el) } : null"
+                    :guides="rowGuides([el + '-spacing'])"
                     :hints="{ [el + '-spacing']: globalElementSpacing(el) }"
                     :hint-title="$t('prw.hint.globalValue')"
                     :hide-section-headers="true"
@@ -1193,7 +1196,7 @@
                 />
                 <!-- standard: the global values, grey (not editable here) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-entry-' + part.key) !== 'own'">
-                  <div v-for="name in part.rows" :key="'ge-' + name" class="pw-field-row is-readonly" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
+                  <div v-for="name in part.rows" :key="'ge-' + name" class="pw-field-row is-readonly" :data-guide="name === 'item-title-spacing' && guideColor(name) ? 'tab' : null" :data-guide-var="previewGuides && name === 'item-title-spacing' ? name : null" :style="name === 'item-title-spacing' ? guideRowStyle(name) : null">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
@@ -1220,7 +1223,7 @@
                     :overrides="blockValueOverrides[block.blockType] || {}"
                     :show-only="[name]"
                     :labels="{ [name]: entryLabel(block.blockType, name) }"
-                    :guides="previewGuides && name === 'item-title-spacing' ? { 'item-title-spacing': 'gap-4' } : null"
+                    :guides="rowGuides(name === 'item-title-spacing' ? [name] : [])"
                     :hints="{ [name]: globalItemValue(name) }"
                     :hint-title="$t('prw.hint.globalValue')"
                     :hide-section-headers="true"
@@ -1235,7 +1238,7 @@
           </div>
 
           <!-- Design: the items' values (CSS variables), for all blocks at once -->
-          <div v-show="currentBlockView === 'design'" v-if="blockConfigs[block.blockType] && hasDesign(block.blockType)">
+          <div v-show="currentBlockView === 'design'" v-if="blockConfigs[block.blockType] && hasDesign(block.blockType)" :data-guide-scope="block.blockType + ':design'">
 
 
             <!-- steplist: the item styles as pills (a view, not saved: the
@@ -1325,7 +1328,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="[stepValueKey(block.blockType, 'item-content-gap')]"
-                  :guides="previewGuides ? { [stepValueKey(block.blockType, 'item-content-gap')]: 'row' } : null"
+                  :guides="rowGuides([stepValueKey(block.blockType, 'item-content-gap')])"
                   :labels="{ [stepValueKey(block.blockType, 'item-content-gap')]: $t(currentStepStyle(block.blockType) === 'centered' ? 'prw.label.gapVertical' : 'prw.label.gapHorizontal') }"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
@@ -1389,7 +1392,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :labels="{ 'item-gap': $t('prw.label.betweenSteps') }"
-                  :guides="previewGuides ? { 'item-gap': 'margin', 'item-text-gap': 'gap-5' } : null"
+                  :guides="rowGuides(['item-gap', 'item-text-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1471,7 +1474,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :labels="{ 'item-padding': $t('prw.label.leftRight'), 'item-padding-y': $t('prw.label.topBottom') }"
-                  :guides="previewGuides ? { 'item-padding': 'padding', 'item-padding-y': 'padding-y' } : null"
+                  :guides="rowGuides(['item-padding', 'item-padding-y'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1521,7 +1524,7 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                  :guides="rowGuides(['item-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1532,7 +1535,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-row-gap': 'row' } : null"
+                  :guides="rowGuides(['item-row-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1543,7 +1546,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
+                  :guides="rowGuides(['item-text-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1633,7 +1636,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-icon-gap': 'row' } : null"
+                  :guides="rowGuides(['item-icon-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1685,7 +1688,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-icon-tile-padding': 'padding' } : null"
+                  :guides="rowGuides(['item-icon-tile-padding'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1759,7 +1762,7 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                  :guides="rowGuides(['item-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1778,7 +1781,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-offset-gap']"
-                  :guides="previewGuides ? { 'item-offset-gap': 'text' } : null"
+                  :guides="rowGuides(['item-offset-gap'])"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -1800,7 +1803,7 @@
                 <pw-block-values
                   v-if="currentFeatureLayout(block.blockType) !== 'split' || itemBp === 'default'"
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
+                  :guides="rowGuides(['item-text-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1888,7 +1891,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-padding-y']"
-                  :guides="previewGuides ? { 'item-padding-y': 'padding-y' } : null"
+                  :guides="rowGuides(['item-padding-y'])"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -1900,7 +1903,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-padding-x']"
-                  :guides="previewGuides ? { 'item-padding-x': 'padding' } : null"
+                  :guides="rowGuides(['item-padding-x'])"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -1966,7 +1969,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-answer-gap']"
-                  :guides="previewGuides ? { 'item-answer-gap': 'gap-4' } : null"
+                  :guides="rowGuides(['item-answer-gap'])"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -2071,7 +2074,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-offset-gap']"
-                  :guides="previewGuides ? { 'item-offset-gap': 'text' } : null"
+                  :guides="rowGuides(['item-offset-gap'])"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -2094,7 +2097,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-text-gap']"
-                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
+                  :guides="rowGuides(['item-text-gap'])"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -2209,7 +2212,7 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-padding-x': 'padding', 'item-padding-y': 'padding-y' } : null"
+                  :guides="rowGuides(['item-padding-x', 'item-padding-y'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2391,7 +2394,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-overhang': 'overhang' } : null"
+                  :guides="rowGuides(['item-overhang'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2493,7 +2496,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :labels="{ 'item-gap': $t('prw.label.betweenCards') }"
-                  :guides="previewGuides ? { 'item-gap': 'margin' } : null"
+                  :guides="rowGuides(['item-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2504,7 +2507,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-tagline-spacing': 'row' } : null"
+                  :guides="rowGuides(['item-tagline-spacing'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2515,7 +2518,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-heading-spacing': 'gap-4' } : null"
+                  :guides="rowGuides(['item-heading-spacing'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2526,7 +2529,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-cta-gap': 'gap-5' } : null"
+                  :guides="rowGuides(['item-cta-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2537,7 +2540,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
+                  :guides="rowGuides(['item-text-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2560,7 +2563,7 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
+                  :guides="rowGuides(['item-text-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2584,7 +2587,7 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'column-gap': 'margin', 'row-gap': 'row' } : null"
+                  :guides="rowGuides(['column-gap', 'row-gap'])"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2631,6 +2634,10 @@ import { injectFontFaces } from '../preview/fonts.js';
 import { announcePreviewSaved } from '../preview/store.js';
 import autosize from '../directives/autosize.js';
 import { readPreviewBp, savePreviewBp, SCREEN_HEIGHTS } from '../helpers/preview-bp.js';
+
+// the guides' colours, given in this order to the rows of the open tab:
+// magenta, blue, violet, green, orange, petrol, gold
+const GUIDE_PALETTE = ['255, 0, 170', '0, 170, 255', '130, 80, 255', '0, 180, 90', '255, 140, 0', '0, 150, 136', '215, 160, 0'];
 
 export default {
   directives: { 'pw-autosize': autosize },
@@ -2706,6 +2713,8 @@ export default {
       startItemStyles: {},
       // guides in the block preview (and the matching stripes in the rows)
       previewGuides: (() => { try { return localStorage.getItem('pw-wizard-guides') === 'on'; } catch (e) { return false; } })(),
+      // the open tab's values with a guide, in the order of their rows
+      guideOrder: [],
       // breakpoint shown in the items' responsive rows
       // device of the preview: the last one chosen (see helpers/preview-bp.js)
       itemBp: readPreviewBp(),
@@ -2774,6 +2783,18 @@ export default {
     };
   },
   computed: {
+    // the open tab's guide colours for the preview (value → "r, g, b"; the
+    // steplist's gap of a style also under its plain name)
+    previewGuideColors() {
+      if (!this.previewGuides) return null;
+      const colors = {};
+      this.guideOrder.forEach((name) => {
+        const rgb = this.guideColor(name);
+        colors[name] = rgb;
+        if (name.startsWith('item-content-gap')) colors['item-content-gap'] = rgb;
+      });
+      return colors;
+    },
     // the exceptions as saved (what applies; not the text being edited)
     savedPatches() {
       try {
@@ -3218,7 +3239,11 @@ export default {
     };
     window.addEventListener('keydown', this._onKeydown);
   },
+  updated() {
+    this.scanGuideOrder();
+  },
   mounted() {
+    this.scanGuideOrder();
     // the topbar: save buttons with their icon only while the room is short
     if (typeof ResizeObserver !== 'undefined' && this.$refs.topbar) {
       this._topbarObserver = new ResizeObserver(() => this.fitTopbar());
@@ -3566,9 +3591,36 @@ export default {
       const dist = get(this.blockOverrides[blockType]) ?? get(this.blockConfigs[blockType]?.defaults);
       return /^dist-\d-\d$/.test(dist || '');
     },
-    // the guide colour of an element's space below (as its band in the preview)
-    spaceGuide(el) {
-      return { tagline: 'margin', heading: 'row', editor: 'text', list: 'gap-4', quote: 'gap-5', media: 'overhang', button: 'gap-6' }[el];
+    // the guides' colours: the open tab's rows with a guide, in their order
+    // (top to bottom), each the next colour of the palette – the first always
+    // magenta; read from the tab after each render
+    scanGuideOrder() {
+      const scope = this.previewGuides && this.$el && this.$el.querySelector
+        ? this.$el.querySelector('[data-guide-scope="' + this.activeTab + ':' + this.currentBlockView + '"]')
+        : null;
+      const order = [];
+      if (scope) {
+        scope.querySelectorAll('[data-guide-var]').forEach((row) => {
+          const name = row.getAttribute('data-guide-var');
+          if (name && !order.includes(name)) order.push(name);
+        });
+      }
+      if (order.join('|') !== this.guideOrder.join('|')) this.guideOrder = order;
+    },
+    // a value's guide colour ("r, g, b"), none outside the open tab's rows
+    guideColor(name) {
+      const idx = this.guideOrder.indexOf(name);
+      return idx < 0 ? null : GUIDE_PALETTE[idx % GUIDE_PALETTE.length];
+    },
+    // the guides of some rows (value → colour) while the guides are on
+    rowGuides(names) {
+      if (!this.previewGuides || !names.length) return null;
+      return Object.fromEntries(names.map(name => [name, this.guideColor(name)]));
+    },
+    // a read-only row's stripe in its guide's colour
+    guideRowStyle(name) {
+      const rgb = this.guideColor(name);
+      return rgb ? { '--pw-guide-color': 'rgb(' + rgb + ')' } : null;
     },
     // the global elements' space below (Elements page: override, else default)
     globalElementSpacing(el) {

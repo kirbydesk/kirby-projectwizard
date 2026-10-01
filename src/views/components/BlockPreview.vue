@@ -8,6 +8,7 @@
     class="pw-element-preview-side pw-block-live-preview"
     :class="{ 'has-focus': guides && highlightsArea }"
     :data-focus="guides && highlightsArea ? highlight : null"
+    :style="guideVars"
   >
     <div class="pw-preview-switches">
       <!-- guides on/off: the padding line, as in Photoshop -->
@@ -384,6 +385,9 @@ export default {
     designView: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
+    // the guides' colours of the open tab (value → "r, g, b"); a value
+    // without one: its guide stays clear
+    guideColors: { type: Object, default: null },
     // variant shown, shared with the colour cards (.sync); empty: the block's preset
     variant: { type: String, default: '' },
   },
@@ -405,6 +409,16 @@ export default {
     },
     blockGuides() {
       return this.guides && this.withBlockGuides;
+    },
+    // the guides' colours as variables: a line and a tinted area per value
+    guideVars() {
+      const vars = {};
+      Object.entries(this.guideColors || {}).forEach(([name, rgb]) => {
+        if (!rgb) return;
+        vars['--pwg-' + name] = 'rgba(' + rgb + ', 0.9)';
+        vars['--pwgf-' + name] = 'rgba(' + rgb + ', 0.16)';
+      });
+      return vars;
     },
     // the chosen variant (here or in the colour cards), else the block's preset
     currentTheme() {
@@ -475,8 +489,8 @@ export default {
         // them tinted while its label is hovered
         const size = this.itemValueAt('item-size');
         // (hovered: the band only, without its lines)
-        const line = this.highlight === 'item-row-gap' ? 'transparent' : 'rgba(130, 80, 255, 0.9)';
-        const fill = this.highlight === 'item-row-gap' ? 'rgba(130, 80, 255, 0.18)' : 'transparent';
+        const line = this.highlight === 'item-row-gap' ? 'transparent' : this.guideLine('item-row-gap');
+        const fill = this.highlight === 'item-row-gap' ? this.guideFill('item-row-gap') : 'transparent';
         const hidden = this.highlight && this.highlight !== 'item-row-gap';
         const end = 'calc(' + size + ' + ' + rowGap + ')';
         const bands = this.guides && !hidden
@@ -535,8 +549,8 @@ export default {
       return {
         // (with the outer edges as lines, the inner ones are the guides')
         boxShadow: this.highlight === 'item-padding'
-          ? 'inset 1px 0 0 0 rgba(255, 0, 170, 0.6), inset -1px 0 0 0 rgba(255, 0, 170, 0.6), inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)'
-          : 'inset 0 1px 0 0 rgba(0, 180, 90, 0.9), inset 0 -1px 0 0 rgba(0, 180, 90, 0.9), inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)',
+          ? this.padTint('x', x, 'item-padding')
+          : this.padTint('y', y, 'item-padding-y'),
       };
     },
     // logocloud format: square tiles or one height ("flexible")
@@ -708,9 +722,9 @@ export default {
       // a padding hovered: tinted on its two sides (horizontal magenta, vertical green)
       if (this.guides && this.highlight === 'item-padding-x') {
         // (with the outer edges as lines, the inner ones are the guides')
-        style.boxShadow = 'inset 1px 0 0 0 rgba(255, 0, 170, 0.6), inset -1px 0 0 0 rgba(255, 0, 170, 0.6), inset ' + x + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + x + ') 0 0 0 rgba(255, 0, 170, 0.18)';
+        style.boxShadow = this.padTint('x', x, 'item-padding-x');
       } else if (this.guides && this.highlight === 'item-padding-y') {
-        style.boxShadow = 'inset 0 1px 0 0 rgba(0, 180, 90, 0.9), inset 0 -1px 0 0 rgba(0, 180, 90, 0.9), inset 0 ' + y + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + y + ') 0 0 rgba(0, 180, 90, 0.18)';
+        style.boxShadow = this.padTint('y', y, 'item-padding-y');
       }
       return style;
     },
@@ -1045,7 +1059,7 @@ export default {
         ...style,
         padding: pad,
         // its padding hovered: tinted all around
-        boxShadow: this.guides && this.highlight === 'item-icon-tile-padding' ? 'inset 0 0 0 ' + pad + ' rgba(255, 0, 170, 0.25)' : null,
+        boxShadow: this.guides && this.highlight === 'item-icon-tile-padding' ? 'inset 0 0 0 ' + pad + ' ' + this.guideFill('item-icon-tile-padding') : null,
         backgroundColor: this.itemColor('item-icon-tile-background'),
         borderRadius: { square: 0, round: '50%' }[shape] ?? custom,
       };
@@ -1319,6 +1333,22 @@ export default {
     },
   },
   methods: {
+    // a value's guide colours (its line, its tinted area): the variables the
+    // preview gets from the open tab, clear for a value of another tab
+    guideLine(name) {
+      return 'var(--pwg-' + name + ', transparent)';
+    },
+    guideFill(name) {
+      return 'var(--pwgf-' + name + ', transparent)';
+    },
+    // a padding hovered: its edges as lines, its two sides tinted
+    padTint(axis, size, name) {
+      const line = this.guideLine(name);
+      const fill = this.guideFill(name);
+      return axis === 'x'
+        ? 'inset 1px 0 0 0 ' + line + ', inset -1px 0 0 0 ' + line + ', inset ' + size + ' 0 0 0 ' + fill + ', inset calc(-1 * ' + size + ') 0 0 0 ' + fill
+        : 'inset 0 1px 0 0 ' + line + ', inset 0 -1px 0 0 ' + line + ', inset 0 ' + size + ' 0 0 ' + fill + ', inset 0 calc(-1 * ' + size + ') 0 0 ' + fill;
+    },
     // a logo's tile; with guides one of the four corners of the 3×3 tracks
     logoTileStyle(index) {
       const cells = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
@@ -1329,7 +1359,7 @@ export default {
         // (the gap between the rows: bands of the logos' area, see logosStyle)
         if (this.highlight === 'item-gap') {
           const half = 'calc(' + this.itemValue('item-gap') + ' / 2)';
-          style.boxShadow = half + ' 0 0 0 rgba(0, 170, 255, 0.15), calc(-1 * ' + half + ') 0 0 0 rgba(0, 170, 255, 0.15)';
+          style.boxShadow = half + ' 0 0 0 ' + this.guideFill('item-gap') + ', calc(-1 * ' + half + ') 0 0 0 ' + this.guideFill('item-gap');
         }
       }
       return style;
@@ -1570,7 +1600,7 @@ export default {
       // entry green, left and right of a card magenta)
       const padY = this.itemValueAt('item-padding-y');
       const tintY = this.guides && this.highlight === 'item-padding-y'
-        ? 'inset 0 ' + padY + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + padY + ') 0 0 rgba(0, 180, 90, 0.18)'
+        ? 'inset 0 ' + padY + ' 0 0 ' + this.guideFill('item-padding-y') + ', inset 0 calc(-1 * ' + padY + ') 0 0 ' + this.guideFill('item-padding-y')
         : null;
       if (this.currentFaqStyle === 'cards') {
         const r = this.setting('layout', 'item-shape') === 'square' ? [] : (this.itemValue('item-radius') || []);
@@ -1578,7 +1608,7 @@ export default {
         return {
           position: 'relative',
           boxShadow: this.guides && this.highlight === 'item-padding-x'
-            ? 'inset ' + padX + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + padX + ') 0 0 0 rgba(255, 0, 170, 0.18)'
+            ? 'inset ' + padX + ' 0 0 0 ' + this.guideFill('item-padding-x') + ', inset calc(-1 * ' + padX + ') 0 0 0 ' + this.guideFill('item-padding-x')
             : tintY,
           backgroundColor: this.itemColor('item-background'),
           paddingLeft: this.itemValueAt('item-padding-x'),
@@ -1701,17 +1731,20 @@ export default {
 </script>
 
 <style>
-/* faq guides: where the paddings end – above and below the question green,
-   left and right of a card magenta; another value hovered: only its lines */
+/* the guides' colours: each value's line and area colour as variables on
+   the preview (--pwg-<value>, --pwgf-<value>), given in the order of the
+   open tab's rows; a value of another tab has none – its guide stays clear */
+/* faq guides: where the paddings end – above and below the question, left
+   and right of a card; another value hovered: only its lines */
 .pw-faq-answer-gap {
   position: absolute;
   inset-inline: 0;
   box-sizing: border-box;
   pointer-events: none;
-  border-block: 1px solid rgba(215, 160, 0, 0.95);
+  border-block: 1px solid var(--pwg-item-answer-gap, transparent);
 }
 .pw-faq-answer-gap.is-hot {
-  background: rgba(215, 160, 0, 0.18);
+  background: var(--pwgf-item-answer-gap, transparent);
 }
 .pw-block-live-preview.has-focus .pw-faq-answer-gap:not(.is-hot) {
   border-color: transparent;
@@ -1723,10 +1756,10 @@ export default {
   box-sizing: border-box;
 }
 .pw-faq-pad-y {
-  border-block: 1px solid rgba(0, 180, 90, 0.9);
+  border-block: 1px solid var(--pwg-item-padding-y, transparent);
 }
 .pw-faq-pad-x {
-  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+  border-inline: 1px solid var(--pwg-item-padding-x, transparent);
 }
 .pw-block-live-preview.has-focus :is(.pw-faq-pad-y, .pw-faq-pad-x):not(.is-hot) {
   border-color: transparent;
@@ -1799,21 +1832,21 @@ export default {
 .pw-steplist-step-gap {
   display: block;
   box-sizing: border-box;
-  border-block: 1px solid rgba(0, 170, 255, 0.8);
+  border-block: 1px solid var(--pwg-item-gap, transparent);
 }
 .pw-steplist-items.is-row .pw-steplist-step-gap {
   border-block: 0;
-  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+  border-inline: 1px solid var(--pwg-item-gap, transparent);
 }
 /* the gap between number and text, the second gap: two violet lines
    around it (beside: left and right, centered: above and below) */
 .pw-steplist-gap {
   box-sizing: border-box;
-  border-inline: 1px solid rgba(130, 80, 255, 0.9);
+  border-inline: 1px solid var(--pwg-item-content-gap, transparent);
 }
 .pw-steplist-item.is-centered .pw-steplist-gap {
   border-inline: 0;
-  border-block: 1px solid rgba(130, 80, 255, 0.9);
+  border-block: 1px solid var(--pwg-item-content-gap, transparent);
 }
 /* logocloud guides: the gap between the logos (cyan, a line on either
    side), the logo's area inside the tile's padding (magenta) */
@@ -1821,12 +1854,12 @@ export default {
   box-sizing: border-box;
 }
 .pw-logocloud-gap.is-column {
-  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+  border-inline: 1px solid var(--pwg-item-gap, transparent);
 }
 /* the gap between the rows in orange, told apart from the one between
    the logos of a row (cyan) */
 .pw-logocloud-gap.is-row {
-  border-block: 1px solid rgba(130, 80, 255, 0.9);
+  border-block: 1px solid var(--pwg-item-row-gap, transparent);
 }
 /* the block's own space below (guides): a band between two lines, below
    the tagline cyan, the heading violet, the text orange */
@@ -1852,31 +1885,31 @@ export default {
 .pw-mc-band {
   border-block: 1px solid transparent;
 }
-.pw-mc-band.is-tagline { border-color: rgba(0, 170, 255, 0.8); }
-.pw-mc-band.is-list { border-color: rgba(215, 160, 0, 0.95); }
-.pw-mc-band.is-list.is-hot { background: rgba(215, 160, 0, 0.18); }
-.pw-mc-band.is-quote { border-color: rgba(0, 150, 136, 0.9); }
-.pw-mc-band.is-quote.is-hot { background: rgba(0, 150, 136, 0.15); }
-.pw-mc-band.is-media { border-color: rgba(230, 60, 60, 0.9); }
-.pw-mc-band.is-button { border-color: rgba(40, 90, 220, 0.9); }
-.pw-mc-band.is-button.is-hot { background: rgba(40, 90, 220, 0.15); }
-.pw-mc-band.is-media.is-hot { background: rgba(230, 60, 60, 0.18); }
+.pw-mc-band.is-tagline { border-color: var(--pwg-tagline-spacing, transparent); }
+.pw-mc-band.is-heading { border-color: var(--pwg-heading-spacing, transparent); }
+.pw-mc-band.is-editor { border-color: var(--pwg-editor-spacing, transparent); }
+.pw-mc-band.is-list { border-color: var(--pwg-list-spacing, transparent); }
+.pw-mc-band.is-quote { border-color: var(--pwg-quote-spacing, transparent); }
+.pw-mc-band.is-media { border-color: var(--pwg-media-spacing, transparent); }
+.pw-mc-band.is-button { border-color: var(--pwg-button-spacing, transparent); }
+.pw-mc-band.is-tagline.is-hot { background: var(--pwgf-tagline-spacing, transparent); }
+.pw-mc-band.is-heading.is-hot { background: var(--pwgf-heading-spacing, transparent); }
+.pw-mc-band.is-editor.is-hot { background: var(--pwgf-editor-spacing, transparent); }
+.pw-mc-band.is-list.is-hot { background: var(--pwgf-list-spacing, transparent); }
+.pw-mc-band.is-quote.is-hot { background: var(--pwgf-quote-spacing, transparent); }
+.pw-mc-band.is-media.is-hot { background: var(--pwgf-media-spacing, transparent); }
+.pw-mc-band.is-button.is-hot { background: var(--pwgf-button-spacing, transparent); }
 .pw-mc-list > li + li { margin-top: var(--pw-list-gap); }
 .pw-mc-list > li::marker { color: var(--pw-list-marker); font-size: var(--pw-list-marker-size); }
-.pw-mc-band.is-heading { border-color: rgba(130, 80, 255, 0.9); }
-.pw-mc-band.is-editor { border-color: rgba(255, 140, 0, 0.9); }
-.pw-mc-band.is-tagline.is-hot { background: rgba(0, 170, 255, 0.15); }
-.pw-mc-band.is-heading.is-hot { background: rgba(130, 80, 255, 0.15); }
-.pw-mc-band.is-editor.is-hot { background: rgba(255, 140, 0, 0.15); }
 .pw-mc-gap {
-  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+  border-inline: 1px solid var(--pwg-column-gap, transparent);
 }
 .pw-mc-gap.is-row {
   border-inline: 0;
-  border-block: 1px solid rgba(130, 80, 255, 0.9);
+  border-block: 1px solid var(--pwg-row-gap, transparent);
 }
-.pw-mc-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
-.pw-mc-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-mc-gap.is-hot { background: var(--pwgf-column-gap, transparent); }
+.pw-mc-gap.is-row.is-hot { background: var(--pwgf-row-gap, transparent); }
 .pw-block-live-preview.has-focus :is(.pw-mc-band, .pw-mc-gap):not(.is-hot) {
   border-color: transparent;
 }
@@ -1890,14 +1923,23 @@ export default {
   position: absolute;
   inset: 0 -100vw;
   box-sizing: border-box;
-  border-block: 1px solid rgba(0, 170, 255, 0.8);
+  border-block: 1px solid transparent;
   pointer-events: none;
 }
-.pw-space-band.is-heading::before { border-color: rgba(130, 80, 255, 0.9); }
-.pw-space-band.is-editor::before { border-color: rgba(255, 140, 0, 0.9); }
-.pw-space-band.is-tagline.is-hot::before { background: rgba(0, 170, 255, 0.15); }
-.pw-space-band.is-heading.is-hot::before { background: rgba(130, 80, 255, 0.15); }
-.pw-space-band.is-editor.is-hot::before { background: rgba(255, 140, 0, 0.15); }
+.pw-space-band.is-tagline::before { border-color: var(--pwg-tagline-spacing, transparent); }
+.pw-space-band.is-heading::before { border-color: var(--pwg-heading-spacing, transparent); }
+.pw-space-band.is-editor::before { border-color: var(--pwg-editor-spacing, transparent); }
+.pw-space-band.is-list::before { border-color: var(--pwg-list-spacing, transparent); }
+.pw-space-band.is-quote::before { border-color: var(--pwg-quote-spacing, transparent); }
+.pw-space-band.is-media::before { border-color: var(--pwg-media-spacing, transparent); }
+.pw-space-band.is-button::before { border-color: var(--pwg-button-spacing, transparent); }
+.pw-space-band.is-tagline.is-hot::before { background: var(--pwgf-tagline-spacing, transparent); }
+.pw-space-band.is-heading.is-hot::before { background: var(--pwgf-heading-spacing, transparent); }
+.pw-space-band.is-editor.is-hot::before { background: var(--pwgf-editor-spacing, transparent); }
+.pw-space-band.is-list.is-hot::before { background: var(--pwgf-list-spacing, transparent); }
+.pw-space-band.is-quote.is-hot::before { background: var(--pwgf-quote-spacing, transparent); }
+.pw-space-band.is-media.is-hot::before { background: var(--pwgf-media-spacing, transparent); }
+.pw-space-band.is-button.is-hot::before { background: var(--pwgf-button-spacing, transparent); }
 .pw-block-live-preview.has-focus .pw-space-band:not(.is-hot)::before {
   border-color: transparent;
 }
@@ -1960,13 +2002,14 @@ export default {
   /* across the whole card (past the horizontal padding) */
   margin-inline: calc(-1 * var(--pw-card-px, 0px));
   box-sizing: border-box;
-  border-block: 1px solid rgba(130, 80, 255, 0.9);
+  border-block: 1px solid transparent;
 }
-.pw-card-gap.is-heading { border-color: rgba(215, 160, 0, 0.95); }
-.pw-card-gap.is-cta { border-color: rgba(0, 150, 136, 0.9); }
-.pw-card-gap.is-tagline.is-hot { background: rgba(130, 80, 255, 0.15); }
-.pw-card-gap.is-heading.is-hot { background: rgba(215, 160, 0, 0.18); }
-.pw-card-gap.is-cta.is-hot { background: rgba(0, 150, 136, 0.15); }
+.pw-card-gap.is-tagline { border-color: var(--pwg-item-tagline-spacing, transparent); }
+.pw-card-gap.is-heading { border-color: var(--pwg-item-heading-spacing, transparent); }
+.pw-card-gap.is-cta { border-color: var(--pwg-item-cta-gap, transparent); }
+.pw-card-gap.is-tagline.is-hot { background: var(--pwgf-item-tagline-spacing, transparent); }
+.pw-card-gap.is-heading.is-hot { background: var(--pwgf-item-heading-spacing, transparent); }
+.pw-card-gap.is-cta.is-hot { background: var(--pwgf-item-cta-gap, transparent); }
 .pw-block-live-preview.has-focus .pw-card-gap:not(.is-hot) {
   border-color: transparent;
 }
@@ -1995,11 +2038,11 @@ export default {
 }
 .pw-cardlets-content.has-pad-guides::before {
   inset: 0 var(--pw-card-px);
-  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+  border-inline: 1px solid var(--pwg-item-padding-x, transparent);
 }
 .pw-cardlets-content.has-pad-guides::after {
   inset: var(--pw-card-py) 0;
-  border-block: 1px solid rgba(0, 180, 90, 0.9);
+  border-block: 1px solid var(--pwg-item-padding-y, transparent);
 }
 .pw-block-live-preview.has-focus .pw-cardlets-content:not(.is-hot-x)::before,
 .pw-block-live-preview.has-focus .pw-cardlets-content:not(.is-hot-y)::after {
@@ -2030,10 +2073,10 @@ export default {
   top: 0;
   z-index: 1;
   box-sizing: border-box;
-  border-block: 1px solid rgba(230, 60, 60, 0.9);
+  border-block: 1px solid var(--pwg-item-overhang, transparent);
   pointer-events: none;
 }
-.pw-card-overhang.is-hot { background: rgba(230, 60, 60, 0.18); }
+.pw-card-overhang.is-hot { background: var(--pwgf-item-overhang, transparent); }
 .pw-block-live-preview.has-focus .pw-card-overhang:not(.is-hot) {
   border-color: transparent;
 }
@@ -2092,32 +2135,32 @@ export default {
   box-sizing: border-box;
 }
 .pw-featurelist-gap {
-  border-block: 1px solid rgba(0, 170, 255, 0.8);
+  border-block: 1px solid var(--pwg-item-gap, transparent);
 }
 .pw-featurelist-items.is-row .pw-featurelist-gap {
   border-block: 0;
-  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+  border-inline: 1px solid var(--pwg-item-gap, transparent);
 }
 .pw-featurelist-icon-gap {
-  border-inline: 1px solid rgba(130, 80, 255, 0.9);
+  border-inline: 1px solid var(--pwg-item-icon-gap, transparent);
 }
 .pw-featurelist-item.is-top .pw-featurelist-icon-gap {
   border-inline: 0;
-  border-block: 1px solid rgba(130, 80, 255, 0.9);
+  border-block: 1px solid var(--pwg-item-icon-gap, transparent);
 }
 .pw-featurelist-title-gap {
-  border-block: 1px solid rgba(215, 160, 0, 0.95);
+  border-block: 1px solid var(--pwg-item-title-spacing, transparent);
 }
-/* the offset (split layout): orange, as the gap to the intro */
+/* the offset (split layout) */
 .pw-featurelist-offset-gap {
   align-self: stretch;
   box-sizing: border-box;
-  border-inline: 1px solid rgba(255, 140, 0, 0.9);
+  border-inline: 1px solid var(--pwg-item-offset-gap, transparent);
 }
-.pw-featurelist-offset-gap.is-hot { background: rgba(255, 140, 0, 0.15); }
+.pw-featurelist-offset-gap.is-hot { background: var(--pwgf-item-offset-gap, transparent); }
 .pw-featurelist-pad {
   position: absolute;
-  outline: 1px solid rgba(255, 0, 170, 0.6);
+  outline: 1px solid var(--pwg-item-icon-tile-padding, transparent);
   pointer-events: none;
 }
 .pw-block-live-preview.has-focus .pw-featurelist-offset-gap:not(.is-hot),
@@ -2129,9 +2172,9 @@ export default {
 .pw-block-live-preview.has-focus:not([data-focus="item-icon-tile-padding"]) .pw-featurelist-pad {
   display: none;
 }
-.pw-featurelist-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
-.pw-featurelist-icon-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
-.pw-featurelist-title-gap.is-hot { background: rgba(215, 160, 0, 0.18); }
+.pw-featurelist-gap.is-hot { background: var(--pwgf-item-gap, transparent); }
+.pw-featurelist-icon-gap.is-hot { background: var(--pwgf-item-icon-gap, transparent); }
+.pw-featurelist-title-gap.is-hot { background: var(--pwgf-item-title-spacing, transparent); }
 /* a value's field with the cursor: its area tinted with its lines, every
    other guide hidden (each rule prefixed with the preview's class, so it
    beats the guides' own, e.g. the gaps side by side or with the icon on
@@ -2155,25 +2198,25 @@ export default {
   display: none;
 }
 /* a value's row hovered (guides on): its area tinted in its colour */
-.pw-logocloud-text-gap.is-hot::before { background: rgba(0, 150, 136, 0.15); }
+.pw-logocloud-text-gap.is-hot::before { background: var(--pwgf-item-text-gap, transparent); }
 .pw-logocloud-gap.is-column.is-hot,
-.pw-steplist-step-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
-.pw-logocloud-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.18); }
-.pw-steplist-gap.is-hot { background: rgba(130, 80, 255, 0.15); }
+.pw-steplist-step-gap.is-hot { background: var(--pwgf-item-gap, transparent); }
+.pw-logocloud-gap.is-row.is-hot { background: var(--pwgf-item-row-gap, transparent); }
+.pw-steplist-gap.is-hot { background: var(--pwgf-item-content-gap, transparent); }
 /* the gap between the text and the items (logos, features, cards):
    lines and tint across the whole block (cut off at its edge), as the
    elements' space below */
 .pw-logocloud-text-gap {
   position: relative;
 }
-/* the enlargement of the gap to the intro: petrol (the text's own space
-   below is orange) */
+/* the enlargement of the gap to the intro (the last element's own space
+   below: its band in the elements tab) */
 .pw-logocloud-text-gap::before {
   content: "";
   position: absolute;
   inset: 0 -100vw;
   box-sizing: border-box;
-  border-block: 1px solid rgba(0, 150, 136, 0.9);
+  border-block: 1px solid var(--pwg-item-text-gap, transparent);
   pointer-events: none;
 }
 /* flexible (the logos wrap freely): the gaps shown at each tile's outer
@@ -2186,7 +2229,7 @@ export default {
   content: "";
   position: absolute;
   inset: 0;
-  border-inline: 1px solid rgba(0, 170, 255, 0.8);
+  border-inline: 1px solid var(--pwg-item-gap, transparent);
   pointer-events: none;
 }
 /* the logo's area inside the padding: left and right magenta (horizontal
@@ -2205,11 +2248,11 @@ export default {
 }
 .pw-logocloud-preview.has-guides .pw-logocloud-pad::before {
   inset: -100vh 0;
-  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+  border-inline: 1px solid var(--pwg-item-padding, transparent);
 }
 .pw-logocloud-preview.has-guides .pw-logocloud-pad::after {
   inset: 0 -100vw;
-  border-block: 1px solid rgba(0, 180, 90, 0.9);
+  border-block: 1px solid var(--pwg-item-padding-y, transparent);
 }
 /* a padding's field with the cursor: only its own lines */
 .pw-block-live-preview.has-focus[data-focus="item-padding"] .pw-logocloud-pad::after,

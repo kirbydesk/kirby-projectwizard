@@ -1951,7 +1951,8 @@ export default {
 }
 
 /* rows belonging to a preview guide: a 3px stripe in its colour at the
-   left edge of the label */
+   left edge of the label (start values: outer spacing cyan, paddings
+   magenta) */
 .pw-field-row[data-guide] .pw-field-row-label-col {
   box-shadow: inset 3px 0 0 var(--pw-guide-color);
 }
@@ -1961,40 +1962,8 @@ export default {
 .pw-field-row[data-guide="padding"] {
   --pw-guide-color: rgba(255, 0, 170, 0.6);
 }
-/* guide colours: the kind picks the family – gaps between things cyan,
-   paddings magenta; a second value of the same kind in one preview gets
-   the second colour (gap violet, padding green), a third gap orange, a
-   fourth gold, a fifth teal */
-/* the second gap (e.g. logocloud's vertical gap, the paragraph spacing) */
-.pw-field-row[data-guide="row"] {
-  --pw-guide-color: rgba(130, 80, 255, 0.9);
-}
-/* the vertical padding (e.g. logocloud's tiles), told apart from the
-   horizontal one (magenta) */
-.pw-field-row[data-guide="padding-y"] {
-  --pw-guide-color: rgba(0, 180, 90, 0.9);
-}
-/* the third gap: between the text and the items (e.g. logocloud) */
-.pw-field-row[data-guide="text"] {
-  --pw-guide-color: rgba(255, 140, 0, 0.9);
-}
-/* a fourth gap in one preview (e.g. featurelist: between title and text) */
-.pw-field-row[data-guide="gap-4"] {
-  --pw-guide-color: rgba(215, 160, 0, 0.95);
-}
-/* a fifth (cardlets: the gap to the link) */
-.pw-field-row[data-guide="gap-5"] {
-  --pw-guide-color: rgba(0, 150, 136, 0.9);
-}
-
-/* a sixth gap (the multicolumn's elements: below a button) */
-.pw-field-row[data-guide="gap-6"] {
-  --pw-guide-color: rgba(40, 90, 220, 0.9);
-}
-/* a shift of its own kind (cardlets: the image standing out of the card) */
-.pw-field-row[data-guide="overhang"] {
-  --pw-guide-color: rgba(230, 60, 60, 0.9);
-}
+/* the design and elements tabs: each row its colour in the order of the
+   tab's rows (set on the row as --pw-guide-color, as its guide's) */
 
 /* the global value a switch applies, grey at the right end of the row */
 .pw-field-hint {
