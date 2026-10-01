@@ -4109,6 +4109,9 @@ export default {
     fitTopbar() {
       const bar = this.$refs.topbar;
       if (!bar) return;
+      // its height: the block page's title row sticks right below it
+      const header = bar.closest('.k-topbar');
+      if (header && this.$el && this.$el.style) this.$el.style.setProperty('--pw-topbar-height', header.offsetHeight + 'px');
       // step by step, as long as it does not fit: 1 the save buttons with
       // their icons only, 2 the menus without icons, 3 the menus with their
       // icons only
@@ -5640,6 +5643,28 @@ export default {
 .pw-page-title-row.has-intro,
 .pw-page-title-row-tabs {
   margin-bottom: var(--spacing-3);
+}
+/* a block page's title with its tabs: sticky below the topbar, on the
+   page's background (across the gutter, as the topbar) */
+.pw-page-title-row-tabs {
+  position: sticky;
+  top: var(--pw-topbar-height, 0px);
+  z-index: 2;
+  padding-top: var(--spacing-3);
+  margin-top: calc(var(--spacing-3) * -1);
+  padding-inline: var(--spacing-2);
+  margin-inline: calc(var(--spacing-2) * -1);
+  background: var(--color-background);
+  /* (its line as wide as before: inside the gutter) */
+  border-bottom: 0;
+}
+.pw-page-title-row-tabs::after {
+  content: "";
+  position: absolute;
+  inset-inline: var(--spacing-2);
+  bottom: 0;
+  height: 1px;
+  background: var(--color-border);
 }
 /* the tabs take the free width (Kirby moves tabs that don't fit into its
    "…" menu, measured by this width), aligned to the right */
