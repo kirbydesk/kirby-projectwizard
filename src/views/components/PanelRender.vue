@@ -3,7 +3,7 @@
        project's colours, fonts, spacings, variants) – with the block's real
        content: no sample texts, no guides, no switches; empty fields are
        left out -->
-  <div class="pw-panel-render" :class="{ 'has-grid': hasGrid }" :style="{ backgroundColor: bodyBackground, '--pw-grid-line': elementColor('editor', 'element-editor-text') || '#000' }">
+  <div class="pw-panel-render" :style="{ backgroundColor: bodyBackground }">
     <div
       class="pw-block-live-block"
       :class="{ 'is-fullscreen': setting('settings', 'block-size') === 'fullscreen' }"
@@ -501,26 +501,6 @@ export default {
 }
 .pw-panel-gridlines span.is-used {
   background: rgba(255, 0, 170, 0.14);
-}
-/* the grid: the content's columns marked by dashed lines at their edges
-   (as the old preview did), from tablet on */
-.pw-panel-render.has-grid .pw-block-live-item {
-  position: relative;
-}
-.pw-panel-render.has-grid .pw-block-live-item::before,
-.pw-panel-render.has-grid .pw-block-live-item::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  border-left: 1px dashed color-mix(in srgb, var(--pw-grid-line) 40%, transparent);
-  pointer-events: none;
-}
-.pw-panel-render.has-grid .pw-block-live-item::before {
-  left: 0;
-}
-.pw-panel-render.has-grid .pw-block-live-item::after {
-  right: 0;
 }
 .pw-panel-quote {
   margin: 0;
