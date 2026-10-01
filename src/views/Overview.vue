@@ -1025,7 +1025,7 @@
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="shownValueOverrides(block.blockType)"
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
-                :feature-layout="!['pwfeaturelist', 'pwfaq'].includes(block.blockType) ? '' : currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : currentBlockView === 'elements' ? 'stacked' : ''"
+                :feature-layout="['pwfeaturelist', 'pwfaq'].includes(block.blockType) && ['design', 'elements'].includes(currentBlockView) ? currentFeatureLayout(block.blockType) : ''"
                 :faq-style="block.blockType === 'pwfaq' && currentBlockView === 'design' ? currentFaqStyle(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
                 :card-display="block.blockType === 'pwcardlets' && currentBlockView === 'design' ? currentCardDisplay(block.blockType) : ''"
@@ -1107,6 +1107,19 @@
               <div class="pw-card-heading-row">
                 <!-- (named after the block's part: the intro, the multicolumn's columns) -->
                 <h3 class="pw-card-heading">{{ $t(block.blockType === 'pwmulticolumn' ? 'prw.headline.elementsColumns' : 'prw.headline.elementsIntro') }}</h3>
+                <!-- featurelist, faq: the layout the preview shows, as in the
+                     design tab (one choice for both; a view, not saved) –
+                     offset: the intro's last element without space below -->
+                <span v-if="['pwfeaturelist', 'pwfaq'].includes(block.blockType)" class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="lay in ['stacked', 'split']"
+                    :key="'el-' + lay"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
+                    @click="$set(featurePreviewLayout, block.blockType, lay)"
+                  >{{ $t('pw.option.' + lay) }}</button>
+                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <!-- the space below the block's elements (tagline, heading,
