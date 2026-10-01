@@ -1121,15 +1121,13 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
-                <!-- standard: the global elements' values, grey (not editable here) -->
+                <!-- standard: the global elements' values, grey (not editable here;
+                     no guides – they show only for the block's own values) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'">
                   <div
                     v-for="el in ownSpacingElements(block.blockType)"
                     :key="'gs-' + el"
                     class="pw-field-row is-readonly"
-                    :data-guide="guideColor(el + '-spacing') ? 'tab' : null"
-                    :data-guide-var="previewGuides ? el + '-spacing' : null"
-                    :style="guideRowStyle(el + '-spacing')"
                   >
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
@@ -1196,7 +1194,7 @@
                 />
                 <!-- standard: the global values, grey (not editable here) -->
                 <template v-if="itemLayoutDefault(block.blockType, 'item-entry-' + part.key) !== 'own'">
-                  <div v-for="name in part.rows" :key="'ge-' + name" class="pw-field-row is-readonly" :data-guide="name === 'item-title-spacing' && guideColor(name) ? 'tab' : null" :data-guide-var="previewGuides && name === 'item-title-spacing' ? name : null" :style="name === 'item-title-spacing' ? guideRowStyle(name) : null">
+                  <div v-for="name in part.rows" :key="'ge-' + name" class="pw-field-row is-readonly">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
                         <div class="pw-field-row-label-col">
@@ -3616,11 +3614,6 @@ export default {
     rowGuides(names) {
       if (!this.previewGuides || !names.length) return null;
       return Object.fromEntries(names.map(name => [name, this.guideColor(name)]));
-    },
-    // a read-only row's stripe in its guide's colour
-    guideRowStyle(name) {
-      const rgb = this.guideColor(name);
-      return rgb ? { '--pw-guide-color': 'rgb(' + rgb + ')' } : null;
     },
     // the global elements' space below (Elements page: override, else default)
     globalElementSpacing(el) {
