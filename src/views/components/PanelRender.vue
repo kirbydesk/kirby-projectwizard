@@ -9,13 +9,13 @@
       :class="{ 'is-fullscreen': setting('settings', 'block-size') === 'fullscreen' }"
       :style="blockStyle"
     >
+      <!-- the grid's twelve columns over the block, its outer spacing
+           included (switched on above the blocks) -->
+      <div v-if="gridLines && hasGrid" class="pw-panel-gridlines" :style="{ columnGap: gridStyle.columnGap }" aria-hidden="true">
+        <span v-for="n in 12" :key="'gl-' + n" :class="{ 'is-used': gridUsed(n) }"></span>
+      </div>
       <section class="pw-block-live-section" :style="sectionStyle">
         <div class="pw-block-live-grid" :style="gridStyle">
-          <!-- the grid's twelve columns over the block (switched on above the
-               blocks) -->
-          <div v-if="gridLines && hasGrid" class="pw-panel-gridlines" :style="{ columnGap: gridStyle.columnGap }" aria-hidden="true">
-            <span v-for="n in 12" :key="'gl-' + n" :class="{ 'is-used': gridUsed(n) }"></span>
-          </div>
           <div class="pw-block-live-item" :style="itemStyle">
           <!-- (the featurelist's split layout: the intro a column of its own
                next to the items) -->
@@ -483,9 +483,6 @@ export default {
 }
 /* the grid's twelve columns over the block: magenta, above the content,
    not in the way of clicks */
-.pw-panel-render .pw-block-live-grid {
-  position: relative;
-}
 .pw-panel-gridlines {
   position: absolute;
   inset: 0;
