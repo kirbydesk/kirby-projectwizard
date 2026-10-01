@@ -112,12 +112,28 @@ return [
 					return $n;
 				};
 
+				// the panel tab holding a field (e.g. "content"), none if not found
+				$tabOf = function ($model, string $field): ?string {
+					foreach ($model->blueprint()->tabs() as $tab) {
+						foreach ($tab['columns'] ?? [] as $column) {
+							foreach ($column['sections'] ?? [] as $section) {
+								foreach (array_keys($section['fields'] ?? []) as $key) {
+									if (strtolower($key) === $field) return $tab['name'] ?? null;
+								}
+							}
+						}
+					}
+					return null;
+				};
+
 				foreach ([$kirby->site(), ...$kirby->site()->index(true)] as $model) {
 					$count = 0;
-					foreach ($model->content($lang)->toArray() as $value) {
+					$field = null;
+					foreach ($model->content($lang)->toArray() as $key => $value) {
 						if (!is_string($value) || !str_contains($value, '"type"')) continue;
 						$data = json_decode($value, true);
 						if (!is_array($data)) continue;
+						$before = $count;
 						foreach ($data as $entry) {
 							// layout field: rows → columns → blocks
 							if (is_array($entry) && isset($entry['columns'])) {
@@ -125,8 +141,11 @@ return [
 							}
 						}
 						$count += $countIn($data);
+						// (the first field with the block: its tab is opened)
+						if ($field === null && $count > $before) $field = strtolower($key);
 					}
 					if ($count === 0) continue;
+					$tab = $field !== null ? $tabOf($model, $field) : null;
 
 					// the page's path of titles (parents first), the site its title
 					$titles = [];
@@ -137,7 +156,7 @@ return [
 					$pages[] = [
 						'title'  => implode(' › ', $titles),
 						'count'  => $count,
-						'link'   => $model->panel()->url(true),
+						'link'   => $model->panel()->url(true) . ($tab ? '?tab=' . $tab : ''),
 						// (draft, unlisted, listed; the site: none)
 						'status' => $model instanceof \Kirby\Cms\Page ? $model->status() : null,
 					];
