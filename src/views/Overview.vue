@@ -1754,6 +1754,10 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
+                  :layout-keys="['item-icon-align']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
                 <pw-block-values
                   :bp.sync="itemBp"
                   :defaults="blockValueDefaults[block.blockType]"

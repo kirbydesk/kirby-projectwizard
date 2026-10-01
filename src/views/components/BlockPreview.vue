@@ -867,9 +867,15 @@ export default {
     },
     // the question's row: the question and the icon (left: before it)
     faqSummaryStyle() {
+      // (the icon in the middle of the entry: its room kept free in the row)
+      const room = this.setting('layout', 'item-icon-align') === 'item' && this.faqIconSvg && !this.faqAlwaysOpen
+        ? 'calc(' + this.itemValueAt('item-icon-size') + ' + ' + this.itemValue('item-icon-gap') + ')'
+        : null;
       return {
+        [this.setting('layout', 'item-icon-position') === 'left' ? 'paddingLeft' : 'paddingRight']: room,
         display: 'flex',
-        alignItems: 'center',
+        // (the icon on the question's first line: at the top)
+        alignItems: this.setting('layout', 'item-icon-align') === 'top' ? 'flex-start' : 'center',
         gap: this.itemValue('item-icon-gap'),
         paddingTop: this.itemValueAt('item-padding-y'),
         paddingBottom: this.itemValueAt('item-padding-y'),
@@ -1505,6 +1511,7 @@ export default {
       if (this.currentFaqStyle === 'cards') {
         const r = this.setting('layout', 'item-shape') === 'square' ? [] : (this.itemValue('item-radius') || []);
         return {
+          position: 'relative',
           backgroundColor: this.itemColor('item-background'),
           paddingLeft: this.itemValueAt('item-padding-x'),
           paddingRight: this.itemValueAt('item-padding-x'),
@@ -1512,19 +1519,32 @@ export default {
         };
       }
       if (n > 1 && this.setting('layout', 'item-divider') !== 'disabled') {
-        return { borderTop: (this.itemValue('item-divider-width') || '1px') + ' solid ' + this.itemColor('item-divider') };
+        return { position: 'relative', borderTop: (this.itemValue('item-divider-width') || '1px') + ' solid ' + this.itemColor('item-divider') };
       }
-      return {};
+      return { position: 'relative' };
     },
     // the icon: its size and colour, turned when open (a chevron down; a
     // plus loses its vertical line)
     faqIconStyle(open) {
       const size = this.itemValueAt('item-icon-size');
+      // on the first line: as high as one line of the question, the drawing
+      // centred in it
+      const title = this.entryTypography('title');
+      const line = this.setting('layout', 'item-icon-align') === 'top' && title.fontSize && title.lineHeight
+        ? 'max(' + size + ', calc(' + title.fontSize + ' * ' + title.lineHeight + '))'
+        : size;
+      // in the middle of the whole entry: out of the question's row
+      const onItem = this.setting('layout', 'item-icon-align') === 'item';
+      const left = this.setting('layout', 'item-icon-position') === 'left';
+      const inset = this.currentFaqStyle === 'cards' ? this.itemValueAt('item-padding-x') : 0;
       return {
+        ...(onItem ? { position: 'absolute', top: '50%', translate: '0 -50%', [left ? 'left' : 'right']: inset } : {}),
         display: 'flex',
+        alignItems: 'center',
         flexShrink: 0,
         width: size,
-        height: size,
+        height: line,
+        '--pw-faq-size': size,
         color: this.itemColor('item-icon'),
         '--pw-faq-stroke': this.faqStroke,
         transform: open ? (this.faqIconKind === 'plus' ? 'rotate(180deg)' : 'rotate(90deg)') : null,
@@ -1617,7 +1637,7 @@ export default {
    stroke chosen over the drawing's own; an open plus without its vertical */
 .pw-faq-icon svg {
   width: 100%;
-  height: 100%;
+  height: var(--pw-faq-size, 100%);
 }
 .pw-faq-icon svg [stroke] {
   stroke-width: var(--pw-faq-stroke, 1.5);
