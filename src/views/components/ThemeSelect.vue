@@ -72,7 +72,7 @@ export default {
   display: block;
   width: 10px;
   height: 10px;
-  /* (a white ring on the dark menu) */
-  box-shadow: 0 0 0 1px #ffffff;
+  /* (a grey line inside, a white ring on the dark menu) */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 0 0 1px #ffffff;
 }
 </style>
