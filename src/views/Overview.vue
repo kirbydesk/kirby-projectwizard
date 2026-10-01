@@ -1176,7 +1176,7 @@
             <template v-if="hasOwnSpacing(block.blockType)">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.spaceBelow') }}</h3>
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <!-- the space below the block's elements (tagline, heading,

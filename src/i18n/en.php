@@ -88,7 +88,6 @@
 	'prw.label.height' => 'Height',
 	'prw.label.size' => 'Size',
 	'prw.headline.spacing' => 'Spacing',
-	'prw.headline.spaceBelow' => 'Elements',
 	'prw.headline.fields' => 'Elements',
 	'prw.headline.logos' => 'Logos',
 	'prw.headline.card' => 'Card',
