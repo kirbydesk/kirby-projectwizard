@@ -17,6 +17,7 @@
               :title="$t('prw.preview.guides')"
               :aria-label="$t('prw.preview.guides')"
               :aria-pressed="guides ? 'true' : 'false'"
+              :data-theme="guides ? 'pink' : null"
               @click="$emit('update:guides', !guides)"
             >
               <k-icon type="prw-guides" />

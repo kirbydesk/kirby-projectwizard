@@ -329,6 +329,7 @@
                       :title="$t('prw.preview.guides')"
                       :aria-label="$t('prw.preview.guides')"
                       :aria-pressed="previewGuides ? 'true' : 'false'"
+                      :data-theme="previewGuides ? 'pink' : null"
                       @click="previewGuides = !previewGuides"
                     >
                       <k-icon type="prw-guides" />
@@ -5899,6 +5900,12 @@ export default {
 }
 .pw-guides-switch .k-icon {
   --icon-size: 14px;
+}
+/* on: pink, as the panel's grid lines button (Kirby's pink theme) */
+.pw-guides-switch .pw-tool[data-theme="pink"],
+.pw-guides-switch .pw-tool[data-theme="pink"]:hover {
+  background: var(--theme-color-back);
+  color: var(--theme-color-icon-highlight);
 }
 .pw-preview-switches .pw-device-select {
   order: -1;
