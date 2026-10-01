@@ -25,7 +25,7 @@
         </button>
       </div>
       <pw-device-select :value="bp" @input="$emit('update:bp', $event)" />
-      <pw-theme-select :value="currentTheme" :themes="themes" class="pw-preview-theme" @input="$emit('update:variant', $event)" />
+      <pw-theme-select :value="currentTheme" :themes="themes" :colors="themeColors" class="pw-preview-theme" @input="$emit('update:variant', $event)" />
       <!-- featurelist, faq (design and elements tab): the layout shown, after
            the variant (a view, not saved; at first the start value) -->
       <pw-theme-select
@@ -391,6 +391,8 @@ export default {
     designView: { type: Boolean, default: false },
     // the elements tab (the intro with a sample list, for its space below)
     elementsView: { type: Boolean, default: false },
+    // the variants' block background (variant → colour), for their dots
+    themeColors: { type: Object, default: null },
     // featurelist, faq: the switch of the layout shown (stacked, offset)
     layoutSwitch: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)

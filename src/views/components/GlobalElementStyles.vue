@@ -8,7 +8,7 @@
           <!-- toolbar: the theme (the device follows the switch in the rows) -->
           <div class="pw-preview-switches">
           <!-- theme shown in the preview (shared with the colour switch) -->
-          <pw-theme-select v-model="colorTheme" :themes="themes" class="pw-preview-theme" />
+          <pw-theme-select v-model="colorTheme" :themes="themes" :colors="Object.fromEntries(themes.map(t => [t, blockBackground(t)]))" class="pw-preview-theme" />
           <!-- guides on/off (shared by all previews) -->
           <div class="pw-pill pw-guides-switch" role="group">
             <button

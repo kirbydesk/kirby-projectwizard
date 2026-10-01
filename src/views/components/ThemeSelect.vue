@@ -10,6 +10,7 @@
         aria-haspopup="menu"
         @click="$refs.menu.toggle()"
       >
+        <span v-if="colors" class="pw-variant-dot is-small" :style="{ backgroundColor: colors[value] }"></span>
         <span class="pw-theme-select-text">{{ $t(prefix + value) }}</span>
         <k-icon type="angle-down" class="pw-tab-menu-chevron" />
       </button>
@@ -24,7 +25,7 @@
             :aria-current="value === theme ? 'true' : undefined"
             @click="$refs.menu.close(); $emit('input', theme)"
           >
-            <span class="k-button-text">{{ $t(prefix + theme) }}</span>
+            <span class="k-button-text"><span v-if="colors" class="pw-variant-dot is-small" :style="{ backgroundColor: colors[theme] }"></span>{{ $t(prefix + theme) }}</span>
           </button>
         </nav>
       </k-dropdown-content>
@@ -40,6 +41,8 @@ export default {
     themes: { type: Array, default: () => [] },
     // the names' translation keys (prefix + value)
     prefix: { type: String, default: 'pw.option.' },
+    // the variants' block background (value → colour): a dot before the name
+    colors: { type: Object, default: null },
   },
 };
 </script>
@@ -57,5 +60,12 @@ export default {
 }
 .pw-theme-select .k-icon {
   --icon-size: 14px;
+}
+/* the variant's dot: before its name, in the button and in the menu */
+.pw-pill.pw-theme-select .pw-variant-dot.is-small {
+  margin-inline-end: 3px;
+}
+.pw-theme-select .k-dropdown-item .pw-variant-dot.is-small {
+  margin-inline-end: var(--spacing-2);
 }
 </style>

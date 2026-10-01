@@ -320,7 +320,7 @@
               <div v-show="activeTab === 'global' && globalActiveTab === 'blocks'" class="pw-element-preview-side">
                 <!-- toolbar: the variant (shared with the colour card) -->
                 <div class="pw-preview-switches">
-                  <pw-theme-select :value="currentBlocksColorTheme" :themes="themes" class="pw-preview-theme" @input="blocksColorTheme = $event" />
+                  <pw-theme-select :value="currentBlocksColorTheme" :themes="themes" :colors="variantColors" class="pw-preview-theme" @input="blocksColorTheme = $event" />
                   <!-- guides on/off (shared by all previews) -->
                   <div class="pw-pill pw-guides-switch" role="group">
                     <button
@@ -1012,6 +1012,7 @@
                 :guides.sync="previewGuides"
                 :with-block-guides="currentBlockView === 'defaults'"
                 :guide-colors="activeTab === block.blockType ? previewGuideColors : null"
+                :theme-colors="variantColors"
                 :bp.sync="itemBp"
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="shownValueOverrides(block.blockType)"
@@ -2753,6 +2754,10 @@ export default {
     };
   },
   computed: {
+    // the variants' block background (variant → colour), for their dots
+    variantColors() {
+      return Object.fromEntries((this.themes || []).map(t => [t, this.variantBackground(t)]));
+    },
     // the open tab's guide colours for the preview (value → "r, g, b"; the
     // steplist's gap of a style also under its plain name)
     previewGuideColors() {
