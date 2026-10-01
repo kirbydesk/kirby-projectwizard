@@ -69,6 +69,11 @@
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
           <div v-if="hasField('editor') && spaceBand('editor')" class="pw-space-band" :class="['is-' + spaceBand('editor').prev, { 'is-hot': highlight === spaceBand('editor').prev + '-spacing' }]" :style="{ height: spaceBand('editor').height }"></div>
           <p v-if="hasField('editor')" class="pw-block-live-text" :style="fieldStyle('editor')">{{ $t('prw.preview.text.before') }} <a class="pw-block-live-link" :data-decoration="linkValue('block-link-decoration') || 'none'" :style="linkStyle">{{ $t('prw.preview.text.link') }}</a>{{ $t('prw.preview.text.after') }}</p>
+          <!-- elements tab: a sample list after the text (Elements › Lists) -->
+          <div v-if="fields.includes('list') && spaceBand('list')" class="pw-space-band" :class="['is-' + spaceBand('list').prev, { 'is-hot': highlight === spaceBand('list').prev + '-spacing' }]" :style="{ height: spaceBand('list').height }"></div>
+          <ul v-if="fields.includes('list')" class="pw-mc-list" :style="introListStyle">
+            <li v-for="n in 2" :key="'il-' + n">{{ $t('prw.preview.list.' + n) }}</li>
+          </ul>
           </div>
           <!-- guides: the offset (split layout) as a track of its own, a line on
                either side -->
@@ -383,6 +388,8 @@ export default {
     // the design tab (the hero: on the sample image with its overlay, to
     // check the overlay colour with the text)
     designView: { type: Boolean, default: false },
+    // the elements tab (the intro with a sample list, for its space below)
+    elementsView: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // the guides' colours of the open tab (value → "r, g, b"); a value
@@ -428,6 +435,11 @@ export default {
     // fields shown in the order of the snippet (steplist: its items last)
     fields() {
       const fields = ['tagline', 'heading', 'editor', 'buttons'].filter(f => this.hasField(f));
+      // elements tab: a sample list after the text (its space below has a
+      // value of the block there)
+      if (this.elementsView && fields.includes('editor') && this.hasSpacingValue('list')) {
+        fields.splice(fields.indexOf('editor') + 1, 0, 'list');
+      }
       if (this.isSteplist) return [...fields, 'items'];
       if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
       if (this.isLogocloud) return [...fields, 'logos'];
@@ -875,6 +887,11 @@ export default {
     mcQuoteStyle() {
       const step = this.sizeStep('quote', this.preset('quote', 'sizes') || 'lg');
       return { ...this.typography('quote'), ...(step ? { fontSize: step } : {}), color: this.elementColor('quote', 'element-quote-text'), textAlign: this.preset('quote', 'align') || 'left', margin: 0, marginBottom: this.guides ? 0 : this.spaceAfter('quote') };
+    },
+    // the sample list in the intro (elements tab): as a column's, its gap
+    // above as the other fields'
+    introListStyle() {
+      return { ...this.mcListStyle, marginBottom: 0, marginTop: this.spaceBand('list') ? 0 : this.gapBefore('list') };
     },
     mcListSpacing() {
       if (this.ownSpacing) {
@@ -1333,6 +1350,10 @@ export default {
     },
   },
   methods: {
+    // the block brings a value for an element's space below (e.g. "list")
+    hasSpacingValue(element) {
+      return Object.values(this.valueDefaults || {}).some(g => g && g.vars && g.vars[element + '-spacing']);
+    },
     // a value's guide colours (its line, its tinted area): the variables the
     // preview gets from the open tab, clear for a value of another tab
     guideLine(name) {
@@ -1507,7 +1528,7 @@ export default {
     introGapParts(field) {
       const idx = this.fields.indexOf(field);
       const prev = idx > 0 ? this.fields[idx - 1] : '';
-      const space = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
+      const space = ['tagline', 'heading', 'editor', 'list'].includes(prev) ? this.spaceAfter(prev) : '';
       const more = this.itemValue('item-text-gap');
       return { prev, space, more: more && parseFloat(more) !== 0 ? more : '' };
     },
@@ -1515,7 +1536,7 @@ export default {
       const idx = this.fields.indexOf(field);
       if (idx <= 0) return 0;
       const prev = this.fields[idx - 1];
-      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
+      const after = ['tagline', 'heading', 'editor', 'list'].includes(prev) ? this.spaceAfter(prev) : '';
       const more = this.itemValue('item-text-gap');
       if (after && more && parseFloat(more) !== 0) return 'calc(' + after + ' + ' + more + ')';
       return after || more || 0;
@@ -1524,7 +1545,7 @@ export default {
       const idx = this.fields.indexOf(field);
       if (idx <= 0) return 0;
       const prev = this.fields[idx - 1];
-      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
+      const after = ['tagline', 'heading', 'editor', 'list'].includes(prev) ? this.spaceAfter(prev) : '';
       const own = GAPS[prev + '>' + field];
       if (own && after) return 'max(' + own + ', ' + after + ')';
       return own || after || 0;
@@ -1582,7 +1603,7 @@ export default {
       if (!this.guides || !this.hasOwnSpacingValues) return null;
       const idx = this.fields.indexOf(field);
       const prev = idx > 0 ? this.fields[idx - 1] : '';
-      if (!['tagline', 'heading', 'editor'].includes(prev)) return null;
+      if (!['tagline', 'heading', 'editor', 'list'].includes(prev)) return null;
       const height = this.gapBefore(field);
       return height ? { height, prev } : null;
     },

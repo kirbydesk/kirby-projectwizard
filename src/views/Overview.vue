@@ -1030,6 +1030,7 @@
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
                 :card-display="block.blockType === 'pwcardlets' && currentBlockView === 'design' ? currentCardDisplay(block.blockType) : ''"
                 :design-view="currentBlockView === 'design'"
+                :elements-view="currentBlockView === 'elements'"
                 :highlight="hoveredVar"
                 :variant="currentItemColorTheme"
                 @update:variant="itemColorTheme = $event"
