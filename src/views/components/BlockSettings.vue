@@ -409,6 +409,16 @@
                     v-html="'<svg viewBox=&quot;0 0 24 24&quot; aria-hidden=&quot;true&quot;>' + opt.svg + '</svg>'"
                   ></button>
                 </div>
+                <!-- its second choice beside it (only for a drawing with a stroke) -->
+                <k-toggles-input
+                  v-if="field.type === 'icon-select' && field.with && iconHasStroke(field)"
+                  class="pw-icon-select-with"
+                  :value="getVal('settings.fields.layout.' + field.with.key + '.default', field.with.defaultValue)"
+                  :options="field.with.options.map(o => ({ value: o, text: itemOptionLabel(field.with, o) }))"
+                  :grow="false"
+                  :required="true"
+                  @input="setVal('settings.fields.layout.' + field.with.key + '.default', $event)"
+                />
                 <!-- Select with options -->
                 <!-- (a field that may stay empty – e.g. the featurelist's icon
                      position: none – is not required, so a second click on the
@@ -663,17 +673,24 @@ export default {
         if (key === 'item-radius' || key.startsWith('item-radius-')) continue;
         if (settingVal === false || settingVal === 'enabled') continue;
         if (filter && !filter.includes(key)) continue;
+        // (shown beside an icon choice: not a row of its own)
+        if (Object.values(settings).some(v => this.isObject(v) && v.with === key)) continue;
 
         const displayKey = key.replace(/^item-/, '');
 
         // Icon select: options are [{value, svg}, ...] — rendered as SVG buttons
         if (this.isObject(settingVal) && settingVal.type === 'icon-select' && Array.isArray(settingVal.options)) {
+          // (a second choice in the same row, e.g. the faq icon's stroke)
+          const withVal = settingVal.with ? settings[settingVal.with] : null;
           fields.push({
             key, displayKey,
             label: settingVal.label || null,
             type: 'icon-select',
             options: settingVal.options,
             defaultValue: settingVal.default !== undefined ? settingVal.default : (settingVal.options[0] && settingVal.options[0].value),
+            with: this.isObject(withVal) && Array.isArray(withVal.options)
+              ? { key: settingVal.with, label: withVal.label || null, displayKey: settingVal.with.replace(/^item-/, ''), options: withVal.options, defaultValue: withVal.default !== undefined ? withVal.default : withVal.options[0] }
+              : null,
           });
           continue;
         }
@@ -701,6 +718,13 @@ export default {
         fields.push({ key, displayKey, type: 'toggle', defaultValue, label: (this.isObject(settingVal) && settingVal.label) || null });
       }
       return fields;
+    },
+    // the chosen drawing of an icon choice has a stroke (a filled one or
+    // none: no stroke to set)
+    iconHasStroke(field) {
+      const value = this.getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue);
+      const opt = field.options.find(o => o.value === value);
+      return !!(opt && /stroke=/.test(opt.svg || '') && value !== 'none');
     },
     getItemFields() {
       // Kept for backwards compatibility (e.g. Overview.vue's hasItemFields detection
@@ -1749,6 +1773,10 @@ export default {
   cursor: pointer;
 }
 
+/* a second choice beside the icons (e.g. the stroke) */
+.pw-icon-select-with {
+  margin-inline-start: var(--spacing-3);
+}
 /* the icons as one bar: shared borders, rounded only at its ends */
 .pw-icon-select {
   display: flex;
