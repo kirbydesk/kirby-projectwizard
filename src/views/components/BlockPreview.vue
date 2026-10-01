@@ -26,24 +26,17 @@
       </div>
       <pw-device-select :value="bp" @input="$emit('update:bp', $event)" />
       <pw-theme-select :value="currentTheme" :themes="themes" :colors="themeColors" class="pw-preview-theme" @input="$emit('update:variant', $event)" />
-      <!-- featurelist, faq (design and elements tab): the layout shown, after
-           the variant (a view, not saved; at first the start value) -->
+      <!-- the views of the block to switch between (design and elements tab:
+           the featurelist's layout, the steplist's style …), after the
+           variant; a view, not saved, at first the start value -->
       <pw-theme-select
-        v-if="layoutSwitch"
+        v-for="sw in viewSwitches || []"
+        :key="'vs-' + sw.key"
         class="pw-preview-layout"
-        :value="featureLayout || setting('style', 'section-layout') || 'stacked'"
-        :themes="['stacked', 'split']"
-        :prefix="isFaq ? 'kirbyblock-faq.section-layout.' : 'pw.option.'"
-        @input="$emit('update:feature-layout', $event)"
-      />
-      <!-- steplist (design and elements tab): the style shown, the same way -->
-      <pw-theme-select
-        v-if="stepStyleOptions"
-        class="pw-preview-layout"
-        :value="currentStepStyle"
-        :themes="stepStyleOptions"
-        prefix="kirbyblock-steplist.item-style."
-        @input="$emit('update:step-style', $event)"
+        :value="sw.value"
+        :themes="sw.options"
+        :prefix="sw.prefix"
+        @input="$emit('view-switch', { key: sw.key, value: $event })"
       />
     </div>
 
@@ -387,8 +380,9 @@ export default {
     withBlockGuides: { type: Boolean, default: true },
     // steplist: the item style to show (chosen in the design tab)
     stepStyle: { type: String, default: '' },
-    // steplist: the styles to switch between in the toolbar (none: no switch)
-    stepStyleOptions: { type: Array, default: null },
+    // the views to switch between in the toolbar ({ key, value, options,
+    // prefix } each)
+    viewSwitches: { type: Array, default: null },
     // featurelist: the layout to show (stacked / split, chosen in the gaps card)
     featureLayout: { type: String, default: '' },
     // faq: the style to show (lines / cards, chosen in the design tab)
@@ -404,8 +398,6 @@ export default {
     elementsView: { type: Boolean, default: false },
     // the variants' block background (variant → colour), for their dots
     themeColors: { type: Object, default: null },
-    // featurelist, faq: the switch of the layout shown (stacked, offset)
-    layoutSwitch: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // the guides' colours of the open tab (value → "r, g, b"); a value

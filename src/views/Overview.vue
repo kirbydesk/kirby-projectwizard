@@ -1017,14 +1017,12 @@
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="shownValueOverrides(block.blockType)"
                 :step-style="block.blockType === 'pwsteplist' && ['design', 'elements'].includes(currentBlockView) ? currentStepStyle(block.blockType) : ''"
-                :step-style-options="block.blockType === 'pwsteplist' && ['design', 'elements'].includes(currentBlockView) ? stepStyleOptions(block.blockType) : null"
-                @update:step-style="$set(stepPreviewStyle, block.blockType, $event)"
                 :feature-layout="['pwfeaturelist', 'pwfaq'].includes(block.blockType) && ['design', 'elements'].includes(currentBlockView) ? currentFeatureLayout(block.blockType) : ''"
-                :layout-switch="['pwfeaturelist', 'pwfaq'].includes(block.blockType) && ['design', 'elements'].includes(currentBlockView)"
-                @update:feature-layout="$set(featurePreviewLayout, block.blockType, $event)"
-                :faq-style="block.blockType === 'pwfaq' && currentBlockView === 'design' ? currentFaqStyle(block.blockType) : ''"
-                :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
-                :card-display="block.blockType === 'pwcardlets' && currentBlockView === 'design' ? currentCardDisplay(block.blockType) : ''"
+                :view-switches="['design', 'elements'].includes(currentBlockView) ? viewSwitches(block.blockType) : null"
+                @view-switch="onViewSwitch(block.blockType, $event)"
+                :faq-style="block.blockType === 'pwfaq' && ['design', 'elements'].includes(currentBlockView) ? currentFaqStyle(block.blockType) : ''"
+                :hero-height="block.blockType === 'pwhero' && ['design', 'elements'].includes(currentBlockView) ? currentHeroHeight(block.blockType) : ''"
+                :card-display="block.blockType === 'pwcardlets' && ['design', 'elements'].includes(currentBlockView) ? currentCardDisplay(block.blockType) : ''"
                 :design-view="currentBlockView === 'design'"
                 :elements-view="currentBlockView === 'elements'"
                 :highlight="hoveredVar"
@@ -3714,6 +3712,31 @@ export default {
       if (this.faqPreviewStyle[blockType]) return this.faqPreviewStyle[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['faq-style']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['faq-style']?.default || 'lines';
+    },
+    // the views of a block the preview's toolbar switches between (the same
+    // choice as the cards' pills; a view, not saved)
+    viewSwitches(blockType) {
+      const list = [];
+      if (['pwfeaturelist', 'pwfaq'].includes(blockType)) {
+        list.push({ key: 'layout', value: this.currentFeatureLayout(blockType), options: ['stacked', 'split'], prefix: blockType === 'pwfaq' ? 'kirbyblock-faq.section-layout.' : 'pw.option.' });
+      }
+      if (blockType === 'pwfaq') {
+        list.push({ key: 'faq-style', value: this.currentFaqStyle(blockType), options: ['lines', 'cards'], prefix: 'kirbyblock-faq.faq-style.' });
+      }
+      if (blockType === 'pwsteplist') {
+        list.push({ key: 'step-style', value: this.currentStepStyle(blockType), options: this.stepStyleOptions(blockType), prefix: 'kirbyblock-steplist.item-style.' });
+      }
+      if (blockType === 'pwhero') {
+        list.push({ key: 'hero-height', value: this.currentHeroHeight(blockType), options: ['small', 'medium', 'large', 'fullscreen'], prefix: 'pw.option.' });
+      }
+      if (blockType === 'pwcardlets') {
+        list.push({ key: 'card-display', value: this.currentCardDisplay(blockType), options: ['stacked', 'overlay', 'overhang'], prefix: 'kirbyblock-cardlets.card-display.' });
+      }
+      return list;
+    },
+    onViewSwitch(blockType, { key, value }) {
+      const store = { layout: 'featurePreviewLayout', 'faq-style': 'faqPreviewStyle', 'step-style': 'stepPreviewStyle', 'hero-height': 'heroPreviewHeight', 'card-display': 'cardPreviewDisplay' }[key];
+      if (store) this.$set(this[store], blockType, value);
     },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
