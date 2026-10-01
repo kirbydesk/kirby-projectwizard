@@ -132,10 +132,10 @@ export default {
       setGridLines(!this.gridLines);
     },
     deviceIcon(bp) {
-      return { default: 'mobile', lg: 'tablet', xl: 'display' }[bp];
+      return { default: 'mobile', sm: 'mobile', md: 'tablet', lg: 'tablet', xl: 'display' }[bp];
     },
     deviceLabel(bp) {
-      return this.$t({ default: 'prw.label.mobile', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[bp]);
+      return this.$t({ default: 'prw.label.mobile', sm: 'prw.label.mobile', md: 'prw.label.tablet', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[bp]);
     },
   },
 };

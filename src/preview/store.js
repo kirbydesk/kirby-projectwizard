@@ -35,11 +35,15 @@ export function setGridLines(on) {
   } catch (e) { /* not remembered */ }
 }
 
-// the device by the browser window (frontend breakpoints)
+// the device by the browser window (frontend breakpoints: the grid from
+// 640 px, sm and md only by the window – the menu has phone, tablet and
+// desktop)
 export function windowDevice() {
   const w = window.innerWidth;
   if (w >= 1280) return 'xl';
   if (w >= 1024) return 'lg';
+  if (w >= 768) return 'md';
+  if (w >= 640) return 'sm';
   return 'default';
 }
 
@@ -57,7 +61,7 @@ window.addEventListener('resize', () => {
 });
 
 // the devices from narrow to wide: one wider than the window cannot be shown
-const RANK = { default: 0, lg: 1, xl: 2 };
+const RANK = { default: 0, sm: 1, md: 2, lg: 3, xl: 4 };
 export function deviceFits(device) {
   return RANK[device] <= RANK[state.windowDevice || 'xl'];
 }

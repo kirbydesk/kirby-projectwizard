@@ -8,7 +8,8 @@ const KEY = 'pw-preview-bp';
 
 // the screen height of each device (px): vh values in the preview and next
 // to their inputs are worked out with it
-export const SCREEN_HEIGHTS = { default: 800, lg: 768, xl: 900 };
+// (sm, md: the panel's previews by the window)
+export const SCREEN_HEIGHTS = { default: 800, sm: 800, md: 1024, lg: 768, xl: 900 };
 const DEVICES = ['default', 'lg', 'xl'];
 
 export function readPreviewBp() {

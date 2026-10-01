@@ -284,10 +284,11 @@ const FEATURE_ICONS = [
 
 
 // device → grid breakpoint (below 640px there is no grid: full width)
-const GRID_BP = { default: null, lg: 'lg', xl: 'xl' };
+// (sm and md: the panel's previews by the window only)
+const GRID_BP = { default: null, sm: 'sm', md: 'md', lg: 'lg', xl: 'xl' };
 // column gap of the frontend grid (gap-12 at lg, gap-16 at xl) as a share
 // of the device width, so the grid fits the narrow preview
-const GRID_GAP = { lg: 48 / 1024 * 100 + '%', xl: 64 / 1280 * 100 + '%' };
+const GRID_GAP = { sm: 16 / 640 * 100 + '%', md: 32 / 768 * 100 + '%', lg: 48 / 1024 * 100 + '%', xl: 64 / 1280 * 100 + '%' };
 
 export default {
   props: {

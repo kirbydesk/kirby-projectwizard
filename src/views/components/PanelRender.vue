@@ -273,7 +273,7 @@ export default {
       const size = this.itemValueAt('item-size') || '8rem';
       const gap = this.itemValue('item-gap') || '1.5rem';
       const rowGap = this.itemValue('item-row-gap') || gap;
-      const perRow = Number(this.setting('layout', 'logos-' + ({ lg: 'lg', xl: 'xl' }[this.bp] || 'sm'))) || 2;
+      const perRow = Number(this.setting('layout', 'logos-' + ({ md: 'md', lg: 'lg', xl: 'xl' }[this.bp] || 'sm'))) || 2;
       const align = this.preset('logos', 'align') || 'center';
       return {
         display: 'flex',
