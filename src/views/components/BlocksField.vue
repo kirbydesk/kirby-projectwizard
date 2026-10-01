@@ -11,11 +11,12 @@
   >
     <template v-if="!disabled && hasFieldsets" #options>
       <div class="pw-blocks-field-options">
-        <!-- the grid's twelve columns over all blocks (magenta), on/off -->
+        <!-- the grid's twelve columns over all blocks (magenta), on/off;
+             XS has no grid: no button -->
         <k-button
+          v-if="device !== 'default'"
           :title="$t('prw.panel.gridlines')"
           :aria-pressed="gridLines ? 'true' : 'false'"
-          :disabled="device === 'default'"
           :theme="gridLines ? 'pink' : null"
           icon="prw-guides"
           variant="filled"
