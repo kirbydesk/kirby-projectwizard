@@ -248,10 +248,6 @@ return [
 										}
 								}
 
-								// panel-colors.css generieren (für pagewizard/colors API)
-								if (method_exists('pwConfig', 'panelColorsSetup')) {
-									pwConfig::panelColorsSetup($pluginDir);
-								}
 						}
 				}
 

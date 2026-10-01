@@ -7,7 +7,7 @@
  *
  *   - pwConfig      — runtime reads used during Kirby's boot + Blueprint
  *                     assembly + CSS-var generation (loadValues, load,
- *                     settings, tailwindSetup, panelColorsSetup). Also
+ *                     settings, tailwindSetup). Also
  *                     hosts the public I/O helpers readJson(),
  *                     pluginConfig(), projectOverride(), pluginDir(),
  *                     projectDir() — this class delegates every file
