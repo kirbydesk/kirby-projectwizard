@@ -212,7 +212,7 @@
             <div v-for="n in 3" :key="'faq-' + n" class="pw-faq-item" :style="faqItemStyle(n)">
               <div class="pw-faq-summary" :style="faqSummaryStyle">
                 <div :style="faqQuestionStyle">{{ faqSampleQuestion(n) }}</div>
-                <span v-if="faqIcon !== 'none'" class="pw-faq-icon" :style="faqIconStyle(faqOpen(n))">
+                <span v-if="faqIcon !== 'none' && !faqAlwaysOpen" class="pw-faq-icon" :style="faqIconStyle(faqOpen(n))">
                   <svg v-if="faqIcon === 'chevron'" viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 4 17 12 9 20" /></svg>
                   <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12" /><line v-if="!faqOpen(n)" x1="12" y1="4" x2="12" y2="20" /></svg>
                 </span>

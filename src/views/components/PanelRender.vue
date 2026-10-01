@@ -115,6 +115,32 @@
               </div>
             </div>
 
+            <!-- faq: its questions as the frontend starts them (the first open
+                 if set, always open: all), lines or cards; hidden ones faded -->
+            <div v-if="isFaq && faqItems.length" class="pw-faq-preview" :style="faqListStyle">
+              <div
+                v-for="(item, i) in faqItems"
+                :key="item.id || i"
+                class="pw-faq-item"
+                :class="{ 'is-hidden': item.isHidden }"
+                :style="faqItemStyle(i + 1)"
+              >
+                <div class="pw-faq-summary" :style="faqSummaryStyle">
+                  <div :style="faqQuestionStyle">{{ item.content.question }}</div>
+                  <span v-if="faqIcon !== 'none' && !faqAlwaysOpen" class="pw-faq-icon" :style="faqIconStyle(faqOpen(i + 1))">
+                    <svg v-if="faqIcon === 'chevron'" viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 4 17 12 9 20" /></svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12" /><line v-if="!faqOpen(i + 1)" x1="12" y1="4" x2="12" y2="20" /></svg>
+                  </span>
+                </div>
+                <div
+                  v-if="faqOpen(i + 1) && faqAnswerHtml(item)"
+                  class="pw-panel-rich"
+                  :style="{ ...faqAnswerStyle, ...entryRichStyle }"
+                  v-html="faqAnswerHtml(item)"
+                ></div>
+              </div>
+            </div>
+
             <!-- featurelist: its features (icon, title, text) as the snippet;
                  hidden ones faded -->
             <div v-if="isFeaturelist && featureItems.length" class="pw-featurelist-items" :class="{ 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
@@ -352,6 +378,11 @@ export default {
       const m = /^dist-(\d)-(\d)$/.exec(this.mcDist);
       if (!m) return { display: 'flex', flexDirection: 'column', gap: this.itemValueAt('row-gap') };
       return { display: 'grid', gridTemplateColumns: 'minmax(0, ' + m[1] + 'fr) minmax(0, ' + m[2] + 'fr)', columnGap: this.itemValueAt('column-gap') };
+    },
+    // the faq's questions: those with a question (as the snippet)
+    faqItems() {
+      if (!this.isFaq) return [];
+      return this.stepItems.filter(item => String(item.content.question || '').trim() !== '');
     },
     // the cards: those with a text shown (as the snippet)
     panelCards() {
@@ -714,6 +745,20 @@ export default {
       if ((c.iconposition || '') !== side) return '';
       return (side === 'left' ? c.iconleft : c.iconright) || c.icon || '';
     },
+    // faq: open as the frontend starts – always open: all; else the first
+    // when set
+    faqOpen(n) {
+      if (this.faqAlwaysOpen) return true;
+      return n === 1 && this.setting('style', 'faq-first-open') === 'yes';
+    },
+    // an answer: the writer's HTML; plain text masked with its breaks
+    faqAnswerHtml(item) {
+      const d = parse(item.content.answer);
+      const mode = d.mode || 'textarea';
+      const text = String(d[mode] || '');
+      if (text.replace(/<[^>]*>/g, '').trim() === '') return '';
+      return mode === 'writer' ? text : esc(text).replace(/\r\n|\r|\n/g, '<br>');
+    },
     // a card's tagline, heading or text (pagewizard's JSON)
     cardJson(item, el) {
       return parse(item.content[{ tagline: 'tagline', heading: 'heading', editor: 'description' }[el]]);
@@ -965,6 +1010,7 @@ export default {
 .pw-panel-button.is-hidden,
 .pw-panel-render .pw-steplist-item.is-hidden,
 .pw-panel-render .pw-cardlets-item.is-hidden,
+.pw-panel-render .pw-faq-item.is-hidden,
 .pw-panel-render .pw-mc-el.is-hidden,
 .pw-panel-render .pw-featurelist-item.is-hidden {
   opacity: 0.25;
