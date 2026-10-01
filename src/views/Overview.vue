@@ -1969,8 +1969,9 @@
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
               </div>
-              <!-- on the image: the ratio per device (the texts' position and the
-                   overlay's strength: start values of the block) -->
+              <!-- on the image: the ratio per device, the overlay's strength (the
+                   blocks' start value; the texts' position: a start value of
+                   the block) -->
               <div v-else-if="currentCardDisplay(block.blockType) === 'overlay'" class="pw-card pw-field-table">
                 <pw-block-settings
                   view="items-layout"
@@ -1983,6 +1984,15 @@
                   @update:row-bp="itemBp = $event"
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-overlay-strength']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
                 />
               </div>
               <!-- standing out: the images' ratio (not cropped) and how far, per

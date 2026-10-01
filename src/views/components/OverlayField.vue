@@ -1,21 +1,24 @@
 <template>
   <!-- the overlay's strength on an image (pagewizard's pwoverlay): Kirby's
-       toggles, each step with a swatch – the overlay of the block's colour
-       variant in that strength on a sample picture -->
+       range with a square in the overlay colour of the block's variant
+       before it; empty, it shows the project's value (Project Wizard) -->
   <k-field
     v-bind="$props"
-    :class="['k-toggles-field', 'pw-overlay-field', $attrs.class]"
-    :style="[$attrs.style, swatchVars]"
+    :class="['k-range-field', 'pw-overlay-field', $attrs.class]"
+    :style="$attrs.style"
     :input="id"
   >
-    <k-input
-      v-if="options && options.length"
-      ref="input"
-      v-bind="$props"
-      :class="{ grow }"
-      type="toggles"
-      @input="$emit('input', $event)"
-    />
+    <div class="pw-overlay-row">
+      <span class="pw-overlay-swatch" :style="{ backgroundColor: overlayColor }" :title="overlayColor"></span>
+      <k-input
+        ref="input"
+        v-bind="$props"
+        :value="shownValue"
+        type="range"
+        class="pw-overlay-range"
+        @input="$emit('input', $event)"
+      />
+    </div>
   </k-field>
 </template>
 
@@ -24,12 +27,16 @@ import { previewState, ensurePreviewData } from '../../preview/store.js';
 import { themes } from '../../preview/derive.js';
 
 export default {
-  extends: 'k-toggles-field',
+  extends: 'k-range-field',
   props: {
     // the block whose overlay colour it shows (pwcardlets …)
     block: { type: String, default: '' },
   },
   computed: {
+    blockData() {
+      const data = previewState().data;
+      return data ? data.blocks[this.block] : null;
+    },
     // the form's values: of the fieldset around the field
     formValues() {
       let vm = this.$parent;
@@ -46,8 +53,7 @@ export default {
     },
     // the overlay colour of that variant (the project's, else the plugin's)
     overlayColor() {
-      const data = previewState().data;
-      const b = data && data.blocks[this.block];
+      const b = this.blockData;
       if (!b) return '#000000';
       const own = ((b.valueOverrides || {})[this.theme] || {})['item-overlay'];
       if (own) return own;
@@ -56,13 +62,22 @@ export default {
       }
       return '#000000';
     },
-    // the colour and each step's strength, for the swatches (CSS)
-    swatchVars() {
-      const vars = { '--pw-overlay': this.overlayColor };
-      (this.options || []).forEach((option, i) => {
-        vars['--pw-strength-' + (i + 1)] = (parseFloat(option.value) || 0) + '%';
-      });
-      return vars;
+    // the project's strength (Project Wizard › Cards › Design)
+    projectValue() {
+      const b = this.blockData;
+      if (!b) return null;
+      let raw = (b.valueOverrides || {})['item-overlay-strength'];
+      if (raw === undefined || raw === '') {
+        for (const group of Object.values(b.valueDefaults || {})) {
+          if (group && group.vars && group.vars['item-overlay-strength']) raw = group.vars['item-overlay-strength'].value;
+        }
+      }
+      const n = parseFloat(raw);
+      return isNaN(n) ? null : n;
+    },
+    // the block's own value, else the project's (not stored until moved)
+    shownValue() {
+      return this.value !== null && this.value !== undefined && this.value !== '' ? this.value : this.projectValue;
     },
   },
   created() {
@@ -72,23 +87,20 @@ export default {
 </script>
 
 <style>
-/* each step: a small picture with the overlay in its strength */
-.pw-overlay-field .k-toggles-input label::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 1rem;
-  height: 1rem;
-  margin-inline-end: var(--spacing-2);
-  border-radius: var(--rounded-sm);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
-  background:
-    linear-gradient(color-mix(in srgb, var(--pw-overlay) var(--pw-strength), transparent), color-mix(in srgb, var(--pw-overlay) var(--pw-strength), transparent)),
-    linear-gradient(160deg, #9cc3e6 0%, #e8d9a8 55%, #6f8f5f 56%, #4d6b45 100%);
+.pw-overlay-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
 }
-.pw-overlay-field .k-toggles-input li:nth-child(1) label { --pw-strength: var(--pw-strength-1); }
-.pw-overlay-field .k-toggles-input li:nth-child(2) label { --pw-strength: var(--pw-strength-2); }
-.pw-overlay-field .k-toggles-input li:nth-child(3) label { --pw-strength: var(--pw-strength-3); }
-.pw-overlay-field .k-toggles-input li:nth-child(4) label { --pw-strength: var(--pw-strength-4); }
-.pw-overlay-field .k-toggles-input li:nth-child(5) label { --pw-strength: var(--pw-strength-5); }
-.pw-overlay-field .k-toggles-input li:nth-child(6) label { --pw-strength: var(--pw-strength-6); }
+.pw-overlay-swatch {
+  flex: 0 0 auto;
+  width: var(--input-height, 2.25rem);
+  height: var(--input-height, 2.25rem);
+  border-radius: var(--rounded);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+.pw-overlay-range {
+  flex: 1;
+  min-width: 0;
+}
 </style>

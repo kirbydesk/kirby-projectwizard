@@ -54,7 +54,7 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 	// block previews next to "Add" – Kirby's own blocks field stays untouched
 	fields: {
 		pwblocks: BlocksField,
-		// the overlay's strength with swatches in the block's overlay colour
+		// the overlay's strength: a range with the block's overlay colour
 		pwoverlay: OverlayField,
 	},
 	components: {
