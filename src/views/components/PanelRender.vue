@@ -127,10 +127,7 @@
               >
                 <div class="pw-faq-summary" :style="faqSummaryStyle">
                   <div :style="faqQuestionStyle">{{ item.content.question }}</div>
-                  <span v-if="faqIcon !== 'none' && !faqAlwaysOpen" class="pw-faq-icon" :style="faqIconStyle(faqOpen(i + 1))">
-                    <svg v-if="faqIcon === 'chevron'" viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 4 17 12 9 20" /></svg>
-                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12" /><line v-if="!faqOpen(i + 1)" x1="12" y1="4" x2="12" y2="20" /></svg>
-                  </span>
+                  <span v-if="faqIconSvg && !faqAlwaysOpen" class="pw-faq-icon" :class="{ 'is-open': faqOpen(i + 1) }" :data-kind="faqIconKind" :style="faqIconStyle(faqOpen(i + 1))" v-html="faqIconSvg"></span>
                 </div>
                 <div
                   v-if="faqOpen(i + 1) && faqAnswerHtml(item)"

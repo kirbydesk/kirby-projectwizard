@@ -212,10 +212,7 @@
             <div v-for="n in 3" :key="'faq-' + n" class="pw-faq-item" :style="faqItemStyle(n)">
               <div class="pw-faq-summary" :style="faqSummaryStyle">
                 <div :style="faqQuestionStyle">{{ faqSampleQuestion(n) }}</div>
-                <span v-if="faqIcon !== 'none' && !faqAlwaysOpen" class="pw-faq-icon" :style="faqIconStyle(faqOpen(n))">
-                  <svg v-if="faqIcon === 'chevron'" viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 4 17 12 9 20" /></svg>
-                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12" /><line v-if="!faqOpen(n)" x1="12" y1="4" x2="12" y2="20" /></svg>
-                </span>
+                <span v-if="faqIconSvg && !faqAlwaysOpen" class="pw-faq-icon" :class="{ 'is-open': faqOpen(n) }" :data-kind="faqIconKind" :style="faqIconStyle(faqOpen(n))" v-html="faqIconSvg"></span>
               </div>
               <div v-if="faqOpen(n)" :style="faqAnswerStyle">{{ $t('prw.preview.faq.answer') }}</div>
             </div>
@@ -844,6 +841,17 @@ export default {
     faqIcon() {
       return this.setting('layout', 'item-icon') || 'chevron';
     },
+    // its drawing from the icon choice (none: no icon); a plus turns into a
+    // minus when open, the others turn down
+    faqIconSvg() {
+      if (this.faqIcon === 'none') return '';
+      const def = this.nested(this.config.defaults || {}, 'settings.fields.layout.item-icon');
+      const opt = def && Array.isArray(def.options) ? def.options.find(o => o && o.value === this.faqIcon) : null;
+      return opt && opt.svg ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + opt.svg + '</svg>' : '';
+    },
+    faqIconKind() {
+      return ['plus', 'circle-plus'].includes(this.faqIcon) ? 'plus' : 'turn';
+    },
     faqStroke() {
       return { thin: 1, normal: 1.5, bold: 2.5 }[this.setting('layout', 'item-icon-stroke')] || 1.5;
     },
@@ -882,7 +890,7 @@ export default {
         paddingBottom: pad,
         marginTop: 'calc(' + (this.itemValue('item-answer-gap') || '0rem') + ' - ' + pad + ')',
       };
-      if (this.setting('layout', 'item-answer-width') !== 'full' && this.faqIcon !== 'none' && !this.faqAlwaysOpen) {
+      if (this.setting('layout', 'item-answer-width') !== 'full' && this.faqIconSvg && !this.faqAlwaysOpen) {
         const room = 'calc(' + this.itemValueAt('item-icon-size') + ' + ' + this.itemValue('item-icon-gap') + ')';
         style[this.setting('layout', 'item-icon-position') === 'left' ? 'paddingLeft' : 'paddingRight'] = room;
       }
@@ -1518,7 +1526,8 @@ export default {
         width: size,
         height: size,
         color: this.itemColor('item-icon'),
-        transform: open ? (this.faqIcon === 'plus' ? 'rotate(180deg)' : 'rotate(90deg)') : null,
+        '--pw-faq-stroke': this.faqStroke,
+        transform: open ? (this.faqIconKind === 'plus' ? 'rotate(180deg)' : 'rotate(90deg)') : null,
       };
     },
     // tagline, heading and text in a card: the element's type, the card's
@@ -1604,11 +1613,17 @@ export default {
 </script>
 
 <style>
-/* faq: the icon's drawing fills its box (size and colour set inline) */
+/* faq: the icon's drawing fills its box (size and colour set inline), the
+   stroke chosen over the drawing's own; an open plus without its vertical */
 .pw-faq-icon svg {
   width: 100%;
   height: 100%;
-  transition: transform 0.2s ease;
+}
+.pw-faq-icon svg [stroke] {
+  stroke-width: var(--pw-faq-stroke, 1.5);
+}
+.pw-faq-icon.is-open[data-kind="plus"] [data-vertical] {
+  opacity: 0;
 }
 
 .pw-block-live-body {
