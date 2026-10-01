@@ -56,6 +56,38 @@
               </div>
             </div>
 
+            <!-- cardlets: its cards (image, tagline, heading, text, link) in
+                 the display set – image above, texts on the image, image
+                 standing out; hidden ones faded -->
+            <div v-if="isCardlets && panelCards.length" class="pw-cardlets-items pw-featurelist-items" :class="{ 'is-row': cardColumns > 1 }" :style="cardItemsStyle">
+              <div
+                v-for="(item, i) in panelCards"
+                :key="item.id || i"
+                class="pw-cardlets-item"
+                :class="{ 'is-hidden': item.isHidden }"
+                :style="cardStyle"
+              >
+                <div v-if="cardImageUrl(item)" class="pw-cardlets-image-wrap" :class="{ 'is-overhang': cardOverhang }">
+                  <span v-if="cardOverhang" class="pw-cardlets-overhang" :style="cardOverhangStyle"></span>
+                  <img :src="cardImageUrl(item)" alt="" class="pw-panel-card-image" :style="panelCardImageStyle" />
+                </div>
+                <div v-if="cardOverlay" class="pw-cardlets-overlay" :style="cardOverlayStyle"></div>
+                <div class="pw-cardlets-content" :style="cardContentStyle">
+                  <template v-for="el in itemCardFields(item)">
+                    <div
+                      v-if="el === 'editor'"
+                      :key="'cf-' + el"
+                      class="pw-panel-rich"
+                      :style="{ ...panelCardFieldStyle(item, el), ...richStyle }"
+                      v-html="cardEditorHtml(item)"
+                    ></div>
+                    <div v-else :key="'cf-' + el" :style="panelCardFieldStyle(item, el)" v-html="cardJson(item, el).text"></div>
+                  </template>
+                  <span v-if="item.content.linkinternal" class="pw-cardlets-cta" :style="panelCtaStyle(item)">{{ item.content.linktext || $t('kirbyblock-cardlets.item.cta') }}<svg v-if="cardCtaIcon" viewBox="0 0 24 24" aria-hidden="true" v-html="cardCtaIcon"></svg></span>
+                </div>
+              </div>
+            </div>
+
             <!-- featurelist: its features (icon, title, text) as the snippet;
                  hidden ones faded -->
             <div v-if="isFeaturelist && featureItems.length" class="pw-featurelist-items" :class="{ 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
@@ -262,6 +294,25 @@ export default {
       style.maxWidth = widths[this.content.mediasize] || '100%';
       return style;
     },
+    // the cards: those with a text shown (as the snippet)
+    panelCards() {
+      if (!this.isCardlets) return [];
+      return this.stepItems.filter(item => this.itemCardFields(item).length > 0);
+    },
+    // the cards' columns at the size shown, as set (XS: one)
+    cardColumns() {
+      if (!this.hasGrid) return 1;
+      return Number(this.setting('layout', 'columns-' + this.bp)) || 1;
+    },
+    // the card's image: above (the set ratio, cropped), on the image
+    // (filling the card) or standing out (the whole cut-out at the bottom)
+    panelCardImageStyle() {
+      const style = { display: 'block', width: '100%' };
+      if (this.cardOverlay) return { ...style, position: 'absolute', inset: 0, height: '100%', objectFit: 'cover' };
+      const ratio = this.cardImageStyle && this.cardImageStyle.aspectRatio;
+      if (!ratio) return { ...style, height: 'auto' };
+      return { ...style, aspectRatio: ratio, objectFit: this.cardOverhang ? 'contain' : 'cover', objectPosition: this.cardOverhang ? 'center bottom' : 'center' };
+    },
     // the logocloud's logos (its files field)
     panelLogos() {
       const logos = Array.isArray(this.content.logos) ? this.content.logos : [];
@@ -441,6 +492,53 @@ export default {
       const offset = Number(this.setting('grid', 'grid-offset-' + this.bp)) || 0;
       return n > offset && n <= offset + Math.min(size, 12 - offset);
     },
+    // a card's tagline, heading or text (pagewizard's JSON)
+    cardJson(item, el) {
+      return parse(item.content[{ tagline: 'tagline', heading: 'heading', editor: 'description' }[el]]);
+    },
+    // the card's texts: switched on for the project and filled
+    itemCardFields(item) {
+      return ['tagline', 'heading', 'editor'].filter((el) => {
+        if (!this.hasField('item-' + el)) return false;
+        const d = this.cardJson(item, el);
+        const text = el === 'editor' ? d[d.mode || 'textarea'] : d.text;
+        return String(text || '').replace(/<[^>]*>/g, '').trim() !== '';
+      });
+    },
+    cardImageUrl(item) {
+      const image = Array.isArray(item.content.image) ? item.content.image[0] : null;
+      return image && image.url ? image.url : '';
+    },
+    // a text in the card: as the wizard's, with its own alignment and size;
+    // the gap below to the next text, the last one to the link (none
+    // without a link)
+    panelCardFieldStyle(item, el) {
+      const style = this.cardFieldStyle(el);
+      const d = this.cardJson(item, el);
+      if (d.align) style.textAlign = d.align;
+      if (d.size && d.size !== 'normal') {
+        const step = this.sizeStep(el, d.size);
+        if (step) style.fontSize = step;
+      }
+      const fields = this.itemCardFields(item);
+      const last = fields.indexOf(el) === fields.length - 1;
+      style.marginBottom = last
+        ? (item.content.linkinternal ? this.itemValue('item-cta-gap') : 0)
+        : this.itemValue(el === 'tagline' ? 'item-tagline-spacing' : 'item-heading-spacing');
+      return style;
+    },
+    // the card's text: the writer's HTML; plain text masked with its breaks
+    cardEditorHtml(item) {
+      const d = this.cardJson(item, 'editor');
+      const mode = d.mode || 'textarea';
+      const text = String(d[mode] || '');
+      return mode === 'writer' ? text : esc(text).replace(/\r\n|\r|\n/g, '<br>');
+    },
+    // the link: its own alignment
+    panelCtaStyle(item) {
+      const align = item.content.linkalign || 'left';
+      return { ...this.cardCtaStyle, alignSelf: { center: 'center', right: 'flex-end' }[align] || 'flex-start' };
+    },
     // a feature's title as run-in at the start of its text ("Title. Text …"),
     // in its first paragraph as the snippet does
     featureRunIn(c) {
@@ -586,6 +684,7 @@ export default {
 }
 .pw-panel-button.is-hidden,
 .pw-panel-render .pw-steplist-item.is-hidden,
+.pw-panel-render .pw-cardlets-item.is-hidden,
 .pw-panel-render .pw-featurelist-item.is-hidden {
   opacity: 0.25;
 }
