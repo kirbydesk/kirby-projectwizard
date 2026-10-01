@@ -230,6 +230,11 @@
 	'prw.prop.line-height' => 'Zeilenhöhe',
 	'prw.prop.letter-spacing' => 'Zeichenabstand',
 	'prw.prop.text-transform' => 'Groß-/Kleinschreibung',
+	// the entries (Elements › Items): their title and description
+	'prw.prop.item-title-font-size' => 'Schriftgröße Titel',
+	'prw.prop.item-title-line-height' => 'Zeilenhöhe Titel',
+	'prw.prop.item-text-font-size' => 'Schriftgröße Beschreibung',
+	'prw.prop.item-title-spacing' => 'Abstand zur Beschreibung',
 	'prw.prop.paragraph-spacing' => 'Absatzabstand',
 	'prw.hint.heroFullscreen' => 'Vollbild entspricht immer der kompletten Bildschirmhöhe.',
 	'prw.hint.heroHeight' => 'Die Höhe ist ein prozentualer Anteil der Bildschirmhöhe. Der px-Wert ist ein Richtwert für das gewählte Gerät.',

@@ -230,6 +230,11 @@
 	'prw.prop.line-height' => 'Line Height',
 	'prw.prop.letter-spacing' => 'Letter Spacing',
 	'prw.prop.text-transform' => 'Text Transform',
+	// the entries (Elements › Items): their title and description
+	'prw.prop.item-title-font-size' => 'Title Size',
+	'prw.prop.item-title-line-height' => 'Title Line Height',
+	'prw.prop.item-text-font-size' => 'Description Size',
+	'prw.prop.item-title-spacing' => 'Gap to the description',
 	'prw.prop.paragraph-spacing' => 'Paragraph Spacing',
 	'prw.hint.heroFullscreen' => 'Full screen always matches the full screen height.',
 	'prw.hint.heroHeight' => 'The height is a percentage of the screen height. The px value is a guide for the chosen device.',
