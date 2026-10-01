@@ -45,7 +45,7 @@
             @click="chooseDevice(option.value)"
           >
             {{ option.text }}
-            <span class="k-languages-dropdown-item-info">
+            <span v-if="option.width" class="k-languages-dropdown-item-info">
               <span class="k-languages-dropdown-item-code">{{ option.width }}</span>
             </span>
           </k-dropdown-item>
@@ -105,7 +105,7 @@ export default {
     // the menu's entries (a list: Kirby calls an options function with a
     // callback); the one shown marked
     deviceOptions() {
-      const widths = { default: '< 640 px', sm: '> 640 px', md: '> 768 px', lg: '> 1024 px', xl: '> 1280 px' };
+      const widths = { default: '', sm: '> 640 px', md: '> 768 px', lg: '> 1024 px', xl: '> 1280 px' };
       return PANEL_SIZES.map(bp => ({
         value: bp,
         text: this.deviceCode(bp),
