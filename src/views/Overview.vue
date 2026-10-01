@@ -2967,9 +2967,9 @@ export default {
         'defaults',
         'presets',
       ];
-      // design: the columns, elements: the text, start values: the pen,
+      // design: the columns, elements: the layers (as the Elements page), start values: the pen,
       // restrictions: the crossed-out eye
-      const icons = { design: 'layout-columns', elements: 'text', defaults: 'edit-line', presets: 'hidden' };
+      const icons = { design: 'layout-columns', elements: 'layers', defaults: 'edit-line', presets: 'hidden' };
       return views.map(name => ({
         name,
         icon: icons[name],
