@@ -210,7 +210,11 @@
                in the style shown (lines or cards) -->
           <div v-if="isFaq" class="pw-faq-preview" :style="faqListStyle">
             <div v-for="n in 3" :key="'faq-' + n" class="pw-faq-item" :style="faqItemStyle(n)">
+              <!-- guides (cards): the padding left and right -->
+              <span v-if="guides && currentFaqStyle === 'cards'" class="pw-faq-pad-x" :class="{ 'is-hot': highlight === 'item-padding-x' }" :style="{ inset: '0 ' + itemValueAt('item-padding-x') }"></span>
               <div class="pw-faq-summary" :style="faqSummaryStyle">
+                <!-- guides: the padding above and below the question -->
+                <span v-if="guides" class="pw-faq-pad-y" :class="{ 'is-hot': highlight === 'item-padding-y' }" :style="{ inset: itemValueAt('item-padding-y') + ' 0' }"></span>
                 <div :style="faqQuestionStyle">{{ faqSampleQuestion(n) }}</div>
                 <span v-if="faqIconSvg && !faqAlwaysOpen" class="pw-faq-icon" :class="{ 'is-open': faqOpen(n) }" :data-kind="faqIconKind" :style="faqIconStyle(faqOpen(n))" v-html="faqIconSvg"></span>
               </div>
@@ -867,11 +871,18 @@ export default {
     },
     // the question's row: the question and the icon (left: before it)
     faqSummaryStyle() {
+      const pad = this.itemValueAt('item-padding-y');
+      // (its padding hovered: tinted above and below)
+      const tint = this.guides && this.highlight === 'item-padding-y'
+        ? 'inset 0 ' + pad + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + pad + ') 0 0 rgba(0, 180, 90, 0.18)'
+        : null;
       // (the icon in the middle of the entry: its room kept free in the row)
       const room = this.setting('layout', 'item-icon-align') === 'item' && this.faqIconSvg && !this.faqAlwaysOpen
         ? 'calc(' + this.itemValueAt('item-icon-size') + ' + ' + this.itemValue('item-icon-gap') + ')'
         : null;
       return {
+        position: 'relative',
+        boxShadow: tint,
         [this.setting('layout', 'item-icon-position') === 'left' ? 'paddingLeft' : 'paddingRight']: room,
         display: 'flex',
         // (the icon on the question's first line: at the top)
@@ -1510,8 +1521,13 @@ export default {
     faqItemStyle(n) {
       if (this.currentFaqStyle === 'cards') {
         const r = this.setting('layout', 'item-shape') === 'square' ? [] : (this.itemValue('item-radius') || []);
+        const padX = this.itemValueAt('item-padding-x');
         return {
           position: 'relative',
+          // (its padding hovered: tinted left and right)
+          boxShadow: this.guides && this.highlight === 'item-padding-x'
+            ? 'inset ' + padX + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + padX + ') 0 0 0 rgba(255, 0, 170, 0.18)'
+            : null,
           backgroundColor: this.itemColor('item-background'),
           paddingLeft: this.itemValueAt('item-padding-x'),
           paddingRight: this.itemValueAt('item-padding-x'),
@@ -1633,6 +1649,24 @@ export default {
 </script>
 
 <style>
+/* faq guides: where the paddings end – above and below the question green,
+   left and right of a card magenta; another value hovered: only its lines */
+.pw-faq-pad-y,
+.pw-faq-pad-x {
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+.pw-faq-pad-y {
+  border-block: 1px solid rgba(0, 180, 90, 0.9);
+}
+.pw-faq-pad-x {
+  border-inline: 1px solid rgba(255, 0, 170, 0.6);
+}
+.pw-block-live-preview.has-focus :is(.pw-faq-pad-y, .pw-faq-pad-x):not(.is-hot) {
+  border-color: transparent;
+}
+
 /* faq: the icon's drawing fills its box (size and colour set inline), the
    stroke chosen over the drawing's own; an open plus without its vertical */
 .pw-faq-icon svg {
