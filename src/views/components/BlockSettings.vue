@@ -397,28 +397,31 @@
                 <pw-lock v-if="isLocked('settings.fields.layout.' + field.key + '.default')" />
               </div>
               <div class="pw-field-row-options" :inert="isLocked('settings.fields.layout.' + field.key + '.default') || null">
-                <!-- Icon-select: SVG buttons -->
-                <div v-if="field.type === 'icon-select'" class="pw-icon-select">
-                  <button
-                    v-for="opt in field.options"
-                    :key="opt.value"
-                    type="button"
-                    class="pw-icon-option"
-                    :class="{ 'is-active': (getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)) === opt.value }"
-                    @click="setVal('settings.fields.layout.' + field.key + '.default', opt.value)"
-                    v-html="'<svg viewBox=&quot;0 0 24 24&quot; aria-hidden=&quot;true&quot;>' + opt.svg + '</svg>'"
-                  ></button>
+                <!-- Icon-select: SVG buttons, its second choice beside them (only
+                     for a drawing with a stroke) – one element, so the
+                     v-else-if chain below stays intact -->
+                <div v-if="field.type === 'icon-select'" class="pw-icon-select-row">
+                  <div class="pw-icon-select">
+                    <button
+                      v-for="opt in field.options"
+                      :key="opt.value"
+                      type="button"
+                      class="pw-icon-option"
+                      :class="{ 'is-active': (getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)) === opt.value }"
+                      @click="setVal('settings.fields.layout.' + field.key + '.default', opt.value)"
+                      v-html="'<svg viewBox=&quot;0 0 24 24&quot; aria-hidden=&quot;true&quot;>' + opt.svg + '</svg>'"
+                    ></button>
+                  </div>
+                  <k-toggles-input
+                    v-if="field.with && iconHasStroke(field)"
+                    class="pw-icon-select-with"
+                    :value="getVal('settings.fields.layout.' + field.with.key + '.default', field.with.defaultValue)"
+                    :options="field.with.options.map(o => ({ value: o, text: itemOptionLabel(field.with, o) }))"
+                    :grow="false"
+                    :required="true"
+                    @input="setVal('settings.fields.layout.' + field.with.key + '.default', $event)"
+                  />
                 </div>
-                <!-- its second choice beside it (only for a drawing with a stroke) -->
-                <k-toggles-input
-                  v-if="field.type === 'icon-select' && field.with && iconHasStroke(field)"
-                  class="pw-icon-select-with"
-                  :value="getVal('settings.fields.layout.' + field.with.key + '.default', field.with.defaultValue)"
-                  :options="field.with.options.map(o => ({ value: o, text: itemOptionLabel(field.with, o) }))"
-                  :grow="false"
-                  :required="true"
-                  @input="setVal('settings.fields.layout.' + field.with.key + '.default', $event)"
-                />
                 <!-- Select with options -->
                 <!-- (a field that may stay empty – e.g. the featurelist's icon
                      position: none – is not required, so a second click on the
@@ -1773,9 +1776,12 @@ export default {
   cursor: pointer;
 }
 
-/* a second choice beside the icons (e.g. the stroke) */
-.pw-icon-select-with {
-  margin-inline-start: var(--spacing-3);
+/* the icons and a second choice beside them (e.g. the stroke) */
+.pw-icon-select-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
 }
 /* the icons as one bar: shared borders, rounded only at its ends */
 .pw-icon-select {
