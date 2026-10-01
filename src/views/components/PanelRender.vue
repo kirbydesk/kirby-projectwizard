@@ -15,6 +15,13 @@
         <span v-for="n in 12" :key="'gl-' + n" :class="{ 'is-used': gridUsed(n) }"></span>
       </div>
       <section class="pw-block-live-section" :style="sectionStyle">
+        <!-- hero: its background image or video (blurred if set) and the
+             overlay in the variant's colour, solid or as a gradient -->
+        <template v-if="isHero">
+          <img v-if="heroBackground === 'image' && heroFile" :src="heroFile.url" alt="" class="pw-panel-hero-bg" :style="heroBgStyle" />
+          <video v-else-if="heroBackground === 'video' && heroFile" :src="heroFile.url" muted preload="metadata" class="pw-panel-hero-bg" :style="heroBgStyle"></video>
+          <span v-if="panelHeroOverlayStyle" class="pw-panel-hero-overlay" :style="panelHeroOverlayStyle"></span>
+        </template>
         <div class="pw-block-live-grid" :style="gridStyle">
           <div class="pw-block-live-item" :style="itemStyle">
           <!-- (the featurelist's split layout: the intro a column of its own
@@ -322,7 +329,53 @@ export default {
     },
     // the cards' image files (their settings loaded below)
     cardImageLinks() {
-      return this.panelCards.map(item => this.cardImage(item)).filter(f => f && f.link).map(f => f.link);
+      const files = [...this.panelCards.map(item => this.cardImage(item)), this.isHero ? this.heroFile : null];
+      return files.filter(f => f && f.link).map(f => f.link);
+    },
+    // the hero's height in proportion to the preview's width, as on the
+    // screen of the size shown (the panel's column is narrower than the
+    // screen: fixed pixels would make it far too high)
+    heroHeightPx() {
+      const px = parseFloat(BlockPreview.computed.heroHeightPx.call(this));
+      if (!px) return null;
+      const width = { default: 390, sm: 640, md: 768, lg: 1024, xl: 1440 }[this.bp] || 1440;
+      return (px / width * 100).toFixed(2) + 'cqw';
+    },
+    // the hero's background file (image or video)
+    heroFile() {
+      const list = this.content[this.heroBackground === 'video' ? 'video' : 'image'];
+      return Array.isArray(list) ? list[0] || null : null;
+    },
+    // its picture: filling the hero, at the image's focus, blurred if set
+    heroBgStyle() {
+      const meta = (this.heroFile && this.cardMeta[this.heroFile.link]) || {};
+      const blur = parseInt(this.content[this.heroBackground === 'video' ? 'blurvideo' : 'blurimage'], 10) || 0;
+      return {
+        objectPosition: this.heroBackground === 'image' ? meta.focus || '50% 50%' : null,
+        filter: blur > 0 ? 'blur(' + blur + 'px)' : null,
+        transform: blur > 0 ? 'scale(1.05)' : null,
+      };
+    },
+    // the overlay: the variant's colour at the block's strength, over the
+    // whole hero or as a gradient from one side (as the block's CSS)
+    panelHeroOverlayStyle() {
+      const type = this.content.overlaytype;
+      if (type !== 'solid' && type !== 'gradient') return null;
+      const strength = parseInt(this.content[type === 'solid' ? 'overlayintensity' : 'overlaygradientintensity'], 10) || 0;
+      const color = 'color-mix(in srgb, ' + (this.itemColor('overlay') || '#000000') + ' ' + strength + '%, transparent)';
+      if (type === 'solid') return { inset: 0, background: color };
+      const side = this.content.overlayposition || 'left';
+      const size = { small: '25%', medium: '50%', large: '75%', xlarge: '100%' }[this.content.overlaysize] || '50%';
+      const across = side === 'left' || side === 'right';
+      return {
+        top: side === 'bottom' ? 'auto' : 0,
+        bottom: side === 'top' ? 'auto' : 0,
+        left: side === 'right' ? 'auto' : 0,
+        right: side === 'left' ? 'auto' : 0,
+        width: across ? size : '100%',
+        height: across ? '100%' : size,
+        background: 'linear-gradient(to ' + { left: 'right', right: 'left', top: 'bottom', bottom: 'top' }[side] + ', ' + color + ', transparent)',
+      };
     },
     // the logocloud's logos (its files field)
     panelLogos() {
@@ -611,6 +664,8 @@ export default {
 /* the panel's block: its own light surface (the project's colours, also in
    Kirby's dark mode), links do not lead away (PanelPreview) */
 .pw-panel-render {
+  /* (the hero's height in proportion to its width: cqw) */
+  container-type: inline-size;
   /* (a too long word breaks, as in the frontend) */
   overflow-wrap: break-word;
   color-scheme: light;
@@ -712,6 +767,24 @@ export default {
 .pw-panel-button {
   display: inline-flex !important;
   align-items: center;
+}
+/* the hero: its background and overlay below the content */
+.pw-panel-hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.pw-panel-hero-overlay {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+.pw-panel-render .pw-block-live-section > .pw-block-live-grid {
+  position: relative;
+  z-index: 2;
 }
 /* a feature's icon (its own SVG) in the item size and colour */
 .pw-panel-feature-svg {
