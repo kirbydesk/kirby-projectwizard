@@ -713,7 +713,9 @@ export default {
     // texts' side
     cardOverlayStyle() {
       const color = this.itemColor('item-overlay') || '#000000';
-      const strength = parseFloat(this.itemValue('item-overlay-strength')) || 50;
+      // (the block's start value; in the panel the block's own)
+      const raw = this.setting('style', 'card-overlay');
+      const strength = raw === undefined || raw === null || raw === '' ? 50 : parseFloat(raw) || 0;
       // full strength behind the texts (the first 35 %), then easing out in
       // steps (as in the frontend)
       const stops = [[1, 0], [1, 35], [0.85, 45], [0.62, 55], [0.4, 65], [0.2, 75], [0.07, 87]]
