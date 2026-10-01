@@ -81,6 +81,10 @@
                       :style="{ ...panelCardFieldStyle(item, el), ...richStyle }"
                       v-html="cardEditorHtml(item)"
                     ></div>
+                    <!-- (a heading marked: as the heading's marking) -->
+                    <div v-else-if="el === 'heading' && cardJson(item, el).textbackground === 'enabled'" :key="'cf-' + el" :style="{ ...panelCardFieldStyle(item, el), lineHeight: elementValue('heading', 'marked-line-height') || null }">
+                      <span class="pw-panel-marked" :style="markedStyle" v-html="cardJson(item, el).text"></span>
+                    </div>
                     <div v-else :key="'cf-' + el" :style="panelCardFieldStyle(item, el)" v-html="cardJson(item, el).text"></div>
                   </template>
                   <span v-if="item.content.linkinternal" class="pw-cardlets-cta" :style="panelCtaStyle(item)">{{ item.content.linktext || $t('kirbyblock-cardlets.item.cta') }}<svg v-if="cardCtaIcon" viewBox="0 0 24 24" aria-hidden="true" v-html="cardCtaIcon"></svg></span>
