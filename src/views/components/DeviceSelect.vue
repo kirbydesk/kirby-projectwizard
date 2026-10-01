@@ -1,6 +1,6 @@
 <template>
-  <!-- device of a preview: a button with the chosen device's icon, Kirby's
-       black menu with the three devices (v-model) -->
+  <!-- device of a preview: a button with the chosen device's icon and name,
+       Kirby's black menu with the three devices (v-model) -->
   <div class="pw-pill pw-device-select" role="group">
     <div class="pw-tab-menu">
       <button
@@ -12,9 +12,10 @@
         @click="$refs.menu.toggle()"
       >
         <k-icon :type="icon(value)" />
+        <span class="pw-device-select-text">{{ label(value) }}</span>
         <k-icon type="angle-down" class="pw-tab-menu-chevron" />
       </button>
-      <k-dropdown-content ref="menu" align-x="end">
+      <k-dropdown-content ref="menu" align-x="start">
         <nav class="k-navigate">
           <button
             v-for="bp in ['default', 'lg', 'xl']"
@@ -58,7 +59,9 @@ export default {
   --tool-size: 24px;
 }
 .pw-device-select .pw-tool {
-  gap: 2px;
+  gap: 4px;
+  font-size: var(--text-xs);
+  white-space: nowrap;
   padding-inline: var(--spacing-2) var(--spacing-1);
 }
 .pw-device-select .k-icon {

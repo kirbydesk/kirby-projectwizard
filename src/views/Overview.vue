@@ -5889,7 +5889,7 @@ export default {
   display: flex;
   width: fit-content;
 }
-/* every preview toolbar: the variants on the left, the guides on the right */
+/* every preview toolbar: the device first, the variants (and views) after it, the guides on the right */
 .pw-preview-switches .pw-preview-theme {
   order: 0;
 }
@@ -5901,7 +5901,7 @@ export default {
   --icon-size: 14px;
 }
 .pw-preview-switches .pw-device-select {
-  order: 3;
+  order: -1;
 }
 .pw-preview-switches .pw-guides-switch {
   order: 2;
