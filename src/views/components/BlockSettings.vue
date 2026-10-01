@@ -427,15 +427,26 @@
                 <!-- (a field that may stay empty – e.g. the featurelist's icon
                      position: none – is not required, so a second click on the
                      chosen pill deselects it; empty stores its value) -->
-                <k-toggles-input
-                  v-else-if="field.type === 'select'"
-                  :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
-                  :options="field.options.map(o => ({ value: o, text: itemOptionLabel(field, o), icon: field.icons ? field.icons[o] : undefined }))"
-                  :labels="!field.icons"
-                  :grow="false"
-                  :required="field.emptyValue === undefined"
-                  @input="setVal('settings.fields.layout.' + field.key + '.default', ($event === null || $event === '') && field.emptyValue !== undefined ? field.emptyValue : $event)"
-                />
+                <!-- (with a second choice beside it in the same row: one element,
+                     so the chain stays intact) -->
+                <div v-else-if="field.type === 'select'" class="pw-icon-select-row">
+                  <k-toggles-input
+                    :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
+                    :options="field.options.map(o => ({ value: o, text: itemOptionLabel(field, o), icon: field.icons ? field.icons[o] : undefined }))"
+                    :labels="!field.icons"
+                    :grow="false"
+                    :required="field.emptyValue === undefined"
+                    @input="setVal('settings.fields.layout.' + field.key + '.default', ($event === null || $event === '') && field.emptyValue !== undefined ? field.emptyValue : $event)"
+                  />
+                  <k-toggles-input
+                    v-if="field.with"
+                    :value="getVal('settings.fields.layout.' + field.with.key + '.default', field.with.defaultValue)"
+                    :options="field.with.options.map(o => ({ value: o, text: itemOptionLabel(field.with, o) }))"
+                    :grow="false"
+                    :required="true"
+                    @input="setVal('settings.fields.layout.' + field.with.key + '.default', $event)"
+                  />
+                </div>
                 <!-- Plain boolean toggle -->
                 <k-toggle-input
                   v-else
@@ -686,7 +697,6 @@ export default {
         // Icon select: options are [{value, svg}, ...] — rendered as SVG buttons
         if (this.isObject(settingVal) && settingVal.type === 'icon-select' && Array.isArray(settingVal.options)) {
           // (a second choice in the same row, e.g. the faq icon's stroke)
-          const withVal = settingVal.with ? settings[settingVal.with] : null;
           fields.push({
             key, displayKey,
             label: settingVal.label || null,
@@ -696,9 +706,7 @@ export default {
             // the value when nothing is chosen (optional: a second click on the
             // chosen icon deselects it)
             emptyValue: settingVal.empty,
-            with: this.isObject(withVal) && Array.isArray(withVal.options)
-              ? { key: settingVal.with, label: withVal.label || null, displayKey: settingVal.with.replace(/^item-/, ''), options: withVal.options, defaultValue: withVal.default !== undefined ? withVal.default : withVal.options[0] }
-              : null,
+            with: this.withField(settings, settingVal),
           });
           continue;
         }
@@ -717,6 +725,8 @@ export default {
             // (optional: an icon per option instead of its text, the text then
             // its tooltip)
             icons: this.isObject(settingVal.icons) ? settingVal.icons : null,
+            // (a second choice in the same row)
+            with: this.withField(settings, settingVal),
           });
           continue;
         }
@@ -729,6 +739,12 @@ export default {
         fields.push({ key, displayKey, type: 'toggle', defaultValue, label: (this.isObject(settingVal) && settingVal.label) || null });
       }
       return fields;
+    },
+    // a setting's second choice in its row ("with": the other key)
+    withField(settings, settingVal) {
+      const withVal = settingVal.with ? settings[settingVal.with] : null;
+      if (!this.isObject(withVal) || !Array.isArray(withVal.options)) return null;
+      return { key: settingVal.with, label: withVal.label || null, displayKey: settingVal.with.replace(/^item-/, ''), options: withVal.options, defaultValue: withVal.default !== undefined ? withVal.default : withVal.options[0] };
     },
     // an icon chosen; the chosen one again: none (where the choice may
     // stay empty)
