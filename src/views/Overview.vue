@@ -1096,6 +1096,77 @@
                the space below) – the block's own only by exception -->
           <div v-show="currentBlockView === 'elements'" v-if="blockConfigs[block.blockType] && hasElementsView(block.blockType)">
 
+            <!-- elements: the space below tagline, heading and text – the global
+                 elements' or the block's own (blocks that bring the values:
+                 every block with an intro but the quote); always
+                 the last card -->
+            <template v-if="hasOwnSpacing(block.blockType)">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <!-- the space below the block's elements (tagline, heading,
+                     text, list, quote, media, button): the elements' (global)
+                     or the block's own values -->
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-spacing']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <!-- standard: the global elements' values, grey (not editable here) -->
+                <template v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'">
+                  <div
+                    v-for="el in ownSpacingElements(block.blockType)"
+                    :key="'gs-' + el"
+                    class="pw-field-row is-readonly"
+                    :data-guide="previewGuides ? spaceGuide(el) : null"
+                  >
+                    <div class="k-input" data-type="text">
+                      <span class="k-input-element pw-field-row-inner">
+                        <div class="pw-field-row-label-col">
+                          <label class="pw-field-row-label">{{ $t('prw.prop.' + el + '-spacing') }}</label>
+                        </div>
+                        <!-- as the editable rows: the px cell first, then the value -->
+                        <div class="pw-field-row-options">
+                          <span class="pw-element-field">
+                            <span class="pw-readonly-value">{{ globalElementSpacing(el).replace(/r?em$/, '') }}<span class="pw-element-unit">{{ (globalElementSpacing(el).match(/r?em$/) || ['rem'])[0] }}</span></span>
+                            <span class="pw-px-calculator">{{ remToPx(globalElementSpacing(el)) }}</span>
+                          </span>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <!-- custom: the block's own values, the global ones grey at the end -->
+                <template v-else>
+                  <pw-block-values
+                    v-for="el in ownSpacingElements(block.blockType)"
+                    :key="'os-' + el"
+                    :bp.sync="itemBp"
+                    :defaults="blockValueDefaults[block.blockType]"
+                    :patch="valuesPatch(block.blockType)"
+                    :overrides="blockValueOverrides[block.blockType] || {}"
+                    :show-only="[el + '-spacing']"
+                    :labels="{ [el + '-spacing']: $t('prw.prop.' + el + '-spacing') }"
+                    :guides="previewGuides ? { [el + '-spacing']: spaceGuide(el) } : null"
+                    :hints="{ [el + '-spacing']: globalElementSpacing(el) }"
+                    :hint-title="$t('prw.hint.globalValue')"
+                    :hide-section-headers="true"
+                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                    @hover-var="hoveredVar = $event"
+                  />
+                </template>
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing')" />
+            </section>
+            </template>
+
             <!-- entries (featurelist, steplist): their title and description –
                  the global items' values (Elements › Items) or the block's own;
                  the first card -->
@@ -1168,77 +1239,6 @@
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.featureText')" />
             </section>
-
-            <!-- elements: the space below tagline, heading and text – the global
-                 elements' or the block's own (blocks that bring the values:
-                 every block with an intro but the quote); always
-                 the last card -->
-            <template v-if="hasOwnSpacing(block.blockType)">
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
-              </div>
-              <div class="pw-card pw-field-table">
-                <!-- the space below the block's elements (tagline, heading,
-                     text, list, quote, media, button): the elements' (global)
-                     or the block's own values -->
-                <pw-block-settings
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-spacing']"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
-                />
-                <!-- standard: the global elements' values, grey (not editable here) -->
-                <template v-if="itemLayoutDefault(block.blockType, 'item-spacing') !== 'own'">
-                  <div
-                    v-for="el in ownSpacingElements(block.blockType)"
-                    :key="'gs-' + el"
-                    class="pw-field-row is-readonly"
-                    :data-guide="previewGuides ? spaceGuide(el) : null"
-                  >
-                    <div class="k-input" data-type="text">
-                      <span class="k-input-element pw-field-row-inner">
-                        <div class="pw-field-row-label-col">
-                          <label class="pw-field-row-label">{{ $t('prw.prop.' + el + '-spacing') }}</label>
-                        </div>
-                        <!-- as the editable rows: the px cell first, then the value -->
-                        <div class="pw-field-row-options">
-                          <span class="pw-element-field">
-                            <span class="pw-readonly-value">{{ globalElementSpacing(el).replace(/r?em$/, '') }}<span class="pw-element-unit">{{ (globalElementSpacing(el).match(/r?em$/) || ['rem'])[0] }}</span></span>
-                            <span class="pw-px-calculator">{{ remToPx(globalElementSpacing(el)) }}</span>
-                          </span>
-                        </div>
-                      </span>
-                    </div>
-                  </div>
-                </template>
-                <!-- custom: the block's own values, the global ones grey at the end -->
-                <template v-else>
-                  <pw-block-values
-                    v-for="el in ownSpacingElements(block.blockType)"
-                    :key="'os-' + el"
-                    :bp.sync="itemBp"
-                    :defaults="blockValueDefaults[block.blockType]"
-                    :patch="valuesPatch(block.blockType)"
-                    :overrides="blockValueOverrides[block.blockType] || {}"
-                    :show-only="[el + '-spacing']"
-                    :labels="{ [el + '-spacing']: $t('prw.prop.' + el + '-spacing') }"
-                    :guides="previewGuides ? { [el + '-spacing']: spaceGuide(el) } : null"
-                    :hints="{ [el + '-spacing']: globalElementSpacing(el) }"
-                    :hint-title="$t('prw.hint.globalValue')"
-                    :hide-section-headers="true"
-                    @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                    @hover-var="hoveredVar = $event"
-                  />
-                </template>
-              </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing')" />
-            </section>
-            </template>
           </div>
 
           <!-- Design: the items' values (CSS variables), for all blocks at once -->
