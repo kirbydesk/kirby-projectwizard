@@ -32,18 +32,22 @@
           size="xs"
           @click="$refs.device.toggle()"
         />
-        <!-- (its entries by hand: the width grey on the right, as Kirby's
-             other menus show additional info) -->
-        <k-dropdown-content ref="device" align-x="end" class="pw-size-menu">
+        <!-- (its entries as Kirby's language menu: the width grey on the
+             right, its classes for the same look) -->
+        <k-dropdown-content ref="device" align-x="end">
           <k-dropdown-item
             v-for="option in deviceOptions"
             :key="option.value"
             :current="option.current"
             :disabled="option.disabled"
             :title="option.title"
+            class="k-languages-dropdown-item"
             @click="chooseDevice(option.value)"
           >
-            {{ option.text }}<span class="pw-size-width">{{ option.width }}</span>
+            {{ option.text }}
+            <span class="k-languages-dropdown-item-info">
+              <span class="k-languages-dropdown-item-code">{{ option.width }}</span>
+            </span>
           </k-dropdown-item>
         </k-dropdown-content>
         <k-button-group layout="collapsed">
@@ -162,15 +166,6 @@ export default {
 </script>
 
 <style>
-.pw-size-menu .k-button-text {
-  flex: 1;
-  display: flex;
-}
-.pw-size-menu .pw-size-width {
-  margin-inline-start: auto;
-  padding-inline-start: var(--spacing-6);
-  color: var(--color-text-dimmed);
-}
 .pw-blocks-field-options {
   display: flex;
   align-items: center;
