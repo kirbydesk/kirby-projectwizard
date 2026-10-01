@@ -1164,7 +1164,7 @@
                   />
                 </template>
               </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing') + (hasIntroGap(block.blockType) ? ' ' + $t('prw.hint.elementSpacingIntroGap') : '')" />
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.elementSpacing')" />
             </section>
             </template>
 
@@ -2979,9 +2979,9 @@ export default {
         'defaults',
         'presets',
       ];
-      // design: the columns, elements: the layers (as the Elements page), start values: the pen,
+      // design: pencil and ruler, elements: the layers (as the Elements page), start values: the pen,
       // restrictions: the crossed-out eye
-      const icons = { design: 'layout-columns', elements: 'layers', defaults: 'edit-line', presets: 'hidden' };
+      const icons = { design: 'prw-design', elements: 'layers', defaults: 'edit-line', presets: 'hidden' };
       return views.map(name => ({
         name,
         icon: icons[name],
@@ -3548,16 +3548,12 @@ export default {
     // its elements with such a value (the heading block: only the tagline),
     // without those hidden under Visibility (they are not in the block)
     // the elements whose space below the block has values for: always all,
-    // in a fixed order – used or not, hidden or not (below the intro's last
-    // one a block with entries takes its gap to the intro, said in a hint)
+    // in a fixed order – used or not, hidden or not (each applies, also
+    // below the intro's last one; a block may enlarge that one)
     ownSpacingElements(blockType) {
       const groups = Object.values(this.blockValueDefaults[blockType] || {});
       return ['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button']
         .filter(el => groups.some(g => g && g.vars && g.vars[el + '-spacing']));
-    },
-    // a block with a gap to its intro (entries, logos, media below it)
-    hasIntroGap(blockType) {
-      return Object.values(this.blockValueDefaults[blockType] || {}).some(g => g && g.vars && g.vars['item-text-gap']);
     },
     // multicolumn: the columns side by side at the device shown (then the
     // gap between them counts, else the one below each other); mobile always

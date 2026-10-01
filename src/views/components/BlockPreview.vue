@@ -423,8 +423,7 @@ export default {
     },
     // media: the gap to the intro above (when there is one)
     mediaTextGap() {
-      const idx = this.fields.indexOf('media');
-      return idx > 0 ? this.itemValue('item-text-gap') : 0;
+      return this.introGap('media');
     },
     isLogocloud() {
       return this.blockType === 'pwlogocloud';
@@ -492,7 +491,7 @@ export default {
     },
     // the gap between the text above and the logos (none without text)
     logosTextGap() {
-      return this.gapBefore('logos') ? this.itemValue('item-text-gap') || this.gapBefore('logos') : 0;
+      return this.introGap('logos');
     },
     // the logos' own top margin (with guides the gap is an element above)
     logosMarginTop() {
@@ -618,10 +617,7 @@ export default {
     },
     // the gap to the intro above (alone: the intro's last element has no space below there)
     cardTextGap() {
-      const idx = this.fields.indexOf('items');
-      if (idx <= 0) return 0;
-      // (alone: the intro's last element has no space below before the items)
-      return this.itemValue('item-text-gap');
+      return this.introGap('items');
     },
     cardItemsStyle() {
       const marginTop = this.guides ? 0 : this.cardTextGap;
@@ -870,7 +866,7 @@ export default {
     // the gap to the intro above (beside it in the split layout: none)
     faqTextGap() {
       if (this.featureSplit && this.hasGrid) return 0;
-      return this.fields.indexOf('items') > 0 ? this.itemValue('item-text-gap') : 0;
+      return this.introGap('items');
     },
     faqListStyle() {
       // (with guides the gap is an element of its own above)
@@ -968,10 +964,7 @@ export default {
     // none beside the intro); the text's space below meets it, the larger wins
     featureTextGap() {
       if (this.featureSplit && this.hasGrid) return 0;
-      const idx = this.fields.indexOf('items');
-      if (idx <= 0) return 0;
-      // (alone: the intro's last element has no space below before the items)
-      return this.itemValue('item-text-gap');
+      return this.introGap('items');
     },
     // the gap between two features: as high (one below the other) or as
     // wide (side by side) as the gap
@@ -1095,10 +1088,7 @@ export default {
     },
     // the gap to the intro above (alone: the intro's last element has no space below there)
     stepTextGap() {
-      const idx = this.fields.indexOf('items');
-      if (idx <= 0) return 0;
-      // (alone: the intro's last element has no space below before the items)
-      return this.itemValue('item-text-gap');
+      return this.introGap('items');
     },
     stepItemsStyle() {
       const gap = this.itemValue('item-gap');
@@ -1449,6 +1439,18 @@ export default {
     // (tagline, heading, text); before the block's own content (items,
     // media, logos) the block's CSS sets the gap – margins meet there, the
     // larger one wins as in the frontend
+    // the gap between the intro and what follows it (entries, logos, media):
+    // the space below the intro's last element plus the block's own
+    // enlargement (as the frontend: its padding above them)
+    introGap(field) {
+      const idx = this.fields.indexOf(field);
+      if (idx <= 0) return 0;
+      const prev = this.fields[idx - 1];
+      const after = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
+      const more = this.itemValue('item-text-gap');
+      if (after && more && parseFloat(more) !== 0) return 'calc(' + after + ' + ' + more + ')';
+      return after || more || 0;
+    },
     gapBefore(field) {
       const idx = this.fields.indexOf(field);
       if (idx <= 0) return 0;
