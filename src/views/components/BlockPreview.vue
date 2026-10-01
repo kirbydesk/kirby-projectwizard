@@ -707,7 +707,7 @@ export default {
       };
     },
     cardTextTop() {
-      return this.setting('layout', 'item-text-position') === 'top';
+      return this.setting('style', 'card-text-position') === 'top';
     },
     // the overlay in the variant's colour with its strength, from the
     // texts' side

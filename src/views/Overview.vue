@@ -1969,7 +1969,8 @@
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
               </div>
-              <!-- on the image: the texts' position, the ratio per device, the overlay's strength -->
+              <!-- on the image: the ratio per device, the overlay's strength (the
+                   texts' position: a start value of the block) -->
               <div v-else-if="currentCardDisplay(block.blockType) === 'overlay'" class="pw-card pw-field-table">
                 <pw-block-settings
                   view="items-layout"
@@ -1977,7 +1978,7 @@
                   :config="blockConfigs[block.blockType]"
                   :overrides="blockOverrides[block.blockType] || {}"
                   :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-text-position', { default: 'item-ratio', lg: 'item-ratio-lg', xl: 'item-ratio-xl' }[itemBp] || 'item-ratio']"
+                  :layout-keys="[{ default: 'item-ratio', lg: 'item-ratio-lg', xl: 'item-ratio-xl' }[itemBp] || 'item-ratio']"
                   :row-bp="itemBp"
                   @update:row-bp="itemBp = $event"
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
