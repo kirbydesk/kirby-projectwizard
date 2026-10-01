@@ -123,7 +123,7 @@
 	'prw.tab.footer' => 'Footer',
 	'prw.view.design' => 'Gestaltung',
 	'prw.view.elements' => 'Elemente',
-	'prw.view.elements.intro' => 'Standardmäßig gelten die Werte aus Elemente. Hier lassen sie sich für diesen Block abweichend einstellen.',
+	'prw.view.elements.intro' => 'Standardmäßig gelten die globalen Werte aus Elemente. Hier lassen sie sich für diesen Block abweichend einstellen.',
 	'prw.view.defaults' => 'Startwerte',
 	'prw.view.presets' => 'Sichtbarkeit',
 	'prw.view.design.intro' => 'Diese Werte gelten für alle Blöcke dieser Art, auch für bereits angelegte Blöcke.',
