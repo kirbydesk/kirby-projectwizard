@@ -118,6 +118,8 @@
 	'prw.tab.generator' => 'Page generator',
 	'prw.tab.footer' => 'Footer',
 	'prw.view.design' => 'Design',
+	'prw.view.elements' => 'Elements',
+	'prw.view.elements.intro' => 'By default the values from Elements apply. Here they can be set differently for this block.',
 	'prw.view.defaults' => 'Start values',
 	'prw.view.presets' => 'Visibility',
 	'prw.view.design.intro' => 'These values apply to all blocks of this kind, including existing ones.',
