@@ -1,7 +1,7 @@
 <template>
   <!-- the overlay's strength on an image (pagewizard's pwoverlay): Kirby's
        range with a square in the overlay colour of the block's variant
-       before it; empty, it shows the project's value (Project Wizard) -->
+       before it; a new block starts with the project's value -->
   <k-field
     v-bind="$props"
     :class="['k-range-field', 'pw-overlay-field', $attrs.class]"
@@ -75,7 +75,8 @@ export default {
       const n = parseFloat(raw);
       return isNaN(n) ? null : n;
     },
-    // the block's own value, else the project's (not stored until moved)
+    // the block's value (a new block starts with the project's); a block
+    // from before without one: the project's
     shownValue() {
       return this.value !== null && this.value !== undefined && this.value !== '' ? this.value : this.projectValue;
     },
