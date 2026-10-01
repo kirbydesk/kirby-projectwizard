@@ -1103,7 +1103,8 @@
             <template v-if="hasOwnSpacing(block.blockType)">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+                <!-- (named after the block's part: the intro, the multicolumn's columns) -->
+                <h3 class="pw-card-heading">{{ $t(block.blockType === 'pwmulticolumn' ? 'prw.headline.elementsColumns' : 'prw.headline.elementsIntro') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <!-- the space below the block's elements (tagline, heading,
@@ -1172,7 +1173,7 @@
                  the first card -->
             <section v-if="hasEntry(block.blockType)" class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.subtab.text') }}</h3>
+                <h3 class="pw-card-heading">{{ $t('prw.headline.elementsItems') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <!-- (featurelist: the title above the text or in it) -->

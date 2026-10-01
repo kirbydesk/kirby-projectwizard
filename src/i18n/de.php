@@ -87,6 +87,10 @@
 	'prw.label.gapHorizontal' => 'Horizontaler Abstand',
 	'prw.label.height' => 'Höhe',
 	'prw.label.size' => 'Größe',
+	// the cards of the elements tab, named after the block's part
+	'prw.headline.elementsIntro' => 'Einleitung',
+	'prw.headline.elementsColumns' => 'Spalten',
+	'prw.headline.elementsItems' => 'Einträge',
 	'prw.headline.spacing' => 'Abstände',
 	'prw.headline.fields' => 'Elemente',
 	'prw.headline.logos' => 'Logos',

@@ -87,6 +87,10 @@
 	'prw.label.gapHorizontal' => 'Horizontal gap',
 	'prw.label.height' => 'Height',
 	'prw.label.size' => 'Size',
+	// the cards of the elements tab, named after the block's part
+	'prw.headline.elementsIntro' => 'Intro',
+	'prw.headline.elementsColumns' => 'Columns',
+	'prw.headline.elementsItems' => 'Entries',
 	'prw.headline.spacing' => 'Spacing',
 	'prw.headline.fields' => 'Elements',
 	'prw.headline.logos' => 'Logos',
