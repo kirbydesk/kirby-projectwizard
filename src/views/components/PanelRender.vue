@@ -69,7 +69,7 @@
               >
                 <div v-if="cardImageUrl(item)" class="pw-cardlets-image-wrap" :class="{ 'is-overhang': cardOverhang }">
                   <span v-if="cardOverhang" class="pw-cardlets-overhang" :style="cardOverhangStyle"></span>
-                  <img :src="cardImageUrl(item)" alt="" class="pw-panel-card-image" :style="panelCardImageStyle" />
+                  <img :src="cardImageUrl(item)" alt="" class="pw-panel-card-image" :style="panelCardImageStyle(item)" />
                 </div>
                 <div v-if="cardOverlay" class="pw-cardlets-overlay" :style="cardOverlayStyle"></div>
                 <div class="pw-cardlets-content" :style="cardContentStyle">
@@ -194,6 +194,18 @@ export default {
     // the grid's columns as lines over the block
     gridLines: { type: Boolean, default: false },
   },
+  data() {
+    // the settings of the cards' image files (ratio, crop, focus) by link
+    return { cardMeta: {} };
+  },
+  watch: {
+    cardImageLinks: {
+      immediate: true,
+      handler(links) {
+        links.filter(link => !(link in this.cardMeta)).forEach(link => this.loadCardMeta(link));
+      },
+    },
+  },
   computed: {
     // the block's own variant (a colour variant no longer active, or the
     // custom colours: the default one)
@@ -304,14 +316,9 @@ export default {
       if (!this.hasGrid) return 1;
       return Number(this.setting('layout', 'columns-' + this.bp)) || 1;
     },
-    // the card's image: above (the set ratio, cropped), on the image
-    // (filling the card) or standing out (the whole cut-out at the bottom)
-    panelCardImageStyle() {
-      const style = { display: 'block', width: '100%' };
-      if (this.cardOverlay) return { ...style, position: 'absolute', inset: 0, height: '100%', objectFit: 'cover' };
-      const ratio = this.cardImageStyle && this.cardImageStyle.aspectRatio;
-      if (!ratio) return { ...style, height: 'auto' };
-      return { ...style, aspectRatio: ratio, objectFit: this.cardOverhang ? 'contain' : 'cover', objectPosition: this.cardOverhang ? 'center bottom' : 'center' };
+    // the cards' image files (their settings loaded below)
+    cardImageLinks() {
+      return this.panelCards.map(item => this.cardImage(item)).filter(f => f && f.link).map(f => f.link);
     },
     // the logocloud's logos (its files field)
     panelLogos() {
@@ -505,9 +512,44 @@ export default {
         return String(text || '').replace(/<[^>]*>/g, '').trim() !== '';
       });
     },
+    cardImage(item) {
+      return Array.isArray(item.content.image) ? item.content.image[0] || null : null;
+    },
     cardImageUrl(item) {
-      const image = Array.isArray(item.content.image) ? item.content.image[0] : null;
+      const image = this.cardImage(item);
       return image && image.url ? image.url : '';
+    },
+    async loadCardMeta(link) {
+      this.$set(this.cardMeta, link, {});
+      try {
+        const response = await this.$api.get(link, { select: 'content' });
+        this.$set(this.cardMeta, link, (response && response.content) || {});
+      } catch (e) { /* the image without its settings */ }
+    },
+    // the card's image as the frontend: the set ratio of the size shown
+    // (Original: the file's), above cropped at its focus, standing out the
+    // whole cut-out at the bottom; none set: the file's ratio, crop and
+    // focus; on the image filling the card
+    panelCardImageStyle(item) {
+      const image = this.cardImage(item) || {};
+      const meta = this.cardMeta[image.link] || {};
+      const fileRatio = meta.imageratio && meta.imageratio !== 'auto' ? meta.imageratio : '';
+      const fileCrop = meta.imagecrop === true || meta.imagecrop === 'true';
+      const focus = meta.focus || '50% 50%';
+      const style = { display: 'block', width: '100%' };
+      if (this.cardOverlay) {
+        return { ...style, position: 'absolute', inset: 0, height: '100%', objectFit: 'cover', objectPosition: fileCrop ? focus : 'center' };
+      }
+      const key = this.cardOverhang ? 'item-cutout-ratio' : 'item-image-ratio';
+      const set = [key, key + '-lg', key + '-xl'].some(k => (this.setting('layout', k) || 'auto') !== 'auto');
+      const ratioOf = (r) => (r ? { aspectRatio: r.replace('/', ' / '), height: 'auto' } : { height: 'auto' });
+      if (set) {
+        const own = this.setting('layout', key + ({ lg: '-lg', xl: '-xl' }[this.bp] || '')) || 'auto';
+        const ratio = own !== 'auto' ? own : fileRatio;
+        if (this.cardOverhang) return { ...style, ...ratioOf(ratio), objectFit: 'contain', objectPosition: 'center bottom' };
+        return { ...style, ...ratioOf(ratio), objectFit: 'cover', objectPosition: focus };
+      }
+      return { ...style, ...ratioOf(fileRatio), objectFit: fileCrop ? 'cover' : 'contain', objectPosition: fileCrop ? focus : 'center' };
     },
     // a text in the card: as the wizard's, with its own alignment and size;
     // the gap below to the next text, the last one to the link (none
