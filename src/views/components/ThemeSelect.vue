@@ -11,7 +11,11 @@
         @click="$refs.menu.toggle()"
       >
         <span v-if="colors" class="pw-variant-dot is-small" :style="{ backgroundColor: colors[value] }"></span>
-        <span class="pw-theme-select-text">{{ $t(prefix + value) }}</span>
+        <!-- all names in one cell, only the chosen one visible: as wide as
+             the longest, so nothing moves when the choice changes -->
+        <span class="pw-select-sizer">
+          <span v-for="theme in themes" :key="'s-' + theme" :class="{ 'is-current': theme === value }">{{ $t(prefix + theme) }}</span>
+        </span>
         <k-icon type="angle-down" class="pw-tab-menu-chevron" />
       </button>
       <k-dropdown-content ref="menu" align-x="start">
@@ -60,6 +64,18 @@ export default {
   padding-inline: var(--spacing-2) var(--spacing-1);
   font-size: var(--text-xs);
   white-space: nowrap;
+}
+/* the names stacked in one grid cell: the widest sets the width */
+.pw-select-sizer {
+  display: inline-grid;
+  text-align: start;
+}
+.pw-select-sizer > * {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+.pw-select-sizer > .is-current {
+  visibility: visible;
 }
 .pw-theme-select .k-icon {
   --icon-size: 14px;

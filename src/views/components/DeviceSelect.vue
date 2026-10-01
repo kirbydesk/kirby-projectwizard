@@ -12,7 +12,10 @@
         @click="$refs.menu.toggle()"
       >
         <k-icon :type="icon(value)" />
-        <span class="pw-device-select-text">{{ label(value) }}</span>
+        <!-- (as wide as the longest name, so nothing moves; see ThemeSelect) -->
+        <span class="pw-select-sizer">
+          <span v-for="bp in ['default', 'lg', 'xl']" :key="'s-' + bp" :class="{ 'is-current': bp === value }">{{ label(bp) }}</span>
+        </span>
         <k-icon type="angle-down" class="pw-tab-menu-chevron" />
       </button>
       <k-dropdown-content ref="menu" align-x="start">
