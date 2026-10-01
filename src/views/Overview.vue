@@ -1025,7 +1025,7 @@
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="shownValueOverrides(block.blockType)"
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
-                :feature-layout="['pwfeaturelist', 'pwfaq'].includes(block.blockType) && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
+                :feature-layout="!['pwfeaturelist', 'pwfaq'].includes(block.blockType) ? '' : currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : currentBlockView === 'elements' ? 'stacked' : ''"
                 :faq-style="block.blockType === 'pwfaq' && currentBlockView === 'design' ? currentFaqStyle(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
                 :card-display="block.blockType === 'pwcardlets' && currentBlockView === 'design' ? currentCardDisplay(block.blockType) : ''"
