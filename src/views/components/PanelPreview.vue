@@ -88,10 +88,18 @@ export default {
 </script>
 
 <style>
-/* a device chosen above the blocks: the phone narrow (as wide as one), the
-   tablet at most its width – centred */
+/* a size chosen above the blocks: at most its width (XS as wide as a
+   phone), centred */
 .pw-panel-preview[data-device="default"] {
   max-width: 390px;
+  margin-inline: auto;
+}
+.pw-panel-preview[data-device="sm"] {
+  max-width: 640px;
+  margin-inline: auto;
+}
+.pw-panel-preview[data-device="md"] {
+  max-width: 768px;
   margin-inline: auto;
 }
 .pw-panel-preview[data-device="lg"] {

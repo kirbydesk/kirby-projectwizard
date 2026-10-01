@@ -3,13 +3,15 @@
 // dropped when the Project Wizard saves (this tab and others).
 import { injectFontFaces } from './fonts.js';
 
-// the device chosen above the blocks (null: by the browser window),
-// remembered in the browser
+// the size chosen above the blocks (null: by the browser window),
+// remembered in the browser: the frontend's breakpoints, XS (below 640 px,
+// no grid) as "default"
 const DEVICE_KEY = 'pw-panel-device';
+export const PANEL_SIZES = ['default', 'sm', 'md', 'lg', 'xl'];
 const readDevice = () => {
   try {
     const d = window.localStorage.getItem(DEVICE_KEY);
-    return ['default', 'lg', 'xl'].includes(d) ? d : null;
+    return PANEL_SIZES.includes(d) ? d : null;
   } catch (e) {
     return null;
   }
@@ -36,8 +38,7 @@ export function setGridLines(on) {
 }
 
 // the device by the browser window (frontend breakpoints: the grid from
-// 640 px, sm and md only by the window – the menu has phone, tablet and
-// desktop)
+// 640 px)
 export function windowDevice() {
   const w = window.innerWidth;
   if (w >= 1280) return 'xl';
@@ -79,7 +80,7 @@ export function markShownDevice() {
 }
 
 export function setPreviewDevice(device) {
-  state.device = ['default', 'lg', 'xl'].includes(device) ? device : null;
+  state.device = PANEL_SIZES.includes(device) ? device : null;
   markShownDevice();
   try {
     if (state.device) window.localStorage.setItem(DEVICE_KEY, state.device);

@@ -22,10 +22,12 @@
           size="xs"
           @click="toggleGridLines"
         />
-        <!-- the device: Kirby's own button (as "Add"), its menu the three -->
+        <!-- the size: Kirby's own button (as "Add"), its menu the five
+             breakpoints of the frontend -->
         <k-button
           :icon="deviceIcon(device)"
-          :text="deviceLabel(device)"
+          :text="deviceCode(device)"
+          :title="deviceLabel(device)"
           :dropdown="true"
           variant="filled"
           size="xs"
@@ -79,7 +81,7 @@
 </template>
 
 <script>
-import { previewState, setPreviewDevice, shownDevice, deviceFits, setGridLines } from '../../preview/store.js';
+import { previewState, setPreviewDevice, shownDevice, deviceFits, setGridLines, PANEL_SIZES } from '../../preview/store.js';
 
 export default {
   extends: 'k-blocks-field',
@@ -87,7 +89,7 @@ export default {
     // the menu's entries (a list: Kirby calls an options function with a
     // callback); the one shown marked
     deviceOptions() {
-      return ['default', 'lg', 'xl'].map(bp => ({
+      return PANEL_SIZES.map(bp => ({
         text: this.deviceLabel(bp),
         icon: this.deviceIcon(bp),
         current: this.device === bp,
@@ -132,10 +134,14 @@ export default {
       setGridLines(!this.gridLines);
     },
     deviceIcon(bp) {
+      // (as an orientation: phone, tablet, screen)
       return { default: 'mobile', sm: 'mobile', md: 'tablet', lg: 'tablet', xl: 'display' }[bp];
     },
     deviceLabel(bp) {
-      return this.$t({ default: 'prw.label.mobile', sm: 'prw.label.mobile', md: 'prw.label.tablet', lg: 'prw.label.tablet', xl: 'prw.label.desktop' }[bp]);
+      return this.$t('prw.panel.size.' + bp);
+    },
+    deviceCode(bp) {
+      return { default: 'XS', sm: 'SM', md: 'MD', lg: 'LG', xl: 'XL' }[bp];
     },
   },
 };
