@@ -99,6 +99,46 @@
               </div>
             </div>
 
+            <!-- multicolumn: its two columns (side by side as the distribution
+                 at the size shown, else below each other), each with its
+                 sub-blocks and their space below; hidden ones faded -->
+            <div v-if="isMulticolumn && mcColumns.length" class="pw-mc-preview" :style="mcStyle">
+              <div v-for="col in mcColumns" :key="col.side" class="pw-mc-column" :style="mcColumnStyle(col.side)">
+                <div
+                  v-for="(item, i) in col.items"
+                  :key="item.id || i"
+                  class="pw-mc-el"
+                  :class="{ 'is-hidden': item.isHidden }"
+                  :style="{ marginBottom: i < col.items.length - 1 ? mcSpace(item) : 0 }"
+                >
+                  <p v-if="mcKind(item) === 'tagline'" :style="mcTaglineStyle(item)" v-html="parseJson(item.content.tagline).text"></p>
+                  <template v-else-if="mcKind(item) === 'headline'">
+                    <div :style="mcHeadlineStyle(item)">
+                      <span v-if="parseJson(item.content.heading).textbackground === 'enabled'" class="pw-panel-marked" :style="markedStyle" v-html="mcHeadlineHtml(item)"></span>
+                      <span v-else v-html="mcHeadlineHtml(item)"></span>
+                    </div>
+                    <span v-if="parseJson(item.content.heading).flourish === 'enabled'" class="pw-panel-flourish" :style="mcFlourishStyle(item)"></span>
+                  </template>
+                  <div v-else-if="mcKind(item) === 'text'" class="pw-panel-rich" :style="{ ...mcTextSize(item), ...richStyle }" v-html="mcTextHtml(item)"></div>
+                  <component :is="mcListTag(item)" v-else-if="mcKind(item) === 'list'" class="pw-panel-mc-list" :style="mcItemListStyle(item)">
+                    <li v-for="(li, n) in mcListItems(item)" :key="n">{{ li }}</li>
+                  </component>
+                  <figure v-else-if="mcKind(item) === 'quote' && mcQuoteHtml(item)" class="pw-panel-quote">
+                    <blockquote :style="mcItemQuoteStyle(item)" v-html="mcQuoteHtml(item)"></blockquote>
+                    <figcaption v-if="parseJson(item.content.author).text"><cite :style="{ ...citeStyle, textAlign: parseJson(item.content.author).align || citeStyle.textAlign }">{{ parseJson(item.content.author).text }}</cite></figcaption>
+                  </figure>
+                  <pw-panel-media v-else-if="mcKind(item) === 'media'" :content="item.content" :box-style="mcMediaBox(item.content)" :caption-style="captionStyle" />
+                  <div v-else-if="mcKind(item) === 'button'" :style="{ textAlign: item.content.buttonalignment || preset('button', 'align') || 'left' }">
+                    <span class="pw-panel-button" :style="buttonStyle">
+                      <span v-if="mcButtonIcon(item, 'left')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginRight: buttonIconStyle.gap }" v-html="mcButtonIcon(item, 'left')"></span>
+                      <span>{{ item.content.linktext || $t('pw.field.link-text.placeholder') }}</span>
+                      <span v-if="mcButtonIcon(item, 'right')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginLeft: buttonIconStyle.gap }" v-html="mcButtonIcon(item, 'right')"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- featurelist: its features (icon, title, text) as the snippet;
                  hidden ones faded -->
             <div v-if="isFeaturelist && featureItems.length" class="pw-featurelist-items" :class="{ 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
@@ -316,6 +356,26 @@ export default {
       const widths = { xsmall: '25%', small: '33%', medium: '50%', large: '75%', fullscreen: '100%' };
       style.maxWidth = widths[this.content.mediasize] || '100%';
       return style;
+    },
+    // the multicolumn's columns with their sub-blocks (an empty one left out,
+    // as the snippet)
+    mcColumns() {
+      if (!this.isMulticolumn) return [];
+      return ['left', 'right']
+        .map(side => ({ side, items: (Array.isArray(this.content['blocks' + side]) ? this.content['blocks' + side] : []).filter(item => item && item.content) }))
+        .filter(col => col.items.length > 0);
+    },
+    // the distribution at the size shown (the block's own, else the start value)
+    mcDist() {
+      if (!this.hasGrid) return '';
+      return this.content['distribution' + this.bp] || this.setting('layout', 'columns-' + this.bp) || '';
+    },
+    // side by side in the distribution's shares, the column gap between them;
+    // else below each other with the row gap
+    mcStyle() {
+      const m = /^dist-(\d)-(\d)$/.exec(this.mcDist);
+      if (!m) return { display: 'flex', flexDirection: 'column', gap: this.itemValueAt('row-gap') };
+      return { display: 'grid', gridTemplateColumns: 'minmax(0, ' + m[1] + 'fr) minmax(0, ' + m[2] + 'fr)', columnGap: this.itemValueAt('column-gap') };
     },
     // the cards: those with a text shown (as the snippet)
     panelCards() {
@@ -552,6 +612,126 @@ export default {
       const size = Number(this.setting('grid', 'grid-size-' + this.bp)) || 12;
       const offset = Number(this.setting('grid', 'grid-offset-' + this.bp)) || 0;
       return n > offset && n <= offset + Math.min(size, 12 - offset);
+    },
+    // pagewizard's JSON of a field
+    parseJson(value) {
+      return parse(value);
+    },
+    // a sub-block's kind (multicolumnheadlineleft → headline)
+    mcKind(item) {
+      return String(item.type || '').replace(/^multicolumn/, '').replace(/(left|right)$/, '');
+    },
+    // a column's vertical place next to the other (the block's own)
+    mcColumnStyle(side) {
+      if (!this.mcSide) return null;
+      const v = this.content[side + 'positionvertical'] || this.setting('layout', 'multicolumn-' + side);
+      return { alignSelf: { top: 'start', middle: 'center', bottom: 'end' }[v] || 'start' };
+    },
+    // the space below a sub-block: the element's (the lists' for a list)
+    mcSpace(item) {
+      const kind = this.mcKind(item);
+      if (kind === 'list') return this.mcListSpacing;
+      return this.spaceAfter({ headline: 'heading', text: 'editor' }[kind] || kind);
+    },
+    mcTaglineStyle(item) {
+      const d = parse(item.content.tagline);
+      return { ...this.typography('tagline'), color: this.elementColor('tagline', 'element-tagline-text'), textAlign: d.align || this.preset('tagline', 'align') || 'left', margin: 0 };
+    },
+    mcHeadlineSize(item) {
+      const d = parse(item.content.heading);
+      return this.sizeStep('heading', d.size || this.preset('headline', 'sizes') || 'lg');
+    },
+    mcHeadlineStyle(item) {
+      const d = parse(item.content.heading);
+      const style = { ...this.typography('heading'), color: this.elementColor('heading', 'element-heading-text'), textAlign: d.align || this.preset('headline', 'align') || 'left', margin: 0 };
+      const size = this.mcHeadlineSize(item);
+      if (size) style.fontSize = size;
+      if (d.textbackground === 'enabled') style.lineHeight = this.elementValue('heading', 'marked-line-height') || style.lineHeight;
+      return style;
+    },
+    mcHeadlineHtml(item) {
+      const d = parse(item.content.heading);
+      const text = String(d.text || '');
+      return d.multiline === 'enabled' ? text.split(/\r\n|\r|\n/).filter(l => l !== '').join('<br>') : text;
+    },
+    mcFlourishStyle(item) {
+      const align = parse(item.content.heading).align || this.preset('headline', 'align') || 'left';
+      return { ...this.flourishStyle, fontSize: this.mcHeadlineSize(item) || this.flourishStyle.fontSize, marginLeft: align === 'left' ? 0 : 'auto', marginRight: align === 'right' ? 0 : 'auto' };
+    },
+    mcTextSize(item) {
+      const d = parse(item.content.editor);
+      const size = d.size || this.preset('text', 'sizes') || 'normal';
+      const step = size !== 'normal' ? this.sizeStep('editor', size) : '';
+      return { ...this.typography('editor'), ...(step ? { fontSize: step } : {}), color: this.elementColor('editor', 'element-editor-text'), textAlign: d.align || this.preset('text', 'align') || 'left' };
+    },
+    mcTextHtml(item) {
+      const d = parse(item.content.editor);
+      const mode = d.mode || 'textarea';
+      const text = String(d[mode] || '');
+      return mode === 'writer' ? text : esc(text).replace(/\r\n|\r|\n/g, '<br>');
+    },
+    mcListTag(item) {
+      return item.content.liststyle === 'ordered' ? 'ol' : 'ul';
+    },
+    mcListItems(item) {
+      const items = Array.isArray(item.content.items) ? item.content.items : [];
+      return items.map(li => (li && li.text) || '').filter(t => t !== '');
+    },
+    // the list: its style, alignment and size; marker, indent and gap as
+    // the lists (Elements › Lists)
+    mcItemListStyle(item) {
+      const kind = item.content.liststyle || 'bullet';
+      const size = item.content.listsize || 'normal';
+      const step = size !== 'normal' ? this.sizeStep('editor', size) : '';
+      const marker = kind === 'none' ? 'none'
+        : kind === 'ordered' ? ({ decimal: 'decimal', 'decimal-paren': 'decimal', 'lower-alpha': 'lower-alpha', 'lower-roman': 'lower-roman' }[this.elementValue('list', 'number-format')] || 'decimal')
+        : ({ disc: 'disc', circle: 'circle', box: 'square', dash: '"–  "', arrow: '"→  "', chevron: '"›  "', check: '"✓  "', star: '"★  "' }[this.elementValue('list', 'marker')] || 'disc');
+      return {
+        ...this.typography('editor'),
+        ...(step ? { fontSize: step } : {}),
+        color: this.elementColor('editor', 'element-editor-text'),
+        textAlign: item.content.listalignment || 'left',
+        margin: 0,
+        paddingLeft: kind === 'none' ? 0 : this.elementValue('list', kind === 'ordered' ? 'number-indent' : 'indent'),
+        listStyleType: marker,
+        '--pw-list-gap': this.elementValue('list', 'item-spacing') || 0,
+        '--pw-list-marker': this.elementColor('list', kind === 'ordered' ? 'element-list-number' : 'element-list-marker') || 'currentColor',
+        '--pw-list-marker-size': kind === 'ordered' ? '100%' : (this.elementValue('list', 'marker-size') || '100%'),
+      };
+    },
+    mcQuoteHtml(item) {
+      const d = parse(item.content.quote);
+      const text = String(d[d.mode || 'textarea'] || d.textarea || d.text || '').trim();
+      if (!text) return '';
+      const html = esc(text).replace(/\r\n|\r|\n/g, '<br>');
+      return this.elementValue('quote', 'marks') !== 'disabled' ? '\u201E' + html + '\u201C' : html;
+    },
+    mcItemQuoteStyle(item) {
+      const d = parse(item.content.quote);
+      const size = d.size || this.preset('quote', 'sizes') || 'lg';
+      return { ...this.quoteStyle, fontSize: this.sizeStep('quote', size) || this.quoteStyle.fontSize, textAlign: d.align || this.quoteStyle.textAlign };
+    },
+    // a media sub-block's box: its size, alignment and corners
+    mcMediaBox(c) {
+      const widths = { xsmall: '25%', small: '33%', medium: '50%', large: '75%', fullscreen: '100%' };
+      const align = c.mediaalignment || this.preset('media', 'align') || 'left';
+      const def = this.elementDefaults.media?.vars?.['media-radius']?.value || [];
+      const ov = (this.elementOverrides.global || {})['media-radius'];
+      const r = Array.isArray(ov) ? ov : def;
+      const on = (v) => v === true || v === 'true';
+      const corner = (flag, idx) => (c.mediaradius === 'custom' && on(flag) ? r[idx] || 0 : 0);
+      return {
+        maxWidth: widths[c.mediasize] || '100%',
+        marginLeft: align === 'left' ? 0 : 'auto',
+        marginRight: align === 'right' ? 0 : 'auto',
+        borderRadius: [corner(c.radiustopleft, 0), corner(c.radiustopright, 1), corner(c.radiusbottomright, 3), corner(c.radiusbottomleft, 2)].join(' '),
+      };
+    },
+    // a button's icon on one side (older: one icon field)
+    mcButtonIcon(item, side) {
+      const c = item.content || {};
+      if ((c.iconposition || '') !== side) return '';
+      return (side === 'left' ? c.iconleft : c.iconright) || c.icon || '';
     },
     // a card's tagline, heading or text (pagewizard's JSON)
     cardJson(item, el) {
@@ -799,8 +979,16 @@ export default {
 .pw-panel-button.is-hidden,
 .pw-panel-render .pw-steplist-item.is-hidden,
 .pw-panel-render .pw-cardlets-item.is-hidden,
+.pw-panel-render .pw-mc-el.is-hidden,
 .pw-panel-render .pw-featurelist-item.is-hidden {
   opacity: 0.25;
+}
+.pw-panel-mc-list > li + li {
+  margin-top: var(--pw-list-gap);
+}
+.pw-panel-mc-list > li::marker {
+  color: var(--pw-list-marker);
+  font-size: var(--pw-list-marker-size);
 }
 .pw-panel-button-icon {
   display: inline-flex;
