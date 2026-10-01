@@ -848,6 +848,11 @@ export default {
 }
 /* as a layout grid in Figma: the columns tinted, no lines, the gaps
    empty; the columns the content stands on stronger */
+/* (a hidden block: none – Kirby narrows and fades it, the columns would
+   not match the others) */
+.k-block-container[data-hidden="true"] .pw-panel-gridlines {
+  display: none;
+}
 .pw-panel-gridlines span {
   background: rgba(255, 0, 170, 0.04);
 }
