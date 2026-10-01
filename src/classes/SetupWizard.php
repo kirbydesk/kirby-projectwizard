@@ -2,6 +2,19 @@
 
 class SetupWizard
 {
+	/**
+	 * The default languages offered at setup: code => [name, locale]
+	 * (further languages are added in the panel, Kirby's own way).
+	 */
+	public const LANGUAGES = [
+		'de' => ['Deutsch',    'de_DE'],
+		'en' => ['English',    'en_US'],
+		'fr' => ['Français',   'fr_FR'],
+		'it' => ['Italiano',   'it_IT'],
+		'es' => ['Español',    'es_ES'],
+		'nl' => ['Nederlands', 'nl_NL'],
+	];
+
 	/** @var array<string,string> Session files preserved across cleanSlate */
 	private static array $preservedSessions = [];
 
@@ -172,6 +185,42 @@ class SetupWizard
 		self::$preservedSessions = [];
 
 		return ['created' => $created, 'sessionsRestored' => $restored];
+	}
+
+	/**
+	 * Step 3b: The default language – its file in site/languages, the
+	 * content files made from the scaffold renamed to it (site.txt →
+	 * site.de.txt …). An unknown code: German.
+	 */
+	public static function createLanguage(string $code, ?string $root = null): array
+	{
+		$root = $root ?? static::projectRoot();
+		if (!isset(static::LANGUAGES[$code])) $code = 'de';
+		[$name, $locale] = static::LANGUAGES[$code];
+
+		$dir = $root . '/site/languages';
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		\Kirby\Data\Data::write($dir . '/' . $code . '.php', [
+			'code'         => $code,
+			'default'      => true,
+			'direction'    => 'ltr',
+			'locale'       => ['LC_ALL' => $locale],
+			'name'         => $name,
+			'translations' => [],
+			'url'          => null,
+		]);
+
+		$renamed = [];
+		foreach (['content/site', 'content/home/home', 'content/error/error'] as $file) {
+			$from = $root . '/' . $file . '.txt';
+			$to   = $root . '/' . $file . '.' . $code . '.txt';
+			if (file_exists($from) && !file_exists($to)) {
+				rename($from, $to);
+				$renamed[] = $file . '.' . $code . '.txt';
+			}
+		}
+
+		return ['language' => $code, 'renamed' => $renamed];
 	}
 
 	/**

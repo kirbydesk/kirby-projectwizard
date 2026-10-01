@@ -9,8 +9,10 @@ return [
 			'method'  => 'GET',
 			'action'  => function () {
 				return [
-					'needed'   => SetupWizard::isNeeded(),
-					'defaults' => SetupWizard::detect(),
+					'needed'    => SetupWizard::isNeeded(),
+					'defaults'  => SetupWizard::detect(),
+					// the default languages to choose from: code => name
+					'languages' => array_map(fn ($l) => $l[0], SetupWizard::LANGUAGES),
 				];
 			}
 		],
@@ -23,12 +25,15 @@ return [
 				$defaults = SetupWizard::detect();
 				$projectName = $defaults['projectName'];
 				$valetHost = $defaults['valetHost'];
+				// the default language chosen in the setup dialog
+				$language = (string) kirby()->request()->get('language', 'de');
 				$results = [];
 
 				$steps = [
 					'clean'          => fn() => SetupWizard::cleanSlate(),
 					'directories'    => fn() => SetupWizard::createDirectories(),
 					'files'          => fn() => SetupWizard::generateFiles($projectName, $valetHost),
+					'language'       => fn() => SetupWizard::createLanguage($language),
 					'projectbuilder' => fn() => SetupWizard::triggerProjectbuilder(),
 					'npmBuild'       => fn() => SetupWizard::npmBuild(),
 					'finalize'       => fn() => SetupWizard::finalize(),

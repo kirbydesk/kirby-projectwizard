@@ -10,6 +10,8 @@ export default {
       projectName: '',
       valetHost: '',
       isPublic: false,
+      // the default languages to choose from (code => name)
+      languages: {},
       running: false,
       completed: false,
     };
@@ -22,6 +24,7 @@ export default {
         this.valetHost = res.defaults.valetHost || '';
         this.isPublic = res.defaults.isPublic || false;
       }
+      this.languages = res.languages || {};
       this.$nextTick(() => {
         if (this.isPublic) {
           this.openSetupDialog();
@@ -65,25 +68,34 @@ export default {
               text: this.$t('prw.setup.warning'),
               theme: 'passive',
             },
+            // the default language (more in the panel later)
+            language: {
+              type: 'select',
+              label: this.$t('prw.setup.language'),
+              help: this.$t('prw.setup.language.help'),
+              options: Object.entries(this.languages).map(([value, text]) => ({ value, text })),
+              empty: false,
+              required: true,
+            },
           },
-          value: {},
+          value: { language: 'de' },
           submitButton: {
             text: this.$t('prw.setup.run'),
             theme: 'negative',
           },
         },
         on: {
-          submit: () => {
+          submit: (value) => {
             // Don't close the confirm dialog here — dialog.open() in runSetup()
             // replaces the active dialog. Closing first races with the open
             // and leaves the panel blank until the API call returns.
-            this.runSetup();
+            this.runSetup((value && value.language) || 'de');
           },
           cancel: () => { this.$panel.dialog.close(); window.location.href = '/panel'; },
         },
       });
     },
-    async runSetup() {
+    async runSetup(language) {
       this.running = true;
 
       // Show running dialog (replaces the confirm dialog)
@@ -91,6 +103,7 @@ export default {
         'prw.setup.step.clean',
         'prw.setup.step.directories',
         'prw.setup.step.files',
+        'prw.setup.step.language',
         'prw.setup.step.projectbuilder',
         'prw.setup.step.npmBuild',
         'prw.setup.step.finalize',
@@ -113,7 +126,7 @@ export default {
       });
 
       try {
-        const res = await this.$api.post('projectwizard/setup/run', {}, { timeout: 300000 });
+        const res = await this.$api.post('projectwizard/setup/run', { language }, { timeout: 300000 });
 
         if (res.success) {
           this.$panel.dialog.open({
