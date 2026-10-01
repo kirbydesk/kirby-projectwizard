@@ -1877,6 +1877,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-answer-gap']"
+                  :guides="previewGuides ? { 'item-answer-gap': 'gap-4' } : null"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"

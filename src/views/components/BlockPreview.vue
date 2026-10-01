@@ -219,7 +219,12 @@
                 <div :style="faqQuestionStyle">{{ faqSampleQuestion(n) }}</div>
                 <span v-if="faqIconSvg && !faqAlwaysOpen" class="pw-faq-icon" :class="{ 'is-open': faqOpen(n) }" :data-kind="faqIconKind" :style="faqIconStyle(faqOpen(n))" v-html="faqIconSvg"></span>
               </div>
-              <div v-if="faqOpen(n)" :style="faqAnswerStyle">{{ $t('prw.preview.faq.answer') }}</div>
+              <div v-if="faqOpen(n)" :style="{ ...faqAnswerStyle, position: 'relative' }">
+                <!-- guides: the gap between question and answer (gold, as the
+                     entries' title gap) -->
+                <span v-if="guides" class="pw-faq-answer-gap" :class="{ 'is-hot': highlight === 'item-answer-gap' }" :style="{ top: 'calc(-1 * ' + (itemValue('item-answer-gap') || '0rem') + ')', height: itemValue('item-answer-gap') || '0rem' }"></span>
+                {{ $t('prw.preview.faq.answer') }}
+              </div>
             </div>
           </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
@@ -356,7 +361,7 @@ export default {
     highlightsArea() {
       const h = this.highlight || '';
       return ['item-gap', 'item-row-gap', 'item-text-gap', 'item-padding', 'item-padding-y',
-        'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap',
+        'item-icon-gap', 'item-title-spacing', 'item-icon-tile-padding', 'item-offset-gap', 'item-answer-gap',
         'tagline-spacing', 'heading-spacing', 'editor-spacing',
         'item-tagline-spacing', 'item-heading-spacing', 'item-cta-gap',
         'item-padding-x', 'item-overhang', 'column-gap', 'row-gap', 'list-spacing', 'quote-spacing', 'media-spacing', 'button-spacing',
@@ -1650,6 +1655,19 @@ export default {
 <style>
 /* faq guides: where the paddings end – above and below the question green,
    left and right of a card magenta; another value hovered: only its lines */
+.pw-faq-answer-gap {
+  position: absolute;
+  inset-inline: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  border-block: 1px solid rgba(215, 160, 0, 0.95);
+}
+.pw-faq-answer-gap.is-hot {
+  background: rgba(215, 160, 0, 0.18);
+}
+.pw-block-live-preview.has-focus .pw-faq-answer-gap:not(.is-hot) {
+  border-color: transparent;
+}
 .pw-faq-pad-y,
 .pw-faq-pad-x {
   position: absolute;
