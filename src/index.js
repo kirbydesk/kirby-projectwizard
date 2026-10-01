@@ -20,6 +20,7 @@ import SetupWizard from './views/SetupWizard.vue';
 import Portal from './views/components/Portal.vue';
 import BlockPreview from './views/components/BlockPreview.vue';
 import DeviceSelect from './views/components/DeviceSelect.vue';
+import ThemeSelect from './views/components/ThemeSelect.vue';
 import JsonNode from './views/components/JsonNode.vue';
 
 panel.plugin('kirbydesk/kirby-projectwizard', {
@@ -75,6 +76,7 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-portal': Portal,
 		'pw-block-preview': BlockPreview,
 		'pw-device-select': DeviceSelect,
+		'pw-theme-select': ThemeSelect,
 		'pw-json-node': JsonNode,
 		'pw-lock': Lock,
 		'pw-translate-node': TranslateNode,

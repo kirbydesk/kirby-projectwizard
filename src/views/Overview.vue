@@ -320,16 +320,7 @@
               <div v-show="activeTab === 'global' && globalActiveTab === 'blocks'" class="pw-element-preview-side">
                 <!-- toolbar: the variant (shared with the colour card) -->
                 <div class="pw-preview-switches">
-                  <div class="pw-pill pw-preview-bp pw-preview-theme" role="group">
-                    <button
-                      v-for="t in themes"
-                      :key="'bpt-' + t"
-                      type="button"
-                      class="pw-tool"
-                      :aria-pressed="currentBlocksColorTheme === t ? 'true' : 'false'"
-                      @click="blocksColorTheme = t"
-                    >{{ $t('pw.option.' + t) }}</button>
-                  </div>
+                  <pw-theme-select :value="currentBlocksColorTheme" :themes="themes" class="pw-preview-theme" @input="blocksColorTheme = $event" />
                   <!-- guides on/off (shared by all previews) -->
                   <div class="pw-pill pw-guides-switch" role="group">
                     <button
@@ -1026,6 +1017,8 @@
                 :value-overrides="shownValueOverrides(block.blockType)"
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
                 :feature-layout="['pwfeaturelist', 'pwfaq'].includes(block.blockType) && ['design', 'elements'].includes(currentBlockView) ? currentFeatureLayout(block.blockType) : ''"
+                :layout-switch="['pwfeaturelist', 'pwfaq'].includes(block.blockType) && ['design', 'elements'].includes(currentBlockView)"
+                @update:feature-layout="$set(featurePreviewLayout, block.blockType, $event)"
                 :faq-style="block.blockType === 'pwfaq' && currentBlockView === 'design' ? currentFaqStyle(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
                 :card-display="block.blockType === 'pwcardlets' && currentBlockView === 'design' ? currentCardDisplay(block.blockType) : ''"
@@ -1107,19 +1100,6 @@
               <div class="pw-card-heading-row">
                 <!-- (named after the block's part: the intro, the multicolumn's columns) -->
                 <h3 class="pw-card-heading">{{ $t(block.blockType === 'pwmulticolumn' ? 'prw.headline.elementsColumns' : 'prw.headline.elementsIntro') }}</h3>
-                <!-- featurelist, faq: the layout the preview shows, as in the
-                     design tab (one choice for both; a view, not saved) –
-                     offset: the intro's last element without space below -->
-                <span v-if="['pwfeaturelist', 'pwfaq'].includes(block.blockType)" class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="lay in ['stacked', 'split']"
-                    :key="'el-' + lay"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
-                    @click="$set(featurePreviewLayout, block.blockType, lay)"
-                  >{{ $t('pw.option.' + lay) }}</button>
-                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <!-- the space below the block's elements (tagline, heading,
@@ -1758,18 +1738,6 @@
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
-                <!-- the layout the preview shows (a view, not saved; at first
-                     the start value): offset adds its gap -->
-                <span class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="lay in ['stacked', 'split']"
-                    :key="'fl-' + lay"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
-                    @click="$set(featurePreviewLayout, block.blockType, lay)"
-                  >{{ $t('pw.option.' + lay) }}</button>
-                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -2067,16 +2035,6 @@
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
-                <span class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="lay in ['stacked', 'split']"
-                    :key="'fql-' + lay"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
-                    @click="$set(featurePreviewLayout, block.blockType, lay)"
-                  >{{ $t('kirbyblock-faq.section-layout.' + lay) }}</button>
-                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -5922,6 +5880,10 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+}
+/* the layout shown (featurelist, faq): after the variant */
+.pw-preview-switches .pw-preview-layout {
+  order: 1;
 }
 .pw-preview-column .pw-default-font-preview {
   margin-bottom: 0;

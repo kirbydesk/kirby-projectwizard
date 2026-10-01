@@ -8,16 +8,7 @@
           <!-- toolbar: the theme (the device follows the switch in the rows) -->
           <div class="pw-preview-switches">
           <!-- theme shown in the preview (shared with the colour switch) -->
-          <div class="pw-pill pw-preview-bp pw-preview-theme" role="group">
-            <button
-              v-for="theme in themes"
-              :key="'pt-' + theme"
-              type="button"
-              class="pw-tool"
-              :aria-pressed="colorTheme === theme ? 'true' : 'false'"
-              @click="colorTheme = theme"
-            >{{ $t('pw.option.' + theme) }}</button>
-          </div>
+          <pw-theme-select v-model="colorTheme" :themes="themes" class="pw-preview-theme" />
           <!-- guides on/off (shared by all previews) -->
           <div class="pw-pill pw-guides-switch" role="group">
             <button

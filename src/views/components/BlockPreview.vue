@@ -25,15 +25,20 @@
         </button>
       </div>
       <pw-device-select :value="bp" @input="$emit('update:bp', $event)" />
-      <div class="pw-pill pw-preview-bp pw-preview-theme" role="group">
-        <button
-          v-for="t in themes"
-          :key="'pt-' + t"
-          type="button"
-          class="pw-tool"
-          :aria-pressed="currentTheme === t ? 'true' : 'false'"
-          @click="$emit('update:variant', t)"
-        >{{ $t('pw.option.' + t) }}</button>
+      <pw-theme-select :value="currentTheme" :themes="themes" class="pw-preview-theme" @input="$emit('update:variant', $event)" />
+      <!-- featurelist, faq (design and elements tab): the layout shown, after
+           the variant (a view, not saved; at first the start value) -->
+      <div v-if="layoutSwitch" class="pw-preview-layout">
+        <div class="pw-pill pw-preview-theme" role="group">
+          <button
+            v-for="lay in ['stacked', 'split']"
+            :key="'pl-' + lay"
+            type="button"
+            class="pw-tool"
+            :aria-pressed="(featureLayout || setting('style', 'section-layout') || 'stacked') === lay ? 'true' : 'false'"
+            @click="$emit('update:feature-layout', lay)"
+          >{{ $t((isFaq ? 'kirbyblock-faq.section-layout.' : 'pw.option.') + lay) }}</button>
+        </div>
       </div>
     </div>
 
@@ -390,6 +395,8 @@ export default {
     designView: { type: Boolean, default: false },
     // the elements tab (the intro with a sample list, for its space below)
     elementsView: { type: Boolean, default: false },
+    // featurelist, faq: the switch of the layout shown (stacked, offset)
+    layoutSwitch: { type: Boolean, default: false },
     // the value whose row the pointer is over (guides on: its area tinted)
     highlight: { type: String, default: null },
     // the guides' colours of the open tab (value → "r, g, b"); a value
