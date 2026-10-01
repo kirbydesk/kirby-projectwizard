@@ -135,9 +135,11 @@ return [
 					}
 					$titles[] = $model->title()->value();
 					$pages[] = [
-						'title' => implode(' › ', $titles),
-						'count' => $count,
-						'link'  => $model->panel()->url(true),
+						'title'  => implode(' › ', $titles),
+						'count'  => $count,
+						'link'   => $model->panel()->url(true),
+						// (draft, unlisted, listed; the site: none)
+						'status' => $model instanceof \Kirby\Cms\Page ? $model->status() : null,
 					];
 				}
 

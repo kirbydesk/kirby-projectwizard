@@ -1089,6 +1089,30 @@
             />
           </div>
 
+          <!-- Usage: the pages that use the block (path of titles, status, how
+               often), each opens in the panel; loaded when the tab opens -->
+          <div v-show="currentBlockView === 'usage'" v-if="currentBlockView === 'usage' && activeTab === block.blockType">
+            <section class="pw-card-section">
+              <div class="pw-card pw-field-table">
+                <p v-if="!blockUsagePages[block.blockType]" class="pw-usage-empty">…</p>
+                <p v-else-if="!blockUsagePages[block.blockType].length" class="pw-usage-empty">{{ $t('prw.usage.none') }}</p>
+                <a
+                  v-for="page in blockUsagePages[block.blockType] || []"
+                  :key="page.link"
+                  :href="String($panel.url(page.link))"
+                  class="pw-field-row pw-usage-row"
+                  @click.prevent="$go(page.link)"
+                >
+                  <span class="pw-usage-status" :data-status="page.status || 'site'">
+                    <k-icon :type="page.status ? 'status-' + page.status : 'home'" />
+                  </span>
+                  <span class="pw-usage-title">{{ page.title }}</span>
+                  <span class="pw-usage-count">{{ page.count }}×</span>
+                </a>
+              </div>
+            </section>
+          </div>
+
           <!-- Elements: the values taken from Elements (the entries' type,
                the space below) – the block's own only by exception -->
           <div v-show="currentBlockView === 'elements'" v-if="blockConfigs[block.blockType] && hasElementsView(block.blockType)" :data-guide-scope="block.blockType + ':elements'">
@@ -2653,6 +2677,8 @@ export default {
       previewFont: null,
       // block type → number of uses in the project (loaded when the blocks dropdown opens)
       blockUsage: {},
+      // the usage tab: the pages per block (loaded when it opens)
+      blockUsagePages: {},
       showPreview: (() => { try { return localStorage.getItem('pw-wizard-preview') !== 'off'; } catch (e) { return true; } })(),
       // theme shown in the blocks' colour card and preview
       blocksColorTheme: 'default',
@@ -2999,10 +3025,11 @@ export default {
         ...(this.hasElementsView(this.activeTab) ? ['elements'] : []),
         'defaults',
         'presets',
+        'usage',
       ];
       // design: pencil and ruler, elements: the layers (as the Elements page), start values: the pen,
       // restrictions: the crossed-out eye
-      const icons = { design: 'prw-design', elements: 'layers', defaults: 'edit-line', presets: 'hidden' };
+      const icons = { design: 'prw-design', elements: 'layers', defaults: 'edit-line', presets: 'hidden', usage: 'list-bullet' };
       return views.map(name => ({
         name,
         icon: icons[name],
@@ -3151,6 +3178,9 @@ export default {
     },
   },
   watch: {
+    // the usage tab opened (or another block's): its pages fetched anew
+    currentBlockView(view) { if (view === 'usage') this.loadUsagePages(this.activeTab); },
+    activeTab(tab) { if (this.currentBlockView === 'usage') this.loadUsagePages(tab); },
     // remembered for the next visit
     itemBp(bp) {
       savePreviewBp(bp);
@@ -4792,6 +4822,14 @@ export default {
       this.$go('projectwizard');
     },
 
+    async loadUsagePages(blockType) {
+      if (!blockType || blockType === 'global') return;
+      try {
+        this.$set(this.blockUsagePages, blockType, await this.$api.get('projectwizard/blocks/usage/' + blockType));
+      } catch (e) {
+        this.$set(this.blockUsagePages, blockType, []);
+      }
+    },
     async loadBlockUsage() {
       try {
         this.blockUsage = await this.$api.get('projectwizard/blocks/usage');
@@ -5705,6 +5743,45 @@ export default {
   justify-content: flex-end;
   margin-inline: 0 calc(var(--button-padding) * -1);
   margin-bottom: 0;
+}
+/* the usage tab: one row per page – its status, its path of titles, how
+   often (right); the row opens the page */
+.pw-usage-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  min-height: var(--height-md);
+  color: var(--color-text);
+  text-decoration: none;
+}
+.pw-usage-row:hover {
+  background: var(--color-gray-100);
+}
+.pw-usage-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pw-usage-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+  font-variant-numeric: tabular-nums;
+}
+.pw-usage-status {
+  display: flex;
+  --icon-size: 14px;
+  color: var(--color-gray-500);
+}
+.pw-usage-status[data-status="draft"] { color: var(--color-red-500); }
+.pw-usage-status[data-status="unlisted"] { color: var(--color-blue-500); }
+.pw-usage-status[data-status="listed"] { color: var(--color-green-500); }
+.pw-usage-empty {
+  padding: var(--spacing-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-dimmed);
 }
 .pw-block-view-intro {
   margin-bottom: var(--spacing-8);
