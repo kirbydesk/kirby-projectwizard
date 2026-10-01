@@ -971,7 +971,7 @@ export default {
       const pad = this.itemValueAt('item-padding-y');
       const style = {
         ...this.entryTypography('text'),
-        color: this.elementColor('editor', 'element-editor-text'),
+        color: this.itemColor('item-answer') || this.elementColor('editor', 'element-editor-text'),
         paddingBottom: pad,
         marginTop: 'calc(' + (this.itemValue('item-answer-gap') || '0rem') + ' - ' + pad + ')',
       };

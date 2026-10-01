@@ -2003,7 +2003,7 @@
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['item-question']"
+                  :show-only="['item-question', 'item-answer']"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
