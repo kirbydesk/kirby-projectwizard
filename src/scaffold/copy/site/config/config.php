@@ -1,37 +1,48 @@
 <?php
 
-/** Env variable settings -------------------------------------------------------------*/
-$env = [];
-$envFile = __DIR__ . '/../../.env';
-if (file_exists($envFile)) {
-	foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-		if (str_starts_with(trim($line), '#')) continue;
-		[$key, $value] = array_pad(explode('=', $line, 2), 2, '');
-		$env[trim($key)] = trim($value);
-	}
-}
-
+/**
+ * Project configuration (from the Project Wizard's scaffold).
+ * Host-specific settings (debug, mail …) live in config.{host}.php; the API
+ * keys of the AI plugins live in the project's .env, managed in the Project
+ * Wizard – the plugins read them from there.
+ */
 return [
 
-	/** Panel settings -------------------------------------------------------------*/
-	'panel' =>[
+	/** Panel ------------------------------------------------------------------------*/
+	'panel' => [
 		'install' => true,
-		'css' => 'assets/css/panel.min.css'
+		'css'     => 'assets/css/panel.min.css',
 	],
 
-	/** Language settings -------------------------------------------------------------*/
+	/** Languages --------------------------------------------------------------------*/
 	'languages' => true,
 
-	/** PLUGIN: Kirby Pagewizard ----------------------------------------*/
-	'kirbydesk.pagewizard.protected' => '',
-	'ready' => fn($kirby) => [
-		'kirbydesk.pagewizard.reloadOnSave' => $kirby->user() !== null,
-	],
-
-	/** Disable update checks for kirbydesk plugins (not on Kirby marketplace) */
+	/** Updates: no update checks for kirbydesk plugins (not on the Kirby marketplace) */
 	'updates' => [
 		'plugins' => [
 			'kirbydesk/*' => false,
+		],
+	],
+
+	/** PLUGIN: Kirby Pagewizard -----------------------------------------------------*/
+	'kirbydesk.pagewizard.protected' => '',
+
+	/** Set once all plugins are loaded ---------------------------------------------*/
+	'ready' => fn ($kirby) => [
+		'kirbydesk.pagewizard.reloadOnSave' => $kirby->user() !== null,
+
+		// the buttons above a page and the site: the AI buttons only with
+		// their plugins installed
+		'panel' => [
+			'viewButtons' => [
+				'page' => array_values(array_filter([
+					'open', '-', 'settings',
+					$kirby->plugin('kirbydesk/kirby-contentwizard') ? 'contentwizard' : null,
+					$kirby->plugin('kirbydesk/kirby-translatewizard') ? 'translatewizard' : null,
+					'languages', 'status',
+				])),
+				'site' => ['open', 'languages'],
+			],
 		],
 	],
 ];
