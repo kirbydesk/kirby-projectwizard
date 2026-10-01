@@ -430,7 +430,8 @@
                 <k-toggles-input
                   v-else-if="field.type === 'select'"
                   :value="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)"
-                  :options="field.options.map(o => ({ value: o, text: itemOptionLabel(field, o) }))"
+                  :options="field.options.map(o => ({ value: o, text: itemOptionLabel(field, o), icon: field.icons ? field.icons[o] : undefined }))"
+                  :labels="!field.icons"
                   :grow="false"
                   :required="field.emptyValue === undefined"
                   @input="setVal('settings.fields.layout.' + field.key + '.default', ($event === null || $event === '') && field.emptyValue !== undefined ? field.emptyValue : $event)"
@@ -713,6 +714,9 @@ export default {
             defaultValue: settingVal.default !== undefined ? settingVal.default : settingVal.options[0],
             // the value when nothing is chosen (optional: then it may stay empty)
             emptyValue: settingVal.empty,
+            // (optional: an icon per option instead of its text, the text then
+            // its tooltip)
+            icons: this.isObject(settingVal.icons) ? settingVal.icons : null,
           });
           continue;
         }
