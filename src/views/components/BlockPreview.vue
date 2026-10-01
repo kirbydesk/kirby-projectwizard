@@ -1461,7 +1461,11 @@ export default {
     // a value of the entries: the block's own (switched on: item-entry own),
     // else the global items' (Elements › Items), at the shown device
     entryValue(name) {
-      if (this.setting('layout', 'item-entry') === 'own') {
+      // (the title's and the description's own values each on their own; an
+      // older project: one switch for both)
+      const part = name.startsWith('item-text-') ? 'text' : 'title';
+      const own = this.setting('layout', 'item-entry-' + part) || this.setting('layout', 'item-entry');
+      if (own === 'own') {
         const ov = (this.valueOverrides || {})[name];
         if (ov && typeof ov === 'object') { if (ov[this.bp]) return ov[this.bp]; } else if (ov) return ov;
         for (const group of Object.values(this.valueDefaults || {})) {

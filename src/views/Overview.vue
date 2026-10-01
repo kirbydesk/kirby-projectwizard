@@ -1199,12 +1199,12 @@
                   :config="blockConfigs[block.blockType]"
                   :overrides="blockOverrides[block.blockType] || {}"
                   :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-entry']"
+                  :layout-keys="['item-entry-' + part.key]"
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
                 <!-- standard: the global values, grey (not editable here) -->
-                <template v-if="itemLayoutDefault(block.blockType, 'item-entry') !== 'own'">
+                <template v-if="itemLayoutDefault(block.blockType, 'item-entry-' + part.key) !== 'own'">
                   <div v-for="name in part.rows" :key="'ge-' + name" class="pw-field-row is-readonly" :data-guide="previewGuides && name === 'item-title-spacing' ? 'gap-4' : null">
                     <div class="k-input" data-type="text">
                       <span class="k-input-element pw-field-row-inner">
@@ -3618,13 +3618,14 @@ export default {
     },
     // own values of the entries switched on: values not set yet take the
     // global items' (responsive ones per device)
-    seedOwnEntry(blockType) {
+    seedOwnEntry(blockType, part) {
       const ov = JSON.parse(JSON.stringify(this.blockValueOverrides[blockType] || {}));
       const ownVars = {};
       for (const g of Object.values(this.blockValueDefaults[blockType] || {})) Object.assign(ownVars, (g && g.vars) || {});
       const eo = this.elementOverrides.global || {};
       let changed = false;
       for (const name of ['item-title-font-size', 'item-title-line-height', 'item-text-font-size', 'item-title-spacing']) {
+        if (part && (name.startsWith('item-text-') ? 'text' : 'title') !== part) continue;
         const def = this.elementDefaults.item?.vars?.[name];
         if (!ownVars[name] || !def || ov[name] !== undefined) continue;
         if (def.default !== undefined) {
@@ -4689,8 +4690,11 @@ export default {
       // own space below switched on: start from the elements' current values
       const spacing = overrides?.settings?.fields?.layout?.['item-spacing']?.default;
       if (spacing === 'own' && this.blockValueDefaults[blockType]) this.seedOwnSpacing(blockType);
-      const entry = overrides?.settings?.fields?.layout?.['item-entry']?.default;
-      if (entry === 'own' && this.blockValueDefaults[blockType]) this.seedOwnEntry(blockType);
+      // (the title's and the description's own values each on their own)
+      for (const part of ['title', 'text']) {
+        const entry = overrides?.settings?.fields?.layout?.['item-entry-' + part]?.default;
+        if (entry === 'own' && this.blockValueDefaults[blockType]) this.seedOwnEntry(blockType, part);
+      }
       const current = JSON.stringify(overrides);
       const snapshot = this.snapshots[blockType] || '{}';
       this.$set(this.dirtyTabs, blockType, current !== snapshot);

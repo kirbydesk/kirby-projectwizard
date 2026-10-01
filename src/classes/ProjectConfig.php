@@ -268,7 +268,18 @@ class ProjectConfig
 	public static function loadBlockOverrides(string $blockType): array
 	{
 		$allOverrides = pwConfig::readJson(self::overridesFile());
-		return $allOverrides[$blockType] ?? [];
+		$own = $allOverrides[$blockType] ?? [];
+		// (an older project: one switch for the entries' values – now one for
+		// the title and one for the description; saved so on the next save)
+		$layout = $own['settings']['fields']['layout'] ?? null;
+		if (is_array($layout) && isset($layout['item-entry'])) {
+			foreach (['item-entry-title', 'item-entry-text'] as $key) {
+				if (!isset($layout[$key])) $layout[$key] = $layout['item-entry'];
+			}
+			unset($layout['item-entry']);
+			$own['settings']['fields']['layout'] = $layout;
+		}
+		return $own;
 	}
 
 	/**
