@@ -1389,7 +1389,7 @@
                 <pw-block-values
                   :bp.sync="itemBp"
                   :labels="{ 'item-gap': $t('prw.label.betweenSteps') }"
-                  :guides="previewGuides ? { 'item-gap': 'margin', 'item-text-gap': 'text' } : null"
+                  :guides="previewGuides ? { 'item-gap': 'margin', 'item-text-gap': 'gap-5' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1543,7 +1543,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -1800,7 +1800,7 @@
                 <pw-block-values
                   v-if="currentFeatureLayout(block.blockType) !== 'split' || itemBp === 'default'"
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2094,7 +2094,7 @@
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
                   :show-only="['item-text-gap']"
-                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
                   :hide-section-headers="true"
                   @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
                   @hover-var="hoveredVar = $event"
@@ -2537,7 +2537,7 @@
                 />
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"
@@ -2560,7 +2560,7 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :guides="previewGuides ? { 'item-text-gap': 'text' } : null"
+                  :guides="previewGuides ? { 'item-text-gap': 'gap-5' } : null"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
                   :overrides="blockValueOverrides[block.blockType] || {}"

@@ -81,14 +81,24 @@
           <!-- media: a sample image (as in the element's preview) with the
                element's corner radii -->
           <!-- guides: the gap to the intro (as the cardlets') -->
-          <div v-if="isMedia && hasField('media') && guides && mediaTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: mediaTextGap }"></div>
+          <!-- guides: the gap to the intro – the intro's last element's space
+               below (in its colour), then the block's enlargement (orange) -->
+          <template v-if="isMedia && hasField('media') && guides && mediaTextGap">
+            <div v-if="introGapParts('media').space" class="pw-space-band" :class="['is-' + introGapParts('media').prev, { 'is-hot': highlight === introGapParts('media').prev + '-spacing' }]" :style="{ height: introGapParts('media').space }"></div>
+            <div v-if="introGapParts('media').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('media').more }"></div>
+          </template>
           <div v-if="isMedia && hasField('media')" class="pw-media-preview-img pw-media-preview-photo" :style="mediaStyle"></div>
           <!-- logocloud: four sample logos, two by two (so the gap shows
                between the columns and between the rows), shrinking in a
                narrow preview -->
           <!-- guides: the gap to the text as an element of its own, a cyan line
                above (end of the text) and below (start of the logos) -->
-          <div v-if="isLogocloud && guides && logosTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: logosTextGap }"></div>
+          <!-- guides: the gap to the intro – the intro's last element's space
+               below (in its colour), then the block's enlargement (orange) -->
+          <template v-if="isLogocloud && guides && logosTextGap">
+            <div v-if="introGapParts('logos').space" class="pw-space-band" :class="['is-' + introGapParts('logos').prev, { 'is-hot': highlight === introGapParts('logos').prev + '-spacing' }]" :style="{ height: introGapParts('logos').space }"></div>
+            <div v-if="introGapParts('logos').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('logos').more }"></div>
+          </template>
           <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible, 'is-hot-gap': highlight === 'item-gap', 'is-hot-row-gap': highlight === 'item-row-gap' }" :style="logosStyle">
             <div
               v-for="(logo, index) in dummyLogos"
@@ -118,7 +128,12 @@
           </div>
           <!-- cardlets: two cards (image, tagline, heading, text, link) as in its snippet -->
           <!-- guides: the gap to the intro, between the cards (as the featurelist's) -->
-          <div v-if="isCardlets && guides && cardTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: cardTextGap }"></div>
+          <!-- guides: the gap to the intro – the intro's last element's space
+               below (in its colour), then the block's enlargement (orange) -->
+          <template v-if="isCardlets && guides && cardTextGap">
+            <div v-if="introGapParts('items').space" class="pw-space-band" :class="['is-' + introGapParts('items').prev, { 'is-hot': highlight === introGapParts('items').prev + '-spacing' }]" :style="{ height: introGapParts('items').space }"></div>
+            <div v-if="introGapParts('items').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('items').more }"></div>
+          </template>
           <div v-if="isCardlets" class="pw-cardlets-items pw-featurelist-items" :class="{ 'is-row': cardColumns > 1 }" :style="cardItemsStyle">
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'card-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="cardColumns > 1 ? { width: itemValueAt('item-gap') } : { height: itemValueAt('item-gap') }"></span>
@@ -184,7 +199,12 @@
                side – between the features cyan, icon and text violet, title
                and text gold; the tile's padding magenta -->
           <!-- guides: the gap to the text as an element of its own -->
-          <div v-if="isFeaturelist && guides && featureTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: featureTextGap }"></div>
+          <!-- guides: the gap to the intro – the intro's last element's space
+               below (in its colour), then the block's enlargement (orange) -->
+          <template v-if="isFeaturelist && guides && featureTextGap">
+            <div v-if="introGapParts('items').space" class="pw-space-band" :class="['is-' + introGapParts('items').prev, { 'is-hot': highlight === introGapParts('items').prev + '-spacing' }]" :style="{ height: introGapParts('items').space }"></div>
+            <div v-if="introGapParts('items').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('items').more }"></div>
+          </template>
           <div v-if="isFeaturelist" class="pw-featurelist-items" :class="{ 'has-guides': guides, 'is-row': featureColumns > 1 }" :style="featureItemsStyle">
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'feature-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="featureGapStyle"></span>
@@ -209,7 +229,12 @@
           <!-- faq: three sample questions, the first open (always open: all),
                in the style shown (lines or cards) -->
           <!-- guides: the gap to the intro as an element of its own -->
-          <div v-if="isFaq && guides && faqTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: faqTextGap }"></div>
+          <!-- guides: the gap to the intro – the intro's last element's space
+               below (in its colour), then the block's enlargement (orange) -->
+          <template v-if="isFaq && guides && faqTextGap">
+            <div v-if="introGapParts('items').space" class="pw-space-band" :class="['is-' + introGapParts('items').prev, { 'is-hot': highlight === introGapParts('items').prev + '-spacing' }]" :style="{ height: introGapParts('items').space }"></div>
+            <div v-if="introGapParts('items').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('items').more }"></div>
+          </template>
           <div v-if="isFaq" class="pw-faq-preview" :style="faqListStyle">
             <div v-for="n in 3" :key="'faq-' + n" class="pw-faq-item" :style="faqItemStyle(n)">
               <!-- guides (cards): the padding left and right -->
@@ -233,7 +258,12 @@
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the steps cyan, between number and text violet -->
           <!-- guides: the gap to the intro (as the cardlets') -->
-          <div v-if="isSteplist && guides && stepTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: stepTextGap }"></div>
+          <!-- guides: the gap to the intro – the intro's last element's space
+               below (in its colour), then the block's enlargement (orange) -->
+          <template v-if="isSteplist && guides && stepTextGap">
+            <div v-if="introGapParts('items').space" class="pw-space-band" :class="['is-' + introGapParts('items').prev, { 'is-hot': highlight === introGapParts('items').prev + '-spacing' }]" :style="{ height: introGapParts('items').space }"></div>
+            <div v-if="introGapParts('items').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('items').more }"></div>
+          </template>
           <div v-if="isSteplist" class="pw-steplist-items" :class="{ 'has-guides': guides, 'is-row': stepColumns > 1 }" :style="stepItemsStyle">
             <template v-for="n in stepCount">
             <span v-if="guides && n > 1" :key="'step-gap-' + n" class="pw-steplist-step-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="stepStepGapStyle"></span>
@@ -1442,6 +1472,15 @@ export default {
     // the gap between the intro and what follows it (entries, logos, media):
     // the space below the intro's last element plus the block's own
     // enlargement (as the frontend: its padding above them)
+    // its two parts, for the guides: the last element and its space below,
+    // the enlargement (none: 0)
+    introGapParts(field) {
+      const idx = this.fields.indexOf(field);
+      const prev = idx > 0 ? this.fields[idx - 1] : '';
+      const space = ['tagline', 'heading', 'editor'].includes(prev) ? this.spaceAfter(prev) : '';
+      const more = this.itemValue('item-text-gap');
+      return { prev, space, more: more && parseFloat(more) !== 0 ? more : '' };
+    },
     introGap(field) {
       const idx = this.fields.indexOf(field);
       if (idx <= 0) return 0;
@@ -2116,7 +2155,7 @@ export default {
   display: none;
 }
 /* a value's row hovered (guides on): its area tinted in its colour */
-.pw-logocloud-text-gap.is-hot::before { background: rgba(255, 140, 0, 0.15); }
+.pw-logocloud-text-gap.is-hot::before { background: rgba(0, 150, 136, 0.15); }
 .pw-logocloud-gap.is-column.is-hot,
 .pw-steplist-step-gap.is-hot { background: rgba(0, 170, 255, 0.15); }
 .pw-logocloud-gap.is-row.is-hot { background: rgba(130, 80, 255, 0.18); }
@@ -2127,12 +2166,14 @@ export default {
 .pw-logocloud-text-gap {
   position: relative;
 }
+/* the enlargement of the gap to the intro: petrol (the text's own space
+   below is orange) */
 .pw-logocloud-text-gap::before {
   content: "";
   position: absolute;
   inset: 0 -100vw;
   box-sizing: border-box;
-  border-block: 1px solid rgba(255, 140, 0, 0.9);
+  border-block: 1px solid rgba(0, 150, 136, 0.9);
   pointer-events: none;
 }
 /* flexible (the logos wrap freely): the gaps shown at each tile's outer
