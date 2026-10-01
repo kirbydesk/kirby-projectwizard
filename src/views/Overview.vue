@@ -1096,19 +1096,42 @@
               <div class="pw-card pw-field-table">
                 <p v-if="!blockUsagePages[block.blockType]" class="pw-usage-empty">…</p>
                 <p v-else-if="!blockUsagePages[block.blockType].length" class="pw-usage-empty">{{ $t('prw.usage.none') }}</p>
-                <a
+                <!-- a page: its row (the arrow opens its blocks' previews, the
+                     title the page), below it – opened – the previews, loaded
+                     then (and kept) -->
+                <div
                   v-for="page in blockUsagePages[block.blockType] || []"
                   :key="page.link"
-                  :href="String($panel.url(page.link))"
-                  class="pw-field-row pw-usage-row"
-                  @click.prevent="$go(page.link)"
+                  class="pw-field-row pw-usage-page"
+                  :class="{ 'is-open': usageOpen[block.blockType + ':' + page.id] }"
                 >
-                  <span class="pw-usage-status" :data-status="page.status || 'site'">
-                    <k-icon :type="page.status ? 'status-' + page.status : 'home'" />
-                  </span>
-                  <span class="pw-usage-title">{{ page.title }}</span>
-                  <span class="pw-usage-count">{{ page.count }}×</span>
-                </a>
+                  <div class="pw-usage-row">
+                    <button
+                      type="button"
+                      class="pw-usage-toggle"
+                      :aria-expanded="usageOpen[block.blockType + ':' + page.id] ? 'true' : 'false'"
+                      @click="toggleUsagePage(block.blockType, page.id)"
+                    >
+                      <k-icon type="angle-right" />
+                    </button>
+                    <span class="pw-usage-status" :data-status="page.status || 'site'">
+                      <k-icon :type="page.status ? 'status-' + page.status : 'home'" />
+                    </span>
+                    <a :href="String($panel.url(page.link))" class="pw-usage-title" @click.prevent="$go(page.link)">{{ page.title }}</a>
+                    <span class="pw-usage-count">{{ page.count }}×</span>
+                  </div>
+                  <div v-if="usageOpen[block.blockType + ':' + page.id]" class="pw-usage-blocks">
+                    <p v-if="!usageBlocks[block.blockType + ':' + page.id]" class="pw-usage-empty">…</p>
+                    <div
+                      v-for="item in usageBlocks[block.blockType + ':' + page.id] || []"
+                      :key="item.id"
+                      class="pw-usage-block"
+                      :class="{ 'is-hidden': item.isHidden }"
+                    >
+                      <pw-block-panel-preview :type="block.blockType" :content="item.content" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
           </div>
@@ -2679,6 +2702,9 @@ export default {
       blockUsage: {},
       // the usage tab: the pages per block (loaded when it opens)
       blockUsagePages: {},
+      // the usage tab: the pages opened ("type:page" → on) and their blocks
+      usageOpen: {},
+      usageBlocks: {},
       showPreview: (() => { try { return localStorage.getItem('pw-wizard-preview') !== 'off'; } catch (e) { return true; } })(),
       // theme shown in the blocks' colour card and preview
       blocksColorTheme: 'default',
@@ -4822,6 +4848,16 @@ export default {
       this.$go('projectwizard');
     },
 
+    async toggleUsagePage(blockType, id) {
+      const key = blockType + ':' + id;
+      this.$set(this.usageOpen, key, !this.usageOpen[key]);
+      if (!this.usageOpen[key] || this.usageBlocks[key]) return;
+      try {
+        this.$set(this.usageBlocks, key, await this.$api.get('projectwizard/blocks/usage/' + blockType + '/page/' + id));
+      } catch (e) {
+        this.$set(this.usageBlocks, key, []);
+      }
+    },
     async loadUsagePages(blockType) {
       if (!blockType || blockType === 'global') return;
       try {
@@ -5744,8 +5780,11 @@ export default {
   margin-inline: 0 calc(var(--button-padding) * -1);
   margin-bottom: 0;
 }
-/* the usage tab: one row per page – its status, its path of titles, how
-   often (right); the row opens the page */
+/* the usage tab: one row per page – the arrow (its blocks), its status,
+   its path of titles (opens the page), how often (right) */
+.pw-field-table .pw-usage-page {
+  display: block;
+}
 .pw-field-table .pw-usage-row {
   display: flex;
   align-items: center;
@@ -5755,8 +5794,47 @@ export default {
   color: var(--color-text);
   text-decoration: none;
 }
-.pw-field-table .pw-usage-row:hover {
+.pw-usage-title {
+  color: inherit;
+  text-decoration: none;
+}
+.pw-usage-title:hover {
+  text-decoration: underline;
+}
+.pw-usage-toggle {
+  display: flex;
+  margin-inline-start: calc(var(--spacing-1) * -1);
+  padding: 2px;
+  color: var(--color-text-dimmed);
+  border-radius: var(--rounded-sm);
+}
+.pw-usage-toggle:hover {
+  color: var(--color-text);
   background: var(--color-gray-100);
+}
+.pw-usage-toggle .k-icon {
+  --icon-size: 14px;
+  transition: transform 0.15s ease;
+}
+.pw-usage-page.is-open .pw-usage-toggle .k-icon {
+  transform: rotate(90deg);
+}
+/* opened: the blocks' previews below each other, as on the page */
+.pw-usage-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: 0 var(--spacing-3) var(--spacing-3);
+}
+.pw-usage-block {
+  overflow: hidden;
+  border-radius: var(--rounded);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+/* a hidden block: faded, as in the panel */
+.pw-usage-block.is-hidden {
+  opacity: 0.4;
 }
 .pw-usage-title {
   flex: 1;

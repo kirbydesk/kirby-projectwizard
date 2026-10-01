@@ -159,10 +159,52 @@ return [
 						'link'   => $model->panel()->url(true) . ($tab ? '?tab=' . $tab : ''),
 						// (draft, unlisted, listed; the site: none)
 						'status' => $model instanceof \Kirby\Cms\Page ? $model->status() : null,
+						// (for its blocks, loaded when its row opens)
+						'id'     => $model instanceof \Kirby\Cms\Page ? $model->id() : 'site',
 					];
 				}
 
 				return $pages;
+			}
+		],
+		// The blocks of one type on one page (the usage tab, a row opened): as
+		// the panel has them (files as objects), for their panel preview
+		[
+			'pattern' => 'projectwizard/blocks/usage/(:any)/page/(:all)',
+			'action'  => function (string $blockType, string $id) {
+				$kirby = kirby();
+				$lang  = $kirby->multilang() ? $kirby->defaultLanguage()->code() : null;
+				$model = $id === 'site' ? $kirby->site() : ($kirby->page($id) ?? $kirby->site()->index(true)->findBy('id', $id));
+				if ($model === null) return [];
+
+				$found = [];
+				$collect = function (array $blocks) use (&$found, $blockType): void {
+					foreach ($blocks as $block) {
+						if (is_array($block) && ($block['type'] ?? null) === $blockType) {
+							$found[] = [
+								'id'       => $block['id'] ?? null,
+								'content'  => $block['content'] ?? [],
+								'isHidden' => !empty($block['isHidden']),
+							];
+						}
+					}
+				};
+
+				$form = \Kirby\Form\Form::for($model, language: $lang);
+				foreach ($form->fields() as $field) {
+					if (!in_array($field->type(), ['blocks', 'layout', 'pwblocks'], true)) continue;
+					$value = $field->toFormValue();
+					if (!is_array($value)) continue;
+					foreach ($value as $entry) {
+						// layout field: rows → columns → blocks
+						if (is_array($entry) && isset($entry['columns'])) {
+							foreach ($entry['columns'] as $column) $collect($column['blocks'] ?? []);
+						}
+					}
+					$collect($value);
+				}
+
+				return $found;
 			}
 		],
 		// List all detected blocks with their defaults and current overrides
