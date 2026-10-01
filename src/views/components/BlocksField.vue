@@ -32,7 +32,20 @@
           size="xs"
           @click="$refs.device.toggle()"
         />
-        <k-dropdown-content ref="device" :options="deviceOptions" align-x="end" />
+        <!-- (its entries by hand: the width grey on the right, as Kirby's
+             other menus show additional info) -->
+        <k-dropdown-content ref="device" align-x="end" class="pw-size-menu">
+          <k-dropdown-item
+            v-for="option in deviceOptions"
+            :key="option.value"
+            :current="option.current"
+            :disabled="option.disabled"
+            :title="option.title"
+            @click="chooseDevice(option.value)"
+          >
+            {{ option.text }}<span class="pw-size-width">{{ option.width }}</span>
+          </k-dropdown-item>
+        </k-dropdown-content>
         <k-button-group layout="collapsed">
           <k-button
             :autofocus="autofocus"
@@ -88,12 +101,15 @@ export default {
     // the menu's entries (a list: Kirby calls an options function with a
     // callback); the one shown marked
     deviceOptions() {
+      const widths = { default: '< 640 px', sm: '> 640 px', md: '> 768 px', lg: '> 1024 px', xl: '> 1280 px' };
       return PANEL_SIZES.map(bp => ({
-        text: this.deviceLabel(bp),
+        value: bp,
+        text: this.deviceCode(bp),
+        width: widths[bp],
+        title: this.deviceLabel(bp),
         current: this.device === bp,
         // (wider than the window: greyed out until it is wide enough)
         disabled: !deviceFits(bp),
-        click: () => setPreviewDevice(bp),
       }));
     },
     gridLines() {
@@ -128,6 +144,10 @@ export default {
     });
   },
   methods: {
+    chooseDevice(bp) {
+      setPreviewDevice(bp);
+      this.$refs.device.close();
+    },
     toggleGridLines() {
       setGridLines(!this.gridLines);
     },
@@ -142,6 +162,15 @@ export default {
 </script>
 
 <style>
+.pw-size-menu .k-button-text {
+  flex: 1;
+  display: flex;
+}
+.pw-size-menu .pw-size-width {
+  margin-inline-start: auto;
+  padding-inline-start: var(--spacing-6);
+  color: var(--color-text-dimmed);
+}
 .pw-blocks-field-options {
   display: flex;
   align-items: center;
