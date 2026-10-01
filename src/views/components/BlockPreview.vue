@@ -212,9 +212,10 @@
             <div v-for="n in 3" :key="'faq-' + n" class="pw-faq-item" :style="faqItemStyle(n)">
               <!-- guides (cards): the padding left and right -->
               <span v-if="guides && currentFaqStyle === 'cards'" class="pw-faq-pad-x" :class="{ 'is-hot': highlight === 'item-padding-x' }" :style="{ inset: '0 ' + itemValueAt('item-padding-x') }"></span>
+              <!-- guides: the entry's padding above and below (the question,
+                   with its answer when open) -->
+              <span v-if="guides" class="pw-faq-pad-y" :class="{ 'is-hot': highlight === 'item-padding-y' }" :style="{ inset: itemValueAt('item-padding-y') + ' 0' }"></span>
               <div class="pw-faq-summary" :style="faqSummaryStyle">
-                <!-- guides: the padding above and below the question -->
-                <span v-if="guides" class="pw-faq-pad-y" :class="{ 'is-hot': highlight === 'item-padding-y' }" :style="{ inset: itemValueAt('item-padding-y') + ' 0' }"></span>
                 <div :style="faqQuestionStyle">{{ faqSampleQuestion(n) }}</div>
                 <span v-if="faqIconSvg && !faqAlwaysOpen" class="pw-faq-icon" :class="{ 'is-open': faqOpen(n) }" :data-kind="faqIconKind" :style="faqIconStyle(faqOpen(n))" v-html="faqIconSvg"></span>
               </div>
@@ -871,18 +872,11 @@ export default {
     },
     // the question's row: the question and the icon (left: before it)
     faqSummaryStyle() {
-      const pad = this.itemValueAt('item-padding-y');
-      // (its padding hovered: tinted above and below)
-      const tint = this.guides && this.highlight === 'item-padding-y'
-        ? 'inset 0 ' + pad + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + pad + ') 0 0 rgba(0, 180, 90, 0.18)'
-        : null;
       // (the icon in the middle of the entry: its room kept free in the row)
       const room = this.setting('layout', 'item-icon-align') === 'item' && this.faqIconSvg && !this.faqAlwaysOpen
         ? 'calc(' + this.itemValueAt('item-icon-size') + ' + ' + this.itemValue('item-icon-gap') + ')'
         : null;
       return {
-        position: 'relative',
-        boxShadow: tint,
         [this.setting('layout', 'item-icon-position') === 'left' ? 'paddingLeft' : 'paddingRight']: room,
         display: 'flex',
         // (the icon on the question's first line: at the top)
@@ -1519,15 +1513,20 @@ export default {
     },
     // a question: lines between them, or each a card
     faqItemStyle(n) {
+      // (a padding hovered: tinted on its two sides – above and below the
+      // entry green, left and right of a card magenta)
+      const padY = this.itemValueAt('item-padding-y');
+      const tintY = this.guides && this.highlight === 'item-padding-y'
+        ? 'inset 0 ' + padY + ' 0 0 rgba(0, 180, 90, 0.18), inset 0 calc(-1 * ' + padY + ') 0 0 rgba(0, 180, 90, 0.18)'
+        : null;
       if (this.currentFaqStyle === 'cards') {
         const r = this.setting('layout', 'item-shape') === 'square' ? [] : (this.itemValue('item-radius') || []);
         const padX = this.itemValueAt('item-padding-x');
         return {
           position: 'relative',
-          // (its padding hovered: tinted left and right)
           boxShadow: this.guides && this.highlight === 'item-padding-x'
             ? 'inset ' + padX + ' 0 0 0 rgba(255, 0, 170, 0.18), inset calc(-1 * ' + padX + ') 0 0 0 rgba(255, 0, 170, 0.18)'
-            : null,
+            : tintY,
           backgroundColor: this.itemColor('item-background'),
           paddingLeft: this.itemValueAt('item-padding-x'),
           paddingRight: this.itemValueAt('item-padding-x'),
@@ -1535,9 +1534,9 @@ export default {
         };
       }
       if (n > 1 && this.setting('layout', 'item-divider') !== 'disabled') {
-        return { position: 'relative', borderTop: (this.itemValue('item-divider-width') || '1px') + ' solid ' + this.itemColor('item-divider') };
+        return { position: 'relative', boxShadow: tintY, borderTop: (this.itemValue('item-divider-width') || '1px') + ' solid ' + this.itemColor('item-divider') };
       }
-      return { position: 'relative' };
+      return { position: 'relative', boxShadow: tintY };
     },
     // the icon: its size and colour, turned when open (a chevron down; a
     // plus loses its vertical line)
