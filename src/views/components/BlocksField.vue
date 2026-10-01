@@ -105,7 +105,7 @@ export default {
     // the menu's entries (a list: Kirby calls an options function with a
     // callback); the one shown marked
     deviceOptions() {
-      const widths = { default: '', sm: '> 640 px', md: '> 768 px', lg: '> 1024 px', xl: '> 1280 px' };
+      const widths = { default: '', sm: '≥ 640 px', md: '≥ 768 px', lg: '≥ 1024 px', xl: '≥ 1280 px' };
       return PANEL_SIZES.map(bp => ({
         value: bp,
         text: this.deviceCode(bp),
