@@ -356,8 +356,14 @@ export default {
       const color = 'color-mix(in srgb, ' + (this.itemColor('overlay') || '#000000') + ' ' + strength + '%, transparent)';
       if (type === 'solid') return { inset: 0, background: color };
       const side = this.content.overlayposition || 'left';
-      const size = { small: '25%', medium: '50%', large: '75%', xlarge: '100%' }[this.content.overlaysize] || '50%';
+      // its size: the range, else the former steps
+      const own = parseInt(this.content.overlaywidth, 10);
+      const size = (isNaN(own) ? { small: 25, medium: 50, large: 75, xlarge: 100 }[this.content.overlaysize] || 50 : own) + '%';
       const across = side === 'left' || side === 'right';
+      // full strength over its first 35 %, then easing out in steps
+      const base = this.itemColor('overlay') || '#000000';
+      const stops = [[1, 0], [1, 35], [0.85, 45], [0.62, 55], [0.4, 65], [0.2, 75], [0.07, 87]]
+        .map(([k, at]) => 'color-mix(in srgb, ' + base + ' ' + (strength * k) + '%, transparent) ' + at + '%');
       return {
         top: side === 'bottom' ? 'auto' : 0,
         bottom: side === 'top' ? 'auto' : 0,
@@ -365,7 +371,7 @@ export default {
         right: side === 'left' ? 'auto' : 0,
         width: across ? size : '100%',
         height: across ? '100%' : size,
-        background: 'linear-gradient(to ' + { left: 'right', right: 'left', top: 'bottom', bottom: 'top' }[side] + ', ' + color + ', transparent)',
+        background: 'linear-gradient(to ' + { left: 'right', right: 'left', top: 'bottom', bottom: 'top' }[side] + ', ' + stops.join(', ') + ', transparent 100%)',
       };
     },
     // the logocloud's logos (its files field)

@@ -31,6 +31,8 @@ export default {
   props: {
     // the block whose overlay colour it shows (pwcardlets …)
     block: { type: String, default: '' },
+    // the colour's name in its values (cards: item-overlay, hero: overlay)
+    swatch: { type: String, default: 'item-overlay' },
   },
   computed: {
     blockData() {
@@ -55,10 +57,10 @@ export default {
     overlayColor() {
       const b = this.blockData;
       if (!b) return '#000000';
-      const own = ((b.valueOverrides || {})[this.theme] || {})['item-overlay'];
+      const own = ((b.valueOverrides || {})[this.theme] || {})[this.swatch];
       if (own) return own;
       for (const group of Object.values(b.valueDefaults || {})) {
-        if (group && group.colors && group.colors['item-overlay']) return group.colors['item-overlay'][this.theme] || '#000000';
+        if (group && group.colors && group.colors[this.swatch]) return group.colors[this.swatch][this.theme] || '#000000';
       }
       return '#000000';
     },
