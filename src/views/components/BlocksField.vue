@@ -12,12 +12,12 @@
     <template v-if="!disabled && hasFieldsets" #options>
       <div class="pw-blocks-field-options">
         <!-- the grid's twelve columns over all blocks (magenta), on/off;
-             XS has no grid: no button -->
+             XS has no grid: greyed out, not pink even when switched on -->
         <k-button
-          v-if="device !== 'default'"
           :title="$t('prw.panel.gridlines')"
           :aria-pressed="gridLines ? 'true' : 'false'"
-          :theme="gridLines ? 'pink' : null"
+          :disabled="device === 'default'"
+          :theme="gridLines && device !== 'default' ? 'pink' : null"
           icon="prw-guides"
           variant="filled"
           size="xs"
