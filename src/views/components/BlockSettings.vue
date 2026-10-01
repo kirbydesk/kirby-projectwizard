@@ -1749,9 +1749,10 @@ export default {
   cursor: pointer;
 }
 
+/* the icons as one bar: shared borders, rounded only at its ends */
 .pw-icon-select {
   display: flex;
-  gap: var(--spacing-1);
+  gap: 0;
 }
 .pw-icon-select .pw-icon-option {
   width: 28px;
@@ -1760,11 +1761,19 @@ export default {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
-  border-radius: var(--rounded);
+  border-radius: 0;
+  margin-left: -1px;
   background: light-dark(var(--color-white), var(--color-gray-850));
   color: var(--color-text-dimmed);
   cursor: pointer;
   padding: 0;
+}
+.pw-icon-select .pw-icon-option:first-child {
+  margin-left: 0;
+  border-radius: var(--rounded) 0 0 var(--rounded);
+}
+.pw-icon-select .pw-icon-option:last-child {
+  border-radius: 0 var(--rounded) var(--rounded) 0;
 }
 .pw-icon-select .pw-icon-option svg {
   width: 18px;
@@ -1774,6 +1783,8 @@ export default {
   color: var(--color-text);
 }
 .pw-icon-select .pw-icon-option.is-active {
+  position: relative;
+  z-index: 1;
   background: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
