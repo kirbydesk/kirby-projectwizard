@@ -5644,9 +5644,9 @@ export default {
 .pw-page-title-row-tabs {
   margin-bottom: var(--spacing-3);
 }
-/* a block page's title with its tabs: sticky below the topbar, on the
-   page's background (across the gutter, as the topbar) */
-.pw-page-title-row-tabs {
+/* a page's title (a block page's with its tabs): sticky below the topbar,
+   on the page's background (across the gutter, as the topbar) */
+.pw-page-title-row {
   position: sticky;
   top: var(--pw-topbar-height, 0px);
   z-index: 2;
@@ -5659,7 +5659,7 @@ export default {
   /* (its line as wide as before: inside the gutter) */
   border-bottom: 0;
 }
-.pw-page-title-row-tabs::after {
+.pw-page-title-row::after {
   content: "";
   position: absolute;
   inset-inline: var(--spacing-2);
