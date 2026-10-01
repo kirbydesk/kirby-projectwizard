@@ -208,6 +208,8 @@
           </div>
           <!-- faq: three sample questions, the first open (always open: all),
                in the style shown (lines or cards) -->
+          <!-- guides: the gap to the intro as an element of its own -->
+          <div v-if="isFaq && guides && faqTextGap" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: faqTextGap }"></div>
           <div v-if="isFaq" class="pw-faq-preview" :style="faqListStyle">
             <div v-for="n in 3" :key="'faq-' + n" class="pw-faq-item" :style="faqItemStyle(n)">
               <!-- guides (cards): the padding left and right -->
@@ -871,7 +873,8 @@ export default {
       return this.fields.indexOf('items') > 0 ? this.itemValue('item-text-gap') : 0;
     },
     faqListStyle() {
-      const style = { marginTop: this.faqTextGap };
+      // (with guides the gap is an element of its own above)
+      const style = { marginTop: this.guides ? 0 : this.faqTextGap };
       if (this.currentFaqStyle === 'cards') Object.assign(style, { display: 'flex', flexDirection: 'column', gap: this.itemValueAt('item-gap') });
       return style;
     },
