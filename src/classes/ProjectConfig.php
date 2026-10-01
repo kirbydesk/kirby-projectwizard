@@ -167,7 +167,7 @@ class ProjectConfig
 	private static function validStarts(array $fields): array
 	{
 		if (array_key_exists('default', $fields) && isset($fields['options'])) {
-			$fields['default'] = pwConfig::validStart($fields['default'], $fields['options']);
+			$fields['default'] = pwConfig::validStart($fields['default'], $fields['options'], $fields['empty'] ?? null);
 		}
 		foreach ($fields as $key => $value) {
 			if (is_array($value) && !array_is_list($value)) $fields[$key] = self::validStarts($value);

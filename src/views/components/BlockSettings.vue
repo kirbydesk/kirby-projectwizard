@@ -1451,7 +1451,8 @@ export default {
       const value = ov !== undefined ? ov : defaultVal;
       // a start value: always one of the field's options (validStart)
       if (!path.endsWith('.default')) return value;
-      return validStart(value, this.getDefault(path.slice(0, -'.default'.length) + '.options'));
+      const field = path.slice(0, -'.default'.length);
+      return validStart(value, this.getDefault(field + '.options'), this.getDefault(field + '.empty'));
     },
 
     getOverrideOnly(path) {

@@ -1355,14 +1355,14 @@ export default {
       const path = 'settings.fields.' + category + '.' + key;
       const ov = this.nested(this.overrides || {}, path + '.default');
       const value = ov !== undefined ? ov : this.nested(this.config.defaults || {}, path + '.default');
-      return validStart(value, this.nested(this.config.defaults || {}, path + '.options'));
+      return validStart(value, this.nested(this.config.defaults || {}, path + '.options'), this.nested(this.config.defaults || {}, path + '.empty'));
     },
     // a content field preset (align, sizes, …)
     preset(field, prop) {
       const path = 'settings.fields.content.' + field + '.' + prop;
       const ov = this.nested(this.overrides || {}, path + '.default');
       const value = ov !== undefined ? ov : this.nested(this.config.defaults || {}, path + '.default');
-      return validStart(value, this.nested(this.config.defaults || {}, path + '.options'));
+      return validStart(value, this.nested(this.config.defaults || {}, path + '.options'), this.nested(this.config.defaults || {}, path + '.empty'));
     },
     // a content field of the block, unless hidden from the editors (then
     // nobody fills it in)
