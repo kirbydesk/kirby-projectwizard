@@ -1179,18 +1179,6 @@
                 <h3 class="pw-card-heading">{{ $t(part.heading) }}</h3>
               </div>
               <div class="pw-card pw-field-table">
-                <!-- (featurelist: the title above the text or in it) -->
-                <pw-block-settings
-                  v-if="part.key === 'title' && itemLayoutDefault(block.blockType, 'item-title-style') !== undefined"
-                  view="items-layout"
-                  :block="block"
-                  :config="blockConfigs[block.blockType]"
-                  :overrides="blockOverrides[block.blockType] || {}"
-                  :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-title-style']"
-                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
-                  @update:writer-active="$set(writerActive, block.blockType, $event)"
-                />
                 <!-- the entries' values: the global items' (Elements › Items) or
                      the block's own -->
                 <pw-block-settings
@@ -1571,8 +1559,27 @@
 
 
 
-            <!-- featurelist: icon, tile, colours, gaps (its text: the entries' card above) -->
+            <!-- featurelist: the title's arrangement, icon, tile, colours, gaps
+                 (the entries' type: the elements tab) -->
             <template v-if="block.blockType === 'pwfeaturelist' && blockValueDefaults[block.blockType]">
+            <!-- the title above the description or as a run-in in it -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.entryTitle') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-title-style']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
+            </section>
             <!-- featurelist icon: its position, alignment, size, gap and whether
                  it sits on a tile -->
             <section class="pw-card-section">
@@ -3596,10 +3603,11 @@ export default {
     // description) and the description (its size)
     entryParts(blockType) {
       const rows = this.entryRows(blockType);
+      // (a part without values – the title as a run-in – left out)
       return [
         { key: 'title', heading: 'prw.headline.entryTitle', rows: rows.filter(n => n.startsWith('item-title-')) },
         { key: 'text', heading: 'prw.headline.entryText', rows: rows.filter(n => n.startsWith('item-text-')) },
-      ];
+      ].filter(p => p.rows.length > 0);
     },
     entryLabel(blockType, name) {
       // (in its card: short – the card says title or description)
