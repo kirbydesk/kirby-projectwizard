@@ -5658,10 +5658,10 @@ export default {
   background: var(--color-background);
   /* (its line as wide as before: inside the gutter) */
   border-bottom: 0;
-  /* as high on every page as with the block tabs (their buttons' height,
-     the padding above and below) */
+  /* as high on every page as with the block tabs (their buttons' height
+     with Kirby's 2px above and below, the padding above and below) */
   box-sizing: border-box;
-  min-height: calc(var(--height-md) + var(--spacing-6));
+  min-height: calc(var(--height-md) + 4px + var(--spacing-6));
 }
 .pw-page-title-row::after {
   content: "";
