@@ -5651,7 +5651,7 @@ export default {
   top: var(--pw-topbar-height, 0px);
   z-index: 2;
   /* (reaching up to the topbar, over its space below: stuck from the start) */
-  padding-top: var(--spacing-6);
+  padding-top: var(--spacing-3);
   margin-top: calc(var(--spacing-6) * -1);
   padding-inline: var(--spacing-2);
   margin-inline: calc(var(--spacing-2) * -1);
