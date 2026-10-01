@@ -744,7 +744,7 @@ export default {
     // the link: text (link colour, underline, icon) or a button
     cardCtaStyle() {
       // at the card's bottom, or right after the text
-      const base = { display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: this.setting('layout', 'item-link-position') === 'inline' || this.cardOverlay ? 0 : 'auto' };
+      const base = { '--pw-card-icon-stroke': { thin: 1.25, normal: 2, bold: 2.75 }[this.setting('layout', 'item-link-icon-stroke')] || 2, display: 'inline-flex', alignItems: 'center', gap: '0.4em', width: 'max-content', marginTop: this.setting('layout', 'item-link-position') === 'inline' || this.cardOverlay ? 0 : 'auto' };
       if (this.setting('layout', 'item-link-style') !== 'button') {
         return {
           ...base,
@@ -1944,9 +1944,12 @@ export default {
   flex: 0 0 auto;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: var(--pw-card-icon-stroke, 2);
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.pw-cardlets-cta svg [stroke] {
+  stroke-width: var(--pw-card-icon-stroke, 2);
 }
 /* featurelist: a feature and its content may shrink to their column,
    long words break (the narrow sidebar) */
