@@ -206,6 +206,20 @@
             </div>
             </template>
           </div>
+          <!-- faq: three sample questions, the first open (always open: all),
+               in the style shown (lines or cards) -->
+          <div v-if="isFaq" class="pw-faq-preview" :style="faqListStyle">
+            <div v-for="n in 3" :key="'faq-' + n" class="pw-faq-item" :style="faqItemStyle(n)">
+              <div class="pw-faq-summary" :style="faqSummaryStyle">
+                <div :style="faqQuestionStyle">{{ faqSampleQuestion(n) }}</div>
+                <span v-if="faqIcon !== 'none'" class="pw-faq-icon" :style="faqIconStyle(faqOpen(n))">
+                  <svg v-if="faqIcon === 'chevron'" viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 4 17 12 9 20" /></svg>
+                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" :stroke-width="faqStroke" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12" /><line v-if="!faqOpen(n)" x1="12" y1="4" x2="12" y2="20" /></svg>
+                </span>
+              </div>
+              <div v-if="faqOpen(n)" :style="faqAnswerStyle">{{ $t('prw.preview.faq.answer') }}</div>
+            </div>
+          </div>
           <!-- steplist: two steps (number, title, text) as in its snippet -->
           <!-- guides: the gaps as elements of their own with a line on either
                side – between the steps cyan, between number and text violet -->
@@ -320,6 +334,8 @@ export default {
     stepStyle: { type: String, default: '' },
     // featurelist: the layout to show (stacked / split, chosen in the gaps card)
     featureLayout: { type: String, default: '' },
+    // faq: the style to show (lines / cards, chosen in the design tab)
+    faqStyle: { type: String, default: '' },
     // hero: the height to show (chosen in the design tab's height card)
     heroHeight: { type: String, default: '' },
     // cardlets: the display chosen in the design tab (else the start value)
@@ -363,6 +379,7 @@ export default {
       if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
       if (this.isLogocloud) return [...fields, 'logos'];
       if (this.isFeaturelist) return [...fields, 'items'];
+      if (this.isFaq) return [...fields, 'items'];
       if (this.isCardlets) return [...fields, 'items'];
       return fields;
     },
@@ -817,6 +834,63 @@ export default {
       }
       return this.elementValue('list', 'spacing');
     },
+    isFaq() {
+      return this.blockType === 'pwfaq';
+    },
+    // faq: the style shown, its icon (chevron, plus, none) and stroke
+    currentFaqStyle() {
+      return this.faqStyle || this.setting('style', 'faq-style') || 'lines';
+    },
+    faqIcon() {
+      return this.setting('layout', 'item-icon') || 'chevron';
+    },
+    faqStroke() {
+      return { thin: 1, normal: 1.5, bold: 2.5 }[this.setting('layout', 'item-icon-stroke')] || 1.5;
+    },
+    // the gap to the intro above (beside it in the split layout: none)
+    faqTextGap() {
+      if (this.featureSplit && this.hasGrid) return 0;
+      return this.fields.indexOf('items') > 0 ? this.itemValue('item-text-gap') : 0;
+    },
+    faqListStyle() {
+      const style = { marginTop: this.faqTextGap };
+      if (this.currentFaqStyle === 'cards') Object.assign(style, { display: 'flex', flexDirection: 'column', gap: this.itemValueAt('item-gap') });
+      return style;
+    },
+    // the question's row: the question and the icon (left: before it)
+    faqSummaryStyle() {
+      return {
+        display: 'flex',
+        alignItems: 'center',
+        gap: this.itemValue('item-icon-gap'),
+        paddingTop: this.itemValueAt('item-padding-y'),
+        paddingBottom: this.itemValueAt('item-padding-y'),
+        flexDirection: this.setting('layout', 'item-icon-position') === 'left' ? 'row-reverse' : 'row',
+        justifyContent: 'space-between',
+      };
+    },
+    faqQuestionStyle() {
+      return { ...this.entryTypography('title'), color: this.itemColor('item-question'), flex: 1, margin: 0 };
+    },
+    // the answer: the entries' text, below the question; up to the icon or
+    // across the full width
+    faqAnswerStyle() {
+      const pad = this.itemValueAt('item-padding-y');
+      const style = {
+        ...this.entryTypography('text'),
+        color: this.elementColor('editor', 'element-editor-text'),
+        paddingBottom: pad,
+        marginTop: 'calc(' + (this.itemValue('item-answer-gap') || '0rem') + ' - ' + pad + ')',
+      };
+      if (this.setting('layout', 'item-answer-width') !== 'full' && this.faqIcon !== 'none' && !this.faqAlwaysOpen) {
+        const room = 'calc(' + this.itemValueAt('item-icon-size') + ' + ' + this.itemValue('item-icon-gap') + ')';
+        style[this.setting('layout', 'item-icon-position') === 'left' ? 'paddingLeft' : 'paddingRight'] = room;
+      }
+      return style;
+    },
+    faqAlwaysOpen() {
+      return this.setting('style', 'faq-behavior') === 'open';
+    },
     isFeaturelist() {
       return this.blockType === 'pwfeaturelist';
     },
@@ -825,7 +899,7 @@ export default {
     },
     // split layout (from tablet on): intro one third, the items two thirds
     featureSplit() {
-      return this.isFeaturelist && (this.featureLayout || this.setting('style', 'section-layout')) === 'split';
+      return (this.isFeaturelist || this.isFaq) && (this.featureLayout || this.setting('style', 'section-layout')) === 'split';
     },
     contentStyle() {
       if (this.isHero) return this.heroContentStyle;
@@ -1410,6 +1484,43 @@ export default {
       const height = this.gapBefore(field);
       return height ? { height, prev } : null;
     },
+    // faq: a sample question
+    faqSampleQuestion(n) {
+      return this.$t('prw.preview.faq.question.' + n);
+    },
+    // the first question open (always open: all)
+    faqOpen(n) {
+      return this.faqAlwaysOpen || n === 1;
+    },
+    // a question: lines between them, or each a card
+    faqItemStyle(n) {
+      if (this.currentFaqStyle === 'cards') {
+        const r = this.setting('layout', 'item-shape') === 'square' ? [] : (this.itemValue('item-radius') || []);
+        return {
+          backgroundColor: this.itemColor('item-background'),
+          paddingLeft: this.itemValueAt('item-padding-x'),
+          paddingRight: this.itemValueAt('item-padding-x'),
+          borderRadius: [r[0] || 0, r[1] || 0, r[3] || 0, r[2] || 0].join(' '),
+        };
+      }
+      if (n > 1 && this.setting('layout', 'item-divider') !== 'disabled') {
+        return { borderTop: (this.itemValue('item-divider-width') || '1px') + ' solid ' + this.itemColor('item-divider') };
+      }
+      return {};
+    },
+    // the icon: its size and colour, turned when open (a chevron down; a
+    // plus loses its vertical line)
+    faqIconStyle(open) {
+      const size = this.itemValueAt('item-icon-size');
+      return {
+        display: 'flex',
+        flexShrink: 0,
+        width: size,
+        height: size,
+        color: this.itemColor('item-icon'),
+        transform: open ? (this.faqIcon === 'plus' ? 'rotate(180deg)' : 'rotate(90deg)') : null,
+      };
+    },
     // tagline, heading and text in a card: the element's type, the card's
     // text colours, the preset size step and alignment
     // the gap below a text in the card: to the next one, or (the last) to the link
@@ -1493,6 +1604,13 @@ export default {
 </script>
 
 <style>
+/* faq: the icon's drawing fills its box (size and colour set inline) */
+.pw-faq-icon svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s ease;
+}
+
 .pw-block-live-body {
   padding: var(--spacing-6) var(--spacing-3);
 }

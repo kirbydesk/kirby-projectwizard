@@ -1002,7 +1002,7 @@
         >
 
           <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist, Hero, Cardlets so far) -->
-          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
                 :block-type="block.blockType"
@@ -1024,7 +1024,8 @@
                 :value-defaults="blockValueDefaults[block.blockType] || {}"
                 :value-overrides="shownValueOverrides(block.blockType)"
                 :step-style="block.blockType === 'pwsteplist' && currentBlockView === 'design' ? currentStepStyle(block.blockType) : ''"
-                :feature-layout="block.blockType === 'pwfeaturelist' && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
+                :feature-layout="['pwfeaturelist', 'pwfaq'].includes(block.blockType) && currentBlockView === 'design' ? currentFeatureLayout(block.blockType) : ''"
+                :faq-style="block.blockType === 'pwfaq' && currentBlockView === 'design' ? currentFaqStyle(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && currentBlockView === 'design' ? currentHeroHeight(block.blockType) : ''"
                 :card-display="block.blockType === 'pwcardlets' && currentBlockView === 'design' ? currentCardDisplay(block.blockType) : ''"
                 :design-view="currentBlockView === 'design'"
@@ -1724,6 +1725,300 @@
             </section>
             </template>
 
+            <!-- faq: its icon, the questions (lines or cards), colours, gaps
+                 (question and answer: the entries' card above) -->
+            <template v-if="block.blockType === 'pwfaq' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.icon') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-icon']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <template v-if="itemLayoutDefault(block.blockType, 'item-icon') !== 'none'">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-icon-position']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-icon-stroke']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-icon-size']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-icon-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                </template>
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('kirbyblock-faq.items') }}</h3>
+                <!-- the style the preview shows (a view, not saved) -->
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="st in ['lines', 'cards']"
+                    :key="'fs-' + st"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentFaqStyle(block.blockType) === st ? 'true' : 'false'"
+                    @click="$set(faqPreviewStyle, block.blockType, st)"
+                  >{{ $t('kirbyblock-faq.faq-style.' + st) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-padding-y']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="currentFaqStyle(block.blockType) === 'cards'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-padding-x']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="currentFaqStyle(block.blockType) === 'cards'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  v-if="currentFaqStyle(block.blockType) === 'cards'"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-shape']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="currentFaqStyle(block.blockType) === 'cards' && itemLayoutDefault(block.blockType, 'item-shape') !== 'square'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-radius']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  v-if="currentFaqStyle(block.blockType) !== 'cards'"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-divider']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="currentFaqStyle(block.blockType) !== 'cards' && itemLayoutDefault(block.blockType, 'item-divider') !== 'disabled'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-divider-width']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-answer-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  v-if="itemLayoutDefault(block.blockType, 'item-icon') !== 'none'"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-answer-width']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'fqth-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(theme) }"></span>{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-question']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="itemLayoutDefault(block.blockType, 'item-icon') !== 'none'"
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-icon']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="currentFaqStyle(block.blockType) !== 'cards' && itemLayoutDefault(block.blockType, 'item-divider') !== 'disabled'"
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-divider']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-values
+                  v-if="currentFaqStyle(block.blockType) === 'cards'"
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-background']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="lay in ['stacked', 'split']"
+                    :key="'fql-' + lay"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
+                    @click="$set(featurePreviewLayout, block.blockType, lay)"
+                  >{{ $t('kirbyblock-faq.section-layout.' + lay) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  v-if="currentFeatureLayout(block.blockType) === 'split' && itemBp !== 'default'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-offset-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  v-if="currentFeatureLayout(block.blockType) === 'split' && itemBp !== 'default'"
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-offset-align']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="currentFeatureLayout(block.blockType) !== 'split' || itemBp === 'default'"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-text-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+            </section>
+            </template>
+
             <!-- hero: its heights (the one chosen in the pills, a view; full
                  screen is always 100vh) -->
             <template v-if="block.blockType === 'pwhero' && blockValueDefaults[block.blockType]">
@@ -2376,6 +2671,8 @@ export default {
       stepPreviewStyle: {},
       // featurelist: the layout its preview shows (stacked / split), a view
       featurePreviewLayout: {},
+      // faq: the style its preview shows (lines / cards), a view
+      faqPreviewStyle: {},
       // hero: the height its preview shows (small … fullscreen), a view
       heroPreviewHeight: {},
       startHeroHeights: {},
@@ -3274,7 +3571,10 @@ export default {
     // only the description's size, which then is the size of both)
     entryRows(blockType) {
       const inline = this.itemLayoutDefault(blockType, 'item-title-style') === 'inline';
-      return inline ? ['item-text-font-size'] : ['item-title-font-size', 'item-title-line-height', 'item-text-font-size', 'item-title-spacing'];
+      if (inline) return ['item-text-font-size'];
+      // (faq: the gap between question and answer is its own value)
+      if (blockType === 'pwfaq') return ['item-title-font-size', 'item-title-line-height', 'item-text-font-size'];
+      return ['item-title-font-size', 'item-title-line-height', 'item-text-font-size', 'item-title-spacing'];
     },
     entryLabel(blockType, name) {
       if (name === 'item-text-font-size' && this.itemLayoutDefault(blockType, 'item-title-style') === 'inline') return this.$t('prw.prop.font-size');
@@ -3334,6 +3634,12 @@ export default {
       if (this.cardPreviewDisplay[blockType]) return this.cardPreviewDisplay[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['card-display']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['card-display']?.default || 'stacked';
+    },
+    // faq: the style shown (chosen in the questions card, else the start value)
+    currentFaqStyle(blockType) {
+      if (this.faqPreviewStyle[blockType]) return this.faqPreviewStyle[blockType];
+      const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['faq-style']?.default;
+      return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['faq-style']?.default || 'lines';
     },
     currentStepStyle(blockType) {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
