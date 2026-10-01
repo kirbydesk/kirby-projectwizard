@@ -36,6 +36,15 @@
         :prefix="isFaq ? 'kirbyblock-faq.section-layout.' : 'pw.option.'"
         @input="$emit('update:feature-layout', $event)"
       />
+      <!-- steplist (design and elements tab): the style shown, the same way -->
+      <pw-theme-select
+        v-if="stepStyleOptions"
+        class="pw-preview-layout"
+        :value="currentStepStyle"
+        :themes="stepStyleOptions"
+        prefix="kirbyblock-steplist.item-style."
+        @input="$emit('update:step-style', $event)"
+      />
     </div>
 
     <div class="pw-block-live-body" :style="{ backgroundColor: bodyBackground }">
@@ -378,6 +387,8 @@ export default {
     withBlockGuides: { type: Boolean, default: true },
     // steplist: the item style to show (chosen in the design tab)
     stepStyle: { type: String, default: '' },
+    // steplist: the styles to switch between in the toolbar (none: no switch)
+    stepStyleOptions: { type: Array, default: null },
     // featurelist: the layout to show (stacked / split, chosen in the gaps card)
     featureLayout: { type: String, default: '' },
     // faq: the style to show (lines / cards, chosen in the design tab)
