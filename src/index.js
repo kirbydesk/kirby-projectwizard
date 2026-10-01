@@ -14,6 +14,7 @@ import BatchDialog from './views/components/BatchDialog.vue';
 import PanelRender from './views/components/PanelRender.vue';
 import PanelPreview from './views/components/PanelPreview.vue';
 import BlocksField from './views/components/BlocksField.vue';
+import OverlayField from './views/components/OverlayField.vue';
 import SetupWizard from './views/SetupWizard.vue';
 import Portal from './views/components/Portal.vue';
 import BlockPreview from './views/components/BlockPreview.vue';
@@ -53,6 +54,8 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 	// block previews next to "Add" – Kirby's own blocks field stays untouched
 	fields: {
 		pwblocks: BlocksField,
+		// the overlay's strength with swatches in the block's overlay colour
+		pwoverlay: OverlayField,
 	},
 	components: {
 		'pw-wizard-overview': Overview,
