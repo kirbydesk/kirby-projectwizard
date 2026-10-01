@@ -1739,6 +1739,18 @@
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+                <!-- the layout the preview shows (a view, not saved; at first
+                     the start value; the same choice as the preview's) -->
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="lay in ['stacked', 'split']"
+                    :key="'fl-' + lay"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
+                    @click="$set(featurePreviewLayout, block.blockType, lay)"
+                  >{{ $t('pw.option.' + lay) }}</button>
+                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -2036,6 +2048,18 @@
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+                <!-- the layout the preview shows (a view, not saved; at first
+                     the start value; the same choice as the preview's) -->
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="lay in ['stacked', 'split']"
+                    :key="'fql-' + lay"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentFeatureLayout(block.blockType) === lay ? 'true' : 'false'"
+                    @click="$set(featurePreviewLayout, block.blockType, lay)"
+                  >{{ $t('kirbyblock-faq.section-layout.' + lay) }}</button>
+                </span>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
