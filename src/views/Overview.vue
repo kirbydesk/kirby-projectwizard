@@ -5658,6 +5658,10 @@ export default {
   background: var(--color-background);
   /* (its line as wide as before: inside the gutter) */
   border-bottom: 0;
+  /* as high on every page as with the block tabs (their buttons' height,
+     the padding above and below) */
+  box-sizing: border-box;
+  min-height: calc(var(--height-md) + var(--spacing-6));
 }
 .pw-page-title-row::after {
   content: "";
