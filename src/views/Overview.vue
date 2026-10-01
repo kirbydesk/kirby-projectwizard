@@ -5626,7 +5626,8 @@ export default {
 }
 @media (min-width: 75rem) {
   .pw-wizard {
-    --pw-preview-width: calc((100vw - var(--main-start, 0px)) / 3);
+    /* (fixed: the preview's switches always on one line) */
+    --pw-preview-width: 450px;
   }
   .pw-wizard[data-preview="off"] {
     --pw-preview-width: var(--menu-width-closed);
