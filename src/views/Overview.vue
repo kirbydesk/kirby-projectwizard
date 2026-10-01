@@ -5746,7 +5746,7 @@ export default {
 }
 /* the usage tab: one row per page – its status, its path of titles, how
    often (right); the row opens the page */
-.pw-usage-row {
+.pw-field-table .pw-usage-row {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
@@ -5755,7 +5755,7 @@ export default {
   color: var(--color-text);
   text-decoration: none;
 }
-.pw-usage-row:hover {
+.pw-field-table .pw-usage-row:hover {
   background: var(--color-gray-100);
 }
 .pw-usage-title {
