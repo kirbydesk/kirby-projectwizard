@@ -408,7 +408,8 @@
                       type="button"
                       class="pw-icon-option"
                       :class="{ 'is-active': (getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue)) === opt.value }"
-                      @click="setVal('settings.fields.layout.' + field.key + '.default', opt.value)"
+                      :aria-pressed="getVal('settings.fields.layout.' + field.key + '.default', field.defaultValue) === opt.value ? 'true' : 'false'"
+                      @click="chooseIcon(field, opt.value)"
                       v-html="'<svg viewBox=&quot;0 0 24 24&quot; aria-hidden=&quot;true&quot;>' + opt.svg + '</svg>'"
                     ></button>
                   </div>
@@ -691,6 +692,9 @@ export default {
             type: 'icon-select',
             options: settingVal.options,
             defaultValue: settingVal.default !== undefined ? settingVal.default : (settingVal.options[0] && settingVal.options[0].value),
+            // the value when nothing is chosen (optional: a second click on the
+            // chosen icon deselects it)
+            emptyValue: settingVal.empty,
             with: this.isObject(withVal) && Array.isArray(withVal.options)
               ? { key: settingVal.with, label: withVal.label || null, displayKey: settingVal.with.replace(/^item-/, ''), options: withVal.options, defaultValue: withVal.default !== undefined ? withVal.default : withVal.options[0] }
               : null,
@@ -721,6 +725,13 @@ export default {
         fields.push({ key, displayKey, type: 'toggle', defaultValue, label: (this.isObject(settingVal) && settingVal.label) || null });
       }
       return fields;
+    },
+    // an icon chosen; the chosen one again: none (where the choice may
+    // stay empty)
+    chooseIcon(field, value) {
+      const path = 'settings.fields.layout.' + field.key + '.default';
+      const current = this.getVal(path, field.defaultValue);
+      this.setVal(path, current === value && field.emptyValue !== undefined ? field.emptyValue : value);
     },
     // the chosen drawing of an icon choice has a stroke (a filled one or
     // none: no stroke to set)
