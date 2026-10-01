@@ -2597,7 +2597,7 @@ export default {
       for (const [env, value] of Object.entries(this.aiSecretInputs || {})) {
         if (!value || !value.trim()) continue;
         const secret = (this.aiSecrets || []).find(sc => sc.env === env);
-        add(secret && secret.plugin === 'kirbydesk.translatewizard' ? 'translate' : 'generator');
+        add(secret && secret.plugin === 'kirbydesk.kirby-translatewizard' ? 'translate' : 'generator');
       }
       if (this.patchesText !== this.originalPatchesText) add('patches');
       return out;
@@ -2650,13 +2650,13 @@ export default {
       return this.patchesHighlightedFor(this.patchesText);
     },
     hasTranslateTab() {
-      return (this.aiSecrets || []).some(s => s.plugin === 'kirbydesk.translatewizard');
+      return (this.aiSecrets || []).some(s => s.plugin === 'kirbydesk.kirby-translatewizard');
     },
     hasGeneratorTab() {
-      return !!this.aiForm || (this.aiSecrets || []).some(s => s.plugin === 'kirbydesk.contentwizard');
+      return !!this.aiForm || (this.aiSecrets || []).some(s => s.plugin === 'kirbydesk.kirby-contentwizard');
     },
     aiPageSecrets() {
-      const plugin = { translate: 'kirbydesk.translatewizard', generator: 'kirbydesk.contentwizard' }[this.globalActiveTab];
+      const plugin = { translate: 'kirbydesk.kirby-translatewizard', generator: 'kirbydesk.kirby-contentwizard' }[this.globalActiveTab];
       return (this.aiSecrets || []).filter(s => s.plugin === plugin);
     },
     // activated blocks with their own settings view (pw* blocks), for the blocks dropdown
