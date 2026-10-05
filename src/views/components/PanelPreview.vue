@@ -83,7 +83,25 @@ export default {
   created() {
     ensurePreviewData(this.$api);
   },
+  // soft hyphens as in the frontend: "[-]" in the texts becomes a place to
+  // break a long word – after each change of the preview too
+  mounted() {
+    this.softHyphens();
+    if (typeof MutationObserver === 'undefined') return;
+    this._shyObserver = new MutationObserver(() => this.softHyphens());
+    this._shyObserver.observe(this.$el, { childList: true, subtree: true, characterData: true });
+  },
+  beforeDestroy() {
+    if (this._shyObserver) this._shyObserver.disconnect();
+  },
   methods: {
+    softHyphens() {
+      if (!this.$el || !this.$el.textContent || !this.$el.textContent.includes('[-]')) return;
+      const walker = document.createTreeWalker(this.$el, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (node.nodeValue.includes('[-]')) node.nodeValue = node.nodeValue.split('[-]').join('\u00AD');
+      }
+    },
     // links in the text lead nowhere here (a click selects the block)
     guardLinks(event) {
       if (event.target.closest && event.target.closest('a')) event.preventDefault();
