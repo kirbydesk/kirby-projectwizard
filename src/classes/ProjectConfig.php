@@ -681,9 +681,20 @@ class ProjectConfig
 		$defaultFont = $projectFonts['_default'] ?? 'Inter';
 		unset($projectFonts['_default']);
 
+		// the URL of every file for the Panel preview – as on the website
+		$withUrls = function (array $fonts): array {
+			foreach ($fonts as $key => $font) {
+				if (!is_array($font)) continue;
+				foreach ($font['files'] ?? [] as $i => $file) {
+					$fonts[$key]['files'][$i]['url'] = pwConfig::fontUrl($font, $file['src']);
+				}
+			}
+			return $fonts;
+		};
+
 		return [
-			'builtin'  => $builtinFonts,
-			'project'  => $projectFonts,
+			'builtin'  => $withUrls($builtinFonts),
+			'project'  => $withUrls($projectFonts),
 			'default'  => $defaultFont,
 		];
 	}
@@ -722,10 +733,7 @@ class ProjectConfig
 		$config = pwConfig::readJson(self::fontsConfigFile());
 		if (!isset($config[$key]['files'][$fileIndex])) return;
 
-		$fontsDir = kirby()->root('index') . '/assets/fonts';
-		$file = $config[$key]['files'][$fileIndex];
-		$path = $fontsDir . '/' . $file['src'];
-		if (file_exists($path)) unlink($path);
+		self::deleteFontFile($config[$key]['files'][$fileIndex]['src']);
 
 		array_splice($config[$key]['files'], $fileIndex, 1);
 
@@ -747,14 +755,10 @@ class ProjectConfig
 	public static function removeFont(string $key): void
 	{
 		$config = pwConfig::readJson(self::fontsConfigFile());
-		$fontsDir = kirby()->root('index') . '/assets/fonts';
 
 		// Delete font files
-		if (isset($config[$key]['files'])) {
-			foreach ($config[$key]['files'] as $file) {
-				$path = $fontsDir . '/' . $file['src'];
-				if (file_exists($path)) unlink($path);
-			}
+		foreach ($config[$key]['files'] ?? [] as $file) {
+			self::deleteFontFile($file['src']);
 		}
 
 		unset($config[$key]);
@@ -764,6 +768,24 @@ class ProjectConfig
 			if (file_exists($path)) unlink($path);
 		} else {
 			self::saveFontsConfig($config);
+		}
+	}
+
+	/**
+	 * Uploaded font files live in content/.projectwizard/fonts – they travel
+	 * with the content like all Panel edits. Fonts uploaded before 1.1 still
+	 * sit in public/assets/fonts.
+	 */
+	public static function fontsDir(): string
+	{
+		return pwConfig::projectDir() . '/fonts';
+	}
+
+	public static function deleteFontFile(string $src): void
+	{
+		$src = basename($src);
+		foreach ([self::fontsDir(), kirby()->root('index') . '/assets/fonts'] as $dir) {
+			if (is_file($dir . '/' . $src)) unlink($dir . '/' . $src);
 		}
 	}
 
@@ -790,7 +812,6 @@ class ProjectConfig
 
 		$projectRoot = kirby()->root('index') . '/..';
 		$wizardDir   = __DIR__ . '/../..';
-		$pwDir       = pwConfig::pluginDir();
 
 		// --- Projectwizard: copy files (only if not existing) ---
 		$copyDir = $wizardDir . '/src/scaffold/copy';
@@ -802,7 +823,7 @@ class ProjectConfig
 		$templateDir = $wizardDir . '/src/scaffold/templates';
 		if (is_dir($templateDir)) {
 			$projectName = basename(realpath($projectRoot));
-			$valetHost   = $projectName . '.test';
+			$valetHost   = SetupWizard::localHost($projectName);
 
 			$replacements = [
 				'{{PROJECT_NAME}}' => $projectName,
@@ -826,25 +847,8 @@ class ProjectConfig
 			);
 		}
 
-		// --- Pagewizard: copy fonts ---
-		$fontsSource = $pwDir . '/src/scaffold/fonts';
-		$fontsDest   = $projectRoot . '/public/assets/fonts';
-		if (is_dir($fontsSource)) {
-			if (!is_dir($fontsDest)) mkdir($fontsDest, 0755, true);
-			foreach (glob($fontsSource . '/*.woff2') as $font) {
-				$dest = $fontsDest . '/' . basename($font);
-				if (!file_exists($dest)) {
-					copy($font, $dest);
-				}
-			}
-		}
-
-		// --- Pagewizard: copy projectbuilder.php ---
-		$builderSource = $pwDir . '/src/scaffold/projectbuilder.php';
-		$builderDest   = $projectRoot . '/projectbuilder.php';
-		if (file_exists($builderSource) && !file_exists($builderDest)) {
-			copy($builderSource, $builderDest);
-		}
+		// Builtin fonts come from pagewizard as plugin assets, projectbuilder.php
+		// from scaffold/copy above – nothing else to copy
 
 		// Write lock file
 		$dir = self::configDir();

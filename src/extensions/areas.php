@@ -65,6 +65,8 @@ $areas['projectwizard'] = fn() => [
 				'title'     => t('prw.area.title', 'Project Wizard'),
 				'props'     => [
 					'blockType' => null,
+					// local development: the project builder rebuilds site.min.css after a save
+					'development' => SetupWizard::isDevelopment(),
 				],
 			],
 		],
@@ -95,6 +97,8 @@ foreach ($blocks as $blockType => $info) {
 					'title'     => $blockLabel($info, $blockType),
 					'props'     => [
 						'blockType' => $blockType,
+						// local development: the project builder rebuilds site.min.css after a save
+						'development' => SetupWizard::isDevelopment(),
 					],
 				],
 			],

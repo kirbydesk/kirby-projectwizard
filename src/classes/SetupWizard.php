@@ -19,11 +19,48 @@ class SetupWizard
 	private static array $preservedSessions = [];
 
 	/**
-	 * Check if setup is needed (no .initialized lock file).
+	 * Check if setup is needed (no .initialized lock file). Only ever in local
+	 * development – on a server the setup wizard (which clears the project
+	 * folder and runs npm) must never run, even if the lock file is missing.
 	 */
 	public static function isNeeded(): bool
 	{
-		return !file_exists(pwConfig::projectDir() . '/.initialized');
+		return static::isDevelopment() && !file_exists(pwConfig::projectDir() . '/.initialized');
+	}
+
+	/**
+	 * Local development: option `kirbydesk.projectwizard.development` (set in
+	 * the local host config), otherwise a local address (.kirby, .test,
+	 * .local, localhost). Only there the project builder, the setup wizard and
+	 * npm run – on staging/production Panel edits take effect at runtime.
+	 */
+	public static function isDevelopment(): bool
+	{
+		$option = option('kirbydesk.projectwizard.development');
+		if (is_bool($option)) return $option;
+		return static::isLocalHost(static::host());
+	}
+
+	/** Host of the current request, lowercase */
+	public static function host(): string
+	{
+		return strtolower((string) kirby()->environment()->host());
+	}
+
+	public static function isLocalHost(string $host): bool
+	{
+		return in_array($host, ['localhost', '127.0.0.1', '::1'], true)
+			|| preg_match('/\.(kirby|test|local|localhost)$/', $host) === 1;
+	}
+
+	/**
+	 * The project's local address for config.<host>.php: the current one when
+	 * it is local, otherwise <project>.test as before.
+	 */
+	public static function localHost(string $projectName): string
+	{
+		$host = static::host();
+		return static::isLocalHost($host) && $host !== 'localhost' ? $host : $projectName . '.test';
 	}
 
 	/**
@@ -37,7 +74,7 @@ class SetupWizard
 		$isPublic = basename(kirby()->root('index')) === 'public';
 		return [
 			'projectName' => $projectName,
-			'valetHost'   => $projectName . '.test',
+			'valetHost'   => static::localHost($projectName),
 			'projectRoot' => $projectRoot,
 			'isPublic'    => $isPublic,
 			'hasPublic'   => $hasPublic,
@@ -314,6 +351,9 @@ class SetupWizard
 	 */
 	public static function triggerProjectbuilder(): array
 	{
+		// On a server there is nothing to build: vars.css is served at runtime
+		// and changes with the Project Wizard's JSON (pagewizard 1.2)
+		if (!static::isDevelopment()) return ['success' => true];
 		try {
 			$hookFile = static::projectRoot() . '/projectbuilder.php';
 			if (!file_exists($hookFile)) {
@@ -342,6 +382,9 @@ class SetupWizard
 	 */
 	public static function npmBuild(): array
 	{
+		if (!static::isDevelopment()) {
+			return ['success' => false, 'output' => 'npm only runs in local development'];
+		}
 		$root = static::projectRoot();
 
 		// PHP under php-fpm/valet often has a minimal PATH — locate npm explicitly.

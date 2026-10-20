@@ -10,7 +10,8 @@ Kirby::plugin('kirbydesk/kirby-projectwizard', [
 	'translations' => require_once 'src/extensions/translations.php',
 	'hooks'        => [
 		'route:before' => function () {
-			if (!SetupWizard::isNeeded()) {
+			// only in local development – never write project files on a server
+			if (SetupWizard::isDevelopment() && !SetupWizard::isNeeded()) {
 				ProjectConfig::scaffold();
 			}
 		},

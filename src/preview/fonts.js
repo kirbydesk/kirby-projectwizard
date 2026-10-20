@@ -18,7 +18,7 @@ export function injectFontFaces(fontsData) {
       rules.push(
         '@font-face { ' +
         "font-family: '" + font.family + "'; " +
-        "src: url('" + base + '/assets/fonts/' + file.src + "') format('woff2'); " +
+        "src: url('" + (file.url || base + '/assets/fonts/' + file.src) + "') format('woff2'); " +
         'font-weight: ' + (file.weight || '400') + '; ' +
         'font-style: ' + (file.style || 'normal') + '; ' +
         'font-display: swap; }'

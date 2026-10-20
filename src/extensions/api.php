@@ -21,6 +21,10 @@ return [
 			'pattern' => 'projectwizard/setup/run',
 			'method'  => 'POST',
 			'action'  => function () {
+				// never on a server: clears the project folder and runs npm
+				if (!SetupWizard::isDevelopment()) {
+					return ['success' => false, 'failedStep' => 'clean', 'error' => 'The setup only runs in local development.', 'results' => []];
+				}
 				set_time_limit(300);
 				$defaults = SetupWizard::detect();
 				$projectName = $defaults['projectName'];
@@ -457,14 +461,19 @@ return [
 				$name = basename($data['name'] ?? '');
 				$base64 = $data['data'] ?? '';
 
-				if (!$name || !str_ends_with(strtolower($name), '.woff2') || !$base64) {
+				$binary = base64_decode($base64, true);
+
+				// a woff2 file starts with "wOF2"
+				if (!$name || !str_ends_with(strtolower($name), '.woff2') || !$binary || !str_starts_with($binary, 'wOF2')) {
 					return ['error' => t('prw.error.invalidFile', 'Invalid file')];
 				}
 
-				$fontsDir = kirby()->root('index') . '/assets/fonts';
-				if (!is_dir($fontsDir)) mkdir($fontsDir, 0777, true);
+				// into the content folder: travels with the content, a code
+				// deploy never removes it
+				$fontsDir = ProjectConfig::fontsDir();
+				if (!is_dir($fontsDir)) mkdir($fontsDir, 0755, true);
 
-				file_put_contents($fontsDir . '/' . $name, base64_decode($base64));
+				file_put_contents($fontsDir . '/' . $name, $binary);
 
 				return ['uploaded' => [$name]];
 			}

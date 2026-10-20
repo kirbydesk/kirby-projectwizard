@@ -2689,6 +2689,12 @@ export default {
       type: String,
       default: null,
     },
+    // local development (project builder + Tailwind); on a server vars.css
+    // changes at runtime, there is no CSS to wait for
+    development: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
@@ -4910,8 +4916,10 @@ export default {
       } else {
         await this.saveBlock(this.activeTab);
       }
-      // Trigger projectbuilder hook to regenerate tailwind.css
-      try { await fetch(window.location.origin, { cache: 'no-store' }); } catch(e) {}
+      // Trigger projectbuilder hook to regenerate tailwind.css (local development only)
+      if (this.development) {
+        try { await fetch(window.location.origin, { cache: 'no-store' }); } catch(e) {}
+      }
       this.reloadFrontend(cssBefore);
     },
 
@@ -4931,7 +4939,7 @@ export default {
       // the panel's block previews (this tab and others) load the saved values again
       announcePreviewSaved();
       if (!('BroadcastChannel' in window)) return;
-      for (let waited = 0; waited < 3000; waited += 250) {
+      for (let waited = 0; this.development && waited < 3000; waited += 250) {
         if ((await this.frontendCssVersion()) !== cssBefore) break;
         await new Promise(resolve => setTimeout(resolve, 250));
       }
