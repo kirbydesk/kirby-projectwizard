@@ -351,6 +351,12 @@ class SetupWizard
 	 */
 	public static function triggerProjectbuilder(): array
 	{
+		// Called after every save: cached pages would keep the old vars.css URL
+		try {
+			kirby()->cache('pages')->flush();
+		} catch (\Throwable $e) {
+		}
+
 		// On a server there is nothing to build: vars.css is served at runtime
 		// and changes with the Project Wizard's JSON (pagewizard 1.2)
 		if (!static::isDevelopment()) return ['success' => true];
