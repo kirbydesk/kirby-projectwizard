@@ -21,6 +21,23 @@ Kirbydesk-Projekte laufen oft auf älteren Plugin-Versionen (composer.lock pinnt
 
 ---
 
+## Update auf kirby-pagewizard 1.2 / kirby-projectwizard 1.1
+
+Ab diesen Versionen gehören die CSS-Variablen und `@font-face`-Regeln aus dem Project Wizard **nicht mehr** in `site.min.css`. Der Pagewizard liefert sie zur Laufzeit als `media/pagewizard/vars.<hash>.css` aus. Änderungen im Panel wirken damit sofort – auch auf einem Server ohne npm (Staging).
+
+Einmal pro Projekt nach dem Update:
+
+1. `composer update kirbydesk/*` (projectwizard 1.1 braucht pagewizard 1.2).
+2. **Einmal lokal `npm run build`.** Die alte `site.min.css` enthält noch die Variablen von damals und würde die neuen überdecken (sie wird nach `vars.css` geladen). Danach ist sie reiner Code.
+3. Code veröffentlichen. Die Inhalte (inkl. `content/.projectwizard/`) bleiben, wie sie sind.
+
+Außerdem gut zu wissen:
+- Projectbuilder, Einrichtungs-Assistent und npm laufen nur noch lokal (Option `kirbydesk.projectwizard.development` oder eine lokale Adresse wie `.kirby`/`.test`). Auf dem Server schreibt das Panel nichts mehr in `site/` oder `public/assets/`.
+- Neu hochgeladene Schriften liegen in `content/.projectwizard/fonts/`. Früher hochgeladene in `public/assets/fonts/` funktionieren weiter.
+- Beim Diff in Schritt 4 stehen die Variablen nicht mehr in `site.min.css`, sondern in `vars.<hash>.css` (im Quelltext der Seite verlinkt).
+
+---
+
 ## Voraussetzungen
 
 - SSH-Zugang zum Live-Server
