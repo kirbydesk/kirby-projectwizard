@@ -707,7 +707,7 @@
                 <pw-global-font-manager
                   :fonts="fontsData"
                   :mode="'installed'"
-                  @update="loadFontsData"
+                  @update="onFontsUpdate"
                 />
               </div>
             </section>
@@ -719,7 +719,7 @@
               <pw-global-font-manager
                 :fonts="fontsData"
                 :mode="'add'"
-                @update="loadFontsData"
+                @update="onFontsUpdate"
               />
             </section>
           </div>
@@ -4591,6 +4591,26 @@ export default {
     },
 
     // --- Global: Fonts ---
+    // after a font was deleted: settings that used it fall back to the default
+    // (the server already removed them) – keeps other unsaved changes
+    async onFontsUpdate(change) {
+      await this.loadFontsData();
+      const family = change && change.removedFamily;
+      if (!family) return;
+      const strip = (obj) => {
+        if (!obj || typeof obj !== 'object') return;
+        for (const key of Object.keys(obj)) {
+          const value = obj[key];
+          if (value && typeof value === 'object') strip(value);
+          else if (key.includes('font-family') && value === family) this.$delete(obj, key);
+        }
+      };
+      for (const name of ['globalOverrides', 'originalGlobalOverrides', 'elementOverrides', 'originalElementOverrides',
+        'navOverrides', 'originalNavOverrides', 'footerOverrides', 'originalFooterOverrides']) {
+        strip(this[name]);
+      }
+      this.injectPreviewStyles();
+    },
     async loadFontsData() {
       try {
         this.fontsData = await this.$api.get('projectwizard/fonts');

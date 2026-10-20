@@ -314,10 +314,12 @@ export default {
 
       if (isLast) {
         await this.$api.delete('projectwizard/fonts/' + key);
+        // the server removed the font's uses – the open settings drop them, too
+        this.$emit('update', { removedFamily: font.family });
       } else {
         await this.$api.delete('projectwizard/fonts/' + key + '/file/' + fileIndex);
+        this.$emit('update');
       }
-      this.$emit('update');
     },
     async setDefaultFont(family) {
       await this.$api.post('projectwizard/fonts/default', { family });

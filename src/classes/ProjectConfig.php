@@ -738,7 +738,10 @@ class ProjectConfig
 		array_splice($config[$key]['files'], $fileIndex, 1);
 
 		if (empty($config[$key]['files'])) {
+			$family = $config[$key]['family'] ?? '';
+			self::removeFontReferences($family);
 			unset($config[$key]);
+			if (($config['_default'] ?? null) === $family) unset($config['_default']);
 		}
 
 		if (empty($config) || (count($config) === 1 && isset($config['_default']))) {
@@ -761,6 +764,11 @@ class ProjectConfig
 			self::deleteFontFile($file['src']);
 		}
 
+		// Where the font was used, the default applies again
+		$family = $config[$key]['family'] ?? '';
+		self::removeFontReferences($family);
+		if (($config['_default'] ?? null) === $family) unset($config['_default']);
+
 		unset($config[$key]);
 
 		if (empty($config) || (count($config) === 1 && isset($config['_default']))) {
@@ -779,6 +787,34 @@ class ProjectConfig
 	public static function fontsDir(): string
 	{
 		return pwConfig::projectDir() . '/fonts';
+	}
+
+	/**
+	 * A deleted font no longer applies: remove every setting that uses it
+	 * (headings, navigation, footer, block values …) from the project's
+	 * overrides, so the default applies again instead of an unknown family.
+	 */
+	public static function removeFontReferences(string $family): void
+	{
+		if ($family === '') return;
+		$strip = function (array $data) use (&$strip, $family): array {
+			foreach ($data as $key => $value) {
+				if (is_array($value)) {
+					$data[$key] = $strip($value);
+				} elseif (is_string($key) && str_contains($key, 'font-family') && $value === $family) {
+					unset($data[$key]);
+				}
+			}
+			return $data;
+		};
+		foreach (glob(pwConfig::projectDir() . '/*.json') ?: [] as $file) {
+			if (basename($file) === 'fonts.json') continue;
+			$data = pwConfig::readJson($file);
+			$clean = $strip($data);
+			if ($clean !== $data) {
+				file_put_contents($file, json_encode($clean, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+			}
+		}
 	}
 
 	public static function deleteFontFile(string $src): void
