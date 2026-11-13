@@ -3039,7 +3039,7 @@ export default {
     },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
-      return this.activeTab === 'global' && ['welcome', 'translate', 'generator', 'favicon'].includes(this.globalActiveTab);
+      return this.activeTab === 'global' && ['welcome', 'translate', 'generator'].includes(this.globalActiveTab);
     },
     patchesHighlighted() {
       return this.patchesHighlightedFor(this.patchesText);

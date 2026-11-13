@@ -481,8 +481,6 @@
 	'prw.favicon.choose' => 'Choose …',
 	'prw.favicon.replace' => 'Replace …',
 	'prw.favicon.remove' => 'Remove',
-	'prw.favicon.preview' => 'Preview',
-	'prw.favicon.preview.help' => 'This is how the favicon appears on the website.',
 	'prw.favicon.preview.empty' => 'No favicon yet – the preview appears after uploading.',
 	'prw.favicon.preview.tab' => 'Browser tab',
 	'prw.favicon.preview.home' => 'Home screen',

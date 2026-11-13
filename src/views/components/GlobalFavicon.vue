@@ -1,5 +1,5 @@
 <template>
-  <!-- Project → Favicon: upload on the left, preview on the right. Saved right
+  <!-- Project → Favicon: the upload, the preview in the sidebar. Saved right
        away (like a font upload) – files, not settings with a save button -->
   <div class="pw-favicon">
     <section class="pw-card-section">
@@ -76,13 +76,11 @@
       </div>
     </section>
 
-    <section class="pw-card-section">
-      <div class="pw-card-heading-row">
-        <h3 class="pw-card-heading">{{ $t('prw.favicon.preview') }}</h3>
-      </div>
-      <div class="pw-card pw-favicon-card">
-        <p class="pw-favicon-help">{{ data.urls ? $t('prw.favicon.preview.help') : $t('prw.favicon.preview.empty') }}</p>
-        <template v-if="data.urls">
+    <!-- the preview in the wizard's sidebar on the right, like the fonts -->
+    <pw-portal to=".pw-wizard .pw-preview-column">
+      <div class="pw-favicon-preview">
+        <p v-if="!data.urls" class="pw-favicon-help">{{ $t('prw.favicon.preview.empty') }}</p>
+        <template v-else>
           <div class="pw-favicon-group">
             <h4>{{ $t('prw.favicon.preview.tab') }}</h4>
             <div class="pw-favicon-tabs">
@@ -111,7 +109,7 @@
           </div>
         </template>
       </div>
-    </section>
+    </pw-portal>
   </div>
 </template>
 
@@ -182,15 +180,6 @@ export default {
 </script>
 
 <style>
-.pw-favicon {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: var(--spacing-6);
-  align-items: start;
-}
-.pw-favicon .pw-card-section {
-  margin-bottom: 0;
-}
 .pw-favicon-card {
   padding: var(--spacing-6);
 }
@@ -256,7 +245,10 @@ export default {
   color: var(--color-negative);
 }
 
-/* preview */
+/* preview (in the sidebar) */
+.pw-favicon-preview .pw-favicon-help {
+  margin-bottom: 0;
+}
 .pw-favicon-group + .pw-favicon-group {
   margin-top: var(--spacing-6);
 }
