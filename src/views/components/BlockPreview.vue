@@ -799,7 +799,7 @@ export default {
     // the overlay in the variant's colour with its strength, from the
     // texts' side
     cardOverlayStyle() {
-      const color = this.itemColor('item-overlay') || '#000000';
+      const color = this.overlayColor('item-overlay');
       // (the project's value; in the panel the block's own when set)
       const own = this.content ? this.content.cardoverlay : null;
       const raw = own !== undefined && own !== null && own !== '' ? own : this.itemValue('item-overlay-strength');
@@ -1434,6 +1434,13 @@ export default {
         if (group && group.vars && group.vars[name]) return group.vars[name].value;
       }
       return undefined;
+    },
+    // the overlay colour: in the panel a custom block's own (hero:
+    // overlaycolor, cards: cardoverlaycolor), else the variant's
+    overlayColor(name) {
+      const c = this.content;
+      const own = c && c.theme === 'custom' ? c[name === 'item-overlay' ? 'cardoverlaycolor' : 'overlaycolor'] : '';
+      return own || this.itemColor(name) || '#000000';
     },
     itemColor(name) {
       const ov = ((this.valueOverrides || {})[this.currentTheme] || {})[name];

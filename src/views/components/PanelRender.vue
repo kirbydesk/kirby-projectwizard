@@ -417,7 +417,7 @@ export default {
       const type = this.content.overlaytype;
       if (type !== 'solid' && type !== 'gradient') return null;
       const strength = parseInt(this.content[type === 'solid' ? 'overlayintensity' : 'overlaygradientintensity'], 10) || 0;
-      const color = 'color-mix(in srgb, ' + (this.itemColor('overlay') || '#000000') + ' ' + strength + '%, transparent)';
+      const color = 'color-mix(in srgb, ' + this.overlayColor('overlay') + ' ' + strength + '%, transparent)';
       if (type === 'solid') return { inset: 0, background: color };
       const side = this.content.overlayposition || 'left';
       // its size: the range, else the former steps
@@ -425,7 +425,7 @@ export default {
       const size = (isNaN(own) ? { small: 25, medium: 50, large: 75, xlarge: 100 }[this.content.overlaysize] || 50 : own) + '%';
       const across = side === 'left' || side === 'right';
       // full strength over its first 35 %, then easing out in steps
-      const base = this.itemColor('overlay') || '#000000';
+      const base = this.overlayColor('overlay');
       const stops = [[1, 0], [1, 35], [0.85, 45], [0.62, 55], [0.4, 65], [0.2, 75], [0.07, 87]]
         .map(([k, at]) => 'color-mix(in srgb, ' + base + ' ' + (strength * k) + '%, transparent) ' + at + '%');
       return {
