@@ -32,8 +32,9 @@ return [
 		'kirbydesk.pagewizard.reloadOnSave' => $kirby->user() !== null,
 
 		// the buttons above a page and the site: the AI buttons only with
-		// their plugins installed
-		'panel' => [
+		// their plugins installed. Kirby merges these options into the config –
+		// an array would switch on a Panel that a host config turned off
+		'panel' => $kirby->option('panel') === false ? false : [
 			'viewButtons' => [
 				'page' => array_values(array_filter([
 					'open', '-', 'settings',
