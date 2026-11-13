@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Favicon PNG</title>
+<style>
+  :root { --bg: #efefef; --card: #fff; --text: #16171a; --dim: #6b6f76; --line: #e8e8e8; --labelbg: #fafafa; --mono: ui-monospace, Menlo, monospace; --accent: #4271ae; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #2a2a2e; color: var(--text); padding: 24px 16px 60px; }
+  h1 { font-size: 18px; color: #f2f2f4; font-weight: 600; }
+  .lead { color: #a8a8ae; margin: 4px 0 12px; max-width: 1180px; }
+  .switch { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .switch button { border: 0; background: #3a3a40; color: #f2f2f4; font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+  .switch button.on { background: #0a84ff; }
+  .panel { max-width: 1180px; display: grid; grid-template-columns: minmax(0, 1fr) 380px; background: var(--bg); border-radius: 10px; overflow: hidden; margin-top: 10px; }
+  @media (max-width: 860px) { .panel { grid-template-columns: 1fr; } }
+  .main { padding: 18px 28px 40px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tabs span { background: #fff; border-radius: 6px; padding: 4px 10px; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .tabs span.on { background: #000; color: #fff; }
+  .title { font-size: 26px; font-weight: 600; padding: 6px 0 12px; border-bottom: 1px solid #ddd; margin-bottom: 26px; display: flex; gap: 10px; align-items: center; }
+  .sec { margin-bottom: 30px; }
+  .sec h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .card { background: var(--card); border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .row { display: grid; grid-template-columns: 185px 1fr; min-height: 38px; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .lab { background: var(--labelbg); border-right: 1px solid var(--line); font: 12px var(--mono); color: var(--dim); padding: 0 12px; display: flex; align-items: center; }
+  .val { display: flex; align-items: center; gap: 10px; padding: 6px 12px; min-width: 0; }
+  .help { font-size: 12px; line-height: 1.5; color: var(--dim); padding: 6px 2px 0; }
+  .file { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { font: 12px var(--mono); color: var(--dim); flex: none; }
+  .kbtn { flex: none; background: #f0f0f0; border: 0; border-radius: 4px; padding: 3px 10px; font: inherit; font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
+  .icon { flex: none; color: var(--dim); font-size: 16px; padding: 0 2px; }
+  .thumb { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 4px; background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 8px 8px; border: 1px solid var(--line); }
+  .swatch { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #ddd; background: #fff; flex: none; }
+  .mono { font: 14px var(--mono); }
+  /* Variante B: Fläche */
+  .drop { padding: 22px; display: flex; gap: 18px; align-items: center; }
+  .drop.empty { border: 1px dashed #c8c8c8; border-radius: 4px; margin: 14px; padding: 26px; justify-content: center; flex-direction: column; color: var(--dim); gap: 6px; text-align: center; }
+  .big { width: 88px; height: 88px; flex: none; display: grid; place-items: center; border-radius: 8px; background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 12px 12px; border: 1px solid var(--line); }
+  .bigmeta { flex: 1; min-width: 0; }
+  .bigmeta .name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bigmeta .sub { font: 12px var(--mono); color: var(--dim); margin: 2px 0 10px; }
+  .bigmeta .btns { display: flex; gap: 8px; }
+  /* Seitenleiste */
+  .side { background: #fff; border-left: 1px solid #e3e3e3; padding: 18px 22px; }
+  .side h4 { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); font-weight: 500; margin: 0 0 6px; }
+  .side .g + .g { margin-top: 20px; }
+  .tabs2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .br { border-radius: 8px; padding: 7px 7px 0; background: #dfe1e5; } .br.dark { background: #202124; }
+  .bt { display: flex; gap: 7px; align-items: center; background: #fff; border-radius: 7px 7px 0 0; padding: 6px 9px; font-size: 12px; white-space: nowrap; overflow: hidden; }
+  .dark .bt { background: #35363a; color: #e8eaed; }
+  .home { display: flex; gap: 16px; padding: 12px 16px; border-radius: 12px; background: linear-gradient(160deg, #6a7fd6, #b06ab3); }
+  .app { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: #fff; }
+  .app span.i { width: 54px; height: 54px; border-radius: 12px; background: #fff; display: grid; place-items: center; }
+  .app.round span.i { border-radius: 50%; }
+  .serp { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; font-size: 12px; line-height: 1.35; }
+  .serp small { display: block; color: var(--dim); }
+  .files { font: 12px/1.6 var(--mono); color: var(--dim); }
+  .empty-side { color: var(--dim); font-size: 13px; }
+  .notes { max-width: 1180px; color: #ff9f0a; font-size: 12.5px; margin-top: 12px; }
+
+  .hrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .hrow h3 { margin: 0; }
+  .seg { display: inline-flex; background: #fff; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,.08); padding: 2px; gap: 2px; }
+  .seg span { font-size: 12px; padding: 2px 12px; border-radius: 3px; cursor: pointer; color: var(--text); }
+  .seg span.on { background: #16171a; color: #fff; }
+  .card .seg { box-shadow: none; border: 1px solid var(--line); }
+  .pngthumb { width: 60px; height: 60px; }
+</style>
+</head>
+<body>
+<h1>Favicon – Schalter SVG / PNG</h1>
+<p class="lead">Für Kunden ohne SVG: ein Umschalter, SVG ist voreingestellt. Oben Platz des Schalters und Zustand wählen, im Mockup lässt sich der Schalter auch direkt anklicken. Erläuterungen in Orange gehören nicht zum Plugin.</p>
+<div class="switch" id="var"></div>
+<div class="switch" id="state"></div>
+<div class="panel">
+  <div class="main">
+    <div class="tabs"><span class="on">Projekt ▾</span><span>Elemente ▾</span><span>Blöcke ▾</span><span>Einstellungen ▾</span></div>
+    <div class="title">🖼 Favicon</div>
+    <div id="content"></div>
+  </div>
+  <div class="side" id="side"></div>
+</div>
+<div class="notes" id="notes"></div>
+
+<script>
+  const logo = (s) => `<svg width="${s}" height="${s}" viewBox="0 0 64 64"><path d="M32 4C18 4 8 14 8 27c0 16 24 33 24 33s24-17 24-33C56 14 46 4 32 4z" fill="#e30613"/><circle cx="32" cy="27" r="12" fill="#fff"/><path d="M26 27h13a7 7 0 1 0-2 5" stroke="#e30613" stroke-width="4" fill="none"/></svg>`;
+  const intro = 'Das Symbol der Website im Browser-Tab, in Lesezeichen, in Suchergebnissen und auf dem Home-Bildschirm von iPhone und Android.';
+  const T = {
+    svg: { file: 'EN4M_Tropfen_Favicon.svg', sub: 'SVG · 1 KB', drop: 'SVG hierher ziehen oder hochladen',
+      text: 'Daraus entstehen alle Größen für Browser, iPhone und Android.', btn: 'SVG hochladen' },
+    png: { file: 'EN4M_Tropfen_Favicon.png', sub: 'PNG · 512 × 512 · 24 KB', drop: 'PNG hierher ziehen oder hochladen',
+      text: 'Quadratisch, mindestens 512 × 512 Pixel. Daraus entstehen alle Größen für Browser, iPhone und Android.', btn: 'PNG hochladen' },
+  };
+  const pngHelp = 'Ein SVG bleibt in jeder Größe scharf – nimm PNG nur, wenn es kein SVG gibt.';
+  const seg = () => `<span class="seg"><span data-f="svg" class="${fmt === 'svg' ? 'on' : ''}">SVG</span><span data-f="png" class="${fmt === 'png' ? 'on' : ''}">PNG</span></span>`;
+  const area = () => { const t = T[fmt]; return set
+    ? `<div class="drop"><span class="big">${logo(60)}</span><div class="bigmeta"><div class="name">${t.file}</div><div class="sub">${t.sub}</div><div class="btns"><button class="kbtn">Ersetzen …</button><button class="kbtn">Entfernen</button></div></div></div>`
+    : `<div class="drop empty"><span style="font-size:22px">⤒</span><b style="color:var(--text);font-weight:500">${t.drop}</b><span style="font-size:12px">${t.text}</span><button class="kbtn" style="margin-top:6px">${t.btn}</button></div>`; };
+  const help = () => `<p class="help">${intro}${set ? ' ' + T[fmt].text.replace('Quadratisch, mindestens 512 × 512 Pixel. ', '') : ''}${fmt === 'png' ? ' ' + pngHelp : ''}</p>`;
+  const app = `<div class="sec"><h3>App-Symbole</h3><div class="card"><div class="row"><div class="lab">Hintergrund</div><div class="val"><span class="swatch"></span><span class="mono">#ffffff</span></div></div></div><p class="help">Der Hintergrund der App-Symbole auf iPhone und Android. iPhone füllt Transparenz sonst schwarz.</p></div>`;
+  const V = {
+    A: { k: 'A · Schalter rechts neben der Überschrift',
+      html: () => `<div class="sec"><div class="hrow"><h3>Favicon</h3>${seg()}</div><div class="card">${area()}</div>${help()}</div>${app}`,
+      notes: '<p>Der Schalter steht rechts in der Überschriftenzeile, wie die Knöpfe über anderen Karten im Project Wizard. Die Karte bleibt unverändert, nur Texte und erlaubter Dateityp wechseln.</p>' },
+    B: { k: 'B · Zeile „Format“ in der Karte',
+      html: () => `<div class="sec"><h3>Favicon</h3><div class="card"><div class="row"><div class="lab">Format</div><div class="val">${seg()}</div></div><div style="border-top:1px solid var(--line)">${area()}</div></div>${help()}</div>${app}`,
+      notes: '<p>Eine beschriftete Zeile „Format“ über der Fläche, wie die Zeilen unter Site. Deutlicher, aber eine Zeile mehr für etwas, das fast nie umgestellt wird.</p>' },
+  };
+  const files = () => fmt === 'svg' ? 'favicon.ico · favicon.svg · apple-touch-icon.png · icon-192.png · icon-512.png · site.webmanifest'
+                                    : 'favicon.ico · apple-touch-icon.png · icon-192.png · icon-512.png · site.webmanifest';
+  const side = () => set ? `
+      <div class="g"><h4>Browser-Tab</h4><div class="tabs2"><div class="br"><div class="bt">${logo(14)} ENCOM Lab</div></div><div class="br dark"><div class="bt">${logo(14)} ENCOM Lab</div></div></div></div>
+      <div class="g"><h4>Home-Bildschirm</h4><div class="home"><span class="app"><span class="i">${logo(40)}</span>iPhone</span><span class="app round"><span class="i">${logo(40)}</span>Android</span></div></div>
+      <div class="g"><h4>Suchergebnis</h4><div class="serp">${logo(18)}<span>ENCOM Lab<small>https://encom-lab.de</small></span></div></div>
+      <div class="g"><h4>Erzeugte Dateien</h4><div class="files">${files()}</div></div>`
+    : `<p class="empty-side">Noch kein Favicon – die Vorschau erscheint nach dem Hochladen.</p>`;
+  const common = '<p>Verhalten: SVG ist voreingestellt. Nach dem Hochladen zeigt der Schalter das Format der Datei. Umschalten zeigt die leere Fläche fürs andere Format – das bisherige Favicon bleibt aktiv, bis du ein neues hochlädst; dann ersetzt es das alte. Bei PNG prüft das Plugin wie gehabt: quadratisch, mindestens 512 × 512. Ohne SVG fehlt nur favicon.svg, alles andere entsteht aus dem PNG (pagewizard kann das schon).</p>';
+  let cur = 'A', set = false, fmt = 'png';
+  const vb = document.getElementById('var'), sb = document.getElementById('state');
+  Object.entries(V).forEach(([k, v]) => { const b = document.createElement('button'); b.textContent = v.k; b.onclick = () => { cur = k; render(); }; vb.appendChild(b); });
+  [['SVG · leer', 'svg', false], ['SVG · gesetzt', 'svg', true], ['PNG · leer', 'png', false], ['PNG · gesetzt', 'png', true]].forEach(([t, f, s]) => {
+    const b = document.createElement('button'); b.textContent = t; b.onclick = () => { fmt = f; set = s; render(); }; b.dataset.k = f + s; sb.appendChild(b); });
+  document.getElementById('content').addEventListener('click', (e) => { const f = e.target.dataset.f; if (f && f !== fmt) { fmt = f; set = false; render(); } });
+  function render() {
+    [...vb.children].forEach((b, i) => b.classList.toggle('on', Object.keys(V)[i] === cur));
+    [...sb.children].forEach((b) => b.classList.toggle('on', b.dataset.k === fmt + set));
+    content.innerHTML = V[cur].html(); document.getElementById('side').innerHTML = side();
+    notes.innerHTML = V[cur].notes + common;
+  }
+  render();
+</script>
+</body>
+</html>

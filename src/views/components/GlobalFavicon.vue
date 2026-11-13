@@ -6,19 +6,27 @@
     <section class="pw-card-section">
       <div class="pw-card-heading-row">
         <h3 class="pw-card-heading">{{ $t('prw.tab.favicon') }}</h3>
+        <!-- SVG by default; PNG for customers who have no SVG -->
+        <k-toggles-input
+          :value="format"
+          :options="[{ value: 'svg', text: 'SVG' }, { value: 'png', text: 'PNG' }]"
+          :grow="false"
+          :required="true"
+          @input="format = $event; error = ''"
+        />
       </div>
       <div
         class="pw-card pw-favicon-card"
-        :class="{ 'is-over': over, 'is-empty': !data.svg }"
+        :class="{ 'is-over': over, 'is-empty': !current }"
         @dragover.prevent="over = true"
         @dragleave="over = false"
         @drop.prevent="onDrop"
       >
-        <template v-if="data.svg">
-          <span class="pw-favicon-big"><img :src="data.svg.url" alt="" /></span>
+        <template v-if="current">
+          <span class="pw-favicon-big"><img :src="current.url" alt="" /></span>
           <div class="pw-favicon-info">
-            <div class="pw-favicon-name">{{ data.svg.name }}</div>
-            <div class="pw-favicon-size">SVG · {{ fileSize(data.svg.size) }}</div>
+            <div class="pw-favicon-name">{{ current.name }}</div>
+            <div class="pw-favicon-size">{{ currentMeta }}</div>
             <div class="pw-favicon-buttons">
               <k-button :text="$t('prw.favicon.replace')" variant="filled" size="sm" :disabled="busy" @click="$refs.input.click()" />
               <k-button :text="$t('prw.favicon.remove')" variant="filled" size="sm" :disabled="busy" @click="remove" />
@@ -27,14 +35,14 @@
         </template>
         <template v-else>
           <k-icon type="upload" class="pw-favicon-drop-icon" />
-          <strong class="pw-favicon-drop-title">{{ $t('prw.favicon.dropSvg') }}</strong>
-          <span class="pw-favicon-drop-text">{{ $t('prw.favicon.svg.help') }}</span>
-          <k-button :text="$t('prw.favicon.upload')" variant="filled" size="sm" :disabled="busy" @click="$refs.input.click()" />
+          <strong class="pw-favicon-drop-title">{{ $t(format === 'png' ? 'prw.favicon.dropPng' : 'prw.favicon.dropSvg') }}</strong>
+          <span class="pw-favicon-drop-text">{{ format === 'png' ? $t('prw.favicon.png.help') + ' ' + $t('prw.favicon.svg.help') : $t('prw.favicon.svg.help') }}</span>
+          <k-button :text="$t(format === 'png' ? 'prw.favicon.uploadPng' : 'prw.favicon.upload')" variant="filled" size="sm" :disabled="busy" @click="$refs.input.click()" />
         </template>
-        <input ref="input" type="file" accept="image/svg+xml,.svg" hidden @change="onSelect" />
+        <input ref="input" type="file" :accept="format === 'png' ? 'image/png,.png' : 'image/svg+xml,.svg'" hidden @change="onSelect" />
       </div>
       <p v-if="error" class="pw-favicon-note pw-favicon-error">{{ error }}</p>
-      <p class="pw-favicon-note">{{ $t('prw.favicon.intro') }}<template v-if="data.svg"> {{ $t('prw.favicon.svg.help') }}</template></p>
+      <p class="pw-favicon-note">{{ $t('prw.favicon.intro') }}<template v-if="current"> {{ $t('prw.favicon.svg.help') }}</template><template v-if="format === 'png'"> {{ $t('prw.favicon.png.hint') }}</template></p>
     </section>
 
     <!-- background of the app icons: one row, like the colours under Site -->
@@ -139,6 +147,16 @@ async function svgToPng(text, size = 512) {
   }
 }
 
+/** A file as base64 without the data: prefix */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default {
   data() {
     return {
@@ -146,9 +164,21 @@ export default {
       error: '',
       over: false,
       busy: false,
+      format: 'svg',
     };
   },
   computed: {
+    /** The uploaded file of the chosen format – the PNG counts only without an SVG (otherwise it's made from it) */
+    current() {
+      if (this.format === 'svg') return this.data.svg;
+      return this.data.svg ? null : this.data.png;
+    },
+    currentMeta() {
+      const file = this.current;
+      return this.format === 'png'
+        ? `PNG · ${file.width} × ${file.height} · ${this.fileSize(file.size)}`
+        : `SVG · ${this.fileSize(file.size)}`;
+    },
     siteTitle() {
       return this.$panel.system?.title || this.$panel.site?.title || '';
     },
@@ -158,6 +188,7 @@ export default {
   },
   async created() {
     this.data = await this.$api.get('projectwizard/favicon');
+    if (this.data.png && !this.data.svg) this.format = 'png';
     // an SVG without its PNG (uploaded before the PNG was made from it): make it now
     if (this.data.svg && !this.data.png) {
       const response = await fetch(this.data.svg.url);
@@ -182,6 +213,17 @@ export default {
       this.error = '';
       this.busy = true;
       try {
+        // the file decides: a PNG dropped onto the SVG switch is fine too
+        if (file.type === 'image/png' || /\.png$/i.test(file.name)) {
+          const result = await this.$api.post('projectwizard/favicon/upload', {
+            kind: 'png',
+            name: file.name,
+            data: await fileToBase64(file),
+          });
+          if (result.error) this.error = result.error;
+          else { this.data = result; this.format = 'png'; }
+          return;
+        }
         const text = await file.text();
         let png;
         try {
@@ -197,7 +239,7 @@ export default {
           png,
         });
         if (result.error) this.error = result.error;
-        else this.data = result;
+        else { this.data = result; this.format = 'svg'; }
       } finally {
         this.busy = false;
       }
@@ -205,7 +247,7 @@ export default {
     async remove() {
       this.busy = true;
       try {
-        this.data = await this.$api.delete('projectwizard/favicon/svg');
+        this.data = await this.$api.delete('projectwizard/favicon/' + this.format);
       } finally {
         this.busy = false;
       }

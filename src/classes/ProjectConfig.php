@@ -846,7 +846,9 @@ class ProjectConfig
 		if (!is_dir($dir)) mkdir($dir, 0755, true);
 		file_put_contents($dir . '/favicon.' . $kind, $binary);
 		if ($kind === 'svg' && $png !== null) file_put_contents($dir . '/favicon.png', $png);
-		self::saveFaviconSettings([$kind . 'Name' => basename($name)]);
+		// a PNG on its own replaces the SVG (the customer has none)
+		if ($kind === 'png') @unlink($dir . '/favicon.svg');
+		self::saveFaviconSettings([$kind . 'Name' => basename($name)] + ($kind === 'png' ? ['svgName' => null] : []));
 		return null;
 	}
 
