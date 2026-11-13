@@ -9,54 +9,48 @@
       <div class="pw-card pw-favicon-card">
         <p class="pw-favicon-help">{{ $t('prw.favicon.intro') }}</p>
 
-        <!-- the PNG, then the optional SVG -->
-        <div v-for="kind in ['png', 'svg']" :key="kind" class="pw-favicon-field">
+        <!-- the SVG – the PNG sizes are made from it in the browser -->
+        <div class="pw-favicon-field">
           <div class="pw-favicon-label">
-            {{ $t('prw.favicon.' + kind) }}
-            <small>{{ $t('prw.favicon.' + kind + '.help') }}</small>
+            {{ $t('prw.favicon.svg') }}
+            <small>{{ $t('prw.favicon.svg.help') }}</small>
           </div>
           <div
             class="pw-favicon-drop"
-            :class="{ 'is-over': over === kind }"
-            @dragover.prevent="over = kind"
-            @dragleave="over = null"
-            @drop.prevent="onDrop(kind, $event)"
+            :class="{ 'is-over': over }"
+            @dragover.prevent="over = true"
+            @dragleave="over = false"
+            @drop.prevent="onDrop"
           >
             <span class="pw-favicon-thumb">
-              <img v-if="data[kind]" :src="data[kind].url" alt="" />
+              <img v-if="data.svg" :src="data.svg.url" alt="" />
               <k-icon v-else type="add" />
             </span>
             <span class="pw-favicon-meta">
-              <template v-if="data[kind]">
-                {{ data[kind].name }}
-                <small>{{ kind === 'png' ? data.png.width + ' × ' + data.png.height + ' · ' : '' }}{{ fileSize(data[kind].size) }}</small>
+              <template v-if="data.svg">
+                {{ data.svg.name }}
+                <small>{{ fileSize(data.svg.size) }}</small>
               </template>
-              <template v-else>{{ $t(kind === 'png' ? 'prw.favicon.drop' : 'prw.favicon.dropSvg') }}</template>
+              <template v-else>{{ $t('prw.favicon.dropSvg') }}</template>
             </span>
             <k-button
-              :text="$t(data[kind] ? 'prw.favicon.replace' : 'prw.favicon.choose')"
+              :text="$t(data.svg ? 'prw.favicon.replace' : 'prw.favicon.choose')"
               variant="filled"
               size="sm"
               :disabled="busy"
-              @click="$refs['input-' + kind][0].click()"
+              @click="$refs.input.click()"
             />
             <k-button
-              v-if="data[kind]"
+              v-if="data.svg"
               :text="$t('prw.favicon.remove')"
               variant="filled"
               size="sm"
               :disabled="busy"
-              @click="remove(kind)"
+              @click="remove"
             />
-            <input
-              :ref="'input-' + kind"
-              type="file"
-              :accept="kind === 'png' ? 'image/png' : 'image/svg+xml,.svg'"
-              hidden
-              @change="onSelect(kind, $event)"
-            />
+            <input ref="input" type="file" accept="image/svg+xml,.svg" hidden @change="onSelect" />
           </div>
-          <p v-if="errors[kind]" class="pw-favicon-error">{{ errors[kind] }}</p>
+          <p v-if="error" class="pw-favicon-error">{{ error }}</p>
         </div>
 
         <!-- background of the app icons -->
@@ -114,12 +108,44 @@
 </template>
 
 <script>
+/** The SVG drawn into a square PNG (contained, centred, transparent) – base64 without the data: prefix */
+async function svgToPng(text, size = 512) {
+  const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+  const svg = doc.documentElement;
+  if (!svg || svg.nodeName.toLowerCase() !== 'svg') throw new Error('no svg');
+  // the proportions from the viewBox, otherwise from width/height
+  const box = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+  let width = box.length === 4 ? box[2] : parseFloat(svg.getAttribute('width'));
+  let height = box.length === 4 ? box[3] : parseFloat(svg.getAttribute('height'));
+  if (!(width > 0 && height > 0)) width = height = size;
+  const scale = size / Math.max(width, height);
+  const w = Math.round(width * scale);
+  const h = Math.round(height * scale);
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', h);
+  const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' }));
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    canvas.getContext('2d').drawImage(image, (size - w) / 2, (size - h) / 2, w, h);
+    return canvas.toDataURL('image/png').split(',')[1];
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 export default {
   data() {
     return {
       data: { png: null, svg: null, background: '#ffffff', urls: null, files: [] },
-      errors: { png: '', svg: '' },
-      over: null,
+      error: '',
+      over: false,
       busy: false,
     };
   },
@@ -138,36 +164,44 @@ export default {
     fileSize(bytes) {
       return bytes >= 1024 ? Math.round(bytes / 1024) + ' KB' : bytes + ' B';
     },
-    onSelect(kind, event) {
+    onSelect(event) {
       const file = event.target.files[0];
       event.target.value = '';
-      if (file) this.upload(kind, file);
+      if (file) this.upload(file);
     },
-    onDrop(kind, event) {
-      this.over = null;
+    onDrop(event) {
+      this.over = false;
       const file = event.dataTransfer.files[0];
-      if (file) this.upload(kind, file);
+      if (file) this.upload(file);
     },
-    async upload(kind, file) {
-      this.errors[kind] = '';
+    async upload(file) {
+      this.error = '';
       this.busy = true;
       try {
-        const base64 = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.readAsDataURL(file);
+        const text = await file.text();
+        let png;
+        try {
+          png = await svgToPng(text);
+        } catch (e) {
+          this.error = this.$t('prw.favicon.error.render');
+          return;
+        }
+        const result = await this.$api.post('projectwizard/favicon/upload', {
+          kind: 'svg',
+          name: file.name,
+          data: btoa(unescape(encodeURIComponent(text))),
+          png,
         });
-        const result = await this.$api.post('projectwizard/favicon/upload', { kind, name: file.name, data: base64 });
-        if (result.error) this.errors[kind] = result.error;
+        if (result.error) this.error = result.error;
         else this.data = result;
       } finally {
         this.busy = false;
       }
     },
-    async remove(kind) {
+    async remove() {
       this.busy = true;
       try {
-        this.data = await this.$api.delete('projectwizard/favicon/' + kind);
+        this.data = await this.$api.delete('projectwizard/favicon/svg');
       } finally {
         this.busy = false;
       }

@@ -486,15 +486,16 @@ return [
 				return ProjectConfig::loadFavicon();
 			}
 		],
-		// Upload the PNG or the SVG (base64, must be before (:any) route)
+		// Upload the SVG with the PNG the Panel drew from it (base64, must be before (:any) route)
 		[
 			'pattern' => 'projectwizard/favicon/upload',
 			'method'  => 'POST',
 			'action'  => function () {
 				$data = kirby()->request()->body()->toArray();
 				$binary = base64_decode($data['data'] ?? '', true);
-				$error = $binary
-					? ProjectConfig::uploadFavicon((string) ($data['kind'] ?? ''), (string) ($data['name'] ?? ''), $binary)
+				$png = isset($data['png']) ? base64_decode((string) $data['png'], true) : null;
+				$error = $binary && $png !== false
+					? ProjectConfig::uploadFavicon((string) ($data['kind'] ?? ''), (string) ($data['name'] ?? ''), $binary, $png)
 					: t('prw.error.invalidFile', 'Invalid file');
 				return $error ? ['error' => $error] : ProjectConfig::loadFavicon();
 			}

@@ -825,15 +825,12 @@ class ProjectConfig
 	 * Store an uploaded favicon: kind "png" (square, at least 512 × 512) or
 	 * "svg" (checked by Kirby's SVG sanitizer). Returns an error text or null.
 	 */
-	public static function uploadFavicon(string $kind, string $name, string $binary): ?string
+	public static function uploadFavicon(string $kind, string $name, string $binary, ?string $png = null): ?string
 	{
+		// the SVG brings its PNG along (drawn by the Panel) – both or neither
+		if ($kind === 'svg' && $png !== null && ($error = self::checkFaviconPng($png))) return $error;
 		if ($kind === 'png') {
-			$size = str_starts_with($binary, "\x89PNG\r\n\x1a\n") ? getimagesizefromstring($binary) : false;
-			if (!$size) return t('prw.favicon.error.png');
-			[$width, $height] = $size;
-			if ($width !== $height || $width < pwFavicon::MIN_SIZE) {
-				return tt('prw.favicon.error.size', null, ['width' => $width, 'height' => $height]);
-			}
+			if ($error = self::checkFaviconPng($binary)) return $error;
 		} elseif ($kind === 'svg') {
 			try {
 				if (!str_contains($binary, '<svg')) throw new \Exception();
@@ -848,7 +845,20 @@ class ProjectConfig
 		$dir = pwFavicon::dir();
 		if (!is_dir($dir)) mkdir($dir, 0755, true);
 		file_put_contents($dir . '/favicon.' . $kind, $binary);
+		if ($kind === 'svg' && $png !== null) file_put_contents($dir . '/favicon.png', $png);
 		self::saveFaviconSettings([$kind . 'Name' => basename($name)]);
+		return null;
+	}
+
+	/** A square PNG, at least 512 × 512 – error text or null */
+	private static function checkFaviconPng(string $binary): ?string
+	{
+		$size = str_starts_with($binary, "\x89PNG\r\n\x1a\n") ? getimagesizefromstring($binary) : false;
+		if (!$size) return t('prw.favicon.error.png');
+		[$width, $height] = $size;
+		if ($width !== $height || $width < pwFavicon::MIN_SIZE) {
+			return tt('prw.favicon.error.size', null, ['width' => $width, 'height' => $height]);
+		}
 		return null;
 	}
 
@@ -856,6 +866,8 @@ class ProjectConfig
 	{
 		if (!in_array($kind, ['png', 'svg'], true)) return;
 		@unlink(pwFavicon::dir() . '/favicon.' . $kind);
+		// the PNG is made from the SVG – it goes with it
+		if ($kind === 'svg') @unlink(pwFavicon::dir() . '/favicon.png');
 		self::saveFaviconSettings([$kind . 'Name' => null]);
 	}
 
