@@ -6,74 +6,70 @@
       <div class="pw-card-heading-row">
         <h3 class="pw-card-heading">{{ $t('prw.tab.favicon') }}</h3>
       </div>
-      <div class="pw-card pw-favicon-card">
-        <p class="pw-favicon-help">{{ $t('prw.favicon.intro') }}</p>
+      <!-- the same rows as the fonts: label on the left, the file on the right -->
+      <div class="pw-card pw-field-table">
+        <section class="pw-element-section">
+          <div class="pw-element-list">
+            <div
+              class="pw-field-row"
+              :class="{ 'is-over': over }"
+              @dragover.prevent="over = true"
+              @dragleave="over = false"
+              @drop.prevent="onDrop"
+            >
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ $t('prw.favicon.svg') }}</label>
+                  </div>
+                  <div class="pw-field-row-options">
+                    <template v-if="data.svg">
+                      <img class="pw-favicon-thumb" :src="data.svg.url" alt="" />
+                      <span class="pw-font-file-name pw-favicon-file">{{ data.svg.name }}</span>
+                      <span class="pw-font-weight-label pw-favicon-size">{{ fileSize(data.svg.size) }}</span>
+                    </template>
+                    <label class="pw-font-upload-btn" :class="{ 'is-disabled': busy }">
+                      <k-icon type="upload" />
+                      {{ $t(data.svg ? 'prw.favicon.replace' : 'prw.favicon.upload') }}
+                      <input type="file" accept="image/svg+xml,.svg" style="display:none" :disabled="busy" @change="onSelect" />
+                    </label>
+                    <button v-if="data.svg" type="button" class="pw-font-delete" :title="$t('prw.favicon.remove')" :disabled="busy" @click="remove">×</button>
+                  </div>
+                </span>
+              </div>
+            </div>
+            <div v-if="error" class="pw-font-help pw-favicon-error">{{ error }}</div>
+            <div class="pw-font-help">{{ $t('prw.favicon.intro') }} {{ $t('prw.favicon.svg.help') }}</div>
 
-        <!-- the SVG – the PNG sizes are made from it in the browser -->
-        <div class="pw-favicon-field">
-          <div class="pw-favicon-label">
-            {{ $t('prw.favicon.svg') }}
-            <small>{{ $t('prw.favicon.svg.help') }}</small>
+            <!-- background of the app icons -->
+            <div class="pw-field-row">
+              <div class="k-input" data-type="text">
+                <span class="k-input-element pw-field-row-inner">
+                  <div class="pw-field-row-label-col">
+                    <label class="pw-field-row-label">{{ $t('prw.favicon.background') }}</label>
+                  </div>
+                  <div class="pw-field-row-options">
+                    <pw-color-field-row
+                      group="favicon"
+                      var-name="background"
+                      default-value="#ffffff"
+                      :override-value="data.background === '#ffffff' ? '' : data.background"
+                      @update:value="setBackground"
+                    />
+                  </div>
+                </span>
+              </div>
+            </div>
+            <div class="pw-font-help">{{ $t('prw.favicon.background.help') }}</div>
           </div>
-          <div
-            class="pw-favicon-drop"
-            :class="{ 'is-over': over }"
-            @dragover.prevent="over = true"
-            @dragleave="over = false"
-            @drop.prevent="onDrop"
-          >
-            <span class="pw-favicon-thumb">
-              <img v-if="data.svg" :src="data.svg.url" alt="" />
-              <k-icon v-else type="add" />
-            </span>
-            <span class="pw-favicon-meta">
-              <template v-if="data.svg">
-                {{ data.svg.name }}
-                <small>{{ fileSize(data.svg.size) }}</small>
-              </template>
-              <template v-else>{{ $t('prw.favicon.dropSvg') }}</template>
-            </span>
-            <k-button
-              :text="$t(data.svg ? 'prw.favicon.replace' : 'prw.favicon.choose')"
-              variant="filled"
-              size="sm"
-              :disabled="busy"
-              @click="$refs.input.click()"
-            />
-            <k-button
-              v-if="data.svg"
-              :text="$t('prw.favicon.remove')"
-              variant="filled"
-              size="sm"
-              :disabled="busy"
-              @click="remove"
-            />
-            <input ref="input" type="file" accept="image/svg+xml,.svg" hidden @change="onSelect" />
-          </div>
-          <p v-if="error" class="pw-favicon-error">{{ error }}</p>
-        </div>
-
-        <!-- background of the app icons -->
-        <div class="pw-favicon-field">
-          <div class="pw-favicon-label">
-            {{ $t('prw.favicon.background') }}
-            <small>{{ $t('prw.favicon.background.help') }}</small>
-          </div>
-          <pw-color-field-row
-            group="favicon"
-            var-name="background"
-            default-value="#ffffff"
-            :override-value="data.background === '#ffffff' ? '' : data.background"
-            @update:value="setBackground"
-          />
-        </div>
+        </section>
       </div>
     </section>
 
     <!-- the preview in the wizard's sidebar on the right, like the fonts -->
     <pw-portal to=".pw-wizard .pw-preview-column">
       <div class="pw-favicon-preview">
-        <p v-if="!data.urls" class="pw-favicon-help">{{ $t('prw.favicon.preview.empty') }}</p>
+        <p v-if="!data.urls" class="pw-font-help">{{ $t('prw.favicon.preview.empty') }}</p>
         <template v-else>
           <div class="pw-favicon-group">
             <h4>{{ $t('prw.favicon.preview.tab') }}</h4>
@@ -159,6 +155,11 @@ export default {
   },
   async created() {
     this.data = await this.$api.get('projectwizard/favicon');
+    // an SVG without its PNG (uploaded before the PNG was made from it): make it now
+    if (this.data.svg && !this.data.png) {
+      const response = await fetch(this.data.svg.url);
+      if (response.ok) await this.upload(new File([await response.text()], this.data.svg.name, { type: 'image/svg+xml' }));
+    }
   },
   methods: {
     fileSize(bytes) {
@@ -214,74 +215,45 @@ export default {
 </script>
 
 <style>
-.pw-favicon-card {
-  padding: var(--spacing-6);
+.pw-favicon .pw-field-row.is-over {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
 }
-.pw-favicon-help {
-  font-size: var(--text-sm);
-  color: var(--color-text-dimmed);
-  margin-bottom: var(--spacing-6);
+.pw-favicon .pw-field-row-options {
+  flex-wrap: nowrap;
+  min-width: 0;
 }
-.pw-favicon-field + .pw-favicon-field {
-  margin-top: var(--spacing-6);
-}
-.pw-favicon-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semi);
-  margin-bottom: var(--spacing-2);
-}
-.pw-favicon-label small {
-  font-weight: var(--font-normal);
-  color: var(--color-text-dimmed);
-  margin-left: var(--spacing-2);
-}
-.pw-favicon-drop {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  padding: var(--spacing-3);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--rounded);
-  background: light-dark(var(--color-gray-100), var(--color-gray-850));
-}
-.pw-favicon-drop.is-over {
-  border-color: var(--color-focus);
+/* (the fonts' file names keep a minimum width – here the name may shrink) */
+.pw-favicon-file {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pw-favicon-thumb {
-  width: 3.5rem;
-  height: 3.5rem;
-  flex: none;
-  display: grid;
-  place-items: center;
-  border-radius: var(--rounded);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-dimmed);
-  background: repeating-conic-gradient(light-dark(#eee, #333) 0 25%, transparent 0 50%) 0 0 / 12px 12px;
-}
-.pw-favicon-thumb img {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 22px;
+  height: 22px;
   object-fit: contain;
+  flex: none;
 }
-.pw-favicon-meta {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--text-sm);
-  overflow-wrap: anywhere;
+.pw-favicon-size,
+.pw-favicon .pw-font-upload-btn {
+  flex: none;
+  white-space: nowrap;
 }
-.pw-favicon-meta small {
-  display: block;
-  color: var(--color-text-dimmed);
+.pw-favicon .pw-font-upload-btn.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 .pw-favicon-error {
-  margin-top: var(--spacing-2);
-  font-size: var(--text-sm);
   color: var(--color-negative);
 }
 
-/* preview (in the sidebar) */
-.pw-favicon-preview .pw-favicon-help {
-  margin-bottom: 0;
+/* preview (in the sidebar), on white like the configuration's tree – not
+   on the page background of the site */
+.pw-wizard .pw-preview-column:has(> .pw-portal > .pw-favicon-preview) {
+  background: light-dark(var(--color-white), var(--color-gray-900));
 }
 .pw-favicon-group + .pw-favicon-group {
   margin-top: var(--spacing-6);
