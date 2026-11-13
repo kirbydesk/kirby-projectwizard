@@ -33,6 +33,8 @@ export default {
     block: { type: String, default: '' },
     // the colour's name in its values (cards: item-overlay, hero: overlay)
     swatch: { type: String, default: 'item-overlay' },
+    // the block's own colour field for the custom variant (cards: cardoverlaycolor)
+    color: { type: String, default: '' },
   },
   computed: {
     blockData() {
@@ -53,8 +55,11 @@ export default {
       const chosen = this.formValues.theme || 'default';
       return list.includes(chosen) ? chosen : 'default';
     },
-    // the overlay colour of that variant (the project's, else the plugin's)
+    // the overlay colour of that variant (the project's, else the plugin's);
+    // custom: the block's own colour, if set
     overlayColor() {
+      const custom = this.formValues.theme === 'custom' && this.color ? this.formValues[this.color] : null;
+      if (custom) return custom;
       const b = this.blockData;
       if (!b) return '#000000';
       const own = ((b.valueOverrides || {})[this.theme] || {})[this.swatch];
