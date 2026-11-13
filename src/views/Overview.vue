@@ -4,7 +4,7 @@
     <pw-portal to=".pw-wizard .k-topbar">
       <div ref="topbar" class="pw-topbar">
         <!-- Main navigation: the same on the global view and on every block view -->
-        <!-- Project: site, header, footer, blocks, fonts -->
+        <!-- Project: site, header, footer, blocks, fonts, favicon -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <div class="pw-tab-menu">
             <button
@@ -722,6 +722,11 @@
                 @update="onFontsUpdate"
               />
             </section>
+          </div>
+
+          <!-- Project → Favicon: loads its data only when opened -->
+          <div v-if="globalActiveTab === 'favicon'" class="pw-wizard-global-content">
+            <pw-global-favicon />
           </div>
 
           <!-- Elements -->
@@ -2947,7 +2952,7 @@ export default {
       return this.$t('prw.tab.' + this.globalActiveTab);
     },
     projectMenuTabs() {
-      return ['site', 'header', 'footer', 'blocks', 'fonts'];
+      return ['site', 'header', 'footer', 'blocks', 'fonts', 'favicon'];
     },
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
@@ -3034,7 +3039,7 @@ export default {
     },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
-      return this.activeTab === 'global' && ['welcome', 'translate', 'generator'].includes(this.globalActiveTab);
+      return this.activeTab === 'global' && ['welcome', 'translate', 'generator', 'favicon'].includes(this.globalActiveTab);
     },
     patchesHighlighted() {
       return this.patchesHighlightedFor(this.patchesText);
@@ -3085,6 +3090,7 @@ export default {
         { key: 'blocks', icon: 'box' },
         { key: 'elements', icon: 'layers' },
         { key: 'fonts', icon: 'title' },
+        { key: 'favicon', icon: 'image' },
         { key: 'header', icon: 'prw-header' },
         { key: 'footer', icon: 'prw-footer' },
       ];

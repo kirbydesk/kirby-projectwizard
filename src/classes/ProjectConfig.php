@@ -789,6 +789,85 @@ class ProjectConfig
 		return pwConfig::projectDir() . '/fonts';
 	}
 
+	/* -------------- Favicon --------------*/
+
+	/** Favicon for the Panel view: the uploaded files, the background and the made sizes */
+	public static function loadFavicon(): array
+	{
+		$settings = pwFavicon::settings();
+		$png = pwFavicon::png();
+		$svg = pwFavicon::svg();
+		[$width, $height] = $png ? (getimagesize($png) ?: [0, 0]) : [0, 0];
+		return [
+			'png' => $png ? [
+				'name'   => $settings['pngName'] ?? 'favicon.png',
+				'width'  => $width,
+				'height' => $height,
+				'size'   => filesize($png),
+				'url'    => pwFavicon::url('icon-512.png'),
+			] : null,
+			'svg' => $svg ? [
+				'name' => $settings['svgName'] ?? 'favicon.svg',
+				'size' => filesize($svg),
+				'url'  => pwFavicon::url('favicon.svg'),
+			] : null,
+			'background' => pwFavicon::background(),
+			'urls' => $png ? [
+				'tab'   => pwFavicon::url($svg ? 'favicon.svg' : 'favicon.ico'),
+				'apple' => pwFavicon::url('apple-touch-icon.png'),
+				'icon'  => pwFavicon::url('icon-192.png'),
+			] : null,
+			'files' => $png ? array_values(array_filter(array_keys(pwFavicon::FILES), fn ($name) => $name !== 'favicon.svg' || $svg)) : [],
+		];
+	}
+
+	/**
+	 * Store an uploaded favicon: kind "png" (square, at least 512 × 512) or
+	 * "svg" (checked by Kirby's SVG sanitizer). Returns an error text or null.
+	 */
+	public static function uploadFavicon(string $kind, string $name, string $binary): ?string
+	{
+		if ($kind === 'png') {
+			$size = str_starts_with($binary, "\x89PNG\r\n\x1a\n") ? getimagesizefromstring($binary) : false;
+			if (!$size) return t('prw.favicon.error.png');
+			[$width, $height] = $size;
+			if ($width !== $height || $width < pwFavicon::MIN_SIZE) {
+				return tt('prw.favicon.error.size', null, ['width' => $width, 'height' => $height]);
+			}
+		} elseif ($kind === 'svg') {
+			try {
+				if (!str_contains($binary, '<svg')) throw new \Exception();
+				\Kirby\Sane\Svg::validate($binary);
+			} catch (\Throwable) {
+				return t('prw.favicon.error.svg');
+			}
+		} else {
+			return t('prw.error.invalidFile');
+		}
+
+		$dir = pwFavicon::dir();
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($dir . '/favicon.' . $kind, $binary);
+		self::saveFaviconSettings([$kind . 'Name' => basename($name)]);
+		return null;
+	}
+
+	public static function removeFavicon(string $kind): void
+	{
+		if (!in_array($kind, ['png', 'svg'], true)) return;
+		@unlink(pwFavicon::dir() . '/favicon.' . $kind);
+		self::saveFaviconSettings([$kind . 'Name' => null]);
+	}
+
+	/** Merge into favicon.json – null removes a key */
+	public static function saveFaviconSettings(array $changes): void
+	{
+		$settings = array_filter(array_merge(pwFavicon::settings(), $changes), fn ($value) => $value !== null);
+		$dir = pwFavicon::dir();
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($dir . '/favicon.json', json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+	}
+
 	/**
 	 * A deleted font no longer applies: remove every setting that uses it
 	 * (headings, navigation, footer, block values …) from the project's

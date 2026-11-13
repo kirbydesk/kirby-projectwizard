@@ -478,6 +478,46 @@ return [
 				return ['uploaded' => [$name]];
 			}
 		],
+		// Favicon: the uploaded files and the background
+		[
+			'pattern' => 'projectwizard/favicon',
+			'method'  => 'GET',
+			'action'  => function () {
+				return ProjectConfig::loadFavicon();
+			}
+		],
+		// Upload the PNG or the SVG (base64, must be before (:any) route)
+		[
+			'pattern' => 'projectwizard/favicon/upload',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				$binary = base64_decode($data['data'] ?? '', true);
+				$error = $binary
+					? ProjectConfig::uploadFavicon((string) ($data['kind'] ?? ''), (string) ($data['name'] ?? ''), $binary)
+					: t('prw.error.invalidFile', 'Invalid file');
+				return $error ? ['error' => $error] : ProjectConfig::loadFavicon();
+			}
+		],
+		// Background of the app icons
+		[
+			'pattern' => 'projectwizard/favicon',
+			'method'  => 'POST',
+			'action'  => function () {
+				$color = (string) (kirby()->request()->body()->get('background') ?? '');
+				ProjectConfig::saveFaviconSettings(['background' => preg_match('/^#[0-9a-f]{6}$/i', $color) ? strtolower($color) : null]);
+				return ProjectConfig::loadFavicon();
+			}
+		],
+		// Remove the PNG or the SVG
+		[
+			'pattern' => 'projectwizard/favicon/(png|svg)',
+			'method'  => 'DELETE',
+			'action'  => function (string $kind) {
+				ProjectConfig::removeFavicon($kind);
+				return ProjectConfig::loadFavicon();
+			}
+		],
 		// Delete a single font file
 		[
 			'pattern' => 'projectwizard/fonts/(:any)/file/(:num)',
