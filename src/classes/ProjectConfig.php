@@ -804,6 +804,69 @@ class ProjectConfig
 		return pwConfig::projectDir() . '/fonts';
 	}
 
+	/* -------------- Search engines --------------*/
+
+	/**
+	 * The website's rules for titles, descriptions and the image for sharing
+	 * (pagewizard's pwMeta reads them), with two example pages for the
+	 * preview: the home page and the first listed page
+	 */
+	public static function loadSeo(): array
+	{
+		$examples = [];
+		foreach ([site()->homePage(), site()->children()->listed()->not(site()->homePage())->first()] as $page) {
+			if (!$page) continue;
+			$examples[] = [
+				'title'  => (string) $page->title()->value(),
+				'isHome' => $page->isHomePage(),
+				'url'    => preg_replace('#^https?://#', '', $page->url()),
+				// its own title and description, else the first text
+				'own'    => trim((string) $page->metapagetitle()->value()),
+				'text'   => trim((string) $page->metadescription()->value()) ?: pwMeta::firstText($page),
+			];
+		}
+		return [
+			'settings' => pwMeta::settings(),
+			'siteTitle' => (string) site()->title()->value(),
+			'image' => pwMeta::defaultImage() ? [
+				'name' => basename(pwMeta::defaultImage()),
+				'size' => filesize(pwMeta::defaultImage()),
+				'url'  => pwMeta::defaultImageUrl(),
+			] : null,
+			'examples' => $examples,
+		];
+	}
+
+	public static function saveSeo(array $changes): void
+	{
+		$file = pwConfig::projectDir() . '/seo.json';
+		$current = is_file($file) ? (json_decode((string) file_get_contents($file), true) ?: []) : [];
+		$settings = array_intersect_key(array_merge($current, $changes), pwMeta::DEFAULTS);
+		// (the start values are not stored)
+		$settings = array_filter($settings, fn ($value, $key) => $value !== pwMeta::DEFAULTS[$key], ARRAY_FILTER_USE_BOTH);
+		if (!is_dir(dirname($file))) mkdir(dirname($file), 0755, true);
+		if ($settings === []) { @unlink($file); return; }
+		file_put_contents($file, json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+	}
+
+	/** The image for sharing: JPG, PNG or WebP – error text or null */
+	public static function uploadSeoImage(string $name, string $binary): ?string
+	{
+		$size = @getimagesizefromstring($binary);
+		$ext = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'][$size[2] ?? 0] ?? null;
+		if (!$ext) return t('prw.seo.error.image');
+		self::removeSeoImage();
+		$dir = pwMeta::dir();
+		if (!is_dir($dir)) mkdir($dir, 0755, true);
+		file_put_contents($dir . '/share.' . $ext, $binary);
+		return null;
+	}
+
+	public static function removeSeoImage(): void
+	{
+		foreach (glob(pwMeta::dir() . '/share.*') ?: [] as $file) @unlink($file);
+	}
+
 	/* -------------- Favicon --------------*/
 
 	/** Favicon for the Panel view: the uploaded files, the background and the made sizes */

@@ -9,6 +9,7 @@ import GlobalNavigation from './views/components/GlobalNavigation.vue';
 import GlobalFontManager from './views/components/GlobalFontManager.vue';
 import GlobalFontSearch from './views/components/GlobalFontSearch.vue';
 import GlobalFavicon from './views/components/GlobalFavicon.vue';
+import GlobalSeo from './views/components/GlobalSeo.vue';
 import BlockValues from './views/components/BlockValues.vue';
 import Lock from './views/components/Lock.vue';
 import TranslateNode from './views/components/TranslateNode.vue';
@@ -75,6 +76,7 @@ panel.plugin('kirbydesk/kirby-projectwizard', {
 		'pw-global-font-manager': GlobalFontManager,
 		'pw-global-font-search': GlobalFontSearch,
 		'pw-global-favicon': GlobalFavicon,
+		'pw-global-seo': GlobalSeo,
 		'pw-block-values': BlockValues,
 		'pw-wizard-setup': SetupWizard,
 		'pw-portal': Portal,

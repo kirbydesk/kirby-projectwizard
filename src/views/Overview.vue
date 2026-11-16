@@ -737,6 +737,11 @@
             </section>
           </div>
 
+          <!-- Project → Search engines: loads its data only when opened -->
+          <div v-if="globalActiveTab === 'seo'" class="pw-wizard-global-content">
+            <pw-global-seo />
+          </div>
+
           <!-- Project → Favicon: loads its data only when opened -->
           <div v-if="globalActiveTab === 'favicon'" class="pw-wizard-global-content">
             <pw-global-favicon />
@@ -3001,7 +3006,7 @@ export default {
       return this.$t('prw.tab.' + this.globalActiveTab);
     },
     projectMenuTabs() {
-      return ['site', 'header', 'footer', 'blocks', 'fonts', 'favicon'];
+      return ['site', 'header', 'footer', 'blocks', 'fonts', 'favicon', 'seo'];
     },
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
@@ -3140,6 +3145,7 @@ export default {
         { key: 'elements', icon: 'layers' },
         { key: 'fonts', icon: 'title' },
         { key: 'favicon', icon: 'image' },
+        { key: 'seo', icon: 'search' },
         { key: 'header', icon: 'prw-header' },
         { key: 'footer', icon: 'prw-footer' },
       ];

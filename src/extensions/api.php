@@ -504,6 +504,38 @@ return [
 				return ['uploaded' => [$name]];
 			}
 		],
+		// Search engines: the rules for titles, descriptions, the image for sharing
+		[
+			'pattern' => 'projectwizard/seo',
+			'method'  => 'GET',
+			'action'  => fn () => ProjectConfig::loadSeo(),
+		],
+		[
+			'pattern' => 'projectwizard/seo',
+			'method'  => 'POST',
+			'action'  => function () {
+				ProjectConfig::saveSeo(kirby()->request()->body()->toArray());
+				return ProjectConfig::loadSeo();
+			}
+		],
+		[
+			'pattern' => 'projectwizard/seo/image',
+			'method'  => 'POST',
+			'action'  => function () {
+				$data = kirby()->request()->body()->toArray();
+				$binary = base64_decode((string) ($data['data'] ?? ''), true);
+				$error = $binary ? ProjectConfig::uploadSeoImage((string) ($data['name'] ?? ''), $binary) : t('prw.seo.error.image');
+				return $error ? ['error' => $error] : ProjectConfig::loadSeo();
+			}
+		],
+		[
+			'pattern' => 'projectwizard/seo/image',
+			'method'  => 'DELETE',
+			'action'  => function () {
+				ProjectConfig::removeSeoImage();
+				return ProjectConfig::loadSeo();
+			}
+		],
 		// Favicon: the uploaded files and the background
 		[
 			'pattern' => 'projectwizard/favicon',
