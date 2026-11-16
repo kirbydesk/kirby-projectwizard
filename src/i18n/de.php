@@ -357,6 +357,7 @@
 	'prw.element.media-radius' => 'Radien',
 	'prw.element.button-shape' => 'Ecken',
 	'prw.element.button-width-mode' => 'Breite',
+	'prw.element.button-mobile-width' => 'Mobil',
 	'prw.element.button-width' => 'Manuelle Breite',
 	'prw.element.button-content-align' => 'Textausrichtung',
 	'prw.element.button-row-gap' => 'Vertikal',

@@ -1722,7 +1722,7 @@ export default {
       if (varName === 'button-gap' || varName === 'button-row-gap') return 'margin';
       if (varName === 'button-shape' || varName === 'button-border-radius') return 'shape';
       // buttons: the width (auto or manual) with the form
-      if (varName === 'button-width-mode' || varName === 'button-width' || varName === 'button-content-align') return 'shape';
+      if (varName === 'button-width-mode' || varName === 'button-width' || varName === 'button-content-align' || varName === 'button-mobile-width') return 'shape';
       // media: the corner radii
       if (varName === 'media-radius') return 'shape';
       if (varName === 'button-border-width' || varName === 'button-shadow') return 'style';
@@ -1904,6 +1904,8 @@ export default {
         padding: Array.isArray(padding) ? padding.join(' ') : padding,
         // manual width: all buttons equally wide, the text cut off with "…"
         ...(this.buttonWidthMode() === 'manual' ? { width: responsiveVal('width'), justifyContent: { left: 'flex-start', right: 'flex-end' }[get('content-align') || defVal('content-align')] || 'center', '--pw-btn-white-space': 'nowrap' } : {}),
+        // mobile at full width (Mobile: full width): over the whole width
+        ...(bp === 'default' && (get('mobile-width') || defVal('mobile-width', 'value')) === 'full-width' ? { width: '100%', display: 'inline-flex', justifyContent: 'center' } : {}),
         // the sides for the tinted paddings (guides)
         '--pw-btn-pt': padding[0],
         '--pw-btn-pr': padding[1],

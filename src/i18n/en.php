@@ -357,6 +357,7 @@
 	'prw.element.media-radius' => 'Radii',
 	'prw.element.button-shape' => 'Corners',
 	'prw.element.button-width-mode' => 'Width',
+	'prw.element.button-mobile-width' => 'Mobile',
 	'prw.element.button-width' => 'Manual width',
 	'prw.element.button-content-align' => 'Text alignment',
 	'prw.element.button-row-gap' => 'Vertical',
