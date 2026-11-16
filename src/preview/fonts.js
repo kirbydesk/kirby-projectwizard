@@ -21,6 +21,8 @@ export function injectFontFaces(fontsData) {
         "src: url('" + (file.url || base + '/assets/fonts/' + file.src) + "') format('woff2'); " +
         'font-weight: ' + (file.weight || '400') + '; ' +
         'font-style: ' + (file.style || 'normal') + '; ' +
+        // (Google fonts: one file per character set)
+        (file.unicodeRange ? 'unicode-range: ' + file.unicodeRange + '; ' : '') +
         'font-display: swap; }'
       );
     }

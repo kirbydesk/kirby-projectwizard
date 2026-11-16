@@ -452,6 +452,32 @@ return [
 				return ProjectConfig::loadFonts();
 			}
 		],
+		// Google Fonts: the families to choose from (must be before (:any) route)
+		[
+			'pattern' => 'projectwizard/fonts/google',
+			'method'  => 'GET',
+			'action'  => function () {
+				try {
+					return ['fonts' => GoogleFonts::list()];
+				} catch (\Throwable $e) {
+					return ['error' => $e->getMessage()];
+				}
+			}
+		],
+		// Google Fonts: install a family – its files into the project
+		[
+			'pattern' => 'projectwizard/fonts/google',
+			'method'  => 'POST',
+			'action'  => function () {
+				try {
+					GoogleFonts::install((string) kirby()->request()->body()->get('family'));
+				} catch (\Throwable $e) {
+					return ['error' => $e->getMessage()];
+				}
+				SetupWizard::triggerProjectbuilder();
+				return ProjectConfig::loadFonts();
+			}
+		],
 		// Upload font file (base64, must be before (:any) route)
 		[
 			'pattern' => 'projectwizard/fonts/upload',

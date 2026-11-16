@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eigene Schrift</title>
+<style>
+  :root { --bg: #efefef; --card: #fff; --text: #16171a; --dim: #6b6f76; --line: #e8e8e8; --labelbg: #fafafa; --mono: ui-monospace, Menlo, monospace; --focus: #4271ae; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #2a2a2e; color: var(--text); padding: 24px 16px 60px; }
+  h1 { font-size: 18px; color: #f2f2f4; font-weight: 600; }
+  .lead { color: #a8a8ae; margin: 4px 0 12px; max-width: 900px; }
+  .switch { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .switch button { border: 0; background: #3a3a40; color: #f2f2f4; font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+  .switch button.on { background: #0a84ff; }
+  .main { max-width: 760px; background: var(--bg); border-radius: 10px; padding: 22px 28px 34px; margin-top: 10px; }
+  h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .search { height: 40px; border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.08); display: flex; align-items: center; padding: 0 12px; gap: 8px; color: var(--dim); }
+  .help { font-size: 12px; line-height: 1.5; color: var(--dim); padding: 6px 2px 0; }
+  .link { display: inline-block; margin: 12px 0 0; font-size: 13px; text-decoration: underline; text-underline-offset: 2px; }
+  .upl { border: 1px dashed #c8c8c8; border-radius: 4px; padding: 24px; text-align: center; color: var(--dim); margin-top: 10px; display: flex; flex-direction: column; gap: 6px; align-items: center; background: rgba(255,255,255,.4); }
+  .upl b { color: var(--text); font-weight: 500; }
+  .kbtn { background: #f0f0f0; border: 0; border-radius: 4px; padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .kbtn.pos { background: #16171a; color: #fff; }
+  .kbtn:disabled { opacity: .4; cursor: default; }
+  .card { background: var(--card); border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,.08); margin-top: 10px; }
+  .row { display: grid; grid-template-columns: 150px 1fr; min-height: 44px; }
+  .row + .row, .files { border-top: 1px solid var(--line); }
+  .lab { background: var(--labelbg); border-right: 1px solid var(--line); font: 12px var(--mono); color: var(--dim); padding: 0 12px; display: flex; align-items: center; }
+  .val { display: flex; align-items: center; gap: 10px; padding: 6px 12px; min-width: 0; flex-wrap: wrap; }
+  input.t { border: 1px solid #ddd; border-radius: 4px; padding: 4px 8px; font: inherit; font-size: 14px; width: 260px; max-width: 100%; }
+  .tog { display: inline-flex; background: #fff; border: 1px solid #e3e3e3; border-radius: 4px; padding: 2px; gap: 2px; flex-wrap: wrap; }
+  .tog span { font-size: 12px; padding: 3px 9px; border-radius: 3px; cursor: pointer; }
+  .tog span.on { background: #16171a; color: #fff; }
+  .files table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .files th { text-align: left; font: 11px var(--mono); color: var(--dim); font-weight: 400; padding: 8px 12px 4px; }
+  .files td { padding: 6px 12px; border-top: 1px solid var(--line); vertical-align: middle; }
+  .files td.fn { font: 12px var(--mono); word-break: break-all; }
+  select { font: inherit; font-size: 13px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 4px; background: #fff; }
+  .x { border: 0; background: none; color: var(--dim); font-size: 17px; cursor: pointer; }
+  .sample { font-size: 18px; white-space: nowrap; }
+  .actions { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); }
+  .new { outline: 2px dashed #ff9f0a; outline-offset: 3px; border-radius: 3px; }
+  .notes { max-width: 900px; color: #ff9f0a; font-size: 12.5px; margin-top: 12px; }
+  .notes p + p { margin-top: 6px; }
+</style>
+</head>
+<body>
+<h1>Eigene Schrift hochladen – vereinfacht</h1>
+<p class="lead">Projekt › Schriftarten › „Eigene Schrift hochladen …“. Oben ein Beispiel wählen (welche Dateien man hineinzieht). Alles ist im Mockup bedienbar. Erläuterungen in Orange gehören nicht zum Plugin.</p>
+<div class="switch" id="state"></div>
+<div class="main">
+  <h3>Schrift hinzufügen</h3>
+  <div class="search">⌕ Google-Schrift suchen …</div>
+  <p class="help">Über 1.900 Schriften von Google Fonts. Der Project Wizard lädt die Schrift ins Projekt – die Website lädt nichts von Google.</p>
+  <span class="link">Eigene Schrift hochladen …</span>
+  <div id="form"></div>
+</div>
+<div class="notes" id="notes"></div>
+<script>
+  // what the file name tells: weight and italic (the family: the rest of the name)
+  const WORDS = { thin: 100, hairline: 100, extralight: 200, ultralight: 200, light: 300, regular: 400, normal: 400, book: 400, medium: 500, semibold: 600, demibold: 600, bold: 700, extrabold: 800, ultrabold: 800, black: 900, heavy: 900 };
+  function guess(name) {
+    let base = name.replace(/\.woff2$/i, '');
+    const lower = base.toLowerCase();
+    const variable = /variable|\bvf\b|\[wght|-vf/i.test(base);
+    const italic = /italic|oblique/i.test(lower);
+    let weight = 400;
+    const num = lower.match(/(?:^|[-_ ])([1-9]00)(?:italic)?(?:$|[-_ ])/);
+    if (num) weight = +num[1];
+    else { for (const [w, v] of Object.entries(WORDS).sort((a, b) => b[0].length - a[0].length)) { if (lower.replace(/[-_ ]/g, '').includes(w)) { weight = v; break; } } }
+    // the family: google-webfonts-helper "open-sans-v44-latin-700" → "Open Sans"
+    let fam = base.replace(/-v\d+-.*$/i, '').replace(/[-_ ]?(variable|vf|italic|oblique|thin|hairline|extralight|ultralight|light|regular|normal|book|medium|semibold|demibold|bold|extrabold|ultrabold|black|heavy|[1-9]00)+$/gi, '');
+    fam = fam.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).replace(/([a-z])([A-Z])/g, '$1 $2').trim();
+    return { fam, weight: variable ? 'var' : String(weight), italic };
+  }
+  const EX = {
+    leer: { k: 'Noch keine Dateien', files: [] },
+    gwfh: { k: 'Google Webfonts Helper', files: ['open-sans-v44-latin-regular.woff2', 'open-sans-v44-latin-italic.woff2', 'open-sans-v44-latin-700.woff2'] },
+    kauf: { k: 'Gekaufte Schrift', files: ['MarkOT-Regular.woff2', 'MarkOT-Bold.woff2', 'MarkOT-BoldItalic.woff2'] },
+    var: { k: 'Variable Schrift', files: ['InterVariable.woff2', 'InterVariable-Italic.woff2'] },
+    nix: { k: 'Name sagt nichts', files: ['MarkOT.woff2'] },
+  };
+  const S = { ex: 'kauf', files: [], fam: '', cat: 'sans-serif', done: false };
+  function load(ex) {
+    S.ex = ex; S.done = false;
+    S.files = EX[ex].files.map((n) => ({ name: n, ...guess(n) }));
+    const fams = S.files.map((f) => f.fam).filter(Boolean);
+    S.fam = fams[0] || '';
+    S.cat = 'sans-serif';
+  }
+  const weights = ['100', '200', '300', '400', '500', '600', '700', '800', '900'];
+  const wl = { 100: 'Thin', 200: 'Extra Light', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold', 700: 'Bold', 800: 'Extra Bold', 900: 'Black' };
+  function form() {
+    if (!S.files.length) return '<div class="upl"><span style="font-size:22px">⤒</span><b>WOFF2-Dateien hierher ziehen oder hochladen</b><span style="font-size:12px">Alle Dateien einer Schrift auf einmal, z. B. Regular, Bold und Italic.</span><button class="kbtn" style="margin-top:6px">Dateien hochladen</button></div>';
+    if (S.done) return '<div class="card"><div class="val" style="padding:14px">„' + S.fam + '“ ist installiert und steht oben in der Liste.</div></div>';
+    const cats = [['sans-serif', 'Serifenlos'], ['serif', 'Serifen'], ['monospace', 'Monospace'], ['display', 'Display'], ['cursive', 'Handschrift']];
+    const rows = S.files.map((f, i) => '<tr><td class="fn">' + f.name + '</td>' +
+      '<td><select data-w="' + i + '">' + weights.map((w) => '<option value="' + w + '"' + (f.weight === w ? ' selected' : '') + '>' + w + ' ' + wl[w] + '</option>').join('') + '<option value="var"' + (f.weight === 'var' ? ' selected' : '') + '>Variabel (alle)</option></select></td>' +
+      '<td><span class="tog"><span data-i="' + i + '" data-v="0" class="' + (!f.italic ? 'on' : '') + '">Normal</span><span data-i="' + i + '" data-v="1" class="' + (f.italic ? 'on' : '') + '">Kursiv</span></span></td>' +
+      '<td><button class="x" data-x="' + i + '" title="Entfernen">×</button></td></tr>').join('');
+    return '<div class="card">' +
+      '<div class="row"><div class="lab">Name</div><div class="val"><input class="t" id="fam" value="' + S.fam + '" placeholder="z. B. Mark OT"></div></div>' +
+      '<div class="row"><div class="lab">Kategorie</div><div class="val"><span class="tog" id="cat">' + cats.map(([v, t]) => '<span data-c="' + v + '" class="' + (S.cat === v ? 'on' : '') + '">' + t + '</span>').join('') + '</span></div></div>' +
+      '<div class="files"><table><tr><th>Datei</th><th>Strichstärke</th><th>Stil</th><th></th></tr>' + rows + '</table></div>' +
+      '<div class="actions"><button class="kbtn" id="more">Weitere Dateien …</button><button class="kbtn" id="cancel">Abbrechen</button><button class="kbtn pos" id="add"' + (S.fam.trim() ? '' : ' disabled') + '>Schrift hinzufügen</button></div>' +
+      '</div><p class="help">Strichstärke und Stil hat der Project Wizard aus den Dateinamen gelesen – prüfe sie kurz. Die Kategorie braucht der Browser nur, solange die Schrift lädt.</p>';
+  }
+  const notes = '<p><b>Statt fünf Fragen pro Datei:</b> alle Dateien auf einmal hineinziehen. Der Project Wizard liest aus den Dateinamen den Namen der Schrift, die Strichstärke (Zahl oder Wort wie „Bold“, „Light“) und ob kursiv. Man prüft nur noch die Tabelle und klickt „Schrift hinzufügen“.</p>' +
+    '<p>Entfallen: „Kursiv automatisch unterstützt“ und „Stil wählen“ (jetzt pro Datei Normal/Kursiv), die 9 Knöpfe für die Strichstärke (jetzt eine Auswahl pro Datei, „Variabel (alle)“ für variable Schriften). Der Hinweis auf den Google Webfonts Helper entfällt – Google-Schriften kommen jetzt über die Suche.</p>' +
+    '<p>Heißt die Familie schon so (z. B. „Open Sans“ ist installiert), kommen die Dateien zur bestehenden Familie dazu – so lässt sich eine fehlende Strichstärke später ergänzen.</p>';
+  const sb = document.getElementById('state');
+  Object.entries(EX).forEach(([k, v]) => { const b = document.createElement('button'); b.textContent = v.k; b.onclick = () => { load(k); render(); }; b.dataset.k = k; sb.appendChild(b); });
+  const F = document.getElementById('form');
+  F.addEventListener('click', (e) => {
+    const t = e.target;
+    if (t.dataset.c) S.cat = t.dataset.c;
+    else if (t.dataset.i !== undefined) S.files[+t.dataset.i].italic = t.dataset.v === '1';
+    else if (t.dataset.x !== undefined) S.files.splice(+t.dataset.x, 1);
+    else if (t.id === 'cancel') S.files = [];
+    else if (t.id === 'add' && S.fam.trim()) S.done = true;
+    else return;
+    render();
+  });
+  F.addEventListener('change', (e) => { if (e.target.dataset.w !== undefined) S.files[+e.target.dataset.w].weight = e.target.value; });
+  F.addEventListener('input', (e) => { if (e.target.id === 'fam') { S.fam = e.target.value; document.getElementById('add').disabled = !S.fam.trim(); } });
+  function render() {
+    [...sb.children].forEach((b) => b.classList.toggle('on', b.dataset.k === S.ex));
+    F.innerHTML = form();
+    document.getElementById('notes').innerHTML = notes;
+  }
+  load('kauf'); render();
+</script>
+</body>
+</html>

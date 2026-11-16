@@ -703,20 +703,33 @@
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.subtab.installed-fonts') }}</h3>
               </div>
-              <div class="pw-card pw-field-table">
-                <pw-global-font-manager
-                  :fonts="fontsData"
-                  :mode="'installed'"
-                  @update="onFontsUpdate"
-                />
-              </div>
+              <pw-global-font-manager
+                :fonts="fontsData"
+                :mode="'installed'"
+                :installing="fontInstalling"
+                @update="onFontsUpdate"
+              />
             </section>
-            <!-- adding a font -->
+            <!-- adding a font: a Google font by name, or own files -->
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
                 <h3 class="pw-card-heading">{{ $t('prw.subtab.add-font') }}</h3>
               </div>
+              <pw-global-font-search
+                :fonts="fontsData"
+                :installing="fontInstalling"
+                @installing="fontInstalling = $event"
+                @preview="onFontSearchPreview"
+                @update="onFontsUpdate"
+              />
+              <k-button
+                :text="$t('prw.fonts.own')"
+                class="pw-font-own-toggle"
+                size="sm"
+                @click="showOwnFontUpload = !showOwnFontUpload"
+              />
               <pw-global-font-manager
+                v-if="showOwnFontUpload"
                 :fonts="fontsData"
                 :mode="'add'"
                 @update="onFontsUpdate"
@@ -2709,6 +2722,11 @@ export default {
       selectedElement: (() => { try { const e = sessionStorage.getItem('pw-wizard-element'); sessionStorage.removeItem('pw-wizard-element'); return e; } catch (e) { return null; } })(),
       // font shown in the fonts preview (null = the default font)
       previewFont: null,
+      // Fonts: the Google font being installed, the own upload open, the
+      // preview's font before the Google list showed others
+      fontInstalling: '',
+      showOwnFontUpload: false,
+      fontPreviewBefore: undefined,
       // block type → number of uses in the project (loaded when the blocks dropdown opens)
       blockUsage: {},
       // the usage tab: the pages per block (loaded when it opens)
@@ -4599,8 +4617,21 @@ export default {
     // --- Global: Fonts ---
     // after a font was deleted: settings that used it fall back to the default
     // (the server already removed them) – keeps other unsaved changes
+    // the font under the mouse in the Google list: in the sidebar preview,
+    // afterwards the one chosen before again
+    onFontSearchPreview(family) {
+      if (family) {
+        if (this.fontPreviewBefore === undefined) this.fontPreviewBefore = this.previewFont;
+        this.previewFont = family;
+      } else if (this.fontPreviewBefore !== undefined) {
+        this.previewFont = this.fontPreviewBefore;
+        this.fontPreviewBefore = undefined;
+      }
+    },
     async onFontsUpdate(change) {
       await this.loadFontsData();
+      // a newly installed Google font: shown in the preview
+      if (change && change.installedFamily) this.previewFont = change.installedFamily;
       const family = change && change.removedFamily;
       if (!family) return;
       const strip = (obj) => {

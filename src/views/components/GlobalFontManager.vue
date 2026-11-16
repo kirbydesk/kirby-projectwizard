@@ -1,424 +1,275 @@
 <template>
   <div class="pw-font-manager">
-    <!-- Installed Fonts -->
-    <section v-if="mode === 'all' || mode === 'installed'" class="pw-element-section">
-      <div v-if="mode === 'all'" class="pw-section-header pw-font-header">
-        <span class="pw-section-title">{{ $t('prw.fonts.installed') || 'Installed Fonts' }}</span>
-        <k-button
-          :text="showAddForm ? $t('cancel') : ($t('prw.fonts.add') || 'Add Font')"
-          :icon="showAddForm ? 'cancel' : 'add'"
-          size="xs"
-          @click="showAddForm = !showAddForm; if (!showAddForm) resetAddForm()"
-        />
-      </div>
-      <div class="pw-element-list">
-          <template v-for="(font, key) in allFonts">
-            <div
-              v-for="(file, fIdx) in font.files"
-              :key="key + '-' + fIdx"
-              class="pw-field-row"
-              :class="{ 'pw-dual-first': fIdx === 0 && font.files.length > 1, 'pw-dual-next': fIdx > 0 }"
-            >
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label pw-font-label-bold">{{ font.family }}</label>
-                    <span class="pw-quad-label">{{ categoryLabel(font.category) }}</span>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <span class="pw-font-file-name">{{ file.src }} <span class="pw-font-weight-label">{{ font.italic && font.files.length === 1 ? 'normal, italic' : file.style }}, {{ formatWeight(file.weight) }}</span></span>
-                    <button v-if="!font.builtin" type="button" class="pw-font-delete" @click="deleteFontFile(key, fIdx, file)">×</button>
-                  </div>
-                </span>
-              </div>
-            </div>
-          </template>
+    <!-- installed fonts -->
+    <section v-if="mode === 'installed'">
+      <!-- one row per family: its name in its own font, what it has, where it comes from -->
+      <div class="pw-font-families">
+        <div v-for="item in families" :key="item.key" class="pw-font-family">
+          <span class="pw-font-family-name" :style="familyStyle(item.font)">{{ item.font.family }}</span>
+          <span class="pw-font-family-meta">
+            {{ categoryLabel(item.font.category) }} · <span v-html="summary(item.font)"></span>
+          </span>
+          <span class="pw-font-badge">{{ sourceLabel(item.font) }}</span>
+          <button v-if="!item.font.builtin" type="button" class="pw-font-delete" :title="$t('remove')" @click="deleteFont(item.key, item.font)">×</button>
+          <!-- (built in: no ×, the column stays aligned) -->
+          <span v-else class="pw-font-delete" aria-hidden="true" style="visibility: hidden">×</span>
         </div>
+        <div v-if="installing && !hasFamily(installing)" class="pw-font-family is-loading">
+          <span class="pw-font-family-name">{{ installing }}</span>
+          <span class="pw-font-family-meta">{{ $t('prw.fonts.loading') }}</span>
+          <k-icon type="loader" class="pw-font-loader" />
+        </div>
+      </div>
     </section>
 
-    <!-- Add Font Form -->
-    <section v-if="mode === 'add' || (mode === 'all' && showAddForm)" class="pw-element-section">
-        <div v-if="mode === 'all'" class="pw-section-header">
-          <span class="pw-section-toggle"><span>{{ $t('prw.fonts.add') || 'Add Font' }}</span></span>
-        </div>
-        <div class="pw-element-list">
-          <!-- Upload Font File -->
-          <div class="pw-field-row">
-            <div class="k-input" data-type="text">
-              <span class="k-input-element pw-field-row-inner">
-                <div class="pw-field-row-label-col">
-                  <label class="pw-field-row-label">{{ $t('prw.fonts.file') }} *</label>
-                </div>
-                <div class="pw-field-row-options">
-                  <label class="pw-font-upload-btn">
-                    <k-icon type="upload" />
-                    {{ $t('prw.fonts.upload') }}
-                    <input type="file" accept=".woff2" @change="onFileSelect" style="display:none" />
-                  </label>
-                  <span v-if="newFont.files.length" class="pw-font-file-selected">{{ newFont.files[0].name }}</span>
-                </div>
-              </span>
+    <!-- own font files: all files of a font at once; weight and italic read
+         from the file names, checked in a small table -->
+    <section v-if="mode === 'add'" class="pw-font-upload">
+      <div
+        v-if="!staged.length"
+        class="pw-card pw-favicon-card is-empty"
+        :class="{ 'is-over': over }"
+        @dragover.prevent="over = true"
+        @dragleave="over = false"
+        @drop.prevent="onDrop"
+      >
+        <k-icon type="upload" class="pw-favicon-drop-icon" />
+        <strong class="pw-favicon-drop-title">{{ $t('prw.fonts.drop') }}</strong>
+        <span class="pw-favicon-drop-text">{{ $t('prw.fonts.drop.text') }}</span>
+        <k-button :text="$t('prw.fonts.drop.button')" variant="filled" size="sm" @click="$refs.input.click()" />
+      </div>
+      <template v-else>
+        <div
+          class="pw-card pw-font-upload-card"
+          :class="{ 'is-over': over }"
+          @dragover.prevent="over = true"
+          @dragleave="over = false"
+          @drop.prevent="onDrop"
+        >
+          <div class="pw-font-upload-row">
+            <label class="pw-font-upload-label" for="pw-font-upload-name">{{ $t('prw.fonts.name') }}</label>
+            <div class="pw-font-upload-value">
+              <input id="pw-font-upload-name" v-model="family" type="text" class="pw-font-upload-name" :placeholder="$t('prw.fonts.familyPlaceholder')" />
             </div>
           </div>
-          <div class="pw-font-help" v-html="$t('prw.fonts.uploadHelp')"></div>
-
-            <!-- Family Name -->
-            <div class="pw-field-row">
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ $t('prw.fonts.family') }} *</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <input type="text" class="pw-element-input pw-font-name-input" v-model="newFont.family" :placeholder="$t('prw.fonts.familyPlaceholder')" />
-                  </div>
-                </span>
-              </div>
+          <div class="pw-font-upload-row">
+            <span class="pw-font-upload-label">{{ $t('prw.fonts.category') }}</span>
+            <div class="pw-font-upload-value">
+              <k-toggles-input :value="category" :options="categoryOptions" :grow="false" :required="true" @input="category = $event" />
             </div>
-            <div class="pw-font-help">
-              {{ $t('prw.fonts.nameHelp') || 'Enter the exact font family name as specified by the font provider (e.g. "Roboto", "Open Sans", "Playfair Display").' }}
-            </div>
-
-            <!-- Category -->
-            <div class="pw-field-row">
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ $t('prw.fonts.category') }} *</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <k-toggles-input
-                      :value="newFont.category"
-                      :options="categoryOptions"
-                      :grow="false"
-                      :required="true"
-                      @input="newFont.category = $event"
-                    />
-                  </div>
-                </span>
-              </div>
-            </div>
-            <div class="pw-font-help">
-              {{ $t('prw.fonts.categoryHelp') || 'Select the font category. This is used as CSS fallback (e.g. sans-serif, serif) when the font is not yet loaded.' }}
-            </div>
-
-            <!-- Supports Italic + Choose Style -->
-            <div class="pw-field-row">
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ $t('prw.fonts.italic') }} *</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <k-toggles-input
-                      :value="newFont.italic === null ? '' : (newFont.italic ? 'yes' : 'no')"
-                      :options="[{ value: 'yes', text: $t('pw.option.yes') }, { value: 'no', text: $t('pw.option.no') }]"
-                      :grow="false"
-                      :required="true"
-                      @input="newFont.italic = $event === 'yes'"
-                    />
-                    <template v-if="newFont.italic === false">
-                      <span class="pw-font-inline-label">{{ $t('prw.fonts.style') }}</span>
-                      <k-toggles-input
-                        :value="newFont.style"
-                        :options="[{ value: 'normal', text: $t('pw.option.normal') }, { value: 'italic', text: $t('pw.option.italic') }]"
-                        :grow="false"
-                        :required="true"
-                        @input="newFont.style = $event"
-                      />
-                    </template>
-                  </div>
-                </span>
-              </div>
-            </div>
-            <div class="pw-font-help">
-              {{ $t('prw.fonts.italicHelp') || 'Enable if the font includes italic styles. Some variable fonts include italic in a separate file, others have it built-in.' }}
-            </div>
-
-            <!-- Weight (multi-select) -->
-            <div class="pw-field-row">
-              <div class="k-input" data-type="text">
-                <span class="k-input-element pw-field-row-inner">
-                  <div class="pw-field-row-label-col">
-                    <label class="pw-field-row-label">{{ $t('prw.fonts.weight') }} *</label>
-                  </div>
-                  <div class="pw-field-row-options">
-                    <div class="pw-weight-toggles">
-                      <button
-                        v-for="w in ['100','200','300','400','500','600','700','800','900']"
-                        :key="w"
-                        type="button"
-                        class="pw-weight-toggle"
-                        :class="{ 'is-active': newFont.weights.includes(w), 'is-in-range': isInWeightRange(w) }"
-                        @click="toggleWeight(w)"
-                      >{{ w }}</button>
-                    </div>
-                  </div>
-                </span>
-              </div>
-            </div>
-            <div class="pw-font-help">
-              {{ $t('prw.fonts.weightHelp') || 'Select one weight for static fonts, or multiple for variable fonts (e.g. 100–900).' }}
-            </div>
-
-            <!-- Add button -->
-            <div class="pw-font-actions">
-              <k-button
-                :disabled="!canAddFont"
-                :text="$t('prw.fonts.add')"
-                icon="check"
-                theme="positive"
-                variant="filled"
-                size="sm"
-                @click="addFont"
-              />
-            </div>
+          </div>
+          <table class="pw-font-upload-files">
+            <thead>
+              <tr>
+                <th>{{ $t('prw.fonts.col.file') }}</th>
+                <th>{{ $t('prw.fonts.col.weight') }}</th>
+                <th>{{ $t('prw.fonts.col.style') }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(file, i) in staged" :key="file.name">
+                <td class="pw-font-upload-file">{{ file.name }}</td>
+                <td>
+                  <select v-model="file.weight" class="pw-font-upload-select">
+                    <option v-for="w in weights" :key="w" :value="w">{{ w }} {{ weightNames[w] }}</option>
+                    <option value="100 900">{{ $t('prw.fonts.variableAll') }}</option>
+                  </select>
+                </td>
+                <td>
+                  <k-toggles-input
+                    :value="file.style"
+                    :options="[{ value: 'normal', text: $t('pw.option.normal') }, { value: 'italic', text: $t('pw.option.italic') }]"
+                    :grow="false"
+                    :required="true"
+                    @input="file.style = $event"
+                  />
+                </td>
+                <td><button type="button" class="pw-font-delete" :title="$t('remove')" @click="staged.splice(i, 1)">×</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pw-font-upload-actions">
+            <k-button :text="$t('prw.fonts.more')" variant="filled" size="sm" :disabled="busy" @click="$refs.input.click()" />
+            <k-button :text="$t('cancel')" variant="filled" size="sm" :disabled="busy" @click="reset" />
+            <k-button :text="$t('prw.fonts.add')" variant="filled" theme="positive" size="sm" :disabled="busy || !family.trim()" @click="addFont" />
+          </div>
         </div>
+        <p v-if="error" class="pw-favicon-note pw-favicon-error">{{ error }}</p>
+        <p class="pw-favicon-note">{{ $t('prw.fonts.checkHelp') }}</p>
+      </template>
+      <input ref="input" type="file" accept=".woff2" multiple hidden @change="onSelect" />
     </section>
   </div>
 </template>
 
 <script>
+// what a file name tells: "open-sans-v44-latin-700italic", "MarkOT-BoldItalic",
+// "InterVariable-Italic" → family, weight, italic
+const WORDS = [
+  ['extralight', '200'], ['ultralight', '200'], ['extrabold', '800'], ['ultrabold', '800'],
+  ['semibold', '600'], ['demibold', '600'], ['hairline', '100'], ['regular', '400'],
+  ['medium', '500'], ['normal', '400'], ['black', '900'], ['heavy', '900'],
+  ['light', '300'], ['thin', '100'], ['bold', '700'], ['book', '400'],
+];
+const TRAILING = /[-_ ]?(variable|vf|italic|oblique|thin|hairline|extralight|ultralight|light|regular|normal|book|medium|semibold|demibold|bold|extrabold|ultrabold|black|heavy|[1-9]00)$/i;
+
+export function guessFont(name) {
+  const base = name.replace(/\.woff2$/i, '');
+  const lower = base.toLowerCase();
+  const variable = /variable|(^|[-_])vf($|[-_])|\[wght/i.test(base);
+  const italic = /italic|oblique/.test(lower);
+  let weight = '400';
+  const number = lower.match(/(?:^|[-_ ])([1-9]00)(?:italic)?(?:$|[-_ ])/);
+  if (number) {
+    weight = number[1];
+  } else {
+    const flat = lower.replace(/[-_ ]/g, '');
+    const word = WORDS.find(([w]) => flat.includes(w));
+    if (word) weight = word[1];
+  }
+  // google-webfonts-helper: "open-sans-v44-latin-700" → "open-sans"; then
+  // the style words at the end, as often as they come
+  let family = base.replace(/-v\d+-.*$/i, '');
+  for (let before = ''; before !== family; ) {
+    before = family;
+    family = family.replace(TRAILING, '');
+  }
+  family = family.replace(/[-_]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\b\w/g, (c) => c.toUpperCase()).trim();
+  return { family, weight: variable ? '100 900' : weight, style: italic ? 'italic' : 'normal' };
+}
+
 export default {
   props: {
     fonts: { type: Object, default: () => ({}) },
-    mode: { type: String, default: 'all' },
+    mode: { type: String, default: 'installed' },
+    // a Google font being installed: shown as loading in the list
+    installing: { type: String, default: '' },
   },
   data() {
     return {
-      showAddForm: false,
-      newFont: {
-        family: '',
-        category: '',
-        italic: null,
-        style: 'normal',
-        weights: [],
-        files: [],
-      },
-      pendingFiles: [],
+      staged: [],
+      family: '',
+      category: 'sans-serif',
+      over: false,
+      busy: false,
+      error: '',
+      weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+      weightNames: { 100: 'Thin', 200: 'Extra Light', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold', 700: 'Bold', 800: 'Extra Bold', 900: 'Black' },
     };
   },
   computed: {
-    allFonts() {
-      return { ...(this.fonts.builtin || {}), ...(this.fonts.project || {}) };
-    },
-    defaultFont() {
-      return this.fonts.default || 'Inter';
+    // the built-in fonts first, then the project's by name
+    families() {
+      const items = [];
+      for (const [key, font] of Object.entries(this.fonts.builtin || {})) items.push({ key, font });
+      const own = Object.entries(this.fonts.project || {}).map(([key, font]) => ({ key, font }));
+      own.sort((a, b) => a.font.family.localeCompare(b.font.family));
+      return items.concat(own.filter((item) => item.font && item.font.family));
     },
     categoryOptions() {
-      return ['sans-serif', 'serif', 'monospace', 'display', 'cursive'].map(c => ({
-        value: c,
-        text: this.categoryLabel(c),
-      }));
-    },
-    fontFamilyOptions() {
-      return Object.values(this.allFonts).map(f => ({
-        value: f.family,
-        text: f.family,
-      }));
-    },
-    canAddFont() {
-      return this.newFont.family.trim() && this.newFont.category && this.newFont.italic !== null && this.newFont.weights.length > 0 && this.newFont.files.length > 0;
-    },
-    computedWeight() {
-      if (this.newFont.weights.length === 0) return '';
-      const sorted = [...this.newFont.weights].sort((a, b) => Number(a) - Number(b));
-      if (sorted.length === 1) return sorted[0];
-      return sorted[0] + ' ' + sorted[sorted.length - 1];
+      return ['sans-serif', 'serif', 'monospace', 'display', 'cursive'].map((c) => ({ value: c, text: this.categoryLabel(c) }));
     },
   },
   methods: {
-    resetAddForm() {
-      this.newFont = { family: '', category: '', italic: null, style: 'normal', weights: [], files: [] };
-    },
     categoryLabel(cat) {
-      const tKey = 'prw.fontcategory.' + cat;
-      const t = this.$t(tKey);
-      return (t && t !== tKey) ? t : cat;
+      const key = 'prw.fontcategory.' + cat;
+      const text = this.$t(key);
+      return text && text !== key ? text : cat;
+    },
+    familyStyle(font) {
+      return { fontFamily: "'" + font.family + "', " + (font.category === 'display' ? 'sans-serif' : font.category || 'sans-serif') };
+    },
+    hasFamily(family) {
+      return this.families.some((item) => item.font.family === family);
+    },
+    // "<b>Variabel</b> · 100–900 · mit Kursiv" or "300 · 400 · 600 · mit Kursiv"
+    summary(font) {
+      const files = font.files || [];
+      const variable = files.find((f) => String(f.weight || '').includes(' '));
+      const italic = font.italic || files.some((f) => f.style === 'italic');
+      const parts = variable
+        ? ['<b>' + this.$t('prw.fonts.variable') + '</b>', this.formatWeight(variable.weight)]
+        : [...new Set(files.map((f) => String(f.weight || '400')))].sort((a, b) => a - b);
+      if (italic) parts.push(this.$t('prw.fonts.withItalic'));
+      return parts.join(' · ');
+    },
+    sourceLabel(font) {
+      if (font.builtin) return this.$t('prw.fonts.source.builtin');
+      return this.$t(font.source === 'google' ? 'prw.fonts.source.google' : 'prw.fonts.source.upload');
     },
     formatWeight(w) {
-      if (!w) return '';
-      const parts = w.split(' ');
+      const parts = String(w || '').split(' ');
       return parts.length === 2 ? parts[0] + '–' + parts[1] : w;
     },
-    isInWeightRange(w) {
-      if (this.newFont.weights.length < 2) return false;
-      const nums = this.newFont.weights.map(Number);
-      const n = Number(w);
-      return n > Math.min(...nums) && n < Math.max(...nums) && !this.newFont.weights.includes(w);
+    async deleteFont(key, font) {
+      if (!window.confirm(this.$t('prw.fonts.delete.font', { family: font.family }))) return;
+      await this.$api.delete('projectwizard/fonts/' + key);
+      // the server removed the font's uses – the open settings drop them, too
+      this.$emit('update', { removedFamily: font.family });
     },
-    toggleWeight(w) {
-      if (this.newFont.weights.length === 1 && this.newFont.weights[0] === w) {
-        this.newFont.weights = [];
-      } else if (this.newFont.weights.length >= 2) {
-        this.newFont.weights = [w];
-      } else {
-        this.newFont.weights.push(w);
-      }
+
+    // own files
+    onSelect(event) {
+      this.stage(Array.from(event.target.files));
+      event.target.value = '';
     },
-    onFileSelect(e) {
-      const files = Array.from(e.target.files);
+    onDrop(event) {
+      this.over = false;
+      this.stage(Array.from(event.dataTransfer.files));
+    },
+    stage(files) {
+      this.error = '';
       for (const file of files) {
-        if (!file.name.endsWith('.woff2')) continue;
-        this.newFont.files.push({
-          name: file.name,
-          file: file,
-          style: 'normal',
-        });
-        this.pendingFiles.push(file);
+        if (!/\.woff2$/i.test(file.name) || this.staged.some((f) => f.name === file.name)) continue;
+        const guess = guessFont(file.name);
+        if (!this.family && guess.family) this.family = guess.family;
+        this.staged.push({ name: file.name, file, weight: guess.weight, style: guess.style });
       }
-      e.target.value = '';
+    },
+    reset() {
+      this.staged = [];
+      this.family = '';
+      this.category = 'sans-serif';
+      this.error = '';
     },
     async addFont() {
-      if (!this.canAddFont) return;
-
-      // Upload file via base64 through the API
-      for (const staged of this.newFont.files) {
-        const reader = new FileReader();
-        const base64 = await new Promise((resolve) => {
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.readAsDataURL(staged.file);
+      if (!this.family.trim() || !this.staged.length) return;
+      this.busy = true;
+      this.error = '';
+      try {
+        for (const staged of this.staged) {
+          const data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result).split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(staged.file);
+          });
+          const result = await this.$api.post('projectwizard/fonts/upload', { name: staged.name, data });
+          if (result.error) {
+            this.error = staged.name + ': ' + result.error;
+            return;
+          }
+        }
+        // a family that exists already gets the files added
+        await this.$api.post('projectwizard/fonts', {
+          family: this.family.trim(),
+          category: this.category,
+          italic: false,
+          files: this.staged.map((f) => ({ src: f.name, weight: f.weight, style: f.style })),
         });
-        await this.$api.post('projectwizard/fonts/upload', {
-          name: staged.name,
-          data: base64,
-        });
+        const family = this.family.trim();
+        this.reset();
+        this.$emit('update', { installedFamily: family });
+      } finally {
+        this.busy = false;
       }
-
-      // Add font config
-      await this.$api.post('projectwizard/fonts', {
-        family: this.newFont.family.trim(),
-        category: this.newFont.category,
-        italic: this.newFont.italic,
-        files: this.newFont.files.map(f => ({
-          src: f.name,
-          weight: this.computedWeight,
-          style: this.newFont.italic ? 'normal' : this.newFont.style,
-        })),
-      });
-
-      // Reset form and close
-      this.resetAddForm();
-      this.pendingFiles = [];
-      this.showAddForm = false;
-
-      this.$emit('update');
-    },
-    async deleteFontFile(key, fileIndex, file) {
-      const font = this.allFonts[key];
-      const isLast = font && font.files && font.files.length <= 1;
-      const label = isLast
-        ? this.$t('prw.fonts.delete.font', { family: font.family })
-        : this.$t('prw.fonts.delete.file', { file: file.src });
-      if (!window.confirm(label)) return;
-
-      if (isLast) {
-        await this.$api.delete('projectwizard/fonts/' + key);
-        // the server removed the font's uses – the open settings drop them, too
-        this.$emit('update', { removedFamily: font.family });
-      } else {
-        await this.$api.delete('projectwizard/fonts/' + key + '/file/' + fileIndex);
-        this.$emit('update');
-      }
-    },
-    async setDefaultFont(family) {
-      await this.$api.post('projectwizard/fonts/default', { family });
-      this.$emit('update');
     },
   },
 };
 </script>
 
 <style>
-.pw-font-card {
-  background: light-dark(var(--color-white), var(--color-gray-850));
-  border-radius: var(--rounded);
-  padding: var(--spacing-3);
-  margin-bottom: var(--spacing-2);
-  box-shadow: var(--shadow);
-}
-
-.pw-font-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  margin-bottom: var(--spacing-2);
-}
-
-.pw-font-card-name {
-  font-weight: 600;
-  font-size: var(--text-sm);
-}
-
-.pw-font-card-meta {
-  display: flex;
-  gap: var(--spacing-1);
-}
-
-.pw-font-card-files {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
-
-.pw-font-file {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-  font-family: var(--font-mono);
-}
-
-.pw-font-file-name {
-  min-width: 200px;
-}
-
-.pw-font-file-label {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-}
-
-.pw-font-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pw-font-label-bold {
-  font-weight: 600;
-  cursor: default;
-}
-
-.pw-font-category-label {
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-  margin-left: var(--spacing-2);
-}
-
-.pw-font-weight-label {
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  color: var(--color-text-dimmed);
-  margin-left: var(--spacing-2);
-}
-
-.pw-font-name-input {
-  width: 450px;
-}
-
-.pw-font-inline-label {
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-  margin-left: var(--spacing-4);
-}
-
-.pw-font-file-selected {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-text-dimmed);
-}
-
 .pw-font-delete {
   background: none;
   border: none;
@@ -428,99 +279,145 @@ export default {
   margin-left: auto;
   padding: 0 var(--spacing-1);
 }
-
 .pw-font-delete:hover {
   color: var(--color-negative-600, #dc2626);
 }
-
-.pw-font-upload-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-4);
-  background: var(--color-gray-100);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--rounded);
-  font-size: var(--text-sm);
-  cursor: pointer;
-}
-
-.pw-font-upload-btn:hover {
-  background: var(--color-gray-200);
-}
-
 .pw-font-help a {
-  color: var(--color-blue-600);
   text-decoration: underline;
 }
 
-.pw-font-help {
+/* installed fonts: one row per family */
+.pw-font-families {
+  background: light-dark(var(--color-white), var(--color-gray-850));
+  border-radius: var(--rounded);
+  box-shadow: var(--shadow);
+}
+.pw-font-family {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  min-height: 3.5rem;
+  padding: var(--spacing-2) var(--spacing-4);
+}
+.pw-font-family + .pw-font-family {
+  border-top: 1px solid var(--color-border);
+}
+.pw-font-family-name {
+  flex: 0 0 13rem;
+  min-width: 0;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pw-font-family-meta {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--color-text-dimmed);
+}
+.pw-font-family-meta b {
+  font-weight: var(--font-semi);
+  color: var(--color-text);
+}
+.pw-font-badge {
+  flex: none;
   font-size: var(--text-xs);
   color: var(--color-text-dimmed);
-  padding: var(--spacing-1) var(--spacing-3);
-  margin-bottom: var(--spacing-3);
-}
-
-.pw-weight-toggles {
-  display: flex;
-  gap: 0;
-}
-
-.pw-weight-toggle {
-  padding: var(--spacing-1) var(--spacing-3);
-  font-size: var(--text-sm);
-  font-family: var(--font-mono);
-  border: 1px solid var(--color-border);
-  background: var(--color-background);
-  cursor: pointer;
-  margin-left: -1px;
-}
-
-.pw-weight-toggle:first-child {
-  border-radius: var(--rounded) 0 0 var(--rounded);
-  margin-left: 0;
-}
-
-.pw-weight-toggle:last-child {
-  border-radius: 0 var(--rounded) var(--rounded) 0;
-}
-
-.pw-weight-toggle.is-active {
-  background: var(--color-blue-600);
-  color: var(--color-white);
-  border-color: var(--color-blue-600);
-  z-index: 1;
-  position: relative;
-}
-
-.pw-weight-toggle.is-in-range {
-  background: var(--color-blue-600);
-  color: var(--color-white);
-  border-color: var(--color-blue-600);
-}
-
-.pw-font-actions {
-  padding: var(--spacing-3);
-}
-
-.pw-dual-first {
-  padding-bottom: 1px;
-}
-
-.pw-dual-next {
-  padding-top: 1px;
-  padding-bottom: 1px;
-}
-
-.pw-quad-label {
-  font-size: 0.65rem;
-  font-family: var(--font-mono);
-  color: var(--color-black);
-  background: var(--color-yellow-300);
-  border: 1px solid var(--color-yellow-600);
-  padding: 2px var(--spacing-2);
-  border-radius: 999px;
+  padding: 0 var(--spacing-1);
+  border-radius: var(--rounded-sm);
+  background: light-dark(var(--color-gray-200), var(--color-gray-800));
   white-space: nowrap;
-  margin-right: var(--spacing-1);
+}
+.pw-font-family.is-loading .pw-font-family-name {
+  opacity: 0.5;
+}
+.pw-font-loader {
+  color: var(--color-text-dimmed);
+}
+@media (max-width: 40rem) {
+  .pw-font-family { flex-wrap: wrap; }
+  .pw-font-family-name { flex-basis: 100%; }
+}
+
+/* own files: name, category, the files in a table */
+.pw-font-upload {
+  margin-top: var(--spacing-3);
+}
+.pw-font-upload-card.is-over {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.pw-font-upload-row {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  border-bottom: 1px solid var(--color-border);
+}
+.pw-font-upload-label {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+  background: light-dark(var(--color-gray-100), var(--color-gray-900));
+  border-right: 1px solid var(--color-border);
+}
+.pw-font-upload-value {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: var(--spacing-2) var(--spacing-3);
+}
+.pw-font-upload-name {
+  width: 100%;
+  max-width: 18rem;
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  background: transparent;
+  font: inherit;
+  color: var(--color-text);
+}
+.pw-font-upload-files {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.pw-font-upload-files th {
+  padding: var(--spacing-2) var(--spacing-3) var(--spacing-1);
+  text-align: start;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: normal;
+  color: var(--color-text-dimmed);
+}
+.pw-font-upload-files td {
+  padding: var(--spacing-2) var(--spacing-3);
+  border-top: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+.pw-font-upload-file {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  word-break: break-all;
+}
+.pw-font-upload-select {
+  appearance: auto;
+  padding: var(--spacing-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded);
+  background: transparent;
+  font: inherit;
+  color: var(--color-text);
+}
+.pw-font-upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  border-top: 1px solid var(--color-border);
 }
 </style>

@@ -753,6 +753,21 @@ class ProjectConfig
 	}
 
 	/**
+	 * Delete a font's files and its entry, but keep its uses – the same
+	 * family comes again right after (installing it from Google anew)
+	 */
+	public static function removeFontFiles(string $key): void
+	{
+		$config = pwConfig::readJson(self::fontsConfigFile());
+		if (!isset($config[$key])) return;
+		foreach ($config[$key]['files'] ?? [] as $file) {
+			self::deleteFontFile($file['src']);
+		}
+		unset($config[$key]);
+		self::saveFontsConfig($config);
+	}
+
+	/**
 	 * Remove a font from the project fonts config and delete its files.
 	 */
 	public static function removeFont(string $key): void
