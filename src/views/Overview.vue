@@ -893,6 +893,11 @@
             </section>
           </div>
 
+          <!-- Sending: the project's mail server (pwMail), saved on its own -->
+          <div v-if="globalActiveTab === 'mail'" class="pw-wizard-global-content">
+            <pw-mail-settings />
+          </div>
+
           <!-- AI: translation (translatewizard: its keys) and page generator
                (contentwizard: its settings and keys), each a page of its own -->
           <div
@@ -3086,7 +3091,7 @@ export default {
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return [...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'patches'];
+      return [...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'mail', 'patches'];
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
@@ -3168,7 +3173,7 @@ export default {
     },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
-      return this.activeTab === 'global' && ['welcome', 'translate', 'generator'].includes(this.globalActiveTab);
+      return this.activeTab === 'global' && ['welcome', 'translate', 'generator', 'mail'].includes(this.globalActiveTab);
     },
     patchesHighlighted() {
       return this.patchesHighlightedFor(this.patchesText);
@@ -3231,6 +3236,8 @@ export default {
       // exists only with that plugin, which registers it)
       if (this.hasTranslateTab) tabs.push({ key: 'translate', icon: 'translatewizard-translate' });
       if (this.hasGeneratorTab) tabs.push({ key: 'generator', icon: 'ai' });
+      // the project's mail server (pwMail) for the plugins that send mails
+      tabs.push({ key: 'mail', icon: 'email' });
       tabs.push({ key: 'patches', icon: 'code' });
       return tabs;
     },

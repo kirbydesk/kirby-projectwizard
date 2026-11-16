@@ -627,5 +627,35 @@ return [
 				return ProjectConfig::loadFontsizes();
 			}
 		],
+		// The mail server (Settings › Sending): admins only – the password
+		// is only ever sent here, never back
+		[
+			'pattern' => 'projectwizard/mail',
+			'method'  => 'GET',
+			'action'  => function () {
+				if (!kirby()->user()?->isAdmin()) throw new \Kirby\Exception\PermissionException(message: 'Admins only.');
+				return pwMail::settings();
+			}
+		],
+		[
+			'pattern' => 'projectwizard/mail',
+			'method'  => 'POST',
+			'action'  => function () {
+				if (!kirby()->user()?->isAdmin()) throw new \Kirby\Exception\PermissionException(message: 'Admins only.');
+				pwMail::save(kirby()->request()->body()->toArray());
+				return pwMail::settings();
+			}
+		],
+		// a test mail to the logged-in user: the server's answer on failure
+		[
+			'pattern' => 'projectwizard/mail/test',
+			'method'  => 'POST',
+			'action'  => function () {
+				if (!kirby()->user()?->isAdmin()) throw new \Kirby\Exception\PermissionException(message: 'Admins only.');
+				$to = (string) kirby()->user()->email();
+				$error = pwMail::test($to);
+				return $error === null ? ['sent' => $to] : ['error' => $error];
+			}
+		],
 	]
 ];

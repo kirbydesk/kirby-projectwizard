@@ -3,6 +3,7 @@
 require_once __DIR__ . '/src/classes/ProjectConfig.php';
 require_once __DIR__ . '/src/classes/SetupWizard.php';
 require_once __DIR__ . '/src/classes/GoogleFonts.php';
+require_once __DIR__ . '/src/classes/Mail.php';
 
 Kirby::plugin('kirbydesk/kirby-projectwizard', [
 	/* -------------- Extensions --------------*/
