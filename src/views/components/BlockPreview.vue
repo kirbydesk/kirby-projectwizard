@@ -597,10 +597,11 @@ export default {
     marqueeSoft() {
       return (this.setting('layout', 'item-marquee-edges') || 'soft') !== 'hard';
     },
-    // the time for all logos once (the sample logos run twice per half)
+    // the time per logo × the logos of one half (the sample logos twice):
+    // as fast as on the website
     marqueeDuration() {
       const s = parseFloat(this.itemValue('marquee-duration'));
-      return (isNaN(s) ? 30 : s) * 2 + 's';
+      return (isNaN(s) ? 3 : s) * this.dummyLogos.length * 2 + 's';
     },
     // a tile in the running row: as in the grid, at its size, the gap after it
     marqueeTileStyle() {

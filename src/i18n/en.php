@@ -278,7 +278,7 @@
 	'prw.hint.steplistColors' => 'Sets the colours of the numbering for each variant.',
 	'prw.hint.steplistSpacing' => 'Sets the gap between the steps.',
 	'prw.hint.logocloudLayout' => 'Sets whether the logos sit in square tiles or in one common height with their own width.',
-	'prw.hint.logocloudMarquee' => 'Applies to blocks displayed as a marquee. Speed: seconds for all logos to pass once – more is slower. Soft edges: the logos fade out on the left and right.',
+	'prw.hint.logocloudMarquee' => 'Applies to blocks displayed as a marquee. Speed: seconds until a logo has moved on by one tile – more is slower. Soft edges: the logos fade out on the left and right.',
 	'prw.hint.logocloudShape' => 'Sets the shape of the logo tiles. It is the same for all logos.',
 	'prw.hint.logocloudPadding' => 'Sets the padding of the logo tiles.',
 	'prw.hint.logocloudColors' => 'Sets the background colour of the logo tiles for each variant.',

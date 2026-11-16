@@ -447,13 +447,13 @@ export default {
       };
     },
     // the marquee: the logos repeated to fill the row, then all once more
-    // (the time: for all logos once, the repeated ones as long more)
+    // (the time: per logo × the logos of one half, as on the website)
     panelMarquee() {
       const repeat = Math.ceil(8 / this.panelLogos.length);
       let set = [];
       for (let i = 0; i < repeat; i++) set = set.concat(this.panelLogos);
       const s = parseFloat(this.itemValue('marquee-duration'));
-      return { logos: set.concat(set), duration: (isNaN(s) ? 30 : s) * repeat + 's' };
+      return { logos: set.concat(set), duration: (isNaN(s) ? 3 : s) * set.length + 's' };
     },
     // the logocloud's logos (its files field)
     panelLogos() {
