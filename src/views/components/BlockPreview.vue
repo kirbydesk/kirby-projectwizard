@@ -109,6 +109,19 @@
             <div v-if="introGapParts('logos').space" class="pw-space-band" :class="['is-' + introGapParts('logos').prev, { 'is-hot': highlight === introGapParts('logos').prev + '-spacing' }]" :style="{ height: introGapParts('logos').space }"></div>
             <div v-if="introGapParts('logos').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('logos').more }"></div>
           </template>
+          <!-- contact form: its fields (the block's order and widths, else
+               the start ones), the consent and the send button -->
+          <div v-if="isContactform" class="pw-cf-preview" :style="cfFormStyle">
+            <div v-for="field in cfFields" :key="'cf-' + field.key" class="pw-cf-field" :class="{ 'is-full': field.width === 'full' }">
+              <span class="pw-cf-label">{{ $t('kirbyblock-contactform.field.' + field.key) }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
+              <span class="pw-cf-input" :class="{ 'is-text': field.key === 'message' }" :style="cfInputStyle"></span>
+            </div>
+            <div class="pw-cf-consent">
+              <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
+              <span>{{ $t('kirbyblock-contactform.consent') }}<span :style="{ color: cfColor('field-focus') }"> *</span></span>
+            </div>
+            <div class="pw-cf-submit"><span :style="buttonStyle">{{ $t('kirbyblock-contactform.button.default') }}</span></div>
+          </div>
           <!-- logocloud as a marquee: the sample logos twice in one running
                row, its edges soft as set (held while the mouse is on it) -->
           <div v-if="logosMarquee" key="logos-marquee" class="pw-logocloud-marquee" :class="{ 'is-soft': marqueeSoft }" :style="{ marginTop: logosMarginTop }">
@@ -468,6 +481,7 @@ export default {
       if (this.isSteplist) return [...fields, 'items'];
       if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
       if (this.isLogocloud) return [...fields, 'logos'];
+      if (this.isContactform) return [...fields, 'items'];
       if (this.isFeaturelist) return [...fields, 'items'];
       if (this.isFaq) return [...fields, 'items'];
       if (this.isCardlets) return [...fields, 'items'];
@@ -588,6 +602,33 @@ export default {
         boxShadow: this.highlight === 'item-padding'
           ? this.padTint('x', x, 'item-padding')
           : this.padTint('y', y, 'item-padding-y'),
+      };
+    },
+    isContactform() {
+      return this.blockType === 'pwcontactform';
+    },
+    // the fields shown: the block's (in the panel) in its order, else the start ones
+    cfFields() {
+      const start = [['name', 1, 1, 'half'], ['email', 1, 1, 'half'], ['phone', 1, 0, 'half'], ['company', 0, 0, 'half'], ['subject', 0, 0, 'full'], ['message', 1, 1, 'full']]
+        .map(([key, show, required, width]) => ({ field: key, show: !!show, required: !!required, width }));
+      let rows = this.content && this.content.formfields;
+      if (typeof rows === 'string') { try { rows = JSON.parse(rows); } catch (e) { rows = null; } }
+      const list = Array.isArray(rows) && rows.length ? rows : start;
+      const yes = (v) => v === true || v === 'true' || v === 1 || v === '1';
+      return list
+        .filter((r) => r && (r.field === 'email' || yes(r.show)))
+        .map((r) => ({ key: r.field, required: r.field === 'email' || yes(r.required), width: r.width === 'full' ? 'full' : 'half' }));
+    },
+    cfFormStyle() {
+      const gap = this.itemValue('field-gap') || '1rem';
+      return { rowGap: gap, columnGap: 'calc(' + gap + ' * 1.5)', marginTop: this.introGap('items') || 0 };
+    },
+    cfInputStyle() {
+      return {
+        backgroundColor: this.cfColor('field-background'),
+        border: (this.itemValue('field-border-width') || '1px') + ' solid ' + this.cfColor('field-border'),
+        borderRadius: this.itemValue('field-radius') || '0.375rem',
+        padding: this.itemValue('field-padding') || '0.75rem',
       };
     },
     // logocloud shown as a marquee: one running row
@@ -1487,6 +1528,10 @@ export default {
       const c = this.content;
       const own = c && c.theme === 'custom' ? c[name === 'item-overlay' ? 'cardoverlaycolor' : 'overlaycolor'] : '';
       return own || this.itemColor(name) || '#000000';
+    },
+    // a field colour of the shown variant (custom: the default's)
+    cfColor(name) {
+      return this.itemColor(name) || { 'field-background': '#FAFAFA', 'field-border': '#D4D4D8', 'field-text': '#16171A', 'field-focus': '#2563EB' }[name];
     },
     itemColor(name) {
       const ov = ((this.valueOverrides || {})[this.currentTheme] || {})[name];
@@ -2424,5 +2469,48 @@ export default {
 }
 @keyframes pw-logocloud-marquee {
   to { transform: translateX(-50%); }
+}
+
+/* contact form: two columns, a full field over both */
+.pw-cf-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pw-cf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.pw-cf-field.is-full,
+.pw-cf-consent,
+.pw-cf-submit {
+  grid-column: 1 / -1;
+}
+.pw-cf-label {
+  font-size: 0.875em;
+  font-weight: 600;
+}
+.pw-cf-input {
+  display: block;
+  box-sizing: border-box;
+  min-height: calc(1.5em + 2 * 0.75rem);
+}
+.pw-cf-input.is-text {
+  min-height: 7rem;
+}
+.pw-cf-consent {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.875em;
+}
+.pw-cf-check {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  margin-top: 0.2em;
+  border: 1px solid;
+  border-radius: 3px;
 }
 </style>

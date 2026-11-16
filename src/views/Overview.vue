@@ -1017,7 +1017,7 @@
         >
 
           <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist, Hero, Cardlets so far) -->
-          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq', 'pwcontactform'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
                 :block-type="block.blockType"
@@ -1115,6 +1115,10 @@
 
           <!-- Usage: the pages that use the block (path of titles, status, how
                often), each opens in the panel; loaded when the tab opens -->
+          <!-- contact form: the mail server (SMTP) and the recipient -->
+          <div v-if="block.blockType === 'pwcontactform' && currentBlockView === 'mail' && activeTab === block.blockType">
+            <pw-contactform-mail />
+          </div>
           <div v-show="currentBlockView === 'usage'" v-if="currentBlockView === 'usage' && activeTab === block.blockType">
             <section class="pw-card-section">
               <div class="pw-card pw-field-table">
@@ -1655,6 +1659,77 @@
             </template>
 
 
+
+            <!-- contact form: the fields' look, their colours, the gaps -->
+            <template v-if="block.blockType === 'pwcontactform' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('kirbyblock-contactform.fields') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['field-padding', 'field-radius', 'field-border-width']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.contactformFields')" />
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'cfth-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  >
+<span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(theme) }"></span>{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :labels="{ 'field-background': $t('prw.label.backgroundColor'), 'field-border': $t('kirbyblock-contactform.color.border'), 'field-text': $t('kirbyblock-contactform.color.text'), 'field-focus': $t('kirbyblock-contactform.color.focus') }"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['field-background', 'field-border', 'field-text', 'field-focus']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.contactformColors')" />
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['field-gap', 'item-text-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.contactformSpacing')" />
+            </section>
+            </template>
 
             <!-- featurelist: the title's arrangement, icon, tile, colours, gaps
                  (the entries' type: the elements tab) -->
@@ -3114,13 +3189,15 @@ export default {
       const views = [
         ...(this.hasDesignView(this.activeTab) ? ['design'] : []),
         ...(this.hasElementsView(this.activeTab) ? ['elements'] : []),
+        // (the contact form: its mail server)
+        ...(this.activeTab === 'pwcontactform' ? ['mail'] : []),
         'defaults',
         'presets',
         'usage',
       ];
       // design: pencil and ruler, elements: the layers (as the Elements page), start values: the pen,
       // restrictions: the crossed-out eye
-      const icons = { design: 'prw-design', elements: 'layers', defaults: 'edit-line', presets: 'hidden', usage: 'copy' };
+      const icons = { design: 'prw-design', elements: 'layers', mail: 'email', defaults: 'edit-line', presets: 'hidden', usage: 'copy' };
       return views.map(name => ({
         name,
         icon: icons[name],

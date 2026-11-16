@@ -71,6 +71,19 @@
               </div>
             </div>
 
+            <!-- contact form: its fields in the block's order and widths -->
+            <div v-if="isContactform" class="pw-cf-preview" :style="cfFormStyle">
+              <div v-for="field in cfFields" :key="'cf-' + field.key" class="pw-cf-field" :class="{ 'is-full': field.width === 'full' }">
+                <span class="pw-cf-label">{{ $t('kirbyblock-contactform.field.' + field.key) }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
+                <span class="pw-cf-input" :class="{ 'is-text': field.key === 'message' }" :style="cfInputStyle"></span>
+              </div>
+              <div class="pw-cf-consent">
+                <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
+                <span>{{ $t('kirbyblock-contactform.consent') }}<span :style="{ color: cfColor('field-focus') }"> *</span></span>
+              </div>
+              <div class="pw-cf-submit"><span :style="buttonStyle">{{ content.buttontext || $t('kirbyblock-contactform.button.default') }}</span></div>
+            </div>
+
             <!-- cardlets: its cards (image, tagline, heading, text, link) in
                  the display set – image above, texts on the image, image
                  standing out; hidden ones faded -->
