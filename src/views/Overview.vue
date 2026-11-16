@@ -122,6 +122,49 @@
             </div>
         </div>
 
+        <!-- tabs of other plugins (e.g. kirby-formwizard's "Forms"): each with
+             its dropdown, the entries asked from the plugin when it opens -->
+        <template v-if="!loading">
+          <div v-for="tab in pluginTabs" :key="'plugin-' + tab.key" class="pw-pill" role="group">
+            <div class="pw-tab-menu">
+              <button
+                type="button"
+                class="pw-tool pw-tab"
+                :title="tab.label"
+                aria-haspopup="menu"
+                :aria-pressed="isGlobalTab('plugin:' + tab.key) ? 'true' : 'false'"
+                @click="togglePluginMenu(tab)"
+              >
+                <k-icon :type="tab.icon" />
+                <span class="pw-tab-text">{{ tab.label }}</span>
+                <k-icon type="angle-down" class="pw-tab-menu-chevron" />
+                <span v-if="tab.badge" class="pw-change-badge">{{ tab.badge }}</span>
+              </button>
+              <k-dropdown-content :ref="'pluginMenu-' + tab.key" align-x="start">
+                <nav class="k-navigate">
+                  <template v-for="(item, i) in (pluginMenus[tab.key] || [])">
+                    <hr v-if="item === '-'" :key="'sep-' + i" />
+                    <p v-else-if="item.heading" :key="'head-' + i" class="pw-menu-heading">{{ item.heading }}</p>
+                    <button
+                      v-else
+                      :key="'item-' + i"
+                      type="button"
+                      class="k-dropdown-item k-button pw-menu-item"
+                      data-has-text="true"
+                      data-has-icon="true"
+                      :aria-current="isGlobalTab('plugin:' + tab.key) && pluginView === item.view ? 'true' : undefined"
+                      @click="closePluginMenu(tab); item.link ? $go(item.link) : openPlugin(tab.key, item.view)"
+                    >
+                      <span class="k-button-icon"><k-icon :type="item.icon || 'box'" /></span>
+                      <span class="k-button-text">{{ item.text }}<span v-if="item.badge" class="pw-change-count">{{ item.badge }}</span><span v-else-if="item.info" class="pw-menu-count">{{ item.info }}</span></span>
+                    </button>
+                  </template>
+                </nav>
+              </k-dropdown-content>
+            </div>
+          </div>
+        </template>
+
         <!-- Settings: the project, the settings, AI and the exceptions -->
         <div v-if="!loading" class="pw-pill pw-tabs" role="group">
           <div class="pw-tab-menu">
@@ -891,6 +934,20 @@
               <k-box v-else-if="patchesUnknown.length" theme="notice" class="pw-patches-note" :text="$t('prw.patches.unknown') + ' ' + patchesUnknown.join(', ')" />
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.patches')" />
             </section>
+          </div>
+
+          <!-- a page of another plugin (its tab in the header): its own
+               component; it may put a preview into the right column -->
+          <div v-if="currentPluginTab" class="pw-wizard-global-content">
+            <component
+              :is="currentPluginTab.component"
+              :key="'plugin-' + currentPluginTab.key"
+              :view="pluginView"
+              @navigate="openPlugin(currentPluginTab.key, $event)"
+              @title="pluginTitle = $event"
+              @preview="pluginPreview = !!$event"
+              @changed="loadPluginMenu(currentPluginTab)"
+            />
           </div>
 
           <!-- Sending: the project's mail server (pwMail), saved on its own -->
@@ -2828,6 +2885,16 @@ export default {
       type: Boolean,
       default: true,
     },
+    // tabs of other plugins in the header ({ key, label, icon, component, menu, badge })
+    pluginTabs: {
+      type: Array,
+      default: () => [],
+    },
+    // a plugin's page to open (from the address: ?tab=…&view=…)
+    start: {
+      type: Object,
+      default: null,
+    },
   },
   data() {
     return {
@@ -2867,7 +2934,12 @@ export default {
       activeVariants: ['variant', 'variant2'],
       originalActiveVariants: ['variant', 'variant2'],
       activeTab: 'global',
-      globalActiveTab: (() => { try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'welcome'; } catch (e) { return 'welcome'; } })(),
+      globalActiveTab: (() => { if (this.start && this.start.tab) return 'plugin:' + this.start.tab; try { const t = sessionStorage.getItem('pw-wizard-tab'); sessionStorage.removeItem('pw-wizard-tab'); return t || 'welcome'; } catch (e) { return 'welcome'; } })(),
+      // a plugin's page: which of its views, its title, whether it shows a preview
+      pluginView: this.start && this.start.tab ? (this.start.view || null) : null,
+      pluginTitle: null,
+      pluginPreview: false,
+      pluginMenus: {},
       blockConfigs: {},
       blockOverrides: {},
       originalOverrides: {},
@@ -3073,6 +3145,7 @@ export default {
         const element = this.elementOptions.find(o => o.value === this.selectedElement);
         return element ? element.icon : null;
       }
+      if (this.currentPluginTab) return (this.pluginTitle && this.pluginTitle.icon) || this.currentPluginTab.icon;
       const tab = this.globalTabs.find(t => t.key === this.globalActiveTab);
       return tab ? tab.icon : null;
     },
@@ -3081,6 +3154,7 @@ export default {
         const element = this.elementOptions.find(o => o.value === this.selectedElement);
         if (element) return element.text;
       }
+      if (this.currentPluginTab) return (this.pluginTitle && this.pluginTitle.text) || this.currentPluginTab.label;
       // (the configuration: a longer title than in the menu)
       if (this.globalActiveTab === 'patches') return this.$t('prw.page.patches');
       return this.$t('prw.tab.' + this.globalActiveTab);
@@ -3173,7 +3247,13 @@ export default {
     },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
-      return this.activeTab === 'global' && ['welcome', 'translate', 'generator', 'mail'].includes(this.globalActiveTab);
+      return this.activeTab === 'global' && (['welcome', 'translate', 'generator', 'mail'].includes(this.globalActiveTab) || (!!this.currentPluginTab && !this.pluginPreview));
+    },
+    // the plugin whose page is open (its tab in the header)
+    currentPluginTab() {
+      if (this.activeTab !== 'global' || !this.globalActiveTab.startsWith('plugin:')) return null;
+      const key = this.globalActiveTab.slice(7);
+      return this.pluginTabs.find(t => t.key === key) || null;
     },
     patchesHighlighted() {
       return this.patchesHighlightedFor(this.patchesText);
@@ -3412,8 +3492,21 @@ export default {
     // same address, e.g. its menu entry): the page chosen in a wizard menu
     // (openGlobal), else the start page – as Kirby's own entries lead to
     // their overview
+    // the plugins' dropdowns: their entries ready before the first click
+    pluginTabs: {
+      immediate: true,
+      handler(tabs) {
+        (tabs || []).forEach(tab => this.loadPluginMenu(tab));
+      },
+    },
     '$panel.view.timestamp'() {
       if (this.blockType) return;
+      // (opened with ?tab=…: that plugin's page)
+      if (this.start && this.start.tab) {
+        this.globalActiveTab = 'plugin:' + this.start.tab;
+        this.pluginView = this.start.view || null;
+        return;
+      }
       const tab = this._pendingTab;
       this._pendingTab = null;
       // (the view stayed: the storage for a fresh start is not needed)
@@ -5026,6 +5119,40 @@ export default {
     isGlobalTab(...keys) {
       return this.activeTab === 'global' && keys.includes(this.globalActiveTab);
     },
+    // A plugin's tab: its dropdown (the entries asked anew each time it opens)
+    togglePluginMenu(tab) {
+      const menu = (this.$refs['pluginMenu-' + tab.key] || [])[0];
+      if (!menu) return;
+      // (opened at once as the other tabs; its entries refreshed meanwhile)
+      if (!menu.isOpen) this.loadPluginMenu(tab);
+      menu.toggle();
+    },
+    closePluginMenu(tab) {
+      const menu = (this.$refs['pluginMenu-' + tab.key] || [])[0];
+      if (menu) menu.close();
+    },
+    async loadPluginMenu(tab) {
+      if (!tab || !tab.menu) return;
+      try {
+        this.$set(this.pluginMenus, tab.key, await this.$api.get(tab.menu));
+      } catch (e) {
+        this.$set(this.pluginMenus, tab.key, []);
+      }
+    },
+    // A plugin's page; from a block view through the address
+    openPlugin(key, view = null) {
+      if (this.activeTab !== 'global') {
+        this.$go('projectwizard', { query: { tab: key, view: view || '' } });
+        return;
+      }
+      if (this.globalActiveTab !== 'plugin:' + key) {
+        this.pluginTitle = null;
+        this.pluginPreview = false;
+      }
+      this.globalActiveTab = 'plugin:' + key;
+      this.pluginView = view;
+    },
+
     // Opens a tab of the global view; from a block view it switches views and
     // remembers the tab (and element) for the global view to pick up.
     openGlobal(tab, element = null) {

@@ -67,6 +67,12 @@ $areas['projectwizard'] = fn() => [
 					'blockType' => null,
 					// local development: the project builder rebuilds site.min.css after a save
 					'development' => SetupWizard::isDevelopment(),
+					// tabs of other plugins (e.g. "Forms") and the one to open (?tab=forms&view=…)
+					'pluginTabs' => ProjectConfig::pluginTabs(),
+					'start'      => kirby()->request()->get('tab') ? [
+						'tab'  => (string) kirby()->request()->get('tab'),
+						'view' => (string) kirby()->request()->get('view', ''),
+					] : null,
 				],
 			],
 		],
@@ -99,6 +105,7 @@ foreach ($blocks as $blockType => $info) {
 						'blockType' => $blockType,
 						// local development: the project builder rebuilds site.min.css after a save
 						'development' => SetupWizard::isDevelopment(),
+						'pluginTabs'  => ProjectConfig::pluginTabs(),
 					],
 				],
 			],

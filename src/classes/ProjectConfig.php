@@ -33,6 +33,37 @@ class ProjectConfig
 	 * Cached per request: the underlying JSON files don't change mid-request
 	 * and this is called from multiple areas of the panel API.
 	 */
+	/**
+	 * Tabs other plugins add to the wizard's header (between "Blocks" and
+	 * "Settings"): a plugin sets the option "projectwizard" (an array or a
+	 * closure returning one):
+	 *   key       the tab's id (also ?tab=<key> in the address)
+	 *   label     its name, icon its icon
+	 *   component the Panel component shown as the page (props: view; it
+	 *             emits "navigate" (view), "title" ({ text, icon }), "preview" (bool))
+	 *   menu      an API path answering the dropdown's entries:
+	 *             [{ view, text, icon, info, badge, link }] ("-": a line)
+	 *   badge     a number on the tab (e.g. new submissions)
+	 */
+	public static function pluginTabs(): array
+	{
+		$tabs = [];
+		foreach (kirby()->plugins() as $plugin) {
+			$def = kirby()->option(str_replace('/', '.', $plugin->name()) . '.projectwizard');
+			if ($def instanceof \Closure) $def = $def();
+			if (!is_array($def) || empty($def['key']) || empty($def['component'])) continue;
+			$tabs[] = [
+				'key'       => (string) $def['key'],
+				'label'     => (string) ($def['label'] ?? $def['key']),
+				'icon'      => (string) ($def['icon'] ?? 'box'),
+				'component' => (string) $def['component'],
+				'menu'      => $def['menu'] ?? null,
+				'badge'     => (int) ($def['badge'] ?? 0),
+			];
+		}
+		return $tabs;
+	}
+
 	public static function detectBlocks(): array
 	{
 		static $cache = null;
