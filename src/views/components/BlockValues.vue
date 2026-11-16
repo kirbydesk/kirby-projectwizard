@@ -465,8 +465,9 @@ export default {
       }
       return null;
     },
+    // (seconds – the marquee's speed – have no px)
     showCalculator(unit) {
-      return unit !== 'px' && unit !== '%';
+      return unit !== 'px' && unit !== '%' && unit !== 's';
     },
     getOverride(varName) {
       return this.shown[varName];

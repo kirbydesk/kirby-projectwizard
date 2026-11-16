@@ -57,7 +57,15 @@
 
             <!-- logocloud: its logos, as many per row as set for the device,
                  square tiles or one height (flexible) -->
-            <div v-if="isLogocloud && panelLogos.length" :style="panelLogosStyle">
+            <!-- (as a marquee: one running row, as on the website) -->
+            <div v-if="isLogocloud && panelLogos.length && content.logodisplay === 'marquee'" key="logos-marquee" class="pw-logocloud-marquee" :class="{ 'is-soft': marqueeSoft }">
+              <div class="pw-logocloud-marquee-track" :style="{ animationDuration: panelMarquee.duration }">
+                <div v-for="(logo, i) in panelMarquee.logos" :key="i" class="pw-logocloud-item" :style="marqueeTileStyle">
+                  <img :src="logo.url" alt="" :style="panelLogoImgStyle" />
+                </div>
+              </div>
+            </div>
+            <div v-else-if="isLogocloud && panelLogos.length" key="logos-grid" :style="panelLogosStyle">
               <div v-for="(logo, i) in panelLogos" :key="logo.id || i" :style="panelLogoStyle">
                 <img :src="logo.url" alt="" :style="panelLogoImgStyle" />
               </div>
@@ -437,6 +445,15 @@ export default {
         height: across ? '100%' : size,
         background: 'linear-gradient(to ' + { left: 'right', right: 'left', top: 'bottom', bottom: 'top' }[side] + ', ' + stops.join(', ') + ', transparent 100%)',
       };
+    },
+    // the marquee: the logos repeated to fill the row, then all once more
+    // (the time: for all logos once, the repeated ones as long more)
+    panelMarquee() {
+      const repeat = Math.ceil(8 / this.panelLogos.length);
+      let set = [];
+      for (let i = 0; i < repeat; i++) set = set.concat(this.panelLogos);
+      const s = parseFloat(this.itemValue('marquee-duration'));
+      return { logos: set.concat(set), duration: (isNaN(s) ? 30 : s) * repeat + 's' };
     },
     // the logocloud's logos (its files field)
     panelLogos() {

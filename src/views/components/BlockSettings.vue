@@ -844,8 +844,10 @@ export default {
         fields = fields.filter(f => !f.key.startsWith('columns-'));
       }
       // logocloud in the "flexible" format: no logos per row
+      // (nor as a marquee)
       if (this.view === 'defaults' && cat.key === 'layout' && this.blockType === 'pwlogocloud'
-        && this.getVal('settings.fields.layout.item-format.default', 'square') === 'flexible') {
+        && (this.getVal('settings.fields.layout.item-format.default', 'square') === 'flexible'
+          || this.getVal('settings.fields.layout.logo-display.default', 'grid') === 'marquee')) {
         fields = fields.filter(f => !f.key.startsWith('logos-'));
       }
       return fields;
@@ -865,8 +867,8 @@ export default {
         const sections = [];
         if (paddings.length) sections.push({ key: 'paddings', heading: this.$t('prw.headline.spacing'), help: this.$t('prw.hint.blockPaddings'), fields: paddings });
         if (radius && !this.blocksSquare) sections.push({ key: 'radius', heading: this.$t('prw.prop.border-radius'), help: this.$t('prw.hint.blockRadius'), fields: [radius] });
-        const headings = { 'position-': 'prw.headline.contentPosition', 'columns-': 'pw.headline.columns', 'logos-': 'prw.headline.logos', 'multicolumn-': 'prw.headline.positioning' };
-        const helps = { 'position-': 'prw.hint.contentPosition', 'multicolumn-': 'prw.hint.multicolumnPosition' };
+        const headings = { 'position-': 'prw.headline.contentPosition', 'columns-': 'pw.headline.columns', 'logos-': 'prw.headline.logos', 'multicolumn-': 'prw.headline.positioning', 'logo-display': 'kirbyblock-logocloud.logo-display' };
+        const helps = { 'position-': 'prw.hint.contentPosition', 'multicolumn-': 'prw.hint.multicolumnPosition', 'logo-display': 'kirbyblock-logocloud.logo-display.help' };
         for (const f of others) {
           const prefix = Object.keys(headings).find(p => f.key.startsWith(p));
           const key = prefix || f.key;

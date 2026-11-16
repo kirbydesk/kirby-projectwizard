@@ -109,7 +109,21 @@
             <div v-if="introGapParts('logos').space" class="pw-space-band" :class="['is-' + introGapParts('logos').prev, { 'is-hot': highlight === introGapParts('logos').prev + '-spacing' }]" :style="{ height: introGapParts('logos').space }"></div>
             <div v-if="introGapParts('logos').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('logos').more }"></div>
           </template>
-          <div v-if="isLogocloud" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible, 'is-hot-gap': highlight === 'item-gap', 'is-hot-row-gap': highlight === 'item-row-gap' }" :style="logosStyle">
+          <!-- logocloud as a marquee: the sample logos twice in one running
+               row, its edges soft as set (held while the mouse is on it) -->
+          <div v-if="logosMarquee" key="logos-marquee" class="pw-logocloud-marquee" :class="{ 'is-soft': marqueeSoft }" :style="{ marginTop: logosMarginTop }">
+            <div class="pw-logocloud-marquee-track" :style="{ animationDuration: marqueeDuration }">
+              <div
+                v-for="(logo, index) in dummyLogos.concat(dummyLogos, dummyLogos, dummyLogos)"
+                :key="'mlogo-' + index"
+                class="pw-logocloud-item"
+                :style="marqueeTileStyle"
+              >
+                <svg :viewBox="'0 0 ' + logo[0] + ' ' + logo[1]" :style="{ aspectRatio: logo[0] + ' / ' + logo[1] }" aria-hidden="true" v-html="logo[2]"></svg>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="isLogocloud" key="logos-grid" class="pw-logocloud-preview" :class="{ 'has-guides': guides, 'is-flexible': logosFlexible, 'is-hot-gap': highlight === 'item-gap', 'is-hot-row-gap': highlight === 'item-row-gap' }" :style="logosStyle">
             <div
               v-for="(logo, index) in dummyLogos"
               :key="'logo-' + index"
@@ -392,6 +406,8 @@ export default {
     heroHeight: { type: String, default: '' },
     // cardlets: the display chosen in the design tab (else the start value)
     cardDisplay: { type: String, default: '' },
+    // logocloud: grid or marquee (the preview's switch, else the start value)
+    logoDisplay: { type: String, default: '' },
     // the design tab (the hero: on the sample image with its overlay, to
     // check the overlay colour with the text)
     designView: { type: Boolean, default: false },
@@ -574,6 +590,29 @@ export default {
           : this.padTint('y', y, 'item-padding-y'),
       };
     },
+    // logocloud shown as a marquee: one running row
+    logosMarquee() {
+      return this.isLogocloud && this.logoDisplay === 'marquee';
+    },
+    marqueeSoft() {
+      return (this.setting('layout', 'item-marquee-edges') || 'soft') !== 'hard';
+    },
+    // the time for all logos once (the sample logos run twice per half)
+    marqueeDuration() {
+      const s = parseFloat(this.itemValue('marquee-duration'));
+      return (isNaN(s) ? 30 : s) * 2 + 's';
+    },
+    // a tile in the running row: as in the grid, at its size, the gap after it
+    marqueeTileStyle() {
+      const size = this.itemValueAt('item-size');
+      return {
+        ...this.logoStyle,
+        flex: '0 0 auto',
+        width: this.logosFlexible ? 'auto' : size,
+        height: size,
+        marginRight: this.itemValue('item-gap'),
+      };
+    },
     // logocloud format: square tiles or one height ("flexible")
     logosFlexible() {
       return this.setting('layout', 'item-format') === 'flexible';
@@ -594,10 +633,16 @@ export default {
       }
       const r = this.itemValue('item-radius') || [];
       const custom = Array.isArray(r) && r.length === 4 ? [r[0], r[1], r[3], r[2]].join(' ') : 0;
+      // (square by its width: not stretched to the row; the logo lies in the
+      // padding – see .pw-logocloud-item svg – so it never adds height)
       return {
         minWidth: 0,
         aspectRatio: '1',
+        height: 'auto',
+        alignSelf: 'start',
         padding: this.logoPadding,
+        '--pw-logo-pad-x': this.itemValue('item-padding'),
+        '--pw-logo-pad-y': this.itemValue('item-padding-y') || this.itemValue('item-padding'),
         backgroundColor: this.itemColor('item-background'),
         borderRadius: { square: 0, round: '50%' }[shape] ?? custom,
       };
@@ -2311,6 +2356,19 @@ export default {
   width: 100%;
   height: 100%;
 }
+/* square tiles: the logo fills the area inside the padding – WebKit
+   (Safari, KirbyDesk) would size a tile by a logo of 100 % height, the
+   tile then taller than wide */
+.pw-logocloud-preview:not(.is-flexible) .pw-logocloud-item svg {
+  position: absolute;
+  inset: 0;
+  /* (as wide or as high as fits inside the padding, centred) */
+  margin: auto;
+  width: auto;
+  height: auto;
+  max-width: calc(100% - 2 * var(--pw-logo-pad-x, 1.25rem));
+  max-height: calc(100% - 2 * var(--pw-logo-pad-y, 1.25rem));
+}
 .pw-logocloud-pad,
 .pw-logocloud-box {
   position: absolute;
@@ -2336,4 +2394,34 @@ export default {
   flex: 1;
 }
 /* order of the toolbar: see Overview (variants left, guides right) */
+
+/* logocloud as a marquee: one running row, its edges soft as set */
+.pw-logocloud-marquee {
+  overflow: hidden;
+}
+.pw-logocloud-marquee.is-soft {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+}
+.pw-logocloud-marquee-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: pw-logocloud-marquee 60s linear infinite;
+}
+.pw-logocloud-marquee:hover .pw-logocloud-marquee-track {
+  animation-play-state: paused;
+}
+.pw-logocloud-marquee .pw-logocloud-item {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+}
+.pw-logocloud-marquee .pw-logocloud-item svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+@keyframes pw-logocloud-marquee {
+  to { transform: translateX(-50%); }
+}
 </style>

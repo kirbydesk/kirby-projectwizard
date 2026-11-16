@@ -278,6 +278,7 @@
 	'prw.hint.steplistColors' => 'Legt die Farben der Nummerierung für jede Variante fest.',
 	'prw.hint.steplistSpacing' => 'Legt den Abstand zwischen den Schritten fest.',
 	'prw.hint.logocloudLayout' => 'Legt fest, ob die Logos in quadratischen Kacheln oder in einer gemeinsamen Höhe mit eigener Breite stehen.',
+	'prw.hint.logocloudMarquee' => 'Gilt für Blöcke mit der Darstellung „Laufband“. Geschwindigkeit: Sekunden für einen Durchlauf aller Logos – mehr ist langsamer. Weiche Ränder: Die Logos laufen links und rechts ins Transparente aus.',
 	'prw.hint.logocloudShape' => 'Legt die Form der Logokacheln fest. Sie gilt für alle Logos gleich.',
 	'prw.hint.logocloudPadding' => 'Legt den Innenabstand der Logokacheln fest.',
 	'prw.hint.logocloudColors' => 'Legt die Hintergrundfarbe der Logokacheln für jede Variante fest.',

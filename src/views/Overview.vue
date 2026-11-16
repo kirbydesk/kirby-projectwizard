@@ -1042,6 +1042,7 @@
                 :faq-style="block.blockType === 'pwfaq' && ['design', 'elements'].includes(currentBlockView) ? currentFaqStyle(block.blockType) : ''"
                 :hero-height="block.blockType === 'pwhero' && ['design', 'elements'].includes(currentBlockView) ? currentHeroHeight(block.blockType) : ''"
                 :card-display="block.blockType === 'pwcardlets' && ['design', 'elements'].includes(currentBlockView) ? currentCardDisplay(block.blockType) : ''"
+                :logo-display="block.blockType !== 'pwlogocloud' ? '' : ['design', 'elements'].includes(currentBlockView) ? currentLogoDisplay(block.blockType) : (itemLayoutDefault(block.blockType, 'logo-display') || 'grid')"
                 :design-view="currentBlockView === 'design'"
                 :elements-view="currentBlockView === 'elements'"
                 :highlight="hoveredVar"
@@ -1495,6 +1496,35 @@
                 />
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudLayout')" />
+            </section>
+            <!-- the marquee (display "Laufband"): its speed and edges -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('kirbyblock-logocloud.logo-display.marquee') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['marquee-duration']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-marquee-edges']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudMarquee')" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -2776,6 +2806,7 @@ export default {
       startHeroHeights: {},
       // cardlets: the display shown in the design tab, the start value last seen
       cardPreviewDisplay: {},
+      logoPreviewDisplay: {},
       startCardDisplays: {},
       // the drawer tab shown in each block's start values
       startDrawerTab: {},
@@ -3794,6 +3825,11 @@ export default {
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['card-display']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['card-display']?.default || 'stacked';
     },
+    // logo cloud: the display shown (chosen in the preview, else the start value)
+    currentLogoDisplay(blockType) {
+      if (this.logoPreviewDisplay[blockType]) return this.logoPreviewDisplay[blockType];
+      return this.itemLayoutDefault(blockType, 'logo-display') || 'grid';
+    },
     // faq: the style shown (chosen in the questions card, else the start value)
     currentFaqStyle(blockType) {
       if (this.faqPreviewStyle[blockType]) return this.faqPreviewStyle[blockType];
@@ -3816,13 +3852,16 @@ export default {
       if (blockType === 'pwhero') {
         list.push({ key: 'hero-height', value: this.currentHeroHeight(blockType), options: ['small', 'medium', 'large', 'fullscreen'], prefix: 'pw.option.' });
       }
+      if (blockType === 'pwlogocloud') {
+        list.push({ key: 'logo-display', value: this.currentLogoDisplay(blockType), options: ['grid', 'marquee'], prefix: 'kirbyblock-logocloud.logo-display.' });
+      }
       if (blockType === 'pwcardlets') {
         list.push({ key: 'card-display', value: this.currentCardDisplay(blockType), options: ['stacked', 'overlay', 'overhang'], prefix: 'kirbyblock-cardlets.card-display.' });
       }
       return list;
     },
     onViewSwitch(blockType, { key, value }) {
-      const store = { layout: 'featurePreviewLayout', 'faq-style': 'faqPreviewStyle', 'step-style': 'stepPreviewStyle', 'hero-height': 'heroPreviewHeight', 'card-display': 'cardPreviewDisplay' }[key];
+      const store = { layout: 'featurePreviewLayout', 'faq-style': 'faqPreviewStyle', 'step-style': 'stepPreviewStyle', 'hero-height': 'heroPreviewHeight', 'card-display': 'cardPreviewDisplay', 'logo-display': 'logoPreviewDisplay' }[key];
       if (store) this.$set(this[store], blockType, value);
     },
     currentStepStyle(blockType) {
