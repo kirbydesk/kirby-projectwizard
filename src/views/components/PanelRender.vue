@@ -72,17 +72,27 @@
             </div>
 
             <!-- contact form: its fields in the block's order and widths -->
-            <div v-if="isContactform" class="pw-cf-preview" :style="cfFormStyle">
-              <div v-for="field in cfFields" :key="'cf-' + field.key" class="pw-cf-field" :class="{ 'is-full': field.width === 'full' }">
-                <span class="pw-cf-label">{{ $t('kirbyblock-contactform.field.' + field.key) }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
-                <span class="pw-cf-input" :class="{ 'is-text': field.key === 'message' }" :style="cfInputStyle"></span>
-              </div>
-              <div class="pw-cf-consent">
+            <div v-if="isFormBlock" class="pw-cf-preview" :style="cfFormStyle">
+            <template v-for="(field, i) in cfFields">
+              <div v-if="field.type === 'fwinfo'" :key="'cf-' + i" class="pw-cf-heading">{{ field.label }}</div>
+              <div v-else-if="field.type === 'fwconsent'" :key="'cf-' + i" class="pw-cf-consent">
                 <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
-                <span>{{ $t('kirbyblock-contactform.consent') }}<span :style="{ color: cfColor('field-focus') }"> *</span></span>
+                <span>{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
               </div>
-              <div class="pw-cf-submit"><span :style="buttonStyle">{{ content.buttontext || $t('kirbyblock-contactform.button.default') }}</span></div>
+              <div v-else :key="'cf-' + i" class="pw-cf-field" :class="{ 'is-full': field.width === 'full', 'is-when': field.when }">
+                <span class="pw-cf-label">{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
+                <span v-if="field.options && field.options.length" class="pw-cf-options">
+                  <span v-for="(option, j) in field.options" :key="j"><span class="pw-cf-check" :class="{ 'is-round': field.type === 'fwradio' }" :style="{ borderColor: cfColor('field-border') }"></span>{{ option }}</span>
+                </span>
+                <span v-else class="pw-cf-input" :class="{ 'is-text': field.multiline }" :style="cfInputStyle"></span>
+              </div>
+            </template>
+            <div v-if="isContactform" class="pw-cf-consent">
+              <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
+              <span>{{ $t('kirbyblock-contactform.consent') }}<span :style="{ color: cfColor('field-focus') }"> *</span></span>
             </div>
+            <div class="pw-cf-submit"><span :style="buttonStyle">{{ cfButton }}</span></div>
+          </div>
 
             <!-- cardlets: its cards (image, tagline, heading, text, link) in
                  the display set – image above, texts on the image, image

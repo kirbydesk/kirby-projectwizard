@@ -111,16 +111,26 @@
           </template>
           <!-- contact form: its fields (the block's order and widths, else
                the start ones), the consent and the send button -->
-          <div v-if="isContactform" class="pw-cf-preview" :style="cfFormStyle">
-            <div v-for="field in cfFields" :key="'cf-' + field.key" class="pw-cf-field" :class="{ 'is-full': field.width === 'full' }">
-              <span class="pw-cf-label">{{ $t('kirbyblock-contactform.field.' + field.key) }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
-              <span class="pw-cf-input" :class="{ 'is-text': field.key === 'message' }" :style="cfInputStyle"></span>
-            </div>
-            <div class="pw-cf-consent">
+          <div v-if="isFormBlock" class="pw-cf-preview" :style="cfFormStyle">
+            <template v-for="(field, i) in cfFields">
+              <div v-if="field.type === 'fwinfo'" :key="'cf-' + i" class="pw-cf-heading">{{ field.label }}</div>
+              <div v-else-if="field.type === 'fwconsent'" :key="'cf-' + i" class="pw-cf-consent">
+                <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
+                <span>{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
+              </div>
+              <div v-else :key="'cf-' + i" class="pw-cf-field" :class="{ 'is-full': field.width === 'full', 'is-when': field.when }">
+                <span class="pw-cf-label">{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
+                <span v-if="field.options && field.options.length" class="pw-cf-options">
+                  <span v-for="(option, j) in field.options" :key="j"><span class="pw-cf-check" :class="{ 'is-round': field.type === 'fwradio' }" :style="{ borderColor: cfColor('field-border') }"></span>{{ option }}</span>
+                </span>
+                <span v-else class="pw-cf-input" :class="{ 'is-text': field.multiline }" :style="cfInputStyle"></span>
+              </div>
+            </template>
+            <div v-if="isContactform" class="pw-cf-consent">
               <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
               <span>{{ $t('kirbyblock-contactform.consent') }}<span :style="{ color: cfColor('field-focus') }"> *</span></span>
             </div>
-            <div class="pw-cf-submit"><span :style="buttonStyle">{{ $t('kirbyblock-contactform.button.default') }}</span></div>
+            <div class="pw-cf-submit"><span :style="buttonStyle">{{ cfButton }}</span></div>
           </div>
           <!-- logocloud as a marquee: the sample logos twice in one running
                row, its edges soft as set (held while the mouse is on it) -->
@@ -481,7 +491,7 @@ export default {
       if (this.isSteplist) return [...fields, 'items'];
       if (this.isMedia && this.hasField('media')) return [...fields, 'media'];
       if (this.isLogocloud) return [...fields, 'logos'];
-      if (this.isContactform) return [...fields, 'items'];
+      if (this.isFormBlock) return [...fields, 'items'];
       if (this.isFeaturelist) return [...fields, 'items'];
       if (this.isFaq) return [...fields, 'items'];
       if (this.isCardlets) return [...fields, 'items'];
@@ -607,8 +617,30 @@ export default {
     isContactform() {
       return this.blockType === 'pwcontactform';
     },
+    // the Form Wizard's block: its form's fields (in the panel, from the block), else a sample
+    isForm() {
+      return this.blockType === 'pwform';
+    },
+    // a form of either: the same look of the fields
+    isFormBlock() {
+      return this.isContactform || this.isForm;
+    },
+    cfButton() {
+      if (this.isForm) return (this.content && this.content._fwbutton) || this.$t('formwizard.button.default');
+      return (this.content && this.content.buttontext) || this.$t('kirbyblock-contactform.button.default');
+    },
     // the fields shown: the block's (in the panel) in its order, else the start ones
     cfFields() {
+      if (this.isForm) {
+        const own = this.content && Array.isArray(this.content._fwfields) ? this.content._fwfields : null;
+        const sample = [
+          { type: 'fwtext', label: this.$t('formwizard.sample.name'), required: true, width: 'half' },
+          { type: 'fwemail', label: this.$t('formwizard.sample.email'), required: true, width: 'half' },
+          { type: 'fwtextarea', label: this.$t('formwizard.sample.message'), required: true, width: 'full' },
+          { type: 'fwconsent', label: this.$t('formwizard.consent.default'), required: true, width: 'full' },
+        ];
+        return (own || sample).map((f) => ({ ...f, multiline: f.type === 'fwtextarea', key: f.label }));
+      }
       const start = [['name', 1, 1, 'half'], ['email', 1, 1, 'half'], ['phone', 1, 0, 'half'], ['company', 0, 0, 'half'], ['subject', 0, 0, 'full'], ['message', 1, 1, 'full']]
         .map(([key, show, required, width]) => ({ field: key, show: !!show, required: !!required, width }));
       let rows = this.content && this.content.formfields;
@@ -617,7 +649,7 @@ export default {
       const yes = (v) => v === true || v === 'true' || v === 1 || v === '1';
       return list
         .filter((r) => r && (r.field === 'email' || yes(r.show)))
-        .map((r) => ({ key: r.field, required: r.field === 'email' || yes(r.required), width: r.width === 'full' ? 'full' : 'half' }));
+        .map((r) => ({ key: r.field, type: 'text', label: this.$t('kirbyblock-contactform.field.' + r.field), multiline: r.field === 'message', required: r.field === 'email' || yes(r.required), width: r.width === 'full' ? 'full' : 'half' }));
     },
     cfFormStyle() {
       const gap = this.itemValue('field-gap') || '1rem';
@@ -2504,6 +2536,28 @@ export default {
   gap: 0.6rem;
   align-items: flex-start;
   font-size: 0.875em;
+}
+.pw-cf-heading {
+  grid-column: 1 / -1;
+  font-weight: 600;
+  padding-top: 0.25rem;
+}
+.pw-cf-field.is-when {
+  opacity: 0.55;
+}
+.pw-cf-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.875em;
+}
+.pw-cf-options > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.pw-cf-check.is-round {
+  border-radius: 50%;
 }
 .pw-cf-check {
   flex: none;

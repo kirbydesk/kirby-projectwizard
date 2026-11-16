@@ -1079,7 +1079,7 @@
         >
 
           <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist, Hero, Cardlets so far) -->
-          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq', 'pwcontactform'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq', 'pwcontactform', 'pwform'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
                 :block-type="block.blockType"
@@ -1722,11 +1722,11 @@
 
 
 
-            <!-- contact form: the fields' look, their colours, the gaps -->
-            <template v-if="block.blockType === 'pwcontactform' && blockValueDefaults[block.blockType]">
+            <!-- a form (contact form, Form Wizard): the fields' look, their colours, the gaps -->
+            <template v-if="['pwcontactform', 'pwform'].includes(block.blockType) && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('kirbyblock-contactform.fields') }}</h3>
+                <h3 class="pw-card-heading">{{ $t('prw.form.fields') }}</h3>
               </div>
               <div class="pw-card pw-field-table">
                 <pw-block-values
@@ -1760,7 +1760,7 @@
               <div class="pw-card pw-field-table">
                 <pw-block-values
                   :bp.sync="itemBp"
-                  :labels="{ 'field-background': $t('prw.label.backgroundColor'), 'field-border': $t('kirbyblock-contactform.color.border'), 'field-text': $t('kirbyblock-contactform.color.text'), 'field-focus': $t('kirbyblock-contactform.color.focus') }"
+                  :labels="{ 'field-background': $t('prw.label.backgroundColor'), 'field-border': $t('prw.form.color.border'), 'field-text': $t('prw.form.color.text'), 'field-focus': $t('prw.form.color.focus') }"
                   :theme="currentItemColorTheme"
                   :defaults="blockValueDefaults[block.blockType]"
                   :patch="valuesPatch(block.blockType)"
