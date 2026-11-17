@@ -1177,10 +1177,6 @@
 
           <!-- Usage: the pages that use the block (path of titles, status, how
                often), each opens in the panel; loaded when the tab opens -->
-          <!-- contact form: the mail server (SMTP) and the recipient -->
-          <div v-if="block.blockType === 'pwcontactform' && currentBlockView === 'mail' && activeTab === block.blockType">
-            <pw-contactform-mail />
-          </div>
           <div v-show="currentBlockView === 'usage'" v-if="currentBlockView === 'usage' && activeTab === block.blockType">
             <section class="pw-card-section">
               <div class="pw-card pw-field-table">
@@ -2963,6 +2959,8 @@ export default {
       startHeroHeights: {},
       // cardlets: the display shown in the design tab, the start value last seen
       cardPreviewDisplay: {},
+      // a plugin sends mails (kirby-formwizard, the contact form): Settings › Sending
+      mailUsed: false,
       logoPreviewDisplay: {},
       startCardDisplays: {},
       // the drawer tab shown in each block's start values
@@ -3165,7 +3163,7 @@ export default {
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return [...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'mail', 'patches'];
+      return [...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), ...(this.mailUsed ? ['mail'] : []), 'patches'];
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
@@ -3274,15 +3272,13 @@ export default {
       const views = [
         ...(this.hasDesignView(this.activeTab) ? ['design'] : []),
         ...(this.hasElementsView(this.activeTab) ? ['elements'] : []),
-        // (the contact form: its mail server)
-        ...(this.activeTab === 'pwcontactform' ? ['mail'] : []),
         'defaults',
         'presets',
         'usage',
       ];
       // design: pencil and ruler, elements: the layers (as the Elements page), start values: the pen,
       // restrictions: the crossed-out eye
-      const icons = { design: 'prw-design', elements: 'layers', mail: 'email', defaults: 'edit-line', presets: 'hidden', usage: 'copy' };
+      const icons = { design: 'prw-design', elements: 'layers', defaults: 'edit-line', presets: 'hidden', usage: 'copy' };
       return views.map(name => ({
         name,
         icon: icons[name],
@@ -3316,8 +3312,8 @@ export default {
       // exists only with that plugin, which registers it)
       if (this.hasTranslateTab) tabs.push({ key: 'translate', icon: 'translatewizard-translate' });
       if (this.hasGeneratorTab) tabs.push({ key: 'generator', icon: 'ai' });
-      // the project's mail server (pwMail) for the plugins that send mails
-      tabs.push({ key: 'mail', icon: 'email' });
+      // the project's mail server (pwMail) – only when a plugin sends mails
+      if (this.mailUsed) tabs.push({ key: 'mail', icon: 'email' });
       tabs.push({ key: 'patches', icon: 'code' });
       return tabs;
     },
@@ -3527,6 +3523,8 @@ export default {
     navOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
   },
   async created() {
+    // (not awaited: the menu entry appears when the answer is there)
+    this.$api.get('projectwizard/mail/used').then((res) => { this.mailUsed = !!(res && res.used); }).catch(() => {});
     await this.load();
     // unsaved changes of an earlier visit (reload, closed tab) back
     this.restoreDraft();

@@ -12,6 +12,11 @@ use Kirby\Toolkit\V;
  *   pwMail::ready()            everything there to send?
  *   pwMail::send([...])        Kirby's email() with the server, sender and name set
  *   pwMail::recipient()        the default recipients
+ *   pwMail::used()             does an installed plugin send mails?
+ *
+ * A plugin that sends mails says so with its option `mail` => true
+ * (kirby-formwizard, kirbyblock-contactform): only then the Project Wizard
+ * shows Settings › Sending.
  */
 class pwMail
 {
@@ -25,6 +30,31 @@ class pwMail
 		'sender'     => '',
 		'senderName' => '',        // empty: the website's title
 	];
+
+	/** An installed plugin sends mails (its option `mail` is true) */
+	public static function used(): bool
+	{
+		foreach (kirby()->plugins() as $plugin) {
+			if (kirby()->option(str_replace('/', '.', $plugin->name()) . '.mail') === true) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Settings taken over from elsewhere (the contact form's own mail server
+	 * before it used this one) – only when nothing is set here yet. The
+	 * password comes as it was stored, encrypted with the contact form's key
+	 * – readable as long as there is no key of its own (see keyFile()).
+	 */
+	public static function adopt(array $values, ?string $encryptedPassword): bool
+	{
+		if (is_file(self::file())) return false;
+		$stored = array_intersect_key($values, self::SETTINGS);
+		if ($encryptedPassword && self::keyFile() === self::LEGACY_KEY) $stored['password'] = $encryptedPassword;
+		if (!is_dir(dirname(self::file()))) mkdir(dirname(self::file()), 0755, true);
+		file_put_contents(self::file(), json_encode($stored, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+		return true;
+	}
 
 	/* -------------- Settings --------------*/
 
@@ -101,14 +131,24 @@ class pwMail
 
 	/* -------------- The password, encrypted --------------*/
 
+	/** The contact form's key from before it used this server */
+	private const LEGACY_KEY = 'contactform.key';
+
+	/**
+	 * The key file with the code: mail.key – or, where the contact form had
+	 * its own server before, its key (the password taken over stays readable
+	 * and nothing new needs to reach the other servers)
+	 */
 	private static function keyFile(): string
 	{
-		return kirby()->root('config') . '/mail.key';
+		$dir = kirby()->root('config');
+		if (!is_file($dir . '/mail.key') && is_file($dir . '/' . self::LEGACY_KEY)) return self::LEGACY_KEY;
+		return 'mail.key';
 	}
 
 	private static function key(bool $create = false): ?string
 	{
-		$file = self::keyFile();
+		$file = kirby()->root('config') . '/' . self::keyFile();
 		if (is_file($file)) {
 			$key = base64_decode(trim((string) file_get_contents($file)), true);
 			if ($key !== false && strlen($key) === SODIUM_CRYPTO_SECRETBOX_KEYBYTES) return $key;

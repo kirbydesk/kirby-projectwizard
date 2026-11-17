@@ -627,6 +627,12 @@ return [
 				return ProjectConfig::loadFontsizes();
 			}
 		],
+		// Does an installed plugin send mails? (only then Settings › Sending)
+		[
+			'pattern' => 'projectwizard/mail/used',
+			'method'  => 'GET',
+			'action'  => fn () => ['used' => pwMail::used() && (bool) kirby()->user()?->isAdmin()],
+		],
 		// The mail server (Settings › Sending): admins only – the password
 		// is only ever sent here, never back
 		[
