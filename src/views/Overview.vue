@@ -3431,6 +3431,10 @@ export default {
     },
   },
   watch: {
+    // the active blocks saved (the contact form switched on or off): Settings › Sending may come or go
+    originalActiveBlocks(now, before) {
+      if (before && before.length && now.join() !== before.join()) this.loadMailUsed();
+    },
     // the usage tab opened (or another block's): its pages fetched anew
     currentBlockView(view) { if (view === 'usage') this.loadUsagePages(this.activeTab); },
     activeTab(tab) { if (this.currentBlockView === 'usage') this.loadUsagePages(tab); },
@@ -3524,7 +3528,7 @@ export default {
   },
   async created() {
     // (not awaited: the menu entry appears when the answer is there)
-    this.$api.get('projectwizard/mail/used').then((res) => { this.mailUsed = !!(res && res.used); }).catch(() => {});
+    this.loadMailUsed();
     await this.load();
     // unsaved changes of an earlier visit (reload, closed tab) back
     this.restoreDraft();
@@ -4839,6 +4843,10 @@ export default {
     // (the server already removed them) – keeps other unsaved changes
     // the font under the mouse in the Google list: in the sidebar preview,
     // afterwards the one chosen before again
+    // does a plugin send mails? (Settings › Sending)
+    loadMailUsed() {
+      this.$api.get('projectwizard/mail/used').then((res) => { this.mailUsed = !!(res && res.used); }).catch(() => {});
+    },
     onFontSearchPreview(family) {
       if (family) {
         if (this.fontPreviewBefore === undefined) this.fontPreviewBefore = this.previewFont;

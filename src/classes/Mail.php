@@ -14,9 +14,9 @@ use Kirby\Toolkit\V;
  *   pwMail::recipient()        the default recipients
  *   pwMail::used()             does an installed plugin send mails?
  *
- * A plugin that sends mails says so with its option `mail` => true
- * (kirby-formwizard, kirbyblock-contactform): only then the Project Wizard
- * shows Settings › Sending.
+ * A plugin that sends mails says so with its option `mail`: true, or a
+ * function telling whether it does now (kirbyblock-contactform: only as
+ * an active block) – only then the Project Wizard shows Settings › Sending.
  */
 class pwMail
 {
@@ -31,11 +31,12 @@ class pwMail
 		'senderName' => '',        // empty: the website's title
 	];
 
-	/** An installed plugin sends mails (its option `mail` is true) */
+	/** An installed plugin sends mails (its option `mail` is true, or its function says so) */
 	public static function used(): bool
 	{
 		foreach (kirby()->plugins() as $plugin) {
-			if (kirby()->option(str_replace('/', '.', $plugin->name()) . '.mail') === true) return true;
+			$mail = kirby()->option(str_replace('/', '.', $plugin->name()) . '.mail');
+			if ($mail === true || ($mail instanceof \Closure && $mail() === true)) return true;
 		}
 		return false;
 	}
