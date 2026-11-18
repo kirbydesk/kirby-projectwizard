@@ -286,7 +286,7 @@
 
 <script>
 import { withoutPatchedValues } from '../../helpers/patches.js';
-import { previewState } from '../../preview/store.js';
+import { previewState, ensurePreviewData } from '../../preview/store.js';
 import { fontWeights } from '../../preview/derive.js';
 
 import autosize from '../../directives/autosize.js';
@@ -323,6 +323,11 @@ export default {
   },
   data() {
     return { open: {} };
+  },
+  // a font weight's choice: the fonts and elements loaded (the shared preview data)
+  created() {
+    const defs = Object.values(this.defaults || {}).flatMap((g) => Object.values((g && g.vars) || {}));
+    if (defs.some((d) => d && d.font)) ensurePreviewData(this.$api);
   },
   computed: {
     // the own values as shown: without those the exceptions set (their

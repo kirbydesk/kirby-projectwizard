@@ -1085,7 +1085,7 @@
         >
 
           <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist, Hero, Cardlets so far) -->
-          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq', 'pwform'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq', 'pwform', 'pwstats'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
                 :block-type="block.blockType"
@@ -1116,6 +1116,7 @@
                 :hero-height="block.blockType === 'pwhero' && ['design', 'elements'].includes(currentBlockView) ? currentHeroHeight(block.blockType) : ''"
                 :card-display="block.blockType === 'pwcardlets' && ['design', 'elements'].includes(currentBlockView) ? currentCardDisplay(block.blockType) : ''"
                 :logo-display="block.blockType !== 'pwlogocloud' ? '' : ['design', 'elements'].includes(currentBlockView) ? currentLogoDisplay(block.blockType) : (itemLayoutDefault(block.blockType, 'logo-display') || 'grid')"
+                :stats-view="block.blockType === 'pwstats' ? currentStatsView(block.blockType) : ''"
                 :design-view="currentBlockView === 'design'"
                 :elements-view="currentBlockView === 'elements'"
                 :highlight="hoveredVar"
@@ -2754,6 +2755,204 @@
             </section>
             </template>
 
+            <!-- stats: the number and its label, the tile (its surface, border
+                 and dividers per variant), the colours, counting up -->
+            <template v-if="block.blockType === 'pwstats' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.statsNumber') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-number-size', 'item-number-weight', 'item-unit-size', 'item-label-size', 'item-label-gap', 'item-icon-size', 'item-icon-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-align']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.statsTile') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'st-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  ><span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(theme) }"></span>{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="statsVariantKeys"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-border-width', 'item-radius', 'item-padding', 'item-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-shadow']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'st-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  ><span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(theme) }"></span>{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-number', 'item-label', 'item-icon', 'item-background', 'item-border-color', 'item-bar', 'item-track', 'item-chart-1', 'item-chart-2', 'item-chart-3', 'item-chart-4', 'item-chart-5', 'item-chart-6']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.statsCharts') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-bar-height', 'item-ring-size', 'item-ring-width', 'item-column-height']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-bar-corners', 'item-pie']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.statsAnimation') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-count']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-count-duration']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-motion']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-stagger']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+            </section>
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-text-gap']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+            </section>
+            </template>
+
             <!-- quote with an image: the image and the box over its edge -->
             <template v-if="block.blockType === 'pwquote' && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
@@ -2951,6 +3150,7 @@ export default {
       // cardlets: the display shown in the design tab, the start value last seen
       cardPreviewDisplay: {},
       logoPreviewDisplay: {},
+      statsPreviewView: {},
       startCardDisplays: {},
       // the drawer tab shown in each block's start values
       startDrawerTab: {},
@@ -3117,6 +3317,11 @@ export default {
       return this.themes.includes(this.blocksColorTheme) ? this.blocksColorTheme : 'default';
     },
     // the chosen theme, back to "default" when its variant was switched off
+    // stats: the switches of the variant chosen above its tile card
+    statsVariantKeys() {
+      const sfx = this.currentItemColorTheme === 'default' ? '' : '-' + this.currentItemColorTheme;
+      return ['item-surface' + sfx, 'item-border' + sfx, 'item-dividers' + sfx];
+    },
     currentItemColorTheme() {
       return this.themes.includes(this.itemColorTheme) ? this.itemColorTheme : 'default';
     },
@@ -4006,6 +4211,11 @@ export default {
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['card-display']?.default || 'stacked';
     },
     // logo cloud: the display shown (chosen in the preview, else the start value)
+    // stats: the view shown (chosen above the preview, else the start value)
+    currentStatsView(blockType) {
+      if (this.statsPreviewView[blockType]) return this.statsPreviewView[blockType];
+      return this.itemLayoutDefault(blockType, 'stats-view') || 'numbers';
+    },
     currentLogoDisplay(blockType) {
       if (this.logoPreviewDisplay[blockType]) return this.logoPreviewDisplay[blockType];
       return this.itemLayoutDefault(blockType, 'logo-display') || 'grid';
@@ -4035,13 +4245,16 @@ export default {
       if (blockType === 'pwlogocloud') {
         list.push({ key: 'logo-display', value: this.currentLogoDisplay(blockType), options: ['grid', 'marquee'], prefix: 'kirbyblock-logocloud.logo-display.' });
       }
+      if (blockType === 'pwstats') {
+        list.push({ key: 'stats-view', value: this.currentStatsView(blockType), options: ['numbers', 'bars', 'rings', 'columns', 'pie'], prefix: 'kirbyblock-stats.view.' });
+      }
       if (blockType === 'pwcardlets') {
         list.push({ key: 'card-display', value: this.currentCardDisplay(blockType), options: ['stacked', 'overlay', 'overhang'], prefix: 'kirbyblock-cardlets.card-display.' });
       }
       return list;
     },
     onViewSwitch(blockType, { key, value }) {
-      const store = { layout: 'featurePreviewLayout', 'faq-style': 'faqPreviewStyle', 'step-style': 'stepPreviewStyle', 'hero-height': 'heroPreviewHeight', 'card-display': 'cardPreviewDisplay', 'logo-display': 'logoPreviewDisplay' }[key];
+      const store = { layout: 'featurePreviewLayout', 'faq-style': 'faqPreviewStyle', 'step-style': 'stepPreviewStyle', 'hero-height': 'heroPreviewHeight', 'card-display': 'cardPreviewDisplay', 'logo-display': 'logoPreviewDisplay', 'stats-view': 'statsPreviewView' }[key];
       if (store) this.$set(this[store], blockType, value);
     },
     currentStepStyle(blockType) {

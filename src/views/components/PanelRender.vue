@@ -216,6 +216,50 @@
                 </figure>
               </div>
             </div>
+            <!-- stats: the figures in the view chosen (numbers, bars, rings,
+                 columns or a pie) as the website shows them, at their end -->
+            <div v-if="isStats && statsItems.length" class="pw-stats-items" :style="statsItemsStyle">
+              <template v-if="statsShownView === 'pie'">
+                <div class="pw-stats-pie" :style="statsPieStyle"></div>
+                <div :style="statsLegendStyle">
+                  <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :style="statsLegendItemStyle">
+                    <span :style="statsSwatchStyle(i)"></span>
+                    <p class="pw-stats-number" :style="statsNumberStyle(0.5, '4.5ch')">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                    <p v-if="item.label" :style="statsLabelStyle(true)">{{ item.label }}</p>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :style="statsItemStyle(i)">
+                  <template v-if="statsShownView === 'bars'">
+                    <div :style="statsBarHeadStyle">
+                      <p :style="statsLabelStyle(true)">{{ item.label }}</p>
+                      <p class="pw-stats-number" :style="statsNumberStyle(0.5)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                    </div>
+                    <div :style="statsTrackStyle"><div :style="statsFillStyle(i)"></div></div>
+                  </template>
+                  <template v-else-if="statsShownView === 'rings'">
+                    <div :style="statsRingBoxStyle">
+                      <div :style="statsRingStyle(i)"></div>
+                      <p class="pw-stats-number" :style="statsNumberStyle(0.65)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                    </div>
+                    <p v-if="item.label" class="pw-stats-label" :style="statsLabelStyle(false)">{{ item.label }}</p>
+                  </template>
+                  <template v-else-if="statsShownView === 'columns'">
+                    <div :style="statsColumnAreaStyle">
+                      <p class="pw-stats-number" :style="statsNumberStyle(0.5)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                      <div :style="statsColumnStyle(i)"></div>
+                    </div>
+                    <p v-if="item.label" class="pw-stats-label" :style="statsLabelStyle(false)">{{ item.label }}</p>
+                  </template>
+                  <template v-else>
+                    <span v-if="item.icon" class="pw-stats-icon" :style="statsIconStyle" v-html="item.icon"></span>
+                    <p class="pw-stats-number" :style="statsNumberStyle(1)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                    <p v-if="item.label" class="pw-stats-label" :style="statsLabelStyle(false)">{{ item.label }}</p>
+                  </template>
+                </div>
+              </template>
+            </div>
             <figure v-else-if="isQuote && quoteHtml" class="pw-panel-quote">
               <blockquote :style="quoteStyle" v-html="quoteHtml"></blockquote>
               <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ fieldData('author').text }}</cite></figcaption>

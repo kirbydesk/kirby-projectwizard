@@ -96,6 +96,50 @@
               </figure>
             </div>
           </div>
+<!-- stats: the figures in the view chosen (numbers, bars, rings,
+               columns or a pie) as the website shows them, at their end -->
+          <div v-if="isStats && statsItems.length" class="pw-stats-items" :style="statsItemsStyle">
+            <template v-if="statsShownView === 'pie'">
+              <div class="pw-stats-pie" :style="statsPieStyle"></div>
+              <div :style="statsLegendStyle">
+                <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :style="statsLegendItemStyle">
+                  <span :style="statsSwatchStyle(i)"></span>
+                  <p class="pw-stats-number" :style="statsNumberStyle(0.5, '4.5ch')">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                  <p v-if="item.label" :style="statsLabelStyle(true)">{{ item.label }}</p>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :style="statsItemStyle(i)">
+                <template v-if="statsShownView === 'bars'">
+                  <div :style="statsBarHeadStyle">
+                    <p :style="statsLabelStyle(true)">{{ item.label }}</p>
+                    <p class="pw-stats-number" :style="statsNumberStyle(0.5)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                  </div>
+                  <div :style="statsTrackStyle"><div :style="statsFillStyle(i)"></div></div>
+                </template>
+                <template v-else-if="statsShownView === 'rings'">
+                  <div :style="statsRingBoxStyle">
+                    <div :style="statsRingStyle(i)"></div>
+                    <p class="pw-stats-number" :style="statsNumberStyle(0.65)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                  </div>
+                  <p v-if="item.label" class="pw-stats-label" :style="statsLabelStyle(false)">{{ item.label }}</p>
+                </template>
+                <template v-else-if="statsShownView === 'columns'">
+                  <div :style="statsColumnAreaStyle">
+                    <p class="pw-stats-number" :style="statsNumberStyle(0.5)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                    <div :style="statsColumnStyle(i)"></div>
+                  </div>
+                  <p v-if="item.label" class="pw-stats-label" :style="statsLabelStyle(false)">{{ item.label }}</p>
+                </template>
+                <template v-else>
+                  <span v-if="item.icon" class="pw-stats-icon" :style="statsIconStyle" v-html="item.icon"></span>
+                  <p class="pw-stats-number" :style="statsNumberStyle(1)">{{ item.number }}<span v-if="item.maxText" :style="statsMaxStyle">/ {{ item.maxText }}<template v-if="item.unit"> {{ item.unit }}</template></span><span v-else-if="item.unit" :style="statsUnitStyle">{{ item.unit }}</span></p>
+                  <p v-if="item.label" class="pw-stats-label" :style="statsLabelStyle(false)">{{ item.label }}</p>
+                </template>
+              </div>
+            </template>
+          </div>
           <figure v-else-if="isQuote" class="pw-quote-preview">
             <blockquote :style="quoteStyle">{{ quoteText }}</blockquote>
             <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ $t('prw.sample.cite') }}</cite></figcaption>
@@ -441,6 +485,8 @@ export default {
     cardDisplay: { type: String, default: '' },
     // logocloud: grid or marquee (the preview's switch, else the start value)
     logoDisplay: { type: String, default: '' },
+    // stats: the view chosen above the preview (numbers, bars …)
+    statsView: { type: String, default: '' },
     // the design tab (the hero: on the sample image with its overlay, to
     // check the overlay colour with the text)
     designView: { type: Boolean, default: false },
@@ -794,6 +840,220 @@ export default {
         backgroundColor: this.itemColor('item-background'),
         borderRadius: { square: 0, round: '50%' }[shape] ?? custom,
       };
+    },
+    // stats: the block's figures (in the panel; empty ones left out), else
+    // samples fitting the view
+    isStats() {
+      return this.blockType === 'pwstats';
+    },
+    // the view: the block's (in the panel), the one chosen above the
+    // preview, else the start value
+    statsShownView() {
+      const views = ['numbers', 'bars', 'rings', 'columns', 'pie'];
+      const own = this.content && this.content.statsview;
+      const view = own || this.statsView || this.setting('layout', 'stats-view');
+      return views.includes(view) ? view : 'numbers';
+    },
+    statsItems() {
+      const list = this.content && Array.isArray(this.content.blocks) ? this.content.blocks : null;
+      if (list) {
+        return list.filter((b) => b && !b.isHidden).map((b) => {
+          const c = b.content || {};
+          const max = parseFloat(String(c.max || '').replace(',', '.')) || 0;
+          const number = String(c.number || '').trim();
+          return { number, unit: c.unit || '', label: String(c.label || '').trim(), icon: c.icon || '', max: max || 100, maxText: max ? this.statsMaxText(max, number) : '' };
+        }).filter((item) => item.number !== '' || item.label !== '');
+      }
+      const label = this.$t('kirbyblock-stats.item');
+      const samples = {
+        numbers: [['+43', '%'], ['98', '%'], ['12', ''], ['140', '+']],
+        bars: [['95', '%'], ['80', '%'], ['65', '%']],
+        rings: [['98', '%'], ['87', '%'], ['72', '%'], ['64', '%']],
+        columns: [['48', ''], ['71', ''], ['96', ''], ['140', '']],
+        pie: [['45', '%'], ['30', '%'], ['15', '%'], ['10', '%']],
+      }[this.statsShownView];
+      return samples.map(([number, unit], i) => ({ number, unit, label: label + ' ' + (i + 1), icon: '', max: 100, maxText: '' }));
+    },
+    // the share of each: of its maximum (bars, rings), of the largest
+    // (columns), of all together (pie) – as the website's
+    statsShares() {
+      const value = (n) => {
+        const m = String(n).trim().match(/^([+\-−–]?)\s*(\d{1,3}(?:[.,\s]\d{3})+|\d+)(?:([.,])(\d+))?$/);
+        if (!m) return 0;
+        let plain = m[2].replace(/[.,\s]/g, '');
+        let frac = m[4] || '';
+        if (m[3] && !/[.,\s]/.test(m[2]) && frac.length === 3) { plain += frac; frac = ''; }
+        const v = parseFloat(plain + (frac ? '.' + frac : ''));
+        return m[1] && m[1] !== '+' ? 0 : v;
+      };
+      const values = this.statsItems.map((item) => value(item.number));
+      const largest = Math.max(...values, 0) || 1;
+      const sum = values.reduce((a, b) => a + b, 0) || 1;
+      return values.map((v, i) => {
+        const share = this.statsShownView === 'columns' ? v / largest * 100
+          : this.statsShownView === 'pie' ? v / sum * 100
+          : v / this.statsItems[i].max * 100;
+        return Math.min(100, Math.max(0, share));
+      });
+    },
+    // the variant's own switches (surface, border, dividers)
+    statsSwitch() {
+      const sfx = ['variant', 'variant2', 'variant3'].includes(this.currentTheme) ? '-' + this.currentTheme : '';
+      return (key, start) => (this.setting('layout', key + sfx) || this.setting('layout', key) || start) !== 'off';
+    },
+    statsColumns() {
+      const bp = { default: 'sm', sm: 'sm', md: 'md', lg: 'lg', xl: 'xl' }[this.bp] || 'sm';
+      const own = this.content && this.content['columns' + bp];
+      return Math.max(1, parseInt(own || this.setting('layout', 'columns-' + bp) || 2, 10));
+    },
+    statsGap() {
+      return this.itemValueAt('item-gap') || '0.75rem';
+    },
+    statsItemsStyle() {
+      // (below the intro: its last element's space and the gap to the intro)
+      const intro = this.fields.filter((f) => ['tagline', 'heading', 'editor'].includes(f));
+      const after = intro.length ? this.spaceAfter(intro[intro.length - 1]) : '';
+      const more = intro.length ? this.itemValue('item-text-gap') : '';
+      const marginTop = after && more && parseFloat(more) !== 0 ? 'calc(' + after + ' + ' + more + ')' : (after || more || 0);
+      const base = { marginTop };
+      const gap = this.statsGap;
+      switch (this.statsShownView) {
+        case 'bars': return { ...base, display: 'grid', rowGap: 'calc(' + gap + ' * 1.5)' };
+        case 'columns': return { ...base, display: 'grid', gridTemplateColumns: 'repeat(' + this.statsItems.length + ', minmax(0, 1fr))', columnGap: gap };
+        case 'pie': return { ...base, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'calc(' + gap + ' * 3)' };
+        default: return { ...base, display: 'grid', gridTemplateColumns: 'repeat(' + this.statsColumns + ', minmax(0, 1fr))', gap };
+      }
+    },
+    statsItemStyle() {
+      const view = this.statsShownView;
+      if (view === 'bars') return () => ({ minWidth: 0 });
+      if (view === 'columns') return () => ({ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, textAlign: 'center' });
+      // numbers and rings: tiles
+      const surface = this.statsSwitch('item-surface', 'on');
+      const border = this.statsSwitch('item-border', 'off');
+      const dividers = view === 'numbers' && this.statsSwitch('item-dividers', 'off');
+      const line = (this.itemValue('item-border-width') || '1px') + ' solid ' + this.itemColor('item-border-color');
+      const shadow = { sm: '0 1px 2px rgba(0, 0, 0, 0.12)', md: '0 4px 10px rgba(0, 0, 0, 0.15)', lg: '0 10px 24px rgba(0, 0, 0, 0.18)' }[this.setting('layout', 'item-shadow')] || 'none';
+      const center = view === 'rings' || this.setting('layout', 'item-align') === 'center';
+      return (i) => ({
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: center ? 'center' : 'flex-start',
+        textAlign: center ? 'center' : null,
+        minWidth: 0,
+        padding: this.itemValueAt('item-padding') || '1.25rem',
+        borderRadius: this.itemValue('item-radius') || 0,
+        backgroundColor: surface ? this.itemColor('item-background') : null,
+        border: border ? line : null,
+        borderLeft: border ? line : (dividers && i % this.statsColumns !== 0 ? line : null),
+        boxShadow: shadow,
+      });
+    },
+    statsNumberStyle() {
+      const size = this.itemValueAt('item-number-size') || '2.75rem';
+      return (scale, minWidth) => ({
+        margin: 0,
+        position: 'relative',
+        minWidth: minWidth || null,
+        // (in the ring: centred, its maximum below the number)
+        textAlign: scale === 0.65 ? 'center' : null,
+        whiteSpace: 'nowrap',
+        fontFamily: this.typography('heading').fontFamily || null,
+        fontSize: scale === 1 ? size : 'calc(' + size + ' * ' + scale + ')',
+        fontWeight: this.itemValue('item-number-weight') || 600,
+        lineHeight: 1.05,
+        color: this.itemColor('item-number') || null,
+      });
+    },
+    // the maximum as shown (bars, rings): "24 / 60 cm" – with the number's
+    // decimal separator, else the language's
+    statsMaxText() {
+      return (max, number) => {
+        if (!['bars', 'rings'].includes(this.statsShownView)) return '';
+        const comma = /,\d+$/.test(number) && !/^[+\-−–]?\d{1,3}(,\d{3})+$/.test(number) || /^[+\-−–]?\d{1,3}(\.\d{3})+$/.test(number) || (!/[.,]/.test(number) && String(this.$panel?.translation?.code || '').startsWith('de'));
+        const text = String(max);
+        return comma ? text.replace('.', ',') : text;
+      };
+    },
+    statsMaxStyle() {
+      const rings = this.statsShownView === 'rings';
+      return { display: rings ? 'block' : null, margin: rings ? '0.15em 0 0' : '0 0 0 0.25em', fontSize: rings ? '0.4em' : (this.itemValue('item-unit-size') || '60%'), color: this.itemColor('item-label') || null };
+    },
+    statsUnitStyle() {
+      return { fontSize: this.itemValue('item-unit-size') || '60%', marginLeft: '0.08em' };
+    },
+    statsLabelStyle() {
+      return (flat) => ({ margin: flat ? 0 : (this.itemValue('item-label-gap') || '0.5rem') + ' 0 0', fontSize: this.itemValueAt('item-label-size') || '1rem', color: this.itemColor('item-label') || null });
+    },
+    statsIconStyle() {
+      const size = this.itemValue('item-icon-size') || '2rem';
+      return { display: 'flex', width: size, height: size, marginBottom: this.itemValue('item-icon-gap') || '0.75rem', fill: this.itemColor('item-icon') || 'currentColor' };
+    },
+    // bars
+    statsBarHeadStyle() {
+      return { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '1rem', marginBottom: this.itemValue('item-label-gap') || '0.5rem' };
+    },
+    statsTrackStyle() {
+      const height = this.itemValue('item-bar-height') || '0.75rem';
+      const round = this.setting('layout', 'item-bar-corners') !== 'square';
+      return { height, borderRadius: round ? 'calc(' + height + ' / 2)' : 0, backgroundColor: this.itemColor('item-track') || null, overflow: 'hidden' };
+    },
+    statsFillStyle() {
+      return (i) => ({ height: '100%', width: this.statsShares[i] + '%', borderRadius: 'inherit', backgroundColor: this.itemColor('item-bar') || null });
+    },
+    // rings
+    statsRingBoxStyle() {
+      return { position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: this.itemValue('item-ring-size') || '8.25rem', maxWidth: '100%', aspectRatio: '1' };
+    },
+    statsRingStyle() {
+      const width = this.itemValue('item-ring-width') || '0.625rem';
+      const mask = 'radial-gradient(farthest-side, transparent calc(100% - ' + width + '), #000 calc(100% - ' + width + ' + 0.5px))';
+      return (i) => ({
+        position: 'absolute', inset: 0, borderRadius: '50%',
+        background: 'conic-gradient(' + (this.itemColor('item-bar') || '#000') + ' ' + this.statsShares[i] + '%, ' + (this.itemColor('item-track') || 'transparent') + ' 0)',
+        WebkitMask: mask, mask,
+      });
+    },
+    // columns
+    statsColumnAreaStyle() {
+      return {
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: '0.375rem', width: '100%',
+        height: this.itemValueAt('item-column-height') || '14rem',
+        borderBottom: (this.itemValue('item-border-width') || '1px') + ' solid ' + (this.itemColor('item-border-color') || 'currentColor'),
+      };
+    },
+    statsColumnStyle() {
+      const round = this.setting('layout', 'item-bar-corners') !== 'square';
+      return (i) => ({ width: '100%', maxWidth: '5rem', height: (this.statsShares[i] * 0.8) + '%', borderRadius: round ? '0.375rem 0.375rem 0 0' : 0, backgroundColor: this.itemColor('item-bar') || null });
+    },
+    // pie
+    statsChartColor() {
+      return (i) => this.itemColor('item-chart-' + (i % 6 + 1)) || '#888';
+    },
+    statsPieStyle() {
+      let from = 0;
+      const stops = this.statsShares.map((share, i) => {
+        const to = i === this.statsShares.length - 1 ? 100 : from + share;
+        const stop = this.statsChartColor(i) + ' ' + from + '% ' + to + '%';
+        from = to;
+        return stop;
+      });
+      const style = { flex: '0 0 auto', width: 'calc(' + (this.itemValue('item-ring-size') || '8.25rem') + ' * 1.5)', aspectRatio: '1', borderRadius: '50%', background: 'conic-gradient(' + stops.join(', ') + ')' };
+      if (this.setting('layout', 'item-pie') !== 'full') {
+        const hole = 'radial-gradient(farthest-side, transparent 56%, #000 calc(56% + 0.5px))';
+        style.WebkitMask = hole;
+        style.mask = hole;
+      }
+      return style;
+    },
+    statsLegendStyle() {
+      return { display: 'grid', gap: 'calc(' + this.statsGap + ' * 0.75)', minWidth: 0 };
+    },
+    statsLegendItemStyle() {
+      return { display: 'flex', alignItems: 'baseline', gap: '0.75rem' };
+    },
+    statsSwatchStyle() {
+      return (i) => ({ flex: '0 0 auto', alignSelf: 'center', width: '0.875rem', height: '0.875rem', borderRadius: '0.1875rem', backgroundColor: this.statsChartColor(i) });
     },
     isQuote() {
       return this.blockType === 'pwquote';
@@ -2627,6 +2887,11 @@ export default {
 }
 /* order of the toolbar: see Overview (variants left, guides right) */
 
+/* stats: the icon's svg at its box's size */
+.pw-stats-icon svg {
+  width: 100%;
+  height: 100%;
+}
 /* logocloud as a marquee: one running row, its edges soft as set */
 .pw-logocloud-marquee {
   overflow: hidden;
