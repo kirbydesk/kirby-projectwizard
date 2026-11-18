@@ -722,9 +722,12 @@ export default {
     // the marquee as on the website: over the block's side paddings to its
     // edges, its soft edges as wide as set
     marqueeEdgeStyle() {
+      const edge = { '--pw-lc-edge': this.itemValueAt('marquee-edge-width') || '5rem' };
+      // ("Marquee to the edge" off: in the content, as the logos as a grid)
+      if (this.setting('layout', 'item-marquee-bleed') === 'content') return edge;
       const s = this.itemStyle;
       const neg = (v) => (v && v !== 0 && v !== '0' ? 'calc(-1 * ' + v + ')' : 0);
-      return { marginLeft: neg(s.paddingLeft), marginRight: neg(s.paddingRight), '--pw-lc-edge': this.itemValueAt('marquee-edge-width') || '5rem' };
+      return { ...edge, marginLeft: neg(s.paddingLeft), marginRight: neg(s.paddingRight) };
     },
     marqueeSoft() {
       return (this.setting('layout', 'item-marquee-edges') || 'soft') !== 'hard';

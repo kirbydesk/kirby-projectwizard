@@ -1592,7 +1592,7 @@
                   :config="blockConfigs[block.blockType]"
                   :overrides="blockOverrides[block.blockType] || {}"
                   :writer-active="writerActive[block.blockType] !== false"
-                  :layout-keys="['item-marquee-edges']"
+                  :layout-keys="['item-marquee-bleed', 'item-marquee-edges']"
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
