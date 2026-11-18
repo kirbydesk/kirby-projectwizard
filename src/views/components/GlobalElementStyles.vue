@@ -52,6 +52,8 @@
                 </template>
                 <template v-else-if="previewThemed(groupKey)">
                   <!-- two buttons, so the gap between them shows -->
+                  <!-- guides: the buttons' own space above (where something comes before them) -->
+                  <span v-if="groupKey === 'button' && guides && buttonSpaceAbove()" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'button-spacing-top' }" :style="{ height: buttonSpaceAbove() }"></span>
                   <span class="pw-element-preview-buttons" :class="[buttonHotClass(), { 'is-wrapped': buttonsWrapped }]" :style="{ columnGap: buttonGap(), rowGap: buttonGap('button-row-gap'), '--pw-button-gap': buttonGap(), '--pw-button-row-gap': buttonGap('button-row-gap') }">
                     <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ previewText(groupKey) }}</span></span></span>
                     <span class="pw-element-preview-button pw-element-preview-button-second" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.2') }}</span></span></span>
@@ -918,8 +920,8 @@ export default {
       if (varName.endsWith('cite-spacing') || varName === 'caption-spacing' || varName === 'button-gap') return 'margin';
       // the space after an element (tagline, heading, text)
       if (/^(tagline|heading|editor|list|quote|media)-spacing$/.test(varName)) return 'margin';
-      // buttons: the space below, the third gap with theirs (orange)
-      if (varName === 'button-spacing') return 'text';
+      // buttons: the space below and above, the third gap with theirs (orange)
+      if (varName === 'button-spacing' || varName === 'button-spacing-top') return 'text';
       // buttons: the gap between icon and text, the third gap (orange)
       if (varName === 'button-icon-gap') return 'text';
       // lists: the indent as a padding (magenta), the gap between the points
@@ -1047,6 +1049,10 @@ export default {
         || (this.previewFlourish && /-flourish-margin-(top|bottom)$/.test(varName));
     },
     // the space below an element (tagline, heading, text): override, else the plugin's
+    buttonSpaceAbove() {
+      const value = this.getOverrideValue('button-spacing-top') || this.elementDefaults.button?.vars?.['button-spacing-top']?.value || '';
+      return parseFloat(value) ? value : '';
+    },
     spaceBelow(groupKey) {
       if (!['tagline', 'heading', 'editor', 'list', 'quote', 'media', 'button'].includes(groupKey)) return '';
       const name = groupKey + '-spacing';
@@ -1714,7 +1720,7 @@ export default {
       if (varName === 'cite-spacing' || varName === 'caption-spacing') return 'text';
       // the space below an element: with its text settings (buttons: with
       // their gaps, media: a card of its own)
-      if (varName === 'button-spacing') return 'margin';
+      if (varName === 'button-spacing' || varName === 'button-spacing-top') return 'margin';
       if (varName === 'media-spacing') return 'spacing';
       if (/^(tagline|heading|editor|quote)-spacing$/.test(varName)) return 'text';
       // buttons: paddings, outer spacing (gap between buttons), form and icon

@@ -1764,7 +1764,12 @@ export default {
       if (idx <= 0) return 0;
       const prev = this.fields[idx - 1];
       const after = ['tagline', 'heading', 'editor', 'list'].includes(prev) ? this.spaceAfter(prev) : '';
-      const own = GAPS[prev + '>' + field];
+      let own = GAPS[prev + '>' + field];
+      // (buttons: their own space above, the larger of it and the one below the element above)
+      if (field === 'buttons') {
+        const above = this.elementValue('button', 'spacing-top');
+        if (parseFloat(above)) own = own ? 'max(' + own + ', ' + above + ')' : above;
+      }
       if (own && after) return 'max(' + own + ', ' + after + ')';
       return own || after || 0;
     },

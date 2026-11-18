@@ -367,6 +367,7 @@
 	'prw.element.list-spacing' => 'Space below',
 	'prw.element.quote-spacing' => 'Space below',
 	'prw.element.media-spacing' => 'Space below',
+	'prw.element.button-spacing-top' => 'Space above',
 	'prw.element.button-spacing' => 'Space below',
 	'prw.element.cite-spacing' => 'Spacing to Quote',
 	'prw.element.button-border-width' => 'Border Width',

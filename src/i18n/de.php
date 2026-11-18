@@ -367,6 +367,7 @@
 	'prw.element.list-spacing' => 'Abstand nach unten',
 	'prw.element.quote-spacing' => 'Abstand nach unten',
 	'prw.element.media-spacing' => 'Abstand nach unten',
+	'prw.element.button-spacing-top' => 'Abstand nach oben',
 	'prw.element.button-spacing' => 'Abstand nach unten',
 	'prw.element.cite-spacing' => 'Abstand zum Zitat',
 	'prw.element.button-border-width' => 'Rahmenstärke',
