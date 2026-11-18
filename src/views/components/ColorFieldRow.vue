@@ -1,16 +1,18 @@
 <template>
   <!-- flat: the colour first (like the px badge of the number fields), then
        the value as text; a click on the colour opens Kirby's picker -->
-  <div class="pw-color-field" :class="{ 'is-default': !overrideValue }">
+  <div class="pw-color-field" :class="{ 'is-default': !overrideValue, 'is-empty': isEmpty }">
+    <!-- (no colour as start value: the text's, shown as a note) -->
     <k-colorname-input
       class="pw-color-value"
-      :value="displayValue"
+      :value="isEmpty ? '' : displayValue"
+      :placeholder="isEmpty ? $t('prw.color.inherit') : null"
       :alpha="true"
       format="hex"
       @input="onInput"
     />
-    <button type="button" class="pw-color-swatch" :title="displayValue" @click="$refs.picker.toggle()">
-      <k-color-frame :color="displayValue" ratio="1/1" />
+    <button type="button" class="pw-color-swatch" :title="isEmpty ? $t('prw.color.inherit') : displayValue" @click="$refs.picker.toggle()">
+      <k-color-frame :color="isEmpty ? 'transparent' : displayValue" ratio="1/1" />
     </button>
     <k-dropdown-content ref="picker" align-x="start" class="k-color-field-picker">
       <k-colorpicker-input
@@ -31,17 +33,22 @@ export default {
     varName: String,
     defaultValue: String,
     overrideValue: String,
+    // no value of its own: the colour that applies then (shown as its value)
+    fallback: { type: String, default: '' },
   },
   computed: {
+    isEmpty() {
+      return !this.overrideValue && !this.defaultValue && !this.fallback;
+    },
     displayValue() {
-      const val = this.overrideValue || this.defaultValue;
+      const val = this.overrideValue || this.defaultValue || this.fallback;
       if (!val) return '#000000';
       return val;
     },
   },
   methods: {
     onInput(value) {
-      this.$emit('update:value', value === this.defaultValue ? '' : (value || ''));
+      this.$emit('update:value', value === (this.defaultValue || this.fallback) ? '' : (value || ''));
     },
   },
 };
@@ -77,6 +84,11 @@ export default {
   flex-shrink: 0;
   border-radius: var(--color-frame-rounded);
   cursor: pointer;
+}
+
+/* no colour: the frame as an outline */
+.pw-color-field.is-empty .pw-color-swatch .k-color-frame {
+  box-shadow: inset 0 0 0 1px var(--color-border);
 }
 
 /* in the table the field fills the cell */

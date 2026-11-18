@@ -44,6 +44,7 @@ class ProjectConfig
 	 *   menu      an API path answering the dropdown's entries:
 	 *             [{ view, text, icon, info, badge, link }] ("-": a line)
 	 *   badge     a number on the tab (e.g. new submissions)
+	 *   mail      true: its page shows the mail server's settings (pwMail)
 	 */
 	public static function pluginTabs(): array
 	{
@@ -59,6 +60,7 @@ class ProjectConfig
 				'component' => (string) $def['component'],
 				'menu'      => $def['menu'] ?? null,
 				'badge'     => (int) ($def['badge'] ?? 0),
+				'mail'      => !empty($def['mail']),
 			];
 		}
 		return $tabs;

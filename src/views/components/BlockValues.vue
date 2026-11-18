@@ -46,6 +46,7 @@
                         :group="'block-values-' + theme"
                         :var-name="st.varName"
                         :default-value="group.colors[st.varName][theme] || ''"
+                        :fallback="(fallbacks || {})[st.varName] || ''"
                         :override-value="getThemeOverride(theme, st.varName) || ''"
                         @update:value="setThemeColor(theme, st.varName, $event || '', group.colors[st.varName][theme] || '')"
                       />
@@ -62,6 +63,7 @@
                         :group="'block-values-' + themeKey"
                         :var-name="row.varName"
                         :default-value="themeValue"
+                        :fallback="(fallbacks || {})[row.varName] || ''"
                         :override-value="getThemeOverride(themeKey, row.varName) || ''"
                         @update:value="setThemeColor(themeKey, row.varName, $event || '', themeValue)"
                       />
@@ -233,6 +235,18 @@
                     </span>
                   </template>
 
+                  <!-- A choice (e.g. a font weight: only those its font has, as
+                       under Elements) -->
+                  <template v-else-if="Array.isArray(def.options)">
+                    <k-toggles-input
+                      :value="getOverride(varName) || def.value"
+                      :options="choiceOptions(def)"
+                      :grow="false"
+                      :required="true"
+                      @input="setSingle(varName, $event, def.value)"
+                    />
+                  </template>
+
                   <!-- Single value -->
                   <template v-else>
                     <span class="pw-element-field">
@@ -246,6 +260,7 @@
                           :max="def.max"
                           class="pw-element-input pw-element-input-number"
                           :class="{ 'pw-px-calculator-input': showCalculator(def.unit), 'is-default': !getOverride(varName) }"
+                          :data-whole="def.unit === '' && Number(def.step) >= 1 ? 'true' : null"
                           :value="stripUnit(getOverride(varName) || def.value, def.unit)"
                           @change="setSingleUnit(varName, $event.target.value, def.value, def.unit)"
                         />
@@ -271,6 +286,8 @@
 
 <script>
 import { withoutPatchedValues } from '../../helpers/patches.js';
+import { previewState } from '../../preview/store.js';
+import { fontWeights } from '../../preview/derive.js';
 
 import autosize from '../../directives/autosize.js';
 import { SCREEN_HEIGHTS } from '../../helpers/preview-bp.js';
@@ -286,6 +303,9 @@ export default {
     guides: { type: Object, default: null },
     hideSectionHeaders: { type: Boolean, default: false },
     showOnly: { type: Array, default: null },
+    // colours without a value of their own: the one that applies (shown
+    // instead of "as the text"), by name
+    fallbacks: { type: Object, default: null },
     // own labels for some rows (varName → text), e.g. in a card that names the part
     labels: { type: Object, default: () => ({}) },
     // one theme (e.g. "variant"): the colour rows show only its value
@@ -466,8 +486,17 @@ export default {
       return null;
     },
     // (seconds – the marquee's speed – have no px)
+    // a choice's options: a font weight only with the weights its font has
+    // (def.font: the element whose font it uses, e.g. "heading")
+    choiceOptions(def) {
+      const all = def.options.map(String);
+      const weights = def.font ? fontWeights(previewState().data, def.font) : null;
+      const shown = weights ? all.filter(weights) : all;
+      return (shown.length ? shown : all).map((o) => ({ value: o, text: o }));
+    },
+    // (no px for px, %, seconds – nor for a number without a unit, e.g. a weight)
     showCalculator(unit) {
-      return unit !== 'px' && unit !== '%' && unit !== 's';
+      return unit !== '' && unit !== 'px' && unit !== '%' && unit !== 's';
     },
     getOverride(varName) {
       return this.shown[varName];

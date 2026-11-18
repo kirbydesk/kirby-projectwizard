@@ -27,7 +27,19 @@ const readGrid = () => {
   }
 };
 
-const state = window.Vue.observable({ data: null, error: null, version: 0, device: readDevice(), windowDevice: null, gridLines: readGrid() });
+const state = window.Vue.observable({ data: null, error: null, version: 0, device: readDevice(), windowDevice: null, gridLines: readGrid(), theme: null, designBp: null });
+
+// the device of a block's design and the preview beside it (as on the
+// wizard's block pages: the values' device icons switch the preview too)
+export function setDesignBp(bp) {
+  state.designBp = bp || null;
+}
+
+// the variant shown: a block's design (pw-block-design) and the preview
+// beside it show the same one
+export function setPreviewTheme(theme) {
+  state.theme = theme || null;
+}
 
 export function setGridLines(on) {
   state.gridLines = !!on;

@@ -109,28 +109,26 @@
             <div v-if="introGapParts('logos').space" class="pw-space-band" :class="['is-' + introGapParts('logos').prev, { 'is-hot': highlight === introGapParts('logos').prev + '-spacing' }]" :style="{ height: introGapParts('logos').space }"></div>
             <div v-if="introGapParts('logos').more" class="pw-logocloud-text-gap" :class="{ 'is-hot': highlight === 'item-text-gap' }" :style="{ height: introGapParts('logos').more }"></div>
           </template>
-          <!-- contact form: its fields (the block's order and widths, else
-               the start ones), the consent and the send button -->
-          <div v-if="isFormBlock" class="pw-cf-preview" :style="cfFormStyle">
+          <!-- the Form Wizard's form: its fields (their order and widths,
+               else a sample), the consent and the send button -->
+          <div v-if="isFormBlock" class="pw-cf-preview" :class="{ 'is-narrow': ['default', 'sm'].includes(bp), 'is-wide': ['lg', 'xl'].includes(bp) }" :style="[cfFormStyle, { color: itemColor('field-label') || null }]">
             <template v-for="(field, i) in cfFields">
-              <div v-if="field.type === 'fwinfo'" :key="'cf-' + i" class="pw-cf-heading">{{ field.label }}</div>
-              <div v-else-if="field.type === 'fwconsent'" :key="'cf-' + i" class="pw-cf-consent">
+              <div v-if="field.type === 'fwinfo'" :key="'cf-' + i" class="pw-cf-heading" :style="cfInfoStyle"><div :style="cfInfoHeadingStyle">{{ field.label }}</div><div v-if="field.text" class="pw-cf-info-text" :class="{ 'is-own': !!(itemColor('info-text') || itemColor('field-help')) }" :style="{ color: itemColor('info-text') || itemColor('field-help') || null }">{{ field.text }}</div></div>
+              <div v-else-if="field.type === 'fwconsent'" :key="'cf-' + i" class="pw-cf-consent" :style="cfConsentStyle">
                 <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
-                <span>{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
+                <span>{{ field.text || field.label }}<span v-if="field.required" :style="cfStarStyle"> *</span></span>
               </div>
-              <div v-else :key="'cf-' + i" class="pw-cf-field" :class="{ 'is-full': field.width === 'full', 'is-when': field.when }">
-                <span class="pw-cf-label">{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
-                <span v-if="field.options && field.options.length" class="pw-cf-options">
+              <div v-else :key="'cf-' + i" class="pw-cf-field" :data-width="field.width" :class="{ 'is-when': field.when }">
+                <span class="pw-cf-label" :style="cfLabelStyle">{{ field.label }}<span v-if="field.required" :style="cfStarStyle"> *</span></span>
+                <span v-if="field.options && field.options.length" class="pw-cf-options" :style="cfOptionsStyle">
                   <span v-for="(option, j) in field.options" :key="j"><span class="pw-cf-check" :class="{ 'is-round': field.type === 'fwradio' }" :style="{ borderColor: cfColor('field-border') }"></span>{{ option }}</span>
                 </span>
-                <span v-else class="pw-cf-input" :class="{ 'is-text': field.multiline }" :style="cfInputStyle"></span>
+                <span v-else class="pw-cf-input" :class="{ 'is-text': field.multiline }" :style="cfInputStyle"><span v-if="field.placeholder" class="pw-cf-placeholder" :style="{ color: cfColor('field-text') }">{{ field.placeholder }}</span></span>
+                <span v-if="field.limits" class="pw-cf-help" :class="{ 'is-own': !!itemColor('field-help') }" :style="{ color: itemColor('field-help') || null }">{{ field.limits }}</span>
+                <span v-if="field.help" class="pw-cf-help" :class="{ 'is-own': !!itemColor('field-help') }" :style="{ color: itemColor('field-help') || null }">{{ field.help }}</span>
               </div>
             </template>
-            <div v-if="isContactform" class="pw-cf-consent">
-              <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
-              <span>{{ $t('kirbyblock-contactform.consent') }}<span :style="{ color: cfColor('field-focus') }"> *</span></span>
-            </div>
-            <div class="pw-cf-submit"><span :style="buttonStyle">{{ cfButton }}</span></div>
+            <div class="pw-cf-submit" :style="cfSubmitStyle"><span :style="[buttonStyle, cfButtonWide ? { display: 'block', textAlign: 'center' } : null]">{{ cfButton }}</span></div>
           </div>
           <!-- logocloud as a marquee: the sample logos twice in one running
                row, its edges soft as set (held while the mouse is on it) -->
@@ -614,46 +612,95 @@ export default {
           : this.padTint('y', y, 'item-padding-y'),
       };
     },
-    isContactform() {
-      return this.blockType === 'pwcontactform';
-    },
     // the Form Wizard's block: its form's fields (in the panel, from the block), else a sample
     isForm() {
       return this.blockType === 'pwform';
     },
-    // a form of either: the same look of the fields
     isFormBlock() {
-      return this.isContactform || this.isForm;
+      return this.isForm;
     },
     cfButton() {
-      if (this.isForm) return (this.content && this.content._fwbutton) || this.$t('formwizard.button.default');
-      return (this.content && this.content.buttontext) || this.$t('kirbyblock-contactform.button.default');
+      return (this.content && this.content._fwbutton) || this.$t('formwizard.button.default');
+    },
+    // the Form Wizard's send button: the whole width (as set, on phones
+    // always), else aligned as set
+    cfButtonLayout() {
+      const layout = this.isForm && this.content && this.content._fwbuttonlayout;
+      return Array.isArray(layout) ? layout : ['auto', 'left'];
+    },
+    cfButtonWide() {
+      return this.isForm && (['default', 'sm'].includes(this.bp) || this.cfButtonLayout[0] === 'full');
+    },
+    cfSubmitStyle() {
+      return this.cfButtonWide ? null : { textAlign: this.cfButtonLayout[1] || 'left' };
     },
     // the fields shown: the block's (in the panel) in its order, else the start ones
     cfFields() {
-      if (this.isForm) {
-        const own = this.content && Array.isArray(this.content._fwfields) ? this.content._fwfields : null;
-        const sample = [
-          { type: 'fwtext', label: this.$t('formwizard.sample.name'), required: true, width: 'half' },
-          { type: 'fwemail', label: this.$t('formwizard.sample.email'), required: true, width: 'half' },
-          { type: 'fwtextarea', label: this.$t('formwizard.sample.message'), required: true, width: 'full' },
-          { type: 'fwconsent', label: this.$t('formwizard.consent.default'), required: true, width: 'full' },
-        ];
-        return (own || sample).map((f) => ({ ...f, multiline: f.type === 'fwtextarea', key: f.label }));
-      }
-      const start = [['name', 1, 1, 'half'], ['email', 1, 1, 'half'], ['phone', 1, 0, 'half'], ['company', 0, 0, 'half'], ['subject', 0, 0, 'full'], ['message', 1, 1, 'full']]
-        .map(([key, show, required, width]) => ({ field: key, show: !!show, required: !!required, width }));
-      let rows = this.content && this.content.formfields;
-      if (typeof rows === 'string') { try { rows = JSON.parse(rows); } catch (e) { rows = null; } }
-      const list = Array.isArray(rows) && rows.length ? rows : start;
-      const yes = (v) => v === true || v === 'true' || v === 1 || v === '1';
-      return list
-        .filter((r) => r && (r.field === 'email' || yes(r.show)))
-        .map((r) => ({ key: r.field, type: 'text', label: this.$t('kirbyblock-contactform.field.' + r.field), multiline: r.field === 'message', required: r.field === 'email' || yes(r.required), width: r.width === 'full' ? 'full' : 'half' }));
+      const own = this.content && Array.isArray(this.content._fwfields) ? this.content._fwfields : null;
+      const sample = [
+        { type: 'fwtext', label: this.$t('formwizard.sample.name'), required: true, width: 'half' },
+        { type: 'fwemail', label: this.$t('formwizard.sample.email'), required: true, width: 'half' },
+        { type: 'fwtextarea', label: this.$t('formwizard.sample.message'), required: true, width: 'full' },
+        { type: 'fwconsent', label: this.$t('formwizard.consent.default'), required: true, width: 'full' },
+      ];
+      return (own || sample).map((f) => ({ ...f, multiline: f.type === 'fwtextarea', key: f.label }));
+    },
+    // the labels' size (the Form Wizard's form)
+    cfLabelStyle() {
+      return { fontSize: this.itemValueAt('field-label-size') || '0.875em' };
+    },
+    // the asterisk: in the labels' colour
+    cfStarStyle() {
+      return null;
+    },
+    // the Form Wizard's preview: fields to click (active, boxes ticked)
+    cfInteractive() {
+      return this.isForm && !!(this.content && this.content._interactive);
+    },
+    cfActiveStyle() {
+      const c = this.cfColor('field-focus');
+      return { borderColor: c, boxShadow: '0 0 0 3px color-mix(in srgb, ' + c + ' 25%, transparent)' };
+    },
+    // errors shown (the switch above the Form Wizard's preview)
+    cfErrors() {
+      return this.isForm && !!(this.content && this.content._errors);
+    },
+    cfErrorBoxStyle() {
+      const c = this.cfColor('field-error');
+      return {
+        color: c,
+        background: 'color-mix(in srgb, ' + c + ' 8%, transparent)',
+        border: '1px solid color-mix(in srgb, ' + c + ' 30%, transparent)',
+        borderRadius: this.itemValue('field-radius') || '0.375rem',
+      };
+    },
+    // a subheading of the Form Wizard's form (as on the website: the
+    // headings' font, the values of Form › Design)
+    cfInfoStyle() {
+      return { paddingTop: this.itemValue('info-spacing-top') || '0.5rem', display: 'flex', flexDirection: 'column', gap: this.itemValue('info-text-gap') || '0.375rem' };
+    },
+    cfInfoHeadingStyle() {
+      return {
+        fontFamily: this.typography('heading').fontFamily || null,
+        fontSize: this.itemValueAt('info-font-size') || '1.125rem',
+        fontWeight: this.itemValue('info-font-weight') || 400,
+        lineHeight: 1.5,
+        color: this.itemColor('info-heading') || this.itemColor('field-label') || null,
+      };
+    },
+    // the options: the inputs' size, at least an input's height (centred)
+    cfOptionsStyle() {
+      const s = this.cfInputStyle;
+      return { fontSize: s.fontSize, '--pw-cf-pad': s['--pw-cf-pad'], '--pw-cf-border': s['--pw-cf-border'] };
+    },
+    // a consent: as on the website, a little smaller than the inputs
+    cfConsentStyle() {
+      return this.isForm ? { fontSize: 'calc(' + this.cfInputStyle.fontSize + ' * 0.875)' } : null;
     },
     cfFormStyle() {
       const gap = this.itemValue('field-gap') || '1rem';
-      return { rowGap: gap, columnGap: 'calc(' + gap + ' * 1.5)', marginTop: this.introGap('items') || 0 };
+      // (the Form Wizard's columns a value of their own, else half again the rows')
+      return { rowGap: gap, columnGap: this.itemValue('field-column-gap') || 'calc(' + gap + ' * 1.5)', marginTop: this.introGap('items') || 0 };
     },
     cfInputStyle() {
       return {
@@ -661,6 +708,11 @@ export default {
         border: (this.itemValue('field-border-width') || '1px') + ' solid ' + this.cfColor('field-border'),
         borderRadius: this.itemValue('field-radius') || '0.375rem',
         padding: this.itemValue('field-padding') || '0.75rem',
+        // (the device's size; phones at least 16 px, as on the website)
+        fontSize: ['default', 'sm'].includes(this.bp) ? 'max(16px, ' + (this.itemValueAt('field-font-size') || '1rem') + ')' : (this.itemValueAt('field-font-size') || '1rem'),
+        // (its height: a line of text and the padding, as the input on the website)
+        '--pw-cf-pad': this.itemValue('field-padding') || '0.75rem',
+        '--pw-cf-border': this.itemValue('field-border-width') || '1px',
       };
     },
     // logocloud shown as a marquee: one running row
@@ -1563,7 +1615,34 @@ export default {
     },
     // a field colour of the shown variant (custom: the default's)
     cfColor(name) {
-      return this.itemColor(name) || { 'field-background': '#FAFAFA', 'field-border': '#D4D4D8', 'field-text': '#16171A', 'field-focus': '#2563EB' }[name];
+      return this.itemColor(name) || { 'field-background': '#FAFAFA', 'field-border': '#D4D4D8', 'field-text': '#16171A', 'field-focus': '#2563EB', 'field-error': '#C1121F' }[name];
+    },
+    // a box: ticked in the focus colour (a radio: the others of its group off)
+    // a box or dot as the website draws it: the fields' background, border
+    // and corners; ticked: the border in the focus colour, the tick in the
+    // input's colour
+    cfCheckStyle(key) {
+      const on = this.cfChecked && this.cfChecked[key];
+      const radius = this.itemValue('field-radius') || '0.375rem';
+      return {
+        backgroundColor: this.cfColor('field-background'),
+        borderWidth: this.itemValue('field-border-width') || '1px',
+        borderColor: on ? this.cfColor('field-focus') : this.cfColor('field-border'),
+        '--pw-cf-radius': 'min(' + radius + ', 0.3em)',
+        '--pw-cf-mark': this.cfColor('field-text'),
+      };
+    },
+    cfToggle(key, group = null) {
+      if (!this.cfInteractive) return;
+      const next = { ...this.cfChecked };
+      if (group !== null) Object.keys(next).forEach((k) => { if (k.startsWith(group + '-')) delete next[k]; });
+      next[key] = !this.cfChecked[key];
+      this.cfChecked = next;
+    },
+    // the error below a required field (errors shown in the Form Wizard's preview)
+    cfError(field) {
+      if (!this.cfErrors || !field.required) return '';
+      return this.$t(field.type === 'fwconsent' ? 'formwizard.error.consent' : 'formwizard.error.required');
     },
     itemColor(name) {
       const ov = ((this.valueOverrides || {})[this.currentTheme] || {})[name];
@@ -2503,18 +2582,30 @@ export default {
   to { transform: translateX(-50%); }
 }
 
-/* contact form: two columns, a full field over both */
+/* the form: two columns, a full field over both; the narrower widths
+   as set on tablet and desktop (as on the website from
+   1024 px; twelve columns) */
 .pw-cf-preview {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+/* a phone: the fields one below the other (as on the website below 768 px) */
+.pw-cf-preview.is-narrow {
+  grid-template-columns: minmax(0, 1fr);
 }
 .pw-cf-field {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
   min-width: 0;
+  grid-column: span 6;
 }
-.pw-cf-field.is-full,
+.pw-cf-preview.is-wide .pw-cf-field[data-width="1/4"] { grid-column: span 3; }
+.pw-cf-preview.is-wide .pw-cf-field[data-width="1/3"] { grid-column: span 4; }
+.pw-cf-preview.is-wide .pw-cf-field[data-width="2/3"] { grid-column: span 8; }
+.pw-cf-preview.is-wide .pw-cf-field[data-width="3/4"] { grid-column: span 9; }
+.pw-cf-preview.is-narrow .pw-cf-field,
+.pw-cf-field[data-width="full"],
 .pw-cf-consent,
 .pw-cf-submit {
   grid-column: 1 / -1;
@@ -2526,21 +2617,91 @@ export default {
 .pw-cf-input {
   display: block;
   box-sizing: border-box;
-  min-height: calc(1.5em + 2 * 0.75rem);
+  min-height: calc(1.5em + 2 * var(--pw-cf-pad, 0.75rem) + 2 * var(--pw-cf-border, 1px));
+  line-height: 1.5;
 }
 .pw-cf-input.is-text {
   min-height: 7rem;
 }
+/* a dropdown (the Form Wizard's): room for its arrow on the right */
+.pw-cf-input.is-select {
+  position: relative;
+  padding-right: 2.5em !important;
+}
+.pw-cf-chevron {
+  position: absolute;
+  top: 50%;
+  right: 0.75em;
+  width: 1em;
+  height: 1em;
+  transform: translateY(-50%);
+}
+/* errors shown: the note above all fields, an error below a field */
+.pw-cf-message {
+  grid-column: 1 / -1;
+  padding: 0.75rem 1rem;
+  font-size: 0.875em;
+}
+.pw-cf-error {
+  font-size: 0.8125em;
+}
+.pw-cf-error.is-consent {
+  flex-basis: 100%;
+  margin-top: -0.3rem;
+  padding-left: calc(1rem + 0.6rem);
+}
+/* a field's help below it: smaller, paler (its own colour as set) */
+.pw-cf-help {
+  font-size: 0.8125em;
+  opacity: 0.75;
+}
+.pw-cf-help.is-own {
+  opacity: 1;
+}
+/* a field's placeholder: paler, as the browser shows it */
+.pw-cf-placeholder {
+  display: block;
+  opacity: 0.5;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pw-cf-input.is-text .pw-cf-placeholder {
+  white-space: normal;
+}
+.pw-cf-placeholder.is-own {
+  opacity: 1;
+}
+/* the Form Wizard's preview: a field to click (active), its sample text */
+.pw-cf-preview .pw-cf-input,
+.pw-cf-preview .pw-cf-check {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pw-cf-sample {
+  display: block;
+}
 .pw-cf-consent {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   align-items: flex-start;
   font-size: 0.875em;
 }
+/* (its text beside the box, an error below both) */
+.pw-cf-consent > span:not(.pw-cf-check):not(.pw-cf-error) {
+  line-height: 1.5;
+  flex: 1;
+  min-width: 0;
+}
 .pw-cf-heading {
   grid-column: 1 / -1;
-  font-weight: 600;
-  padding-top: 0.25rem;
+}
+/* its text: as a help text (paler, unless a colour is set) */
+.pw-cf-info-text {
+  opacity: 0.75;
+}
+.pw-cf-info-text.is-own {
+  opacity: 1;
 }
 .pw-cf-field.is-when {
   opacity: 0.55;
@@ -2548,23 +2709,51 @@ export default {
 .pw-cf-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 1rem;
-  font-size: 0.875em;
+  gap: 0.5rem 1.25rem;
+  align-items: center;
+  align-content: center;
+  min-height: calc(1.5em + 2 * var(--pw-cf-pad, 0.75rem) + 2 * var(--pw-cf-border, 1px));
 }
 .pw-cf-options > span {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 .pw-cf-check.is-round {
   border-radius: 50%;
 }
 .pw-cf-check {
   flex: none;
-  width: 1em;
-  height: 1em;
-  margin-top: 0.2em;
+  display: inline-grid;
+  place-content: center;
+  box-sizing: border-box;
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: 0.075em;
   border: 1px solid;
-  border-radius: 3px;
+  border-radius: var(--pw-cf-radius, 3px);
+}
+/* a consent's box: at the middle of its text's first line (1.5 high) */
+.pw-cf-consent > .pw-cf-check {
+  margin-top: 0.125em;
+}
+/* the tick (a dot in a round one): shown when ticked */
+.pw-cf-check::before {
+  content: "";
+  width: 0.7em;
+  height: 0.7em;
+  background: var(--pw-cf-mark, currentColor);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transition: transform 0.12s ease;
+}
+.pw-cf-check.is-on::before {
+  transform: scale(1);
+}
+.pw-cf-check.is-round::before {
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  clip-path: none;
 }
 </style>

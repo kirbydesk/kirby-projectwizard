@@ -9,7 +9,8 @@
  * Typed values are kept within the input's min / max as well.
  *
  * Whole numbers are shown with ".0" (2 → 2.0) – only in the field: the
- * value handed on (change) stays as it is.
+ * value handed on (change) stays as it is; not for values that only come
+ * whole (data-whole, e.g. a font weight: 700).
  */
 const size = (el) => {
 	if (!el.closest('.pw-field-table')) {
@@ -22,7 +23,7 @@ const size = (el) => {
 
 // 2 → 2.0 (not while typing)
 const format = (el) => {
-	if (/^-?\d+$/.test(String(el.value).trim())) el.value = String(el.value).trim() + '.0';
+	if (!el.dataset.whole && /^-?\d+$/.test(String(el.value).trim())) el.value = String(el.value).trim() + '.0';
 	size(el);
 };
 

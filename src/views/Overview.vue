@@ -107,7 +107,7 @@
                       data-has-text="true"
                       data-has-icon="true"
                       :aria-current="activeTab === entry.blockType ? 'true' : undefined"
-                      @click="$refs.blocksMenu.close(); $go('projectwizard/block/' + entry.blockType)"
+                      @click="$refs.blocksMenu.close(); goAway('projectwizard/block/' + entry.blockType)"
                     >
                       <span class="k-button-icon"><k-icon :type="entry.icon || 'box'" /></span>
                       <span class="k-button-text">
@@ -138,7 +138,8 @@
                 <k-icon :type="tab.icon" />
                 <span class="pw-tab-text">{{ tab.label }}</span>
                 <k-icon type="angle-down" class="pw-tab-menu-chevron" />
-                <span v-if="tab.badge" class="pw-change-badge">{{ tab.badge }}</span>
+                <span v-if="pluginPendingCount(tab)" class="pw-change-badge">{{ pluginPendingCount(tab) }}</span>
+                <span v-else-if="pluginBadge(tab)" class="pw-change-badge">{{ pluginBadge(tab) }}</span>
               </button>
               <k-dropdown-content :ref="'pluginMenu-' + tab.key" align-x="start">
                 <nav class="k-navigate">
@@ -153,7 +154,7 @@
                       data-has-text="true"
                       data-has-icon="true"
                       :aria-current="isGlobalTab('plugin:' + tab.key) && pluginView === item.view ? 'true' : undefined"
-                      @click="closePluginMenu(tab); item.link ? $go(item.link) : openPlugin(tab.key, item.view)"
+                      @click="closePluginMenu(tab); item.link ? goAway(item.link) : openPlugin(tab.key, item.view)"
                     >
                       <span class="k-button-icon"><k-icon :type="item.icon || 'box'" /></span>
                       <span class="k-button-text">{{ item.text }}<span v-if="item.badge" class="pw-change-count">{{ item.badge }}</span><span v-else-if="item.info" class="pw-menu-count">{{ item.info }}</span></span>
@@ -253,7 +254,14 @@
         <div v-if="!loading && activeTab === 'global' && globalActiveTab !== 'welcome'" class="pw-page-title-row" :class="{ 'has-intro': globalPageIntro }">
           <!-- the page's icon (an element's as in the elements menu) before the name -->
           <k-icon v-if="globalPageIcon" :type="globalPageIcon" class="pw-page-title-icon" />
-          <h1 class="pw-page-title">{{ globalPageTitle }}</h1>
+          <!-- (a plugin's page may be renamed there: a click on its name, as
+               on Kirby's pages) -->
+          <h1 v-if="currentPluginTab && pluginTitle && pluginTitle.rename" class="pw-page-title">
+            <button type="button" class="pw-page-title-button" @click="$refs.pluginPage && $refs.pluginPage.rename && $refs.pluginPage.rename()">
+              {{ globalPageTitle }}<k-icon type="edit" class="pw-page-title-edit" />
+            </button>
+          </h1>
+          <h1 v-else class="pw-page-title">{{ globalPageTitle }}</h1>
           <!-- translation: several pages at once, per language the missing
                ones or all (run in a dialog, the characters shown first) -->
           <div v-if="globalActiveTab === 'translate' && batch.languages.length" class="pw-tab-menu pw-ai-batch-menu">
@@ -941,19 +949,17 @@
           <div v-if="currentPluginTab" class="pw-wizard-global-content">
             <component
               :is="currentPluginTab.component"
+              ref="pluginPage"
               :key="'plugin-' + currentPluginTab.key"
               :view="pluginView"
               @navigate="openPlugin(currentPluginTab.key, $event)"
               @title="pluginTitle = $event"
               @preview="pluginPreview = !!$event"
               @changed="loadPluginMenu(currentPluginTab)"
+              @pending="pluginPending = $event"
             />
           </div>
 
-          <!-- Sending: the project's mail server (pwMail), saved on its own -->
-          <div v-if="globalActiveTab === 'mail'" class="pw-wizard-global-content">
-            <pw-mail-settings />
-          </div>
 
           <!-- AI: translation (translatewizard: its keys) and page generator
                (contentwizard: its settings and keys), each a page of its own -->
@@ -1079,7 +1085,7 @@
         >
 
           <!-- Live preview of the block in the sidebar (Text, Heading, Steplist, Quote, Media, Logocloud, Featurelist, Hero, Cardlets so far) -->
-          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq', 'pwcontactform', 'pwform'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
+          <pw-portal v-if="['pwtext', 'pwheading', 'pwsteplist', 'pwquote', 'pwmedia', 'pwlogocloud', 'pwfeaturelist', 'pwhero', 'pwcardlets', 'pwmulticolumn', 'pwfaq', 'pwform'].includes(block.blockType) && blockConfigs[block.blockType]" to=".pw-wizard .pw-preview-column">
             <div v-show="activeTab === block.blockType">
               <pw-block-preview
                 :block-type="block.blockType"
@@ -1718,76 +1724,6 @@
 
 
 
-            <!-- a form (contact form, Form Wizard): the fields' look, their colours, the gaps -->
-            <template v-if="['pwcontactform', 'pwform'].includes(block.blockType) && blockValueDefaults[block.blockType]">
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.form.fields') }}</h3>
-              </div>
-              <div class="pw-card pw-field-table">
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :patch="valuesPatch(block.blockType)"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['field-padding', 'field-radius', 'field-border-width']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-              </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.contactformFields')" />
-            </section>
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.subtab.colors') }}</h3>
-                <span class="pw-pill pw-theme-switch" role="group">
-                  <button
-                    v-for="theme in themes"
-                    :key="'cfth-' + theme"
-                    type="button"
-                    class="pw-tool"
-                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
-                    @click="itemColorTheme = theme"
-                  >
-<span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(theme) }"></span>{{ $t('pw.option.' + theme) }}</button>
-                </span>
-              </div>
-              <div class="pw-card pw-field-table">
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :labels="{ 'field-background': $t('prw.label.backgroundColor'), 'field-border': $t('prw.form.color.border'), 'field-text': $t('prw.form.color.text'), 'field-focus': $t('prw.form.color.focus') }"
-                  :theme="currentItemColorTheme"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :patch="valuesPatch(block.blockType)"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['field-background', 'field-border', 'field-text', 'field-focus']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-              </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.contactformColors')" />
-            </section>
-            <section class="pw-card-section">
-              <div class="pw-card-heading-row">
-                <h3 class="pw-card-heading">{{ $t('prw.headline.spacing') }}</h3>
-              </div>
-              <div class="pw-card pw-field-table">
-                <pw-block-values
-                  :bp.sync="itemBp"
-                  :defaults="blockValueDefaults[block.blockType]"
-                  :patch="valuesPatch(block.blockType)"
-                  :overrides="blockValueOverrides[block.blockType] || {}"
-                  :show-only="['field-gap', 'item-text-gap']"
-                  :hide-section-headers="true"
-                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
-                  @hover-var="hoveredVar = $event"
-                />
-              </div>
-              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.contactformSpacing')" />
-            </section>
-            </template>
 
             <!-- featurelist: the title's arrangement, icon, tile, colours, gaps
                  (the entries' type: the elements tab) -->
@@ -2861,6 +2797,7 @@
 import { withoutPatched, withoutPatchedValues } from '../helpers/patches.js';
 import { injectFontFaces } from '../preview/fonts.js';
 import { announcePreviewSaved } from '../preview/store.js';
+import { mailState, loadMail, mailPending, discardMail, saveMail } from '../helpers/mail.js';
 import autosize from '../directives/autosize.js';
 import { readPreviewBp, savePreviewBp, SCREEN_HEIGHTS } from '../helpers/preview-bp.js';
 
@@ -2959,8 +2896,6 @@ export default {
       startHeroHeights: {},
       // cardlets: the display shown in the design tab, the start value last seen
       cardPreviewDisplay: {},
-      // a plugin sends mails (kirby-formwizard, the contact form): Settings › Sending
-      mailUsed: false,
       logoPreviewDisplay: {},
       startCardDisplays: {},
       // the drawer tab shown in each block's start values
@@ -3006,6 +2941,10 @@ export default {
       sitePageCount: null,
       // saving everything at once: the single saves stay quiet
       savingAll: false,
+      // Settings › Sending: its values (loaded when opened)
+      mail: mailState(),
+      // the open plugin page's changes (it saves and discards them itself)
+      pluginPending: 0,
       originalPatchesText: '',
       patchesError: '',
       patchesUnknown: [],
@@ -3043,6 +2982,9 @@ export default {
     return {
       pwPatches: () => this.savedPatches,
       pwOpenPatches: () => this.openGlobal('patches'),
+      // the project's mail server (pwMail): its values here – a plugin's
+      // page shows them (Forms › E-Mail sending), saved with the others
+      pwMail: { state: this.mail, load: () => this.mail.loaded || loadMail(this.$api, this.mail) },
     };
   },
   computed: {
@@ -3163,7 +3105,7 @@ export default {
     // the settings menu: the project, the settings (variants), AI (with
     // kirby-contentwizard) and the exceptions
     configMenuTabs() {
-      return [...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), ...(this.mailUsed ? ['mail'] : []), 'patches'];
+      return [...(this.hasTranslateTab ? ['translate'] : []), ...(this.hasGeneratorTab ? ['generator'] : []), 'patches'];
     },
     // the AI pages: translation with the translatewizard's keys, the page
     // generator with the contentwizard's settings and keys
@@ -3201,6 +3143,9 @@ export default {
         add(secret && secret.plugin === 'kirbydesk.kirby-translatewizard' ? 'translate' : 'generator');
       }
       if (this.patchesText !== this.originalPatchesText) add('patches');
+      add('mail', mailPending(this.mail));
+      // the open plugin page (e.g. a form with its design)
+      if (this.currentPluginTab) add('plugin:' + this.currentPluginTab.key, this.pluginPending);
       return out;
     },
     // the batch dialog's buttons per step
@@ -3245,7 +3190,7 @@ export default {
     },
     // pages without the preview column: the AI pages over the full width
     fullWidthPage() {
-      return this.activeTab === 'global' && (['welcome', 'translate', 'generator', 'mail'].includes(this.globalActiveTab) || (!!this.currentPluginTab && !this.pluginPreview));
+      return this.activeTab === 'global' && (['welcome', 'translate', 'generator'].includes(this.globalActiveTab) || (!!this.currentPluginTab && !this.pluginPreview));
     },
     // the plugin whose page is open (its tab in the header)
     currentPluginTab() {
@@ -3312,8 +3257,6 @@ export default {
       // exists only with that plugin, which registers it)
       if (this.hasTranslateTab) tabs.push({ key: 'translate', icon: 'translatewizard-translate' });
       if (this.hasGeneratorTab) tabs.push({ key: 'generator', icon: 'ai' });
-      // the project's mail server (pwMail) – only when a plugin sends mails
-      if (this.mailUsed) tabs.push({ key: 'mail', icon: 'email' });
       tabs.push({ key: 'patches', icon: 'code' });
       return tabs;
     },
@@ -3431,10 +3374,6 @@ export default {
     },
   },
   watch: {
-    // the active blocks saved (the contact form switched on or off): Settings › Sending may come or go
-    originalActiveBlocks(now, before) {
-      if (before && before.length && now.join() !== before.join()) this.loadMailUsed();
-    },
     // the usage tab opened (or another block's): its pages fetched anew
     currentBlockView(view) { if (view === 'usage') this.loadUsagePages(this.activeTab); },
     activeTab(tab) { if (this.currentBlockView === 'usage') this.loadUsagePages(tab); },
@@ -3454,6 +3393,10 @@ export default {
       if (!now) this.$nextTick(this.fitTopbar);
       // (the slogan typed once the page is there, not while loading)
       if (!now && !this.sloganTyped) this.typeSlogan();
+    },
+    // another plugin's page (or none): the count was the one before's
+    currentPluginTab(now, before) {
+      if ((now && now.key) !== (before && before.key)) this.pluginPending = 0;
     },
     // (the save buttons come and go)
     pendingPageCount() {
@@ -3527,8 +3470,6 @@ export default {
     navOverrides: { deep: true, handler() { this.injectPreviewStyles(); } },
   },
   async created() {
-    // (not awaited: the menu entry appears when the answer is there)
-    this.loadMailUsed();
     await this.load();
     // unsaved changes of an earlier visit (reload, closed tab) back
     this.restoreDraft();
@@ -4083,6 +4024,8 @@ export default {
     // (the entries' type, the space below)
     hasDesignView(blockType) {
       if (!this.hasDesign(blockType)) return false;
+      // (the form's design: in the Form Wizard's editor, tab "Design" – not twice)
+      if (blockType === 'pwform') return false;
       const elementValues = ['tagline-spacing', 'heading-spacing', 'editor-spacing', 'list-spacing', 'quote-spacing', 'media-spacing', 'button-spacing',
         'item-title-font-size', 'item-title-line-height', 'item-text-font-size', 'item-title-spacing'];
       return Object.values(this.blockValueDefaults[blockType] || {}).some(g => g && (
@@ -4596,12 +4539,17 @@ export default {
         if (this.diffPaths(this.globalOverrides, this.originalGlobalOverrides).length) await this.saveGlobalSettings();
         if (pending.translate || pending.generator) await this.saveAi();
         if (pending.patches) await this.savePatches();
+        if (pending.mail) await this.saveMailSettings();
+        const plugin = Object.keys(pending).find(k => k.startsWith('plugin:'));
+        if (plugin && this.$refs.pluginPage && this.$refs.pluginPage.save) await this.$refs.pluginPage.save();
       } finally {
         this.savingAll = false;
       }
-      // (a failed save kept its changes and reported its error)
+      // (a failed save kept its changes and reported its error; the plugin
+      // page's count comes with its next update)
+      await this.$nextTick();
       const left = Object.keys(this.pendingCounts).length - (activation ? 1 : 0);
-      if (left <= 0) this.$panel.notification.success(this.$t('prw.notify.saveAll', { count: pages }));
+      if (left <= 0) this.$panel.notification.success(this.$t(pages === 1 ? 'prw.notify.saveAll.one' : 'prw.notify.saveAll', { count: pages }));
       // the active blocks and variants last: saving them reloads the panel
       if (activation) {
         await this.saveGlobal();
@@ -4614,7 +4562,7 @@ export default {
       this.$panel.dialog.open({
         component: 'k-text-dialog',
         props: {
-          text: this.$t('prw.discardAll.confirm', { count: this.pendingPageCount }),
+          text: this.$t(this.pendingPageCount === 1 ? 'prw.discardAll.confirm.one' : 'prw.discardAll.confirm', { count: this.pendingPageCount }),
           submitButton: { text: this.$t('prw.discardAll'), icon: 'undo', theme: 'negative' },
         },
         on: {
@@ -4647,6 +4595,8 @@ export default {
       this.aiSecretInputs = {};
       this.patchesText = this.originalPatchesText;
       this.patchesError = '';
+      discardMail(this.mail);
+      if (this.$refs.pluginPage && this.$refs.pluginPage.discard) this.$refs.pluginPage.discard();
       for (const key of Object.keys(this.dirtyTabs)) this.$set(this.dirtyTabs, key, false);
       this.discardKey++;
     },
@@ -4844,9 +4794,6 @@ export default {
     // the font under the mouse in the Google list: in the sidebar preview,
     // afterwards the one chosen before again
     // does a plugin send mails? (Settings › Sending)
-    loadMailUsed() {
-      this.$api.get('projectwizard/mail/used').then((res) => { this.mailUsed = !!(res && res.used); }).catch(() => {});
-    },
     onFontSearchPreview(family) {
       if (family) {
         if (this.fontPreviewBefore === undefined) this.fontPreviewBefore = this.previewFont;
@@ -5145,8 +5092,22 @@ export default {
         this.$set(this.pluginMenus, tab.key, []);
       }
     },
+    // a plugin tab's number (e.g. new submissions): from its menu once
+    // loaded (again after a change, e.g. a form deleted), else the view's
+    // a plugin tab's unsaved changes (with the mail server's where it shows it)
+    pluginPendingCount(tab) {
+      return (this.pendingCounts['plugin:' + tab.key] || 0) + (tab.mail ? (this.pendingCounts.mail || 0) : 0);
+    },
+    pluginBadge(tab) {
+      const items = this.pluginMenus[tab.key];
+      if (!Array.isArray(items)) return tab.badge;
+      return items.reduce((n, item) => n + (Number(item && item.badge) || 0), 0);
+    },
     // A plugin's page; from a block view through the address
-    openPlugin(key, view = null) {
+    async openPlugin(key, view = null) {
+      // (another plugin's page: the open one's changes asked first; within
+      // the same plugin it asks itself)
+      if (this.currentPluginTab && this.currentPluginTab.key !== key && !(await this.leavePlugin())) return;
       if (this.activeTab !== 'global') {
         this.$go('projectwizard', { query: { tab: key, view: view || '' } });
         return;
@@ -5161,7 +5122,8 @@ export default {
 
     // Opens a tab of the global view; from a block view it switches views and
     // remembers the tab (and element) for the global view to pick up.
-    openGlobal(tab, element = null) {
+    async openGlobal(tab, element = null) {
+      if (!(await this.leavePlugin())) return;
       this.globalActiveTab = tab;
       if (this.activeTab === 'global') return;
       // (for the load that follows; the storage for a fresh start of the view)
@@ -5171,6 +5133,26 @@ export default {
         if (element) sessionStorage.setItem('pw-wizard-element', element);
       } catch (e) {}
       this.$go('projectwizard');
+    },
+
+    // the open plugin page left: its unsaved changes (it keeps no draft)
+    // asked about first – false when staying
+    async leavePlugin() {
+      const page = this.$refs.pluginPage;
+      if (!this.currentPluginTab || !this.pluginPending || !page || !page.askLeave) return true;
+      return page.askLeave();
+    },
+    // another view of the Panel (a block, a plugin's link)
+    async goAway(path) {
+      if (await this.leavePlugin()) this.$go(path);
+    },
+    async saveMailSettings() {
+      try {
+        await saveMail(this.$api, this.mail);
+        this.notifySaved();
+      } catch (e) {
+        this.$panel.notification.error(e);
+      }
     },
 
     async toggleUsagePage(blockType, id) {
@@ -6054,6 +6036,24 @@ export default {
   font-size: var(--text-h1, var(--text-2xl));
   font-weight: var(--font-h1, var(--font-semi));
   line-height: var(--leading-h1, 1.25);
+}
+/* a name to rename (a plugin's page): the pencil on hover, as Kirby's header */
+.pw-page-title-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.pw-page-title-edit {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pw-page-title-button:hover .pw-page-title-edit,
+.pw-page-title-button:focus-visible .pw-page-title-edit {
+  opacity: 1;
 }
 /* Block view with items: "Block" and "Items" above their sections */
 .pw-group-title {

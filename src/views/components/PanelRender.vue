@@ -72,26 +72,30 @@
             </div>
 
             <!-- contact form: its fields in the block's order and widths -->
-            <div v-if="isFormBlock" class="pw-cf-preview" :style="cfFormStyle">
+            <!-- (the Form Wizard's preview: a click on a field shows it active,
+                 with a sample text; a click beside it ends that) -->
+            <div v-if="isFormBlock" class="pw-cf-preview" :class="{ 'is-narrow': ['default', 'sm'].includes(bp), 'is-wide': ['lg', 'xl'].includes(bp) }" :style="[cfFormStyle, { color: itemColor('field-label') || null }]" @click="cfActive = null">
+            <!-- (errors shown: the note above, as after sending with gaps) -->
+            <div v-if="cfErrors" class="pw-cf-message" :style="cfErrorBoxStyle">{{ $t('formwizard.invalid') }}</div>
             <template v-for="(field, i) in cfFields">
-              <div v-if="field.type === 'fwinfo'" :key="'cf-' + i" class="pw-cf-heading">{{ field.label }}</div>
-              <div v-else-if="field.type === 'fwconsent'" :key="'cf-' + i" class="pw-cf-consent">
-                <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
-                <span>{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
+              <div v-if="field.type === 'fwinfo'" :key="'cf-' + i" class="pw-cf-heading" :style="cfInfoStyle"><div :style="cfInfoHeadingStyle">{{ field.label }}</div><div v-if="field.text" class="pw-cf-info-text" :class="{ 'is-own': !!(itemColor('info-text') || itemColor('field-help')) }" :style="{ color: itemColor('info-text') || itemColor('field-help') || null }">{{ field.text }}</div></div>
+              <div v-else-if="field.type === 'fwconsent'" :key="'cf-' + i" class="pw-cf-consent" :style="cfConsentStyle">
+                <span class="pw-cf-check" :class="{ 'is-on': cfChecked['c' + i] }" :style="cfCheckStyle('c' + i)" @click.stop="cfToggle('c' + i)"></span>
+                <span>{{ field.text || field.label }}<span v-if="field.required" :style="cfStarStyle"> *</span></span>
+                <span v-if="cfError(field)" class="pw-cf-error is-consent" :style="{ color: cfColor('field-error') }">{{ cfError(field) }}</span>
               </div>
-              <div v-else :key="'cf-' + i" class="pw-cf-field" :class="{ 'is-full': field.width === 'full', 'is-when': field.when }">
-                <span class="pw-cf-label">{{ field.label }}<span v-if="field.required" :style="{ color: cfColor('field-focus') }"> *</span></span>
-                <span v-if="field.options && field.options.length" class="pw-cf-options">
-                  <span v-for="(option, j) in field.options" :key="j"><span class="pw-cf-check" :class="{ 'is-round': field.type === 'fwradio' }" :style="{ borderColor: cfColor('field-border') }"></span>{{ option }}</span>
+              <div v-else :key="'cf-' + i" class="pw-cf-field" :data-width="field.width" :class="{ 'is-when': field.when }">
+                <span class="pw-cf-label" :style="cfLabelStyle">{{ field.label }}<span v-if="field.required" :style="cfStarStyle"> *</span></span>
+                <span v-if="field.options && field.options.length" class="pw-cf-options" :style="cfOptionsStyle">
+                  <span v-for="(option, j) in field.options" :key="j"><span class="pw-cf-check" :class="{ 'is-round': field.type === 'fwradio', 'is-on': cfChecked[i + '-' + j] }" :style="cfCheckStyle(i + '-' + j)" @click.stop="cfToggle(i + '-' + j, field.type === 'fwradio' ? i : null)"></span>{{ option }}</span>
                 </span>
-                <span v-else class="pw-cf-input" :class="{ 'is-text': field.multiline }" :style="cfInputStyle"></span>
+                <span v-else class="pw-cf-input" :class="{ 'is-text': field.multiline, 'is-select': field.select, 'is-active': cfActive === i }" :style="[cfInputStyle, cfError(field) ? { borderColor: cfColor('field-error') } : null, cfActive === i ? cfActiveStyle : null]" @click.stop="cfInteractive && (cfActive = i)"><span v-if="cfActive === i && (!field.select || field.choice)" class="pw-cf-sample" :style="{ color: cfColor('field-text') }">{{ field.select ? field.choice : $t('prw.preview.sampleInput') }}</span><span v-else-if="field.placeholder" class="pw-cf-placeholder" :class="{ 'is-own': !!itemColor('field-placeholder') }" :style="{ color: itemColor('field-placeholder') || cfColor('field-text') }">{{ field.placeholder }}</span><svg v-if="field.select" class="pw-cf-chevron" viewBox="0 0 24 24" aria-hidden="true" :style="{ color: cfColor('field-text') }"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+                <span v-if="cfError(field)" class="pw-cf-error" :style="{ color: cfColor('field-error') }">{{ cfError(field) }}</span>
+                <span v-if="field.limits" class="pw-cf-help" :class="{ 'is-own': !!itemColor('field-help') }" :style="{ color: itemColor('field-help') || null }">{{ field.limits }}</span>
+                <span v-if="field.help" class="pw-cf-help" :class="{ 'is-own': !!itemColor('field-help') }" :style="{ color: itemColor('field-help') || null }">{{ field.help }}</span>
               </div>
             </template>
-            <div v-if="isContactform" class="pw-cf-consent">
-              <span class="pw-cf-check" :style="{ borderColor: cfColor('field-border') }"></span>
-              <span>{{ $t('kirbyblock-contactform.consent') }}<span :style="{ color: cfColor('field-focus') }"> *</span></span>
-            </div>
-            <div class="pw-cf-submit"><span :style="buttonStyle">{{ cfButton }}</span></div>
+            <div class="pw-cf-submit" :style="cfSubmitStyle"><span :style="[buttonStyle, cfButtonWide ? { display: 'block', textAlign: 'center' } : null]">{{ cfButton }}</span></div>
           </div>
 
             <!-- cardlets: its cards (image, tagline, heading, text, link) in
@@ -276,8 +280,9 @@ export default {
     gridLines: { type: Boolean, default: false },
   },
   data() {
-    // the settings of the cards' image files (ratio, crop, focus) by link
-    return { cardMeta: {} };
+    // the settings of the cards' image files (ratio, crop, focus) by link;
+    // the Form Wizard's preview: the field clicked (active), boxes ticked
+    return { cardMeta: {}, cfActive: null, cfChecked: {} };
   },
   watch: {
     cardImageLinks: {

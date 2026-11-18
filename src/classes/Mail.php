@@ -11,12 +11,13 @@ use Kirby\Toolkit\V;
  *
  *   pwMail::ready()            everything there to send?
  *   pwMail::send([...])        Kirby's email() with the server, sender and name set
- *   pwMail::recipient()        the default recipients
+ *   pwMail::sender()           the sender's address (where a form without recipients sends to)
+ *   pwMail::recipient()        the default recipients from before (kept for taking them over)
  *   pwMail::used()             does an installed plugin send mails?
  *
  * A plugin that sends mails says so with its option `mail`: true, or a
- * function telling whether it does now (kirbyblock-contactform: only as
- * an active block) – only then the Project Wizard shows Settings › Sending.
+ * function telling whether it does now. The settings are shown by the
+ * plugin's page in the wizard (kirby-formwizard: Forms › E-Mail sending).
  */
 class pwMail
 {
@@ -41,21 +42,6 @@ class pwMail
 		return false;
 	}
 
-	/**
-	 * Settings taken over from elsewhere (the contact form's own mail server
-	 * before it used this one) – only when nothing is set here yet. The
-	 * password comes as it was stored, encrypted with the contact form's key
-	 * – readable as long as there is no key of its own (see keyFile()).
-	 */
-	public static function adopt(array $values, ?string $encryptedPassword): bool
-	{
-		if (is_file(self::file())) return false;
-		$stored = array_intersect_key($values, self::SETTINGS);
-		if ($encryptedPassword && self::keyFile() === self::LEGACY_KEY) $stored['password'] = $encryptedPassword;
-		if (!is_dir(dirname(self::file()))) mkdir(dirname(self::file()), 0755, true);
-		file_put_contents(self::file(), json_encode($stored, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-		return true;
-	}
 
 	/* -------------- Settings --------------*/
 
@@ -117,7 +103,17 @@ class pwMail
 		return $s['username'] !== '' && self::password() !== null;
 	}
 
-	/** The default recipients: the address(es) set, else the sender */
+	/** The sender's address (as a list, like the recipients) */
+	public static function sender(): array
+	{
+		return self::addresses(self::values()['sender']);
+	}
+
+	/**
+	 * The default recipients: the address(es) set, else the sender – no
+	 * longer set in the Panel (each form has its own); read once to take
+	 * them over into the forms (kirby-formwizard)
+	 */
 	public static function recipient(): array
 	{
 		$s = self::values();
