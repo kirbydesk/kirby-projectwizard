@@ -1596,6 +1596,18 @@
                   @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
+                <!-- (the soft edges' width: only with soft edges) -->
+                <pw-block-values
+                  v-if="marqueeSoft(block.blockType)"
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['marquee-edge-width']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.logocloudMarquee')" />
             </section>
@@ -4627,6 +4639,12 @@ export default {
     },
     // the preview: the own settings and values without those the exceptions
     // set (these apply, as in the pagewizard)
+    // the logo cloud's marquee with soft edges (the start value, else the plugin's)
+    marqueeSoft(blockType) {
+      const get = (o) => ['settings', 'fields', 'layout', 'item-marquee-edges', 'default'].reduce((x, k) => (x ? x[k] : undefined), o);
+      const value = get(this.blockOverrides[blockType]) ?? get(this.blockConfigs[blockType] && this.blockConfigs[blockType].defaults);
+      return value !== 'hard';
+    },
     shownOverrides(blockType) {
       const own = this.blockOverrides[blockType] || {};
       const patch = { ...(this.savedPatches[blockType] || {}) };

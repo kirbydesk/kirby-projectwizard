@@ -132,7 +132,7 @@
           </div>
           <!-- logocloud as a marquee: the sample logos twice in one running
                row, its edges soft as set (held while the mouse is on it) -->
-          <div v-if="logosMarquee" key="logos-marquee" class="pw-logocloud-marquee" :class="{ 'is-soft': marqueeSoft }" :style="{ marginTop: logosMarginTop }">
+          <div v-if="logosMarquee" key="logos-marquee" class="pw-logocloud-marquee" :class="{ 'is-soft': marqueeSoft }" :style="[marqueeEdgeStyle, { marginTop: logosMarginTop }]">
             <div class="pw-logocloud-marquee-track" :style="{ animationDuration: marqueeDuration }">
               <div
                 v-for="(logo, index) in dummyLogos.concat(dummyLogos, dummyLogos, dummyLogos)"
@@ -718,6 +718,13 @@ export default {
     // logocloud shown as a marquee: one running row
     logosMarquee() {
       return this.isLogocloud && this.logoDisplay === 'marquee';
+    },
+    // the marquee as on the website: over the block's side paddings to its
+    // edges, its soft edges as wide as set
+    marqueeEdgeStyle() {
+      const s = this.itemStyle;
+      const neg = (v) => (v && v !== 0 && v !== '0' ? 'calc(-1 * ' + v + ')' : 0);
+      return { marginLeft: neg(s.paddingLeft), marginRight: neg(s.paddingRight), '--pw-lc-edge': this.itemValueAt('marquee-edge-width') || '5rem' };
     },
     marqueeSoft() {
       return (this.setting('layout', 'item-marquee-edges') || 'soft') !== 'hard';
@@ -2562,8 +2569,8 @@ export default {
   overflow: hidden;
 }
 .pw-logocloud-marquee.is-soft {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
-  mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--pw-lc-edge, 5rem), #000 calc(100% - var(--pw-lc-edge, 5rem)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--pw-lc-edge, 5rem), #000 calc(100% - var(--pw-lc-edge, 5rem)), transparent);
 }
 .pw-logocloud-marquee-track {
   display: flex;

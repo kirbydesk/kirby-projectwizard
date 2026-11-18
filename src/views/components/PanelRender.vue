@@ -58,7 +58,7 @@
             <!-- logocloud: its logos, as many per row as set for the device,
                  square tiles or one height (flexible) -->
             <!-- (as a marquee: one running row, as on the website) -->
-            <div v-if="isLogocloud && panelLogos.length && content.logodisplay === 'marquee'" key="logos-marquee" class="pw-logocloud-marquee" :class="{ 'is-soft': marqueeSoft }">
+            <div v-if="isLogocloud && panelLogos.length && content.logodisplay === 'marquee'" key="logos-marquee" class="pw-logocloud-marquee" :class="{ 'is-soft': marqueeSoft }" :style="marqueeEdgeStyle">
               <div class="pw-logocloud-marquee-track" :style="{ animationDuration: panelMarquee.duration }">
                 <div v-for="(logo, i) in panelMarquee.logos" :key="i" class="pw-logocloud-item" :style="marqueeTileStyle">
                   <img :src="logo.url" alt="" :style="panelLogoImgStyle" />
