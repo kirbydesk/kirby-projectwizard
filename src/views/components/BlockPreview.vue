@@ -84,7 +84,19 @@
           <span v-if="featureSplit && hasGrid && guides" class="pw-featurelist-offset-gap" :class="{ 'is-hot': highlight === 'item-offset-gap' }"></span>
           <!-- quote: the quote (element typography, its size step and marks)
                and its source below -->
-          <figure v-if="isQuote" class="pw-quote-preview">
+          <!-- (with an image: the image and the quote in a box over its edge –
+               in the design view with a sample image) -->
+          <div v-if="isQuote && quoteMediaShown" class="pw-quote-media" :style="quoteMediaStyle">
+            <img v-if="quoteImageUrl" :src="quoteImageUrl" alt="" class="pw-quote-media-image" :style="quoteImageStyle" />
+            <div v-else class="pw-media-preview-photo pw-quote-media-image" :style="quoteImageStyle"></div>
+            <div class="pw-quote-media-box" :style="quoteBoxStyle">
+              <figure class="pw-quote-preview">
+                <blockquote :style="quoteStyle">{{ quoteText }}</blockquote>
+                <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ $t('prw.sample.cite') }}</cite></figcaption>
+              </figure>
+            </div>
+          </div>
+          <figure v-else-if="isQuote" class="pw-quote-preview">
             <blockquote :style="quoteStyle">{{ quoteText }}</blockquote>
             <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ $t('prw.sample.cite') }}</cite></figcaption>
           </figure>
@@ -1296,6 +1308,54 @@ export default {
       return { ...this.entryTypography('text'), textAlign: this.preset('blocks', 'align') || 'left' };
     },
     // the sample quote, with the element's quote marks (or none)
+    // the quote with an image (the block's, else in the design view a sample)
+    quoteImageUrl() {
+      const list = this.content && Array.isArray(this.content.image) ? this.content.image : [];
+      const f = list[0];
+      return f ? (f.url || (f.image && (f.image.src || f.image.url)) || '') : '';
+    },
+    quoteMediaShown() {
+      return this.isQuote && (!!this.quoteImageUrl || this.designView);
+    },
+    quoteStacked() {
+      return ['default', 'sm'].includes(this.bp);
+    },
+    quoteMediaStyle() {
+      if (this.quoteStacked) return { display: 'flex', flexDirection: 'column', width: '100%' };
+      const width = this.itemValueAt('image-width') || '45%';
+      const right = this.content && this.content.imageposition === 'right';
+      const pos = this.setting('layout', 'item-box-position') || 'middle';
+      return {
+        display: 'grid',
+        width: '100%',
+        gridTemplateColumns: right ? 'minmax(0, 1fr) ' + width : width + ' minmax(0, 1fr)',
+        alignItems: { top: 'start', bottom: 'end' }[pos] || 'center',
+      };
+    },
+    quoteImageStyle() {
+      const ratio = this.setting('layout', 'item-image-ratio') || '3-4';
+      const right = !this.quoteStacked && this.content && this.content.imageposition === 'right';
+      return {
+        display: 'block',
+        width: '100%',
+        aspectRatio: { '3-4': '3 / 4', '4-5': '4 / 5', '1-1': '1 / 1' }[ratio] || (this.quoteImageUrl ? null : '3 / 4'),
+        objectFit: 'cover',
+        borderRadius: this.itemValue('image-radius') || 0,
+        ...(right ? { gridColumn: 2, gridRow: 1 } : {}),
+      };
+    },
+    quoteBoxStyle() {
+      if (this.quoteStacked) return { paddingTop: '1.5rem' };
+      const overlap = 'calc(-1 * ' + (this.itemValueAt('box-overlap') || '4rem') + ')';
+      const right = this.content && this.content.imageposition === 'right';
+      return {
+        position: 'relative',
+        zIndex: 1,
+        padding: this.itemValueAt('box-padding') || '2.5rem',
+        backgroundColor: this.globalColor('block-background'),
+        ...(right ? { gridColumn: 1, gridRow: 1, marginRight: overlap } : { marginLeft: overlap }),
+      };
+    },
     quoteText() {
       const text = this.$t('prw.sample.quote').replace(/^[„"“«»]+|[“"”«»]+$/g, '');
       const marks = this.elementValue('quote', 'marks') !== 'disabled';

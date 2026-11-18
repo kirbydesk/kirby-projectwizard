@@ -2754,6 +2754,48 @@
             </section>
             </template>
 
+            <!-- quote with an image: the image and the box over its edge -->
+            <template v-if="block.blockType === 'pwquote' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.quoteMedia') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['image-width', 'box-overlap', 'box-padding']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="['item-box-position', 'item-image-ratio']"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['image-radius']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.quoteMedia')" />
+            </section>
+            </template>
+
             <!-- multicolumn: the gaps between the columns (side by side, below
                  each other); the elements' space below in the card Elements -->
             <template v-if="block.blockType === 'pwmulticolumn' && blockValueDefaults[block.blockType]">

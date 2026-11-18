@@ -207,7 +207,16 @@
             </div>
 
             <!-- quote: its text (marks as the element sets), the source below -->
-            <figure v-if="isQuote && quoteHtml" class="pw-panel-quote">
+            <div v-if="isQuote && quoteHtml && quoteImageUrl" class="pw-quote-media" :style="quoteMediaStyle">
+              <img :src="quoteImageUrl" alt="" class="pw-quote-media-image" :style="quoteImageStyle" />
+              <div class="pw-quote-media-box" :style="quoteBoxStyle">
+                <figure class="pw-panel-quote">
+                  <blockquote :style="quoteStyle" v-html="quoteHtml"></blockquote>
+                  <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ fieldData('author').text }}</cite></figcaption>
+                </figure>
+              </div>
+            </div>
+            <figure v-else-if="isQuote && quoteHtml" class="pw-panel-quote">
               <blockquote :style="quoteStyle" v-html="quoteHtml"></blockquote>
               <figcaption v-if="hasField('author')"><cite :style="citeStyle">{{ fieldData('author').text }}</cite></figcaption>
             </figure>
