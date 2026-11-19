@@ -81,11 +81,11 @@
               <div v-if="field.type === 'fwinfo'" :key="'cf-' + i" class="pw-cf-heading" :style="cfInfoStyle"><div :style="cfInfoHeadingStyle">{{ field.label }}</div><div v-if="field.text" class="pw-cf-info-text" :class="{ 'is-own': !!(itemColor('info-text') || itemColor('field-help')) }" :style="{ color: itemColor('info-text') || itemColor('field-help') || null }">{{ field.text }}</div></div>
               <div v-else-if="field.type === 'fwconsent'" :key="'cf-' + i" class="pw-cf-consent" :style="cfConsentStyle">
                 <span class="pw-cf-check" :class="{ 'is-on': cfChecked['c' + i] }" :style="cfCheckStyle('c' + i)" @click.stop="cfToggle('c' + i)"></span>
-                <span>{{ field.text || field.label }}<span v-if="field.required" :style="cfStarStyle"> *</span></span>
+                <span>{{ field.text || field.label }}<span v-if="field.required" :style="cfStarStyle">&nbsp;*</span></span>
                 <span v-if="cfError(field)" class="pw-cf-error is-consent" :style="{ color: cfColor('field-error') }">{{ cfError(field) }}</span>
               </div>
               <div v-else :key="'cf-' + i" class="pw-cf-field" :data-width="field.width" :class="{ 'is-when': field.when }">
-                <span class="pw-cf-label" :style="cfLabelStyle">{{ field.label }}<span v-if="field.required" :style="cfStarStyle"> *</span></span>
+                <span class="pw-cf-label" :style="cfLabelStyle">{{ field.label }}<span v-if="field.required" :style="cfStarStyle">&nbsp;*</span></span>
                 <span v-if="field.options && field.options.length" class="pw-cf-options" :style="cfOptionsStyle">
                   <span v-for="(option, j) in field.options" :key="j"><span class="pw-cf-check" :class="{ 'is-round': field.type === 'fwradio', 'is-on': cfChecked[i + '-' + j] }" :style="cfCheckStyle(i + '-' + j)" @click.stop="cfToggle(i + '-' + j, field.type === 'fwradio' ? i : null)"></span>{{ option }}</span>
                 </span>
