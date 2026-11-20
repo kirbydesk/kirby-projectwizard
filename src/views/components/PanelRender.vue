@@ -29,7 +29,7 @@
           <div class="pw-block-live-content" :style="contentStyle">
             <div class="pw-block-live-intro">
             <!-- tagline, heading, text, buttons (the intro of every block) -->
-            <p v-if="hasField('tagline')" :style="fieldStyle('tagline')" v-html="fieldData('tagline').text"></p>
+            <p v-if="hasField('tagline')" class="pw-leadline" v-bind="leadline(fieldData('tagline').leadline, fieldData('tagline').align).attrs" :style="[fieldStyle('tagline'), leadline(fieldData('tagline').leadline, fieldData('tagline').align).style]" v-html="fieldData('tagline').text"></p>
 
             <template v-if="hasField('heading')">
               <div :style="headingStyle">

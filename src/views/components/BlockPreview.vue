@@ -68,7 +68,7 @@
           <!-- tagline, heading, text; in the featurelist's split layout a
                column of their own next to the items -->
           <div class="pw-block-live-intro">
-          <p v-if="hasField('tagline')" :style="fieldStyle('tagline')">{{ $t('prw.preview.tagline') }}</p>
+          <p v-if="hasField('tagline')" class="pw-leadline" v-bind="leadline().attrs" :style="[fieldStyle('tagline'), leadline().style]">{{ $t('prw.preview.tagline') }}</p>
           <div v-if="hasField('heading') && spaceBand('heading')" class="pw-space-band" :class="['is-' + spaceBand('heading').prev, { 'is-hot': highlight === spaceBand('heading').prev + '-spacing' }]" :style="{ height: spaceBand('heading').height }"></div>
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
           <div v-if="hasField('editor') && spaceBand('editor')" class="pw-space-band" :class="['is-' + spaceBand('editor').prev, { 'is-hot': highlight === spaceBand('editor').prev + '-spacing' }]" :style="{ height: spaceBand('editor').height }"></div>
@@ -403,6 +403,7 @@
 import { SCREEN_HEIGHTS } from '../../helpers/preview-bp.js';
 import { validStart } from '../../helpers/valid-start.js';
 import { glowShadows, GLOW_COLORS } from '../../helpers/glow.js';
+import { leadlineState, leadlineBinding, leadlineTop } from '../../helpers/leadline.js';
 
 // fixed gaps between the fields, from the blocks' own CSS (kirbyblock-text,
 // kirbyblock-steplist: tagline / heading / text before the items)
@@ -2072,6 +2073,20 @@ export default {
       return ((this.globalOverrides.global || {})[this.currentTheme] || {})[name]
         || this.globalDefaults.colors?.colors?.[name]?.[this.currentTheme] || '';
     },
+    // the tagline's line (Elements › Tagline): its attributes and variables for
+    // the tagline shown – own: the block's form, align: the tagline's
+    leadline(own = 'default', align = 'left') {
+      const get = (name) => this.elementValue('tagline', name.replace(/^tagline-/, ''));
+      const state = leadlineState(get, own, align || this.preset('tagline', 'align') || 'left');
+      if (!state) return { attrs: {}, style: {} };
+      const color = ((this.elementOverrides.global || {})[this.currentTheme] || {})['element-tagline-leadline']
+        || this.elementColor('tagline', 'element-tagline-text');
+      // (to the preview's edge – it cuts the line off; the grid's edge: a gutter)
+      const binding = leadlineBinding(state, get, color, state.reach === 'grid' ? '24px' : '2000px');
+      const base = this.fieldStyle('tagline').marginTop || 0;
+      binding.style.marginTop = 'calc(' + (typeof base === 'number' ? base + 'px' : base) + ' + ' + leadlineTop(state, get) + ')';
+      return binding;
+    },
     // the button style shown (the custom theme: its own, see PanelRender)
     buttonTheme() {
       return this.currentTheme;
@@ -2353,6 +2368,101 @@ export default {
 </script>
 
 <style>
+/* the tagline's line in the previews – as kirby-pagewizard elements.css (generated from it): a line from the
+   screen edge or the grid's edge to a circle above the tagline, or bent down to
+   it – the tagline's own pseudo elements, nothing in the layout moves. --pw-ll-lead
+   (from the tagline's start to the edge) comes from 05_leadline.js; until then
+   nothing shows. The space above the tagline grows by the line */
+.pw-leadline[data-leadline] {
+  position: relative;
+}
+.pw-leadline[data-leadline]::before,
+.pw-leadline[data-leadline]::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+/* (not measured yet: nothing) */
+.pw-leadline[data-leadline]:not([data-leadline-ready])::before,
+.pw-leadline[data-leadline]:not([data-leadline-ready])::after {
+  visibility: hidden;
+}
+/* the circle: its centre --pw-ll-x right of the text start, --pw-ll-offset above it */
+.pw-leadline[data-leadline]::after {
+  width: var(--pw-ll-dot);
+  height: var(--pw-ll-dot);
+  left: calc(var(--pw-ll-x) - var(--pw-ll-dot) / 2);
+  top: calc(-1 * var(--pw-ll-offset) - var(--pw-ll-dot) / 2);
+  border: var(--pw-ll-stroke) solid var(--pw-ll-color);
+  border-radius: 50%;
+}
+/* straight: from the edge to the circle */
+.pw-leadline[data-leadline="straight"]::before {
+  --pw-ll-h: var(--pw-ll-stroke);
+  left: calc(-1 * var(--pw-ll-length));
+  width: calc(var(--pw-ll-length) + var(--pw-ll-x) - var(--pw-ll-dot) / 2);
+  top: calc(-1 * var(--pw-ll-offset) - var(--pw-ll-h) / 2);
+  height: var(--pw-ll-h);
+  background: var(--pw-ll-color);
+}
+/* bent: in higher up, a round corner, down to the circle */
+.pw-leadline[data-leadline="bent"]::before {
+  left: calc(-1 * var(--pw-ll-length));
+  width: calc(var(--pw-ll-length) + var(--pw-ll-x) + var(--pw-ll-stroke) / 2);
+  top: calc(-1 * var(--pw-ll-offset) - var(--pw-ll-bend));
+  height: calc(var(--pw-ll-bend) - var(--pw-ll-dot) / 2);
+  border: var(--pw-ll-stroke) solid var(--pw-ll-color);
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: calc(var(--pw-ll-stroke) * 9);
+}
+/* the styles: on the straight line drawn (round dots, even dashes, the wave in
+   the line's colour – colors.css), on the bent one the border's own */
+.pw-leadline[data-leadline="straight"][data-leadline-style="dashed"]::before {
+  background: repeating-linear-gradient(90deg, var(--pw-ll-color) 0 calc(var(--pw-ll-stroke) * 5), transparent calc(var(--pw-ll-stroke) * 5) calc(var(--pw-ll-stroke) * 8.5));
+}
+.pw-leadline[data-leadline="straight"][data-leadline-style="dotted"]::before {
+  --pw-ll-h: calc(var(--pw-ll-stroke) * 2);
+  background: radial-gradient(circle, var(--pw-ll-color) 0 calc(var(--pw-ll-stroke) * 0.9), transparent calc(var(--pw-ll-stroke) + 0.5px)) 0 50% / calc(var(--pw-ll-stroke) * 4) 100% repeat-x;
+}
+.pw-leadline[data-leadline="straight"][data-leadline-style="wavy"]::before {
+  --pw-ll-h: calc(var(--pw-ll-stroke) * 4);
+  background: var(--pw-leadline-wave) 0 50% / calc(var(--pw-ll-stroke) * 8) calc(var(--pw-ll-stroke) * 4) repeat-x;
+}
+.pw-leadline[data-leadline="bent"][data-leadline-style="dashed"]::before { border-style: dashed; }
+.pw-leadline[data-leadline="bent"][data-leadline-style="dotted"]::before { border-style: dotted; }
+/* the glow */
+.pw-leadline[data-leadline][data-leadline-glow]::before,
+.pw-leadline[data-leadline][data-leadline-glow]::after {
+  filter: drop-shadow(0 0 4px var(--pw-ll-color)) drop-shadow(0 0 10px color-mix(in srgb, var(--pw-ll-color) 50%, transparent));
+}
+/* running in once it comes into view (room for the glow around it), then the circle */
+.pw-leadline[data-leadline-motion="in"][data-leadline-play="wait"]::before { clip-path: inset(-30px 100% -30px -30px); }
+.pw-leadline[data-leadline-motion="in"][data-leadline-play="wait"]::after { opacity: 0; transform: scale(0); }
+.pw-leadline[data-leadline-motion="in"][data-leadline-play="run"]::before {
+  clip-path: inset(-30px 100% -30px -30px);
+  animation: pw-prev-ll-run 1.1s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+}
+.pw-leadline[data-leadline-motion="in"][data-leadline-play="run"]::after {
+  opacity: 0;
+  transform: scale(0);
+  animation: pw-prev-ll-pop 0.35s ease-out 1s forwards;
+}
+@keyframes pw-prev-ll-run { to { clip-path: inset(-30px -30px -30px -30px); } }
+@keyframes pw-prev-ll-pop { 60% { opacity: 1; transform: scale(1.35); } to { opacity: 1; transform: scale(1); } }
+/* flowing: the pattern moves towards the circle */
+.pw-leadline[data-leadline-motion="flow"][data-leadline-style="dashed"]::before { animation: pw-prev-ll-flow-dash 1.2s linear infinite; }
+.pw-leadline[data-leadline-motion="flow"][data-leadline-style="dotted"]::before { animation: pw-prev-ll-flow-dot 0.8s linear infinite; }
+.pw-leadline[data-leadline-motion="flow"][data-leadline-style="wavy"]::before { animation: pw-prev-ll-flow-wave 1s linear infinite; }
+@keyframes pw-prev-ll-flow-dash { to { background-position-x: calc(var(--pw-ll-stroke) * 8.5); } }
+@keyframes pw-prev-ll-flow-dot { to { background-position-x: calc(var(--pw-ll-stroke) * 4); } }
+@keyframes pw-prev-ll-flow-wave { to { background-position-x: calc(var(--pw-ll-stroke) * 8); } }
+@media (prefers-reduced-motion: reduce) {
+  .pw-leadline[data-leadline]::before,
+  .pw-leadline[data-leadline]::after { animation: none !important; clip-path: none !important; opacity: 1 !important; transform: none !important; }
+}
+
 /* the buttons' glow (Elements › Buttons) – not on the cards' links */
 .pw-glow-button[data-glow] {
   --pw-glow: var(--pw-glow-rest);

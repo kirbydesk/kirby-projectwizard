@@ -99,6 +99,7 @@
                 <template v-else>
                   <!-- Heading: plain, or marked (switch in the toolbar) with the marked line height -->
                   <span v-if="groupKey === 'heading' && previewMarked" class="pw-element-preview-text pw-element-preview-marked" :style="previewStyle(groupKey, bp, theme, true)" v-html="previewHtml(groupKey, theme)"></span>
+                  <span v-else-if="groupKey === 'tagline' && previewLeadline(theme)" :key="previewLeadline(theme).key" class="pw-leadline" v-bind="previewLeadline(theme).attrs" :style="previewLeadline(theme).style"><span class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)" v-html="previewHtml(groupKey, theme, false)"></span></span>
                   <span v-else class="pw-element-preview-text" :style="previewStyle(groupKey, bp, theme)" v-html="previewHtml(groupKey, theme, groupKey === 'heading')"></span>
                   <!-- flourish below the heading (switch in its card) -->
                   <span v-if="groupKey === 'heading' && previewFlourish" class="pw-element-preview-flourish-box" :class="{ 'is-hot-top': hoveredArea === 'heading-flourish-margin-top', 'is-hot-bottom': hoveredArea === 'heading-flourish-margin-bottom' }" :style="flourishBoxStyle(bp, theme)">
@@ -154,7 +155,7 @@
                 <k-icon :type="previewMarked ? 'preview' : 'hidden'" />
               </button>
               <!-- colours: choose the theme, the rows show only its value -->
-              <span v-if="hasColorRows(st.category) && (st.category === 'glow' || groupedColorFields(stInfo(st).group, st.category).length)" class="pw-pill pw-theme-switch" role="group">
+              <span v-if="hasColorRows(st.category) && (['glow', 'leadline'].includes(st.category) || groupedColorFields(stInfo(st).group, st.category).length)" class="pw-pill pw-theme-switch" role="group">
                 <button
                   v-for="theme in themes"
                   :key="'th-' + theme"
@@ -306,7 +307,7 @@
             <!-- the base font size only while the step "normal" is chosen; the
                  button's and media's corner radii only for custom corners -->
             <div
-              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(['button-width', 'button-content-align'].includes(field.varName) && buttonWidthMode() !== 'manual') && !hiddenGlowVar(field.varName)"
+              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(['button-width', 'button-content-align'].includes(field.varName) && buttonWidthMode() !== 'manual') && !hiddenGlowVar(field.varName) && !hiddenLeadlineVar(field.varName)"
               :key="'vf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :data-guide="guideType(field.varName)"
@@ -728,6 +729,7 @@
 import autosize from '../../directives/autosize.js';
 import { readPreviewBp, savePreviewBp } from '../../helpers/preview-bp.js';
 import { glowShadows, GLOW_COLORS } from '../../helpers/glow.js';
+import { leadlineState, leadlineBinding, leadlineTop } from '../../helpers/leadline.js';
 
 export default {
   directives: { 'pw-autosize': autosize },
@@ -968,6 +970,32 @@ export default {
       return this.getOverrideValue('button-width-mode') || this.elementDefaults.button?.vars?.['button-width-mode']?.value || 'auto';
     },
     // button shadow: the chosen step's CSS (generates in elements.json)
+    // the tagline's line: a choice or measure (override, else default)
+    leadlineValue(name, start) {
+      return this.getOverrideValue(name) || this.elementDefaults.tagline?.vars?.[name]?.value || start;
+    },
+    // without a line only its form; the bend only for the bent line
+    hiddenLeadlineVar(varName) {
+      if (!varName.startsWith('tagline-leadline') || varName === 'tagline-leadline') return false;
+      const form = this.leadlineValue('tagline-leadline', 'off');
+      return form === 'off' || (varName === 'tagline-leadline-bend' && form !== 'bent');
+    },
+    // the preview: the line's attributes and variables (the preview column's edge
+    // as the screen's; the grid's edge: a gutter), the space above for it
+    previewLeadline(theme) {
+      const state = leadlineState((name) => this.leadlineValue(name, ''), 'default', 'left');
+      if (!state) return null;
+      const color = this.getColorOverrideValue(theme, 'element-tagline-leadline')
+        || this.getColorOverrideValue(theme, 'element-tagline-text')
+        || this.elementDefaults.tagline?.colors?.['element-tagline-text']?.[theme] || '#000';
+      const get = (name) => this.leadlineValue(name, '');
+      const binding = leadlineBinding(state, get, color, state.reach === 'grid' ? '24px' : '2000px');
+      binding.style.display = 'block';
+      binding.style.marginTop = 'calc(' + leadlineTop(state, get) + ')';
+      // (a new element for each change: running in plays again)
+      binding.key = JSON.stringify([state, color, binding.style['--pw-ll-offset'], binding.style['--pw-ll-bend'], binding.style['--pw-ll-x']]);
+      return binding;
+    },
     // the glow's choices of the button style chosen in the card (its heading)
     glowSuffix() {
       return ['variant', 'variant2', 'variant3'].includes(this.colorTheme) ? '-' + this.colorTheme : '';
@@ -1012,7 +1040,7 @@ export default {
     // the help text below a card (sizes, marking, flourish, colours, zoom)
     cardHelp(st) {
       // (the buttons: form, gaps and icon of their own)
-      const own = { 'list:marker': 'prw.hint.listMarker', 'list:number': 'prw.hint.listNumber', 'list:spacing': 'prw.hint.listSpacing', 'button:shape': 'prw.hint.buttonShape', 'button:margin': 'prw.hint.buttonMargin', 'button:icon': 'prw.hint.buttonIcon', 'button:glow': 'prw.hint.buttonGlow' };
+      const own = { 'list:marker': 'prw.hint.listMarker', 'list:number': 'prw.hint.listNumber', 'list:spacing': 'prw.hint.listSpacing', 'button:shape': 'prw.hint.buttonShape', 'button:margin': 'prw.hint.buttonMargin', 'button:icon': 'prw.hint.buttonIcon', 'button:glow': 'prw.hint.buttonGlow', 'tagline:leadline': 'prw.hint.taglineLeadline' };
       if (own[st.elementKey + ':' + st.category]) return this.$t(own[st.elementKey + ':' + st.category]);
       const keys = { sizes: 'prw.hint.cardSizes', marked: 'prw.hint.cardMarked', flourish: 'prw.hint.cardFlourish', colors: 'prw.hint.cardColors', zoom: 'prw.hint.cardZoom' };
       return keys[st.category] ? this.$t(keys[st.category]) : '';
@@ -1221,6 +1249,7 @@ export default {
       const hasStates = names.some(n => n.endsWith('-hover') || n.endsWith('-active'));
       const sectionOf = (name) => {
         if (name === 'element-button-glow') return 'glow';
+        if (name === 'element-tagline-leadline') return 'leadline';
         if (name.startsWith('element-button-icon')) return 'icon';
         // buttons: background and border colour with the style, the text
         // colour in the text card (all states)
@@ -1251,6 +1280,13 @@ export default {
         if (sectionOf(name) === section) colors[name] = value;
       }
       // the buttons' glow: its own colour only with the choice "custom"
+      // the tagline's line: its colour only with a line
+      if (section === 'leadline' && this.leadlineValue('tagline-leadline', 'off') === 'off') return [];
+      // (its start value: the tagline's colour as it is now – unset, the line follows it)
+      if (section === 'leadline' && colors['element-tagline-leadline']) {
+        const text = group.colors['element-tagline-text'] || {};
+        colors['element-tagline-leadline'] = Object.fromEntries(Object.keys(text).map(t => [t, this.getColorOverrideValue(t, 'element-tagline-text') || text[t]]));
+      }
       if (section === 'glow') return this.glowValue('button-glow', 'off') !== 'off' && this.glowValue('button-glow-color', 'cyan') === 'custom' ? this.groupedFields({ ...group, colors }, 'colors') : [];
       if (!hasStates) return this.groupedFields({ ...group, colors }, 'colors');
       // hover/active colours: one row per colour with the three states as a
@@ -1276,7 +1312,7 @@ export default {
 
     // cards that hold colour rows (with the variant switch in their heading)
     hasColorRows(category) {
-      return ['colors', 'marked', 'flourish', 'text', 'marker', 'number', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description', 'glow'].includes(category);
+      return ['colors', 'marked', 'flourish', 'text', 'marker', 'number', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description', 'glow', 'leadline'].includes(category);
     },
     groupedFields(group, only, category) {
       const allFields = [];
@@ -1380,6 +1416,15 @@ export default {
       // the glow: the cards' wording (Beim Überfahren, Dezent …)
       if (varName.startsWith('button-glow')) {
         return options.map(o => ({ value: o, text: this.$t('prw.glow.' + o) }));
+      }
+      // the tagline's line: wavy only straight, flowing only a straight patterned line
+      if (varName.startsWith('tagline-leadline')) {
+        const form = this.leadlineValue('tagline-leadline', 'off');
+        const style = this.leadlineValue('tagline-leadline-style', 'solid');
+        return options
+          .filter(o => !(varName === 'tagline-leadline-style' && o === 'wavy' && form === 'bent'))
+          .filter(o => !(varName === 'tagline-leadline-motion' && o === 'flow' && (form !== 'straight' || style === 'solid')))
+          .map(o => ({ value: o, text: this.$t('prw.leadline.' + o) }));
       }
       if (!varName.endsWith('-font-weight')) {
         // alignment: Kirby's text-left/-center/-right icons, the name as tooltip
@@ -1725,7 +1770,8 @@ export default {
     elementSubtabs(groupKey) {
       const tabs = {
         heading:    ['text', 'sizes', 'marked', 'flourish', 'colors'],
-        tagline:    ['text', 'colors'],
+        // (the line above it in a card of its own)
+        tagline:    ['text', 'leadline', 'colors'],
         editor:     ['text', 'sizes', 'colors'],
         // lists: their marker, indent and gap (the type of the text)
         // (the markers' colour with the bullets)
@@ -1744,6 +1790,8 @@ export default {
     varCategory(varName) {
       // buttons: the glow (per button style) in a card of its own
       if (varName.startsWith('button-glow')) return 'glow';
+      // the tagline's line: its card
+      if (varName.startsWith('tagline-leadline')) return 'leadline';
       // lists: bullets (marker, indent), numbers (format, indent), the gap
       // between the points
       if (varName === 'list-marker' || varName === 'list-marker-size' || varName === 'list-indent') return 'marker';
@@ -1791,7 +1839,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marker: this.$t('prw.subtab.marker'), number: this.$t('prw.subtab.number'), spacing: this.$t('prw.headline.spacing'), title: this.$t('prw.subtab.title'), description: this.$t('prw.subtab.description'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors'), glow: this.$t('prw.headline.glow') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marker: this.$t('prw.subtab.marker'), number: this.$t('prw.subtab.number'), spacing: this.$t('prw.headline.spacing'), title: this.$t('prw.subtab.title'), description: this.$t('prw.subtab.description'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors'), glow: this.$t('prw.headline.glow'), leadline: this.$t('prw.subtab.leadline') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
