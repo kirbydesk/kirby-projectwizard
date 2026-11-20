@@ -22,7 +22,7 @@
     </figure>
     <pw-panel-media v-else-if="mcKind(item) === 'media'" :content="item.content" :box-style="mcMediaBox(item.content)" :caption-style="captionStyle" />
     <div v-else-if="mcKind(item) === 'button'" :style="{ textAlign: item.content.buttonalignment || preset('button', 'align') || 'left' }">
-      <span class="pw-panel-button" :style="buttonStyle">
+      <span class="pw-panel-button pw-glow-button" :data-glow="buttonGlow ? buttonGlow.mode : null" :style="[buttonStyle, buttonGlowStyle]">
         <span v-if="mcButtonIcon(item, 'left')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginRight: buttonIconStyle.gap }" v-html="mcButtonIcon(item, 'left')"></span>
         <span>{{ item.content.linktext || $t('pw.field.link-text.placeholder') }}</span>
         <span v-if="mcButtonIcon(item, 'right')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginLeft: buttonIconStyle.gap }" v-html="mcButtonIcon(item, 'right')"></span>

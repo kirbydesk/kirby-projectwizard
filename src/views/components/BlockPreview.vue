@@ -184,7 +184,7 @@
                 <span v-if="field.help" class="pw-cf-help" :class="{ 'is-own': !!itemColor('field-help') }" :style="{ color: itemColor('field-help') || null }">{{ field.help }}</span>
               </div>
             </template>
-            <div class="pw-cf-submit" :style="cfSubmitStyle"><span :style="[buttonStyle, cfButtonWide ? { display: 'block', textAlign: 'center' } : null]">{{ cfButton }}</span></div>
+            <div class="pw-cf-submit" :style="cfSubmitStyle"><span class="pw-glow-button" :data-glow="buttonGlow ? buttonGlow.mode : null" :style="[buttonStyle, cfButtonWide ? { display: 'block', textAlign: 'center' } : null, buttonGlowStyle]">{{ cfButton }}</span></div>
           </div>
           <!-- logocloud as a marquee: the sample logos twice in one running
                row, its edges soft as set (held while the mouse is on it) -->
@@ -225,7 +225,7 @@
           </div>
           <div v-if="hasField('buttons') && spaceBand('buttons')" class="pw-space-band" :class="['is-' + spaceBand('buttons').prev, { 'is-hot': highlight === spaceBand('buttons').prev + '-spacing' }]" :style="{ height: spaceBand('buttons').height }"></div>
           <div v-if="hasField('buttons')" :style="buttonsStyle">
-            <span :style="buttonStyle">{{ $t('prw.preview.button') }}</span>
+            <span class="pw-glow-button" :data-glow="buttonGlow ? buttonGlow.mode : null" :style="[buttonStyle, buttonGlowStyle]">{{ $t('prw.preview.button') }}</span>
           </div>
           <!-- cardlets: two cards (image, tagline, heading, text, link) as in its snippet -->
           <!-- guides: the gap to the intro, between the cards (as the featurelist's) -->
@@ -290,7 +290,7 @@
               <span v-if="guides" class="pw-mc-band is-quote" :class="{ 'is-hot': highlight === 'quote-spacing' }" :style="{ height: spaceAfter('quote') }"></span>
               <div class="pw-media-preview-photo pw-mc-image" :style="{ marginBottom: guides ? 0 : spaceAfter('media') }"></div>
               <span v-if="guides" class="pw-mc-band is-media" :class="{ 'is-hot': highlight === 'media-spacing' }" :style="{ height: spaceAfter('media') }"></span>
-              <div :style="{ marginBottom: guides ? 0 : spaceAfter('button'), textAlign: preset('button', 'align') || 'left' }"><span :style="buttonStyle">{{ $t('prw.preview.button') }}</span></div>
+              <div :style="{ marginBottom: guides ? 0 : spaceAfter('button'), textAlign: preset('button', 'align') || 'left' }"><span class="pw-glow-button" :data-glow="buttonGlow ? buttonGlow.mode : null" :style="[buttonStyle, buttonGlowStyle]">{{ $t('prw.preview.button') }}</span></div>
               <span v-if="guides" class="pw-mc-band is-button" :class="{ 'is-hot': highlight === 'button-spacing' }" :style="{ height: spaceAfter('button') }"></span>
               <p :style="mcTextStyle('editor', null)">{{ $t('prw.preview.mc.text') }}</p>
             </div>
@@ -402,6 +402,7 @@
 // sidebar, the hero as high as on that device (its heights are vh)
 import { SCREEN_HEIGHTS } from '../../helpers/preview-bp.js';
 import { validStart } from '../../helpers/valid-start.js';
+import { glowShadows, GLOW_COLORS } from '../../helpers/glow.js';
 
 // fixed gaps between the fields, from the blocks' own CSS (kirbyblock-text,
 // kirbyblock-steplist: tagline / heading / text before the items)
@@ -903,16 +904,31 @@ export default {
       const get = (key, start) => this.setting('layout', key + sfx) || this.setting('layout', key) || start;
       const mode = get('item-glow', 'off');
       if (!['always', 'hover'].includes(mode)) return null;
-      const choice = get('item-glow-color', 'cyan');
-      const color = { cyan: '#22d3ee', pink: '#ec4899', violet: '#a78bfa', amber: '#f59e0b' }[choice] || this.itemColor('item-glow') || '#22d3ee';
+      const color = GLOW_COLORS[get('item-glow-color', 'cyan')] || this.itemColor('item-glow') || '#22d3ee';
       const down = get('item-glow-direction', 'around') === 'down' ? 1 : 0;
       const k = get('item-glow-strength', 'subtle') === 'strong' ? 1.6 : 1;
-      const mix = (pct) => 'color-mix(in srgb, ' + color + ' ' + Math.min(100, Math.round(pct * k)) + '%, transparent)';
-      const on = '0 0 0 1px ' + color + ', 0 ' + down * 6 + 'px ' + 8 * k + 'px 0 ' + mix(65) + ', 0 ' + down * 20 + 'px ' + 36 * k + 'px ' + down * -8 + 'px ' + mix(40);
-      const rest = mode === 'always'
-        ? '0 0 0 1px color-mix(in srgb, ' + color + ' 60%, transparent), 0 ' + down * 4 + 'px ' + 6 * k + 'px 0 ' + mix(45) + ', 0 ' + down * 14 + 'px ' + 24 * k + 'px ' + down * -6 + 'px ' + mix(28)
-        : '0 0 0 1px transparent, 0 0 0 0 transparent, 0 0 0 0 transparent';
-      return { mode, rest, on };
+      return { mode, ...glowShadows(mode, color, k, down) };
+    },
+    // the buttons' glow (Project Wizard › Elements › Buttons) of the button style
+    // shown – null when off; never on the cards' links (cardCtaStyle)
+    buttonGlow() {
+      const theme = this.buttonTheme();
+      const sfx = theme === 'default' ? '' : '-' + theme;
+      const vars = this.elementDefaults.button?.vars || {};
+      const ov = this.elementOverrides.global || {};
+      const get = (name, start) => ov[name + sfx] || vars[name + sfx]?.value || start;
+      const mode = get('button-glow', 'off');
+      if (!['always', 'hover'].includes(mode)) return null;
+      const color = GLOW_COLORS[get('button-glow-color', 'cyan')]
+        || (ov[theme] || {})['element-button-glow'] || this.elementDefaults.button?.colors?.['element-button-glow']?.[theme] || '#22d3ee';
+      const k = get('button-glow-strength', 'subtle') === 'strong' ? 1.6 : 1;
+      return { mode, ...glowShadows(mode, color, k, 0, 0.5) };
+    },
+    buttonGlowStyle() {
+      const g = this.buttonGlow;
+      if (!g) return {};
+      // (the shadow from the variables, see the styles below; the chosen shadow behind it)
+      return { boxShadow: null, '--pw-glow-rest': g.rest, '--pw-glow-on': g.on, '--pw-glow-base': this.buttonStyle.boxShadow && this.buttonStyle.boxShadow !== 'none' ? this.buttonStyle.boxShadow : '0 0 #0000' };
     },
     // its variables on a card or tile (the shadow step kept behind it)
     glowVars() {
@@ -2056,6 +2072,10 @@ export default {
       return ((this.globalOverrides.global || {})[this.currentTheme] || {})[name]
         || this.globalDefaults.colors?.colors?.[name]?.[this.currentTheme] || '';
     },
+    // the button style shown (the custom theme: its own, see PanelRender)
+    buttonTheme() {
+      return this.currentTheme;
+    },
     elementColor(element, name) {
       return ((this.elementOverrides.global || {})[this.currentTheme] || {})[name]
         || this.elementDefaults[element]?.colors?.[name]?.[this.currentTheme] || '';
@@ -2333,6 +2353,15 @@ export default {
 </script>
 
 <style>
+/* the buttons' glow (Elements › Buttons) – not on the cards' links */
+.pw-glow-button[data-glow] {
+  --pw-glow: var(--pw-glow-rest);
+  box-shadow: var(--pw-glow), var(--pw-glow-base, 0 0 #0000);
+  transition: box-shadow 0.35s ease;
+}
+.pw-glow-button[data-glow]:hover {
+  --pw-glow: var(--pw-glow-on);
+}
 /* the glow (cards, tiles): at rest, stronger on hover – shared with the page editor's previews */
 .pw-cardlets-item[data-glow],
 .pw-stats-item[data-glow],

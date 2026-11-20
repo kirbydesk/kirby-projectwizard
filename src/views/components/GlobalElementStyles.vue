@@ -55,11 +55,11 @@
                   <!-- guides: the buttons' own space above (where something comes before them) -->
                   <span v-if="groupKey === 'button' && guides && buttonSpaceAbove()" class="pw-element-space-below" :class="{ 'is-hot': hoveredArea === 'button-spacing-top' }" :style="{ height: buttonSpaceAbove() }"></span>
                   <span class="pw-element-preview-buttons" :class="[buttonHotClass(), { 'is-wrapped': buttonsWrapped }]" :style="{ columnGap: buttonGap(), rowGap: buttonGap('button-row-gap'), '--pw-button-gap': buttonGap(), '--pw-button-row-gap': buttonGap('button-row-gap') }">
-                    <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ previewText(groupKey) }}</span></span></span>
-                    <span class="pw-element-preview-button pw-element-preview-button-second" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.2') }}</span></span></span>
+                    <span class="pw-element-preview-button" :data-glow="groupKey === 'button' && previewGlow(theme) ? previewGlow(theme).mode : null" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ previewText(groupKey) }}</span></span></span>
+                    <span class="pw-element-preview-button pw-element-preview-button-second" :data-glow="groupKey === 'button' && previewGlow(theme) ? previewGlow(theme).mode : null" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.2') }}</span></span></span>
                     <!-- a third button in a row of its own, so the gap between rows shows -->
                     <span class="pw-element-preview-buttons-row" :style="{ '--pw-button-row-gap': buttonGap('button-row-gap') }">
-                      <span class="pw-element-preview-button" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.3') }}</span></span></span>
+                      <span class="pw-element-preview-button" :data-glow="groupKey === 'button' && previewGlow(theme) ? previewGlow(theme).mode : null" :style="previewButtonStyle(groupKey, theme, bp)"><span class="pw-button-content"><span v-if="groupKey === 'button'" class="pw-preview-link-icon" :style="previewButtonIconStyle(theme, bp)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="pw-button-text">{{ $t('prw.sample.button.3') }}</span></span></span>
                     </span>
                   </span>
                 </template>
@@ -154,7 +154,7 @@
                 <k-icon :type="previewMarked ? 'preview' : 'hidden'" />
               </button>
               <!-- colours: choose the theme, the rows show only its value -->
-              <span v-if="hasColorRows(st.category) && groupedColorFields(stInfo(st).group, st.category).length" class="pw-pill pw-theme-switch" role="group">
+              <span v-if="hasColorRows(st.category) && (st.category === 'glow' || groupedColorFields(stInfo(st).group, st.category).length)" class="pw-pill pw-theme-switch" role="group">
                 <button
                   v-for="theme in themes"
                   :key="'th-' + theme"
@@ -306,7 +306,7 @@
             <!-- the base font size only while the step "normal" is chosen; the
                  button's and media's corner radii only for custom corners -->
             <div
-              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(['button-width', 'button-content-align'].includes(field.varName) && buttonWidthMode() !== 'manual')"
+              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(['button-width', 'button-content-align'].includes(field.varName) && buttonWidthMode() !== 'manual') && !hiddenGlowVar(field.varName)"
               :key="'vf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :data-guide="guideType(field.varName)"
@@ -727,6 +727,7 @@
 <script>
 import autosize from '../../directives/autosize.js';
 import { readPreviewBp, savePreviewBp } from '../../helpers/preview-bp.js';
+import { glowShadows, GLOW_COLORS } from '../../helpers/glow.js';
 
 export default {
   directives: { 'pw-autosize': autosize },
@@ -967,6 +968,30 @@ export default {
       return this.getOverrideValue('button-width-mode') || this.elementDefaults.button?.vars?.['button-width-mode']?.value || 'auto';
     },
     // button shadow: the chosen step's CSS (generates in elements.json)
+    // the glow's choices of the button style chosen in the card (its heading)
+    glowSuffix() {
+      return ['variant', 'variant2', 'variant3'].includes(this.colorTheme) ? '-' + this.colorTheme : '';
+    },
+    glowValue(name, start, sfx = this.glowSuffix()) {
+      return this.getOverrideValue(name + sfx) || this.elementDefaults.button?.vars?.[name + sfx]?.value || start;
+    },
+    // a glow row of another button style, or colour and strength without a glow
+    hiddenGlowVar(varName) {
+      if (!varName.startsWith('button-glow')) return false;
+      const base = varName.replace(/-variant\d?$/, '');
+      if (varName !== base + this.glowSuffix()) return true;
+      return base !== 'button-glow' && this.glowValue('button-glow', 'off') === 'off';
+    },
+    // the preview's glow of a button style (null when off)
+    previewGlow(theme) {
+      const sfx = ['variant', 'variant2', 'variant3'].includes(theme) ? '-' + theme : '';
+      const mode = this.glowValue('button-glow', 'off', sfx);
+      if (!['always', 'hover'].includes(mode)) return null;
+      const color = GLOW_COLORS[this.glowValue('button-glow-color', 'cyan', sfx)]
+        || this.getColorOverrideValue(theme, 'element-button-glow') || this.elementDefaults.button?.colors?.['element-button-glow']?.[theme] || '#22d3ee';
+      const k = this.glowValue('button-glow-strength', 'subtle', sfx) === 'strong' ? 1.6 : 1;
+      return { mode, ...glowShadows(mode, color, k, 0, 0.5) };
+    },
     buttonShadow() {
       const def = this.elementDefaults.button?.vars?.['button-shadow'];
       if (!def) return 'none';
@@ -987,7 +1012,7 @@ export default {
     // the help text below a card (sizes, marking, flourish, colours, zoom)
     cardHelp(st) {
       // (the buttons: form, gaps and icon of their own)
-      const own = { 'list:marker': 'prw.hint.listMarker', 'list:number': 'prw.hint.listNumber', 'list:spacing': 'prw.hint.listSpacing', 'button:shape': 'prw.hint.buttonShape', 'button:margin': 'prw.hint.buttonMargin', 'button:icon': 'prw.hint.buttonIcon' };
+      const own = { 'list:marker': 'prw.hint.listMarker', 'list:number': 'prw.hint.listNumber', 'list:spacing': 'prw.hint.listSpacing', 'button:shape': 'prw.hint.buttonShape', 'button:margin': 'prw.hint.buttonMargin', 'button:icon': 'prw.hint.buttonIcon', 'button:glow': 'prw.hint.buttonGlow' };
       if (own[st.elementKey + ':' + st.category]) return this.$t(own[st.elementKey + ':' + st.category]);
       const keys = { sizes: 'prw.hint.cardSizes', marked: 'prw.hint.cardMarked', flourish: 'prw.hint.cardFlourish', colors: 'prw.hint.cardColors', zoom: 'prw.hint.cardZoom' };
       return keys[st.category] ? this.$t(keys[st.category]) : '';
@@ -1151,6 +1176,8 @@ export default {
       return (t && t !== tKey) ? t : key;
     },
     propLabel(varName) {
+      // (the glow per button style: one label for all of them)
+      varName = varName.replace(/^(button-glow(?:-color|-strength)?)-variant\d?$/, '$1');
       const tKey = 'prw.element.' + varName;
       const t = this.$t(tKey);
       if (t && t !== tKey) return t;
@@ -1193,6 +1220,7 @@ export default {
       // has hover/active colours (buttons, breadcrumbs keep them together)
       const hasStates = names.some(n => n.endsWith('-hover') || n.endsWith('-active'));
       const sectionOf = (name) => {
+        if (name === 'element-button-glow') return 'glow';
         if (name.startsWith('element-button-icon')) return 'icon';
         // buttons: background and border colour with the style, the text
         // colour in the text card (all states)
@@ -1222,6 +1250,8 @@ export default {
       for (const [name, value] of entries) {
         if (sectionOf(name) === section) colors[name] = value;
       }
+      // the buttons' glow: its own colour only with the choice "custom"
+      if (section === 'glow') return this.glowValue('button-glow', 'off') !== 'off' && this.glowValue('button-glow-color', 'cyan') === 'custom' ? this.groupedFields({ ...group, colors }, 'colors') : [];
       if (!hasStates) return this.groupedFields({ ...group, colors }, 'colors');
       // hover/active colours: one row per colour with the three states as a
       // 3×1 grid (Normal | Hover | Active)
@@ -1246,7 +1276,7 @@ export default {
 
     // cards that hold colour rows (with the variant switch in their heading)
     hasColorRows(category) {
-      return ['colors', 'marked', 'flourish', 'text', 'marker', 'number', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description'].includes(category);
+      return ['colors', 'marked', 'flourish', 'text', 'marker', 'number', 'icon', 'shape', 'style', 'slideshow', 'zoom', 'title', 'description', 'glow'].includes(category);
     },
     groupedFields(group, only, category) {
       const allFields = [];
@@ -1347,6 +1377,10 @@ export default {
       return t && t !== key ? t : value;
     },
     filteredOptions(varName, options) {
+      // the glow: the cards' wording (Beim Überfahren, Dezent …)
+      if (varName.startsWith('button-glow')) {
+        return options.map(o => ({ value: o, text: this.$t('prw.glow.' + o) }));
+      }
       if (!varName.endsWith('-font-weight')) {
         // alignment: Kirby's text-left/-center/-right icons, the name as tooltip
         if (varName.endsWith('-content-align')) {
@@ -1697,7 +1731,7 @@ export default {
         // (the markers' colour with the bullets)
         list:       ['marker', 'number', 'spacing'],
         quote:      ['text', 'sizes', 'colors'],
-        button:     ['text', 'padding', 'margin', 'shape', 'style', 'icon', 'colors'],
+        button:     ['text', 'padding', 'margin', 'shape', 'style', 'glow', 'icon', 'colors'],
         caption:    ['text', 'colors'],
         breadcrumb: ['text', 'colors'],
         media:      ['shape', 'style', 'slideshow', 'zoom', 'spacing'],
@@ -1708,6 +1742,8 @@ export default {
       return tabs[groupKey] || ['text', 'sizes', 'colors'];
     },
     varCategory(varName) {
+      // buttons: the glow (per button style) in a card of its own
+      if (varName.startsWith('button-glow')) return 'glow';
       // lists: bullets (marker, indent), numbers (format, indent), the gap
       // between the points
       if (varName === 'list-marker' || varName === 'list-marker-size' || varName === 'list-indent') return 'marker';
@@ -1755,7 +1791,7 @@ export default {
       return 'text';
     },
     combinedSubtabs(groupKey) {
-      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marker: this.$t('prw.subtab.marker'), number: this.$t('prw.subtab.number'), spacing: this.$t('prw.headline.spacing'), title: this.$t('prw.subtab.title'), description: this.$t('prw.subtab.description'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors') };
+      const tabLabels = { text: this.$t('prw.subtab.text'), sizes: this.$t('prw.subtab.sizes'), padding: this.$t('prw.headline.paddings'), margin: this.$t('prw.headline.margins'), shape: this.$t('prw.subtab.shape'), style: this.$t('pw.headline.style'), icon: this.$t('prw.subtab.icon'), slideshow: this.$t('prw.subtab.slideshow'), zoom: this.$t('prw.subtab.zoom'), marker: this.$t('prw.subtab.marker'), number: this.$t('prw.subtab.number'), spacing: this.$t('prw.headline.spacing'), title: this.$t('prw.subtab.title'), description: this.$t('prw.subtab.description'), marked: this.$t('prw.subtab.marked'), flourish: this.$t('prw.subtab.flourish'), colors: this.$t('prw.subtab.colors'), glow: this.$t('prw.headline.glow') };
       const result = [];
       const childKey = this.previewChildKey(groupKey);
       const hasChild = childKey && this.groups[childKey];
@@ -1906,6 +1942,8 @@ export default {
         '--pw-btn-icon-active': colorVal('element-button-icon-active') || 'currentColor',
         borderWidth: this.getOverrideValue('button-border-width') || this.elementDefaults.button?.vars?.['button-border-width']?.value || '1px',
         boxShadow: this.buttonShadow(),
+        // the glow of this button style: the shadow from the variables (styles below)
+        ...(this.previewGlow(theme) ? { boxShadow: undefined, '--pw-glow-rest': this.previewGlow(theme).rest, '--pw-glow-on': this.previewGlow(theme).on, '--pw-glow-base': this.buttonShadow() === 'none' ? '0 0 #0000' : this.buttonShadow() } : {}),
         borderStyle: 'solid',
         padding: Array.isArray(padding) ? padding.join(' ') : padding,
         // manual width: all buttons equally wide, the text cut off with "…"
@@ -2050,6 +2088,15 @@ export default {
 </script>
 
 <style>
+/* the buttons' glow (Elements › Buttons, per button style) */
+.pw-element-preview-button[data-glow] {
+  --pw-glow: var(--pw-glow-rest);
+  box-shadow: var(--pw-glow), var(--pw-glow-base, 0 0 #0000);
+  transition: box-shadow 0.35s ease;
+}
+.pw-element-preview-button[data-glow]:hover {
+  --pw-glow: var(--pw-glow-on);
+}
 /* media preview: the empty media above the one with an image */
 .pw-media-preview-empty {
   margin-bottom: var(--spacing-4);

@@ -95,7 +95,7 @@
                 <span v-if="field.help" class="pw-cf-help" :class="{ 'is-own': !!itemColor('field-help') }" :style="{ color: itemColor('field-help') || null }">{{ field.help }}</span>
               </div>
             </template>
-            <div class="pw-cf-submit" :style="cfSubmitStyle"><span :style="[buttonStyle, cfButtonWide ? { display: 'block', textAlign: 'center' } : null]">{{ cfButton }}</span></div>
+            <div class="pw-cf-submit" :style="cfSubmitStyle"><span class="pw-glow-button" :data-glow="buttonGlow ? buttonGlow.mode : null" :style="[buttonStyle, cfButtonWide ? { display: 'block', textAlign: 'center' } : null, buttonGlowStyle]">{{ cfButton }}</span></div>
           </div>
 
             <!-- cardlets: its cards (image, tagline, heading, text, link) in
@@ -296,9 +296,10 @@
               <span
                 v-for="button in visibleButtons"
                 :key="button.id"
-                class="pw-panel-button"
+                class="pw-panel-button pw-glow-button"
                 :class="{ 'is-hidden': button.isHidden }"
-                :style="buttonStyle"
+                :data-glow="buttonGlow ? buttonGlow.mode : null"
+                :style="[buttonStyle, buttonGlowStyle]"
               >
                 <span v-if="buttonIcon(button, 'left')" class="pw-panel-button-icon" :style="{ ...buttonIconStyle, marginRight: buttonIconStyle.gap }" v-html="buttonIcon(button, 'left')"></span>
                 <span>{{ button.content.linktext || $t('pw.field.link-text.placeholder') }}</span>
@@ -636,6 +637,11 @@ export default {
     },
   },
   methods: {
+    // the custom theme: the block's own button style
+    buttonTheme() {
+      if (this.isCustom) return this.themes.includes(this.content.buttonstyle) ? this.content.buttonstyle : 'default';
+      return BlockPreview.methods.buttonTheme.call(this);
+    },
     elementColor(element, name) {
       if (this.isCustom) {
         const text = ['element-tagline-text', 'element-heading-text', 'element-editor-text', 'element-list-marker', 'element-list-number', 'element-quote-text', 'element-cite-text'];
