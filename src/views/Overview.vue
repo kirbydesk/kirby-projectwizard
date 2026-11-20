@@ -2498,6 +2498,47 @@
               </div>
               <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsBorder')" />
             </section>
+            <!-- the glow (per variant): off, always, on hover – then its colour, direction and strength -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.glow') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'cgt-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  ><span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(theme) }"></span>{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="glowLayoutKeys(block.blockType)"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="isGlowCustom(block.blockType)"
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-glow']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.cardletsGlow')" />
+            </section>
             <!-- the cards' display: the one the preview shows (a view, not
                  saved; at first the start value) with its values -->
             <section class="pw-card-section">
@@ -2831,6 +2872,47 @@
                   @update:writer-active="$set(writerActive, block.blockType, $event)"
                 />
               </div>
+            </section>
+            <!-- the glow (per variant): off, always, on hover – then its colour, direction and strength -->
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.headline.glow') }}</h3>
+                <span class="pw-pill pw-theme-switch" role="group">
+                  <button
+                    v-for="theme in themes"
+                    :key="'sgt-' + theme"
+                    type="button"
+                    class="pw-tool"
+                    :aria-pressed="currentItemColorTheme === theme ? 'true' : 'false'"
+                    @click="itemColorTheme = theme"
+                  ><span class="pw-variant-dot is-small" :style="{ backgroundColor: variantBackground(theme) }"></span>{{ $t('pw.option.' + theme) }}</button>
+                </span>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-settings
+                  view="items-layout"
+                  :block="block"
+                  :config="blockConfigs[block.blockType]"
+                  :overrides="blockOverrides[block.blockType] || {}"
+                  :writer-active="writerActive[block.blockType] !== false"
+                  :layout-keys="glowLayoutKeys(block.blockType)"
+                  @update:overrides="onBlockOverridesUpdate(block.blockType, $event)"
+                  @update:writer-active="$set(writerActive, block.blockType, $event)"
+                />
+                <pw-block-values
+                  v-if="isGlowCustom(block.blockType)"
+                  :bp.sync="itemBp"
+                  :theme="currentItemColorTheme"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :show-only="['item-glow']"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+              <k-text size="tiny" class="k-help pw-card-help" :html="$t('prw.hint.statsGlow')" />
             </section>
             <section class="pw-card-section">
               <div class="pw-card-heading-row">
@@ -4261,6 +4343,21 @@ export default {
       if (this.stepPreviewStyle[blockType]) return this.stepPreviewStyle[blockType];
       const ov = this.blockOverrides[blockType]?.settings?.fields?.style?.['item-style']?.default;
       return ov || this.blockConfigs[blockType]?.defaults?.settings?.fields?.style?.['item-style']?.default || 'default';
+    },
+    // the glow's keys of the chosen variant: the mode, and with a glow its colour, direction and strength
+    glowLayoutKeys(blockType) {
+      const sfx = this.currentItemColorTheme === 'default' ? '' : '-' + this.currentItemColorTheme;
+      const keys = ['item-glow' + sfx];
+      if ((this.itemLayoutDefault(blockType, 'item-glow' + sfx) || 'off') !== 'off') {
+        keys.push('item-glow-color' + sfx, 'item-glow-direction' + sfx, 'item-glow-strength' + sfx);
+      }
+      return keys;
+    },
+    // its own colour: only with a glow and the choice "custom"
+    isGlowCustom(blockType) {
+      const sfx = this.currentItemColorTheme === 'default' ? '' : '-' + this.currentItemColorTheme;
+      return (this.itemLayoutDefault(blockType, 'item-glow' + sfx) || 'off') !== 'off'
+        && this.itemLayoutDefault(blockType, 'item-glow-color' + sfx) === 'custom';
     },
     itemLayoutDefault(blockType, key) {
       // Resolve current default for a settings.fields.layout.<key>: override wins,

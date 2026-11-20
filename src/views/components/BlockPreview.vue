@@ -110,7 +110,7 @@
               </div>
             </template>
             <template v-else>
-              <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :style="statsItemStyle(i)">
+              <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :data-glow="glow ? glow.mode : null" :style="statsItemStyle(i)">
                 <template v-if="statsShownView === 'bars'">
                   <div :style="statsBarHeadStyle">
                     <p :style="statsLabelStyle(true)">{{ item.label }}</p>
@@ -238,7 +238,7 @@
           <div v-if="isCardlets" class="pw-cardlets-items pw-featurelist-items" :class="{ 'is-row': cardColumns > 1 }" :style="cardItemsStyle">
             <template v-for="n in 2">
             <span v-if="guides && n > 1" :key="'card-gap-' + n" class="pw-featurelist-gap" :class="{ 'is-hot': highlight === 'item-gap' }" :style="cardColumns > 1 ? { width: itemValueAt('item-gap') } : { height: itemValueAt('item-gap') }"></span>
-            <div :key="'card-' + n" class="pw-cardlets-item" :style="cardStyle">
+            <div :key="'card-' + n" class="pw-cardlets-item" :data-glow="glow ? glow.mode : null" :data-glow-pieces="glow && cardOverhang ? '' : null" :style="cardStyle">
               <!-- the image; standing out: the card's upper piece behind it
                    from the overhang down (guides: the overhang as a band) -->
               <div class="pw-cardlets-image-wrap" :class="{ 'is-overhang': cardOverhang }">
@@ -896,6 +896,29 @@ export default {
         return Math.min(100, Math.max(0, share));
       });
     },
+    // the glow of the variant shown (Project Wizard › Blocks): null when off; else its
+    // mode and the shadows at rest and on hover (as the block's styles.css)
+    glow() {
+      const sfx = ['variant', 'variant2', 'variant3'].includes(this.currentTheme) ? '-' + this.currentTheme : '';
+      const get = (key, start) => this.setting('layout', key + sfx) || this.setting('layout', key) || start;
+      const mode = get('item-glow', 'off');
+      if (!['always', 'hover'].includes(mode)) return null;
+      const choice = get('item-glow-color', 'cyan');
+      const color = { cyan: '#22d3ee', pink: '#ec4899', violet: '#a78bfa', amber: '#f59e0b' }[choice] || this.itemColor('item-glow') || '#22d3ee';
+      const down = get('item-glow-direction', 'around') === 'down' ? 1 : 0;
+      const k = get('item-glow-strength', 'subtle') === 'strong' ? 1.6 : 1;
+      const mix = (pct) => 'color-mix(in srgb, ' + color + ' ' + Math.min(100, Math.round(pct * k)) + '%, transparent)';
+      const on = '0 0 0 1px ' + color + ', 0 ' + down * 6 + 'px ' + 8 * k + 'px 0 ' + mix(65) + ', 0 ' + down * 20 + 'px ' + 36 * k + 'px ' + down * -8 + 'px ' + mix(40);
+      const rest = mode === 'always'
+        ? '0 0 0 1px color-mix(in srgb, ' + color + ' 60%, transparent), 0 ' + down * 4 + 'px ' + 6 * k + 'px 0 ' + mix(45) + ', 0 ' + down * 14 + 'px ' + 24 * k + 'px ' + down * -6 + 'px ' + mix(28)
+        : '0 0 0 1px transparent, 0 0 0 0 transparent, 0 0 0 0 transparent';
+      return { mode, rest, on };
+    },
+    // its variables on a card or tile (the shadow step kept behind it)
+    glowVars() {
+      const g = this.glow;
+      return (base) => (g ? { '--pw-glow-rest': g.rest, '--pw-glow-on': g.on, '--pw-glow-base': base || '0 0 #0000' } : {});
+    },
     // the variant's own switches (surface, border, dividers)
     statsSwitch() {
       const sfx = ['variant', 'variant2', 'variant3'].includes(this.currentTheme) ? '-' + this.currentTheme : '';
@@ -946,7 +969,9 @@ export default {
         backgroundColor: surface ? this.itemColor('item-background') : null,
         border: border ? line : null,
         borderLeft: border ? line : (dividers && i % this.statsColumns !== 0 ? line : null),
-        boxShadow: shadow,
+        // (a glow: the shadow from the variables, see the styles below)
+        boxShadow: this.glow ? null : shadow,
+        ...this.glowVars(shadow === 'none' ? null : shadow),
       });
     },
     statsNumberStyle() {
@@ -1169,6 +1194,9 @@ export default {
         // the image standing out: the card drawn in two pieces (see
         // cardOverhangStyle and the content), the card itself bare
         ...(this.cardOverhang ? { overflow: 'visible', backgroundColor: 'transparent', border: 0, boxShadow: 'none', borderRadius: 0 } : {}),
+        // a glow: the shadow from the variables (the pieces' when standing out)
+        ...(this.glow ? { boxShadow: this.cardOverhang ? 'none' : null } : {}),
+        ...this.glowVars(this.cardPiece.shadow),
       };
     },
     // its content inside the card's padding, the link at the bottom
@@ -1185,8 +1213,8 @@ export default {
           border: piece.border,
           borderTopWidth: 0,
           borderRadius: '0 0 ' + piece.radius[2] + ' ' + piece.radius[3],
-          boxShadow: [piece.shadow, style.boxShadow].filter(Boolean).join(', ') || null,
-          clipPath: 'inset(0 -3rem -3rem -3rem)',
+          boxShadow: this.glow ? null : [piece.shadow, style.boxShadow].filter(Boolean).join(', ') || null,
+          clipPath: this.glow ? 'inset(0 -5rem -5rem -5rem)' : 'inset(0 -3rem -3rem -3rem)',
         });
       }
       // on the image: above the image, the texts at the top or bottom
@@ -1242,8 +1270,8 @@ export default {
         border: piece.border,
         borderBottomWidth: 0,
         borderRadius: piece.radius[0] + ' ' + piece.radius[1] + ' 0 0',
-        boxShadow: piece.shadow,
-        clipPath: 'inset(-3rem -3rem 0 -3rem)',
+        boxShadow: this.glow ? null : piece.shadow,
+        clipPath: this.glow ? 'inset(-5rem -5rem 0 -5rem)' : 'inset(-3rem -3rem 0 -3rem)',
       };
     },
     cardTextTop() {
@@ -2305,6 +2333,23 @@ export default {
 </script>
 
 <style>
+/* the glow (cards, tiles): at rest, stronger on hover – shared with the page editor's previews */
+.pw-cardlets-item[data-glow],
+.pw-stats-item[data-glow],
+.pw-cardlets-item[data-glow-pieces] .pw-cardlets-overhang,
+.pw-cardlets-item[data-glow-pieces] .pw-cardlets-content {
+  --pw-glow: var(--pw-glow-rest);
+  box-shadow: var(--pw-glow), var(--pw-glow-base, 0 0 #0000);
+  transition: box-shadow 0.35s ease;
+}
+.pw-cardlets-item[data-glow]:hover,
+.pw-stats-item[data-glow]:hover {
+  --pw-glow: var(--pw-glow-on);
+}
+.pw-cardlets-item[data-glow-pieces]:hover .pw-cardlets-overhang,
+.pw-cardlets-item[data-glow-pieces]:hover .pw-cardlets-content {
+  --pw-glow: var(--pw-glow-on);
+}
 /* the guides' colours: each value's line and area colour as variables on
    the preview (--pwg-<value>, --pwgf-<value>), given in the order of the
    open tab's rows; a value of another tab has none – its guide stays clear */

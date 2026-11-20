@@ -107,6 +107,8 @@
                 :key="item.id || i"
                 class="pw-cardlets-item"
                 :class="{ 'is-hidden': item.isHidden }"
+                :data-glow="glow ? glow.mode : null"
+                :data-glow-pieces="glow && cardOverhang ? '' : null"
                 :style="cardStyle"
               >
                 <div v-if="cardImageUrl(item)" class="pw-cardlets-image-wrap" :class="{ 'is-overhang': cardOverhang }">
@@ -230,7 +232,7 @@
                 </div>
               </template>
               <template v-else>
-                <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :style="statsItemStyle(i)">
+                <div v-for="(item, i) in statsItems" :key="'st-' + i" class="pw-stats-item" :data-glow="glow ? glow.mode : null" :style="statsItemStyle(i)">
                   <template v-if="statsShownView === 'bars'">
                     <div :style="statsBarHeadStyle">
                       <p :style="statsLabelStyle(true)">{{ item.label }}</p>
