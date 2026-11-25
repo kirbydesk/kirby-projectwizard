@@ -1540,6 +1540,27 @@
             </section>
             </template>
 
+            <!-- divider: its colours per variant (line, gradient end, text in the
+                 centre) and its widths; style, stroke and opacity are the block's -->
+            <template v-if="block.blockType === 'pwdivider' && blockValueDefaults[block.blockType]">
+            <section class="pw-card-section">
+              <div class="pw-card-heading-row">
+                <h3 class="pw-card-heading">{{ $t('prw.valuegroup.divider') }}</h3>
+              </div>
+              <div class="pw-card pw-field-table">
+                <pw-block-values
+                  :bp.sync="itemBp"
+                  :defaults="blockValueDefaults[block.blockType]"
+                  :patch="valuesPatch(block.blockType)"
+                  :overrides="blockValueOverrides[block.blockType] || {}"
+                  :hide-section-headers="true"
+                  @update:overrides="onBlockValueOverridesUpdate(block.blockType, $event)"
+                  @hover-var="hoveredVar = $event"
+                />
+              </div>
+            </section>
+            </template>
+
             <!-- logocloud: layout, form, padding, colours, gaps -->
             <template v-if="block.blockType === 'pwlogocloud' && blockValueDefaults[block.blockType]">
             <section class="pw-card-section">
