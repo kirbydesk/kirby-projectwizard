@@ -1,29 +1,32 @@
-// The tagline's line (Project Wizard › Elements › Tagline) in the previews: the
+// The tagline's line in the previews: form and style chosen per tagline (the
+// block's start value), its look in Project Wizard › Elements › Tagline – the
 // same rules and look as on the website (kirby-pagewizard config.php
 // taglineLeadline(), elements.css). The CSS for `.pw-leadline` is in
 // BlockPreview.vue (unscoped, shared by all previews).
 
+const FORMS = ['off', 'straight', 'bent'];
+const STYLES = ['solid', 'dashed', 'dotted', 'wavy'];
 const CHOICES = {
-  'tagline-leadline': ['off', 'straight', 'bent'],
-  'tagline-leadline-style': ['solid', 'dashed', 'dotted', 'wavy'],
   'tagline-leadline-reach': ['screen', 'grid'],
   'tagline-leadline-motion': ['none', 'in', 'flow'],
   'tagline-leadline-glow': ['on', 'off'],
 };
 
 /**
- * @param {function} get   name → the element value (override, else default)
- * @param {string} own     the block's own form: default | off | straight | bent
- * @param {string} align   the tagline's alignment (only left gets a line)
- * @returns {object|null}  { form, style, reach, motion, glow } or null
+ * @param {function} get       name → the element value (override, else default)
+ * @param {string} own         the tagline's form: off | straight | bent
+ * @param {string} align       the tagline's alignment (only left gets a line)
+ * @param {string} ownStyle    the tagline's style: solid | dashed | dotted | wavy
+ * @returns {object|null}      { form, style, reach, motion, glow } or null
  */
-export function leadlineState(get, own = 'default', align = 'left') {
+export function leadlineState(get, own, align = 'left', ownStyle) {
   if (align && align !== 'left') return null;
   // (an unknown value: the first choice – as the website's start values)
   const value = (name) => (CHOICES[name].includes(get(name)) ? get(name) : CHOICES[name][0]);
-  const form = ['off', 'straight', 'bent'].includes(own) ? own : value('tagline-leadline');
+  // (a tagline saved without its own: the form and style once set for all taglines)
+  const form = FORMS.includes(own) ? own : (FORMS.includes(get('tagline-leadline')) ? get('tagline-leadline') : 'off');
   if (!['straight', 'bent'].includes(form)) return null;
-  let style = value('tagline-leadline-style');
+  let style = STYLES.includes(ownStyle) ? ownStyle : (STYLES.includes(get('tagline-leadline-style')) ? get('tagline-leadline-style') : 'solid');
   if (style === 'wavy' && form !== 'straight') style = 'solid';
   let motion = value('tagline-leadline-motion');
   if (motion === 'flow' && (form !== 'straight' || style === 'solid')) motion = 'none';
@@ -58,6 +61,7 @@ export function leadlineBinding(state, get, color, lead) {
     '--pw-ll-color': color,
     '--pw-leadline-wave': leadlineWave(color),
     '--pw-ll-stroke': get('tagline-leadline-stroke') || '2px',
+    '--pw-ll-opacity': get('tagline-leadline-opacity') || '100%',
     '--pw-ll-dot': get('tagline-leadline-dot') || '12px',
     '--pw-ll-offset': get('tagline-leadline-offset') || '3.25rem',
     '--pw-ll-x': get('tagline-leadline-dot-offset') || '8px',

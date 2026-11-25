@@ -68,7 +68,7 @@
           <!-- tagline, heading, text; in the featurelist's split layout a
                column of their own next to the items -->
           <div class="pw-block-live-intro">
-          <p v-if="hasField('tagline')" class="pw-leadline" v-bind="leadline().attrs" :style="[fieldStyle('tagline'), leadline().style]">{{ $t('prw.preview.tagline') }}</p>
+          <p v-if="hasField('tagline')" class="pw-leadline" v-bind="sampleLeadline().attrs" :style="[fieldStyle('tagline'), sampleLeadline().style]">{{ $t('prw.preview.tagline') }}</p>
           <div v-if="hasField('heading') && spaceBand('heading')" class="pw-space-band" :class="['is-' + spaceBand('heading').prev, { 'is-hot': highlight === spaceBand('heading').prev + '-spacing' }]" :style="{ height: spaceBand('heading').height }"></div>
           <div v-if="hasField('heading')" :style="fieldStyle('heading')">{{ $t('prw.preview.heading') }}</div>
           <div v-if="hasField('editor') && spaceBand('editor')" class="pw-space-band" :class="['is-' + spaceBand('editor').prev, { 'is-hot': highlight === spaceBand('editor').prev + '-spacing' }]" :style="{ height: spaceBand('editor').height }"></div>
@@ -2073,11 +2073,12 @@ export default {
       return ((this.globalOverrides.global || {})[this.currentTheme] || {})[name]
         || this.globalDefaults.colors?.colors?.[name]?.[this.currentTheme] || '';
     },
-    // the tagline's line (Elements › Tagline): its attributes and variables for
-    // the tagline shown – own: the block's form, align: the tagline's
-    leadline(own = 'default', align = 'left') {
+    // the tagline's line: its attributes and variables for the tagline shown –
+    // own and style: the tagline's form and style (none: as once set for all
+    // taglines), align: the tagline's; its look from Elements › Tagline
+    leadline(own, align = 'left', style) {
       const get = (name) => this.elementValue('tagline', name.replace(/^tagline-/, ''));
-      const state = leadlineState(get, own, align || this.preset('tagline', 'align') || 'left');
+      const state = leadlineState(get, own, align || this.preset('tagline', 'align') || 'left', style);
       if (!state) return { attrs: {}, style: {} };
       const color = ((this.elementOverrides.global || {})[this.currentTheme] || {})['element-tagline-leadline']
         || this.elementColor('tagline', 'element-tagline-text');
@@ -2086,6 +2087,10 @@ export default {
       const base = this.fieldStyle('tagline').marginTop || 0;
       binding.style.marginTop = 'calc(' + (typeof base === 'number' ? base + 'px' : base) + ' + ' + leadlineTop(state, get) + ')';
       return binding;
+    },
+    // the sample tagline: the line the block starts with
+    sampleLeadline() {
+      return this.leadline(this.preset('tagline', 'leadline'), null, this.preset('tagline', 'leadlinestyle'));
     },
     // the button style shown (the custom theme: its own, see PanelRender)
     buttonTheme() {
@@ -2382,6 +2387,7 @@ export default {
   position: absolute;
   pointer-events: none;
   box-sizing: border-box;
+  opacity: var(--pw-ll-opacity, 1);
 }
 /* (not measured yet: nothing) */
 .pw-leadline[data-leadline]:not([data-leadline-ready])::before,
@@ -2450,7 +2456,7 @@ export default {
   animation: pw-prev-ll-pop 0.35s ease-out 1s forwards;
 }
 @keyframes pw-prev-ll-run { to { clip-path: inset(-30px -30px -30px -30px); } }
-@keyframes pw-prev-ll-pop { 60% { opacity: 1; transform: scale(1.35); } to { opacity: 1; transform: scale(1); } }
+@keyframes pw-prev-ll-pop { 60% { opacity: var(--pw-ll-opacity, 1); transform: scale(1.35); } to { opacity: var(--pw-ll-opacity, 1); transform: scale(1); } }
 /* flowing: the pattern moves towards the circle */
 .pw-leadline[data-leadline-motion="flow"][data-leadline-style="dashed"]::before { animation: pw-prev-ll-flow-dash 1.2s linear infinite; }
 .pw-leadline[data-leadline-motion="flow"][data-leadline-style="dotted"]::before { animation: pw-prev-ll-flow-dot 0.8s linear infinite; }
@@ -2460,7 +2466,7 @@ export default {
 @keyframes pw-prev-ll-flow-wave { to { background-position-x: calc(var(--pw-ll-stroke) * 8); } }
 @media (prefers-reduced-motion: reduce) {
   .pw-leadline[data-leadline]::before,
-  .pw-leadline[data-leadline]::after { animation: none !important; clip-path: none !important; opacity: 1 !important; transform: none !important; }
+  .pw-leadline[data-leadline]::after { animation: none !important; clip-path: none !important; opacity: var(--pw-ll-opacity, 1) !important; transform: none !important; }
 }
 
 /* the buttons' glow (Elements › Buttons) – not on the cards' links */

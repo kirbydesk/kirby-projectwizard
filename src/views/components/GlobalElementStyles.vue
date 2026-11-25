@@ -307,7 +307,7 @@
             <!-- the base font size only while the step "normal" is chosen; the
                  button's and media's corner radii only for custom corners -->
             <div
-              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(['button-width', 'button-content-align'].includes(field.varName) && buttonWidthMode() !== 'manual') && !hiddenGlowVar(field.varName) && !hiddenLeadlineVar(field.varName)"
+              v-else-if="!(field.varName.endsWith('-font-size') && fontSizesForGroup(stInfo(st).elementKey) && stepOf(stInfo(st).elementKey) !== 'normal') && !(field.varName === 'button-border-radius' && buttonShape() !== 'custom') && !(field.varName === 'media-radius' && mediaShape() !== 'custom') && !(['button-width', 'button-content-align'].includes(field.varName) && buttonWidthMode() !== 'manual') && !hiddenGlowVar(field.varName)"
               :key="'vf-' + gIdx + '-' + fIdx"
               class="pw-field-row"
               :data-guide="guideType(field.varName)"
@@ -974,16 +974,11 @@ export default {
     leadlineValue(name, start) {
       return this.getOverrideValue(name) || this.elementDefaults.tagline?.vars?.[name]?.value || start;
     },
-    // without a line only its form; the bend only for the bent line
-    hiddenLeadlineVar(varName) {
-      if (!varName.startsWith('tagline-leadline') || varName === 'tagline-leadline') return false;
-      const form = this.leadlineValue('tagline-leadline', 'off');
-      return form === 'off' || (varName === 'tagline-leadline-bend' && form !== 'bent');
-    },
-    // the preview: the line's attributes and variables (the preview column's edge
-    // as the screen's; the grid's edge: a gutter), the space above for it
+    // the preview: the line's look – a straight solid one (form and style are
+    // chosen per tagline in the blocks) – its attributes and variables (the
+    // preview column's edge as the screen's; the grid's edge: a gutter), the space above for it
     previewLeadline(theme) {
-      const state = leadlineState((name) => this.leadlineValue(name, ''), 'default', 'left');
+      const state = leadlineState((name) => this.leadlineValue(name, ''), 'straight', 'left', 'solid');
       if (!state) return null;
       const color = this.getColorOverrideValue(theme, 'element-tagline-leadline')
         || this.getColorOverrideValue(theme, 'element-tagline-text')
@@ -1280,8 +1275,6 @@ export default {
         if (sectionOf(name) === section) colors[name] = value;
       }
       // the buttons' glow: its own colour only with the choice "custom"
-      // the tagline's line: its colour only with a line
-      if (section === 'leadline' && this.leadlineValue('tagline-leadline', 'off') === 'off') return [];
       // (its start value: the tagline's colour as it is now – unset, the line follows it)
       if (section === 'leadline' && colors['element-tagline-leadline']) {
         const text = group.colors['element-tagline-text'] || {};
@@ -1417,14 +1410,9 @@ export default {
       if (varName.startsWith('button-glow')) {
         return options.map(o => ({ value: o, text: this.$t('prw.glow.' + o) }));
       }
-      // the tagline's line: wavy only straight, flowing only a straight patterned line
+      // the tagline's line: its own words (flowing: only a straight patterned line moves)
       if (varName.startsWith('tagline-leadline')) {
-        const form = this.leadlineValue('tagline-leadline', 'off');
-        const style = this.leadlineValue('tagline-leadline-style', 'solid');
-        return options
-          .filter(o => !(varName === 'tagline-leadline-style' && o === 'wavy' && form === 'bent'))
-          .filter(o => !(varName === 'tagline-leadline-motion' && o === 'flow' && (form !== 'straight' || style === 'solid')))
-          .map(o => ({ value: o, text: this.$t('prw.leadline.' + o) }));
+        return options.map(o => ({ value: o, text: this.$t('prw.leadline.' + o) }));
       }
       if (!varName.endsWith('-font-weight')) {
         // alignment: Kirby's text-left/-center/-right icons, the name as tooltip
